@@ -1,8 +1,16 @@
+"""
+Constantes globales del proyecto.
+Choices reutilizables para todos los modelos.
+"""
+
 from django.db import models
+
+
 class Currency(models.TextChoices):
-    """Monedas soportdas por el sistema."""
+    """Monedas soportadas por el sistema."""
     ARS = 'ARS', 'Peso Argentino'
-    USD = 'USD', 'Dólar Estadoudinense'
+    USD = 'USD', 'Dólar Estadounidense'
+
 
 class PaymentMethod(models.TextChoices):
     """Métodos de pago para gastos."""
@@ -11,10 +19,23 @@ class PaymentMethod(models.TextChoices):
     CREDIT = 'CREDIT', 'Tarjeta de Crédito'
     TRANSFER = 'TRANSFER', 'Transferencia'
 
+
 class ExpenseType(models.TextChoices):
-    """Tipos de categoría"""
+    """Tipos de gasto."""
+    FIXED = 'FIXED', 'Fijo'
+    VARIABLE = 'VARIABLE', 'Variable'
+
+
+class CategoryType(models.TextChoices):
+    """Tipos de categoría."""
+    EXPENSE = 'EXPENSE', 'Gasto'
+    INCOME = 'INCOME', 'Ingreso'
+
+
+class BudgetType(models.TextChoices):
+    """Tipos de presupuesto."""
     GLOBAL = 'GLOBAL', 'Global Mensual'
-    BY_CATERGORY = 'BY_CATEGORY', 'Por Catergoría'
+    BY_CATEGORY = 'BY_CATEGORY', 'Por Categoría'
 
 # Categorías del sistema (seed data)
 SYSTEM_CATEGORIES = {

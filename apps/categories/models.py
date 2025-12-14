@@ -30,7 +30,7 @@ class Category(TimestampMixin, SoftDeleteMixin, models.Model):
         verbose_name='Categoría del sistema'
     )
     user = models.ForeignKey(
-        'user.User',
+        'users.User',
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -122,5 +122,10 @@ class Category(TimestampMixin, SoftDeleteMixin, models.Model):
     @classmethod
     def get_expense_categories(cls, user):
         """Obtiene categorías de tipo EXPENSE para un usuario."""
+        return cls.get_user_categories(user, CategoryType.EXPENSE)
+
+    @classmethod
+    def get_income_categories(cls, user):
+        """Obtiene categorías de tipo INCOME para un usuario."""
         return cls.get_user_categories(user, CategoryType.INCOME)
     

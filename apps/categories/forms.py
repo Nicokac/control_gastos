@@ -31,7 +31,7 @@ class CategoryForm(forms.ModelForm):
             }),
         }
 
-    def __init__(self, *args, user=None, **kwars):
+    def __init__(self, *args, user=None, **kwargs):
         """
         Inicializa el formulario con el usuario.
         
@@ -39,7 +39,7 @@ class CategoryForm(forms.ModelForm):
             user: Usuario que crea la categoría
         """
         self.user = user
-        super().__init__(*args, **kwars)
+        super().__init__(*args, **kwargs)
 
     def clean_name(self):
         """Válida que el nombre no esté duplicado para el usuario."""
