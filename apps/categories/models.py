@@ -85,7 +85,7 @@ class Category(TimestampMixin, SoftDeleteMixin, models.Model):
     def save(self, *args, **kwargs):
         """Ejecuta validaciones antes de guardar."""
         self.full_clean()
-        super().save(i*args, **kwargs)
+        super().save(*args, **kwargs)
 
     @property
     def is_editable(self):
