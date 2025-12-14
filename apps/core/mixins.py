@@ -1,6 +1,7 @@
 """
 Mixin reutilizables para modelos Django.
 """
+from .managers import SoftDeleteManager
 from decimal import Decimal
 from django.db import models
 from django.utils import timezone
@@ -39,6 +40,10 @@ class SoftDeleteMixin(models.Model):
         verbose_name='Fecha de eliminación'
     )
 
+    # Managers
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()
+
     class Meta:
         abstract = True
 
@@ -53,6 +58,10 @@ class SoftDeleteMixin(models.Model):
         self.is_active = True
         self.deleted_at = None
         self.save(update_fields=['is_active', 'deleted_at'])
+
+    def hard_delete(self):
+        """Elimina el registro permanentemente."""
+        super().delete()
 
 
 class CurrencyMixin(models.Model):
