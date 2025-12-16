@@ -1,7 +1,65 @@
-<nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
-    <div class="position-sticky pt-3">
-        <ul class="nav flex-column">
-            <li class="nav-item"><a class="nav-link" href="#">Dashboard</a></li>
-        </ul>
+{% if user.is_authenticated %}
+<nav class="sidebar d-none d-md-block">
+    <div class="pt-3">
+        <!-- Sección: Principal -->
+        <div class="sidebar-section">
+            <a href="{% url 'reports:dashboard' %}" 
+               class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <i class="bi bi-speedometer2"></i>
+                <span>Dashboard</span>
+            </a>
+        </div>
+        
+        <!-- Sección: Transacciones -->
+        <div class="sidebar-section">
+            <small class="sidebar-label">TRANSACCIONES</small>
+            
+            <a href="{% url 'expenses:list' %}" 
+               class="sidebar-link {% if 'expenses' in request.path %}active{% endif %}">
+                <i class="bi bi-arrow-up-circle text-danger"></i>
+                <span>Gastos</span>
+            </a>
+            
+            <a href="{% url 'income:list' %}" 
+               class="sidebar-link {% if 'income' in request.path %}active{% endif %}">
+                <i class="bi bi-arrow-down-circle text-success"></i>
+                <span>Ingresos</span>
+            </a>
+            
+            <a href="{% url 'savings:list' %}" 
+               class="sidebar-link {% if 'savings' in request.path %}active{% endif %}">
+                <i class="bi bi-piggy-bank text-info"></i>
+                <span>Ahorro</span>
+            </a>
+        </div>
+        
+        <!-- Sección: Planificación -->
+        <div class="sidebar-section">
+            <small class="sidebar-label">PLANIFICACIÓN</small>
+            
+            <a href="{% url 'budgets:list' %}" 
+               class="sidebar-link {% if 'budgets' in request.path %}active{% endif %}">
+                <i class="bi bi-clipboard-data text-warning"></i>
+                <span>Presupuestos</span>
+            </a>
+            
+            <a href="{% url 'categories:list' %}" 
+               class="sidebar-link {% if 'categories' in request.path %}active{% endif %}">
+                <i class="bi bi-tags"></i>
+                <span>Categorías</span>
+            </a>
+        </div>
+        
+        <!-- Sección: Cuenta -->
+        <div class="sidebar-section">
+            <small class="sidebar-label">CUENTA</small>
+            
+            <a href="{% url 'users:profile' %}" 
+               class="sidebar-link {% if 'profile' in request.path %}active{% endif %}">
+                <i class="bi bi-gear"></i>
+                <span>Configuración</span>
+            </a>
+        </div>
     </div>
 </nav>
+{% endif %}
