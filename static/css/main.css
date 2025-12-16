@@ -1,14 +1,235 @@
-/* Main styles */
+/* ============================================
+   Control de Gastos - Main Styles
+   ============================================ */
+
+/* --- Variables --- */
+:root {
+    --primary-color: #0d6efd;
+    --danger-color: #dc3545;
+    --success-color: #198754;
+    --warning-color: #ffc107;
+    --info-color: #0dcaf0;
+    --sidebar-width: 280px;
+    --navbar-height: 56px;
+}
+
+/* --- Base --- */
 body {
-    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background-color: #f8f9fa;
 }
 
+/* --- Sidebar (QW-2.2: Agrupado) --- */
 .sidebar {
-    min-height: calc(100vh - 56px);
+    position: fixed;
+    top: var(--navbar-height);
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 0;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+    background-color: #fff;
+    width: var(--sidebar-width);
+    overflow-y: auto;
 }
 
-.alert-budget {
-    background-color: #f8d7da;
-    border-color: #f5c2c7;
-    color: #842029;
+.sidebar-section {
+    padding: 1rem 0;
+}
+
+.sidebar-section:not(:last-child) {
+    border-bottom: 1px solid #e9ecef;
+}
+
+.sidebar-label {
+    display: block;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 0.625rem 1rem;
+    color: #333;
+    text-decoration: none;
+    transition: all 0.15s ease-in-out;
+}
+
+.sidebar-link:hover {
+    background-color: #f8f9fa;
+    color: var(--primary-color);
+}
+
+.sidebar-link.active {
+    background-color: #e7f1ff;
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.sidebar-link i {
+    width: 24px;
+    margin-right: 0.75rem;
+    font-size: 1.1rem;
+}
+
+/* --- Main Content --- */
+main {
+    margin-left: var(--sidebar-width);
+    min-height: calc(100vh - var(--navbar-height));
+}
+
+@media (max-width: 767.98px) {
+    .sidebar {
+        width: 100%;
+        position: relative;
+        top: 0;
+    }
+    
+    main {
+        margin-left: 0;
+    }
+}
+
+/* --- FAB Button (QW-2.1) --- */
+.fab-button {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 64px;
+    height: 64px;
+    z-index: 1050;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fab-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4) !important;
+}
+
+.fab-button:active {
+    transform: scale(0.95);
+}
+
+/* --- Toast Styles (QW-3.3) --- */
+.toast.bg-success {
+    background-color: var(--success-color) !important;
+    color: white;
+}
+
+.toast.bg-danger {
+    background-color: var(--danger-color) !important;
+    color: white;
+}
+
+.toast.bg-warning {
+    background-color: var(--warning-color) !important;
+    color: #000;
+}
+
+.toast.bg-info {
+    background-color: var(--info-color) !important;
+    color: #000;
+}
+
+/* --- Form Improvements --- */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+
+/* --- Password Toggle (QW-1.2) --- */
+.password-toggle-btn {
+    border-left: none;
+}
+
+.password-toggle-btn:hover {
+    background-color: #e9ecef;
+}
+
+.password-toggle-btn:focus {
+    box-shadow: none;
+}
+
+/* --- Loading Button (QW-1.1) --- */
+.btn-loading .spinner-border {
+    width: 1rem;
+    height: 1rem;
+}
+
+.btn[disabled] {
+    cursor: not-allowed;
+}
+
+/* --- Cards --- */
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-header {
+    background-color: #fff;
+    border-bottom: 1px solid #e9ecef;
+    font-weight: 500;
+}
+
+/* --- Auth Pages --- */
+.auth-container {
+    min-height: calc(100vh - var(--navbar-height));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 420px;
+}
+
+.auth-logo {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+}
+
+/* --- Budget Alert Colors --- */
+.budget-ok {
+    color: var(--success-color);
+}
+
+.budget-warning {
+    color: var(--warning-color);
+}
+
+.budget-danger {
+    color: var(--danger-color);
+}
+
+/* --- Category Colors Preview --- */
+.color-preset {
+    width: 32px;
+    height: 32px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+.color-preset:hover {
+    transform: scale(1.1);
+}
+
+.color-preset.active {
+    border-color: #000;
+}
+
+/* --- Utilities --- */
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.transition-all {
+    transition: all 0.2s ease-in-out;
 }
