@@ -1,5 +1,6 @@
 """Formulario de autenticación y perfil de usuario."""
 
+from django.db import models
 from django import forms 
 from django.contrib.auth.forms import (
     UserCreationForm,
@@ -167,5 +168,4 @@ class ProfileForm(forms.ModelForm):
         if User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
             raise forms.ValidationError('Este mail ya está en uso por otra cuenta.')
         return email
-    
     
