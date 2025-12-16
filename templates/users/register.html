@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear Cuenta - Control de Gastos{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="card shadow-sm">
+            <div class="card-body p-4 p-md-5">
+                <!-- Logo y título -->
+                <div class="text-center mb-4">
+                    <div class="auth-logo mb-3">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                    <h1 class="h4 fw-bold">Crear cuenta</h1>
+                    <p class="text-muted">Empezá a controlar tus finanzas</p>
+                </div>
+                
+                <!-- Formulario -->
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Errores generales -->
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Campo Usuario -->
+                    <div class="mb-3">
+                        <label for="id_username" class="form-label">
+                            <i class="bi bi-person me-1"></i>Nombre de usuario
+                        </label>
+                        <input type="text" 
+                               name="username" 
+                               id="id_username"
+                               class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+                               placeholder="juanperez"
+                               value="{{ form.username.value|default:'' }}"
+                               autofocus
+                               required>
+                        {% if form.username.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.username.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Campo Email -->
+                    <div class="mb-3">
+                        <label for="id_email" class="form-label">
+                            <i class="bi bi-envelope me-1"></i>Email
+                        </label>
+                        <input type="email" 
+                               name="email" 
+                               id="id_email"
+                               class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+                               placeholder="tu@email.com"
+                               value="{{ form.email.value|default:'' }}"
+                               required>
+                        {% if form.email.errors %}
+                        <div class="invalid-feedback">
+                            {{ form.email.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Campo Contraseña con toggle -->
+                    <div class="mb-3">
+                        <label for="id_password1" class="form-label">
+                            <i class="bi bi-lock me-1"></i>Contraseña
+                        </label>
+                        <div class="input-group">
+                            <input type="password" 
+                                   name="password1" 
+                                   id="id_password1"
+                                   class="form-control {% if form.password1.errors %}is-invalid{% endif %}"
+                                   placeholder="Mínimo 8 caracteres"
+                                   required>
+                            <button type="button" 
+                                    class="btn btn-outline-secondary toggle-password"
+                                    tabindex="-1">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        {% if form.password1.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.password1.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Campo Confirmar Contraseña -->
+                    <div class="mb-4">
+                        <label for="id_password2" class="form-label">
+                            <i class="bi bi-lock-fill me-1"></i>Confirmar contraseña
+                        </label>
+                        <div class="input-group">
+                            <input type="password" 
+                                   name="password2" 
+                                   id="id_password2"
+                                   class="form-control {% if form.password2.errors %}is-invalid{% endif %}"
+                                   placeholder="Repetí tu contraseña"
+                                   required>
+                            <button type="button" 
+                                    class="btn btn-outline-secondary toggle-password"
+                                    tabindex="-1">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        {% if form.password2.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.password2.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Botón Submit -->
+                    <div class="d-grid mb-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-person-plus me-2"></i>Crear Cuenta
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Link a login -->
+                <div class="text-center">
+                    <span class="text-muted">¿Ya tenés cuenta?</span>
+                    <a href="{% url 'users:login' %}" class="ms-1 fw-medium">Iniciar sesión</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <p class="text-center text-muted mt-4 small">
+            Control de Gastos &copy; 2024
+        </p>
+    </div>
+</div>
+{% endblock %}

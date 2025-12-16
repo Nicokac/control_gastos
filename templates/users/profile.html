@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Mi Perfil - Control de Gastos{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="bi bi-person-circle me-2"></i>Mi Perfil
+                </h1>
+            </div>
+            
+            <div class="row g-4">
+                <!-- Formulario de perfil -->
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-pencil me-2"></i>Editar Información
+                        </div>
+                        <div class="card-body">
+                            <form method="post" novalidate>
+                                {% csrf_token %}
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id_first_name" class="form-label">Nombre</label>
+                                        <input type="text" 
+                                               name="first_name" 
+                                               id="id_first_name"
+                                               class="form-control"
+                                               placeholder="Tu nombre"
+                                               value="{{ form.first_name.value|default:'' }}">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id_last_name" class="form-label">Apellido</label>
+                                        <input type="text" 
+                                               name="last_name" 
+                                               id="id_last_name"
+                                               class="form-control"
+                                               placeholder="Tu apellido"
+                                               value="{{ form.last_name.value|default:'' }}">
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="id_email" class="form-label">Email</label>
+                                    <input type="email" 
+                                           name="email" 
+                                           id="id_email"
+                                           class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+                                           value="{{ form.email.value|default:'' }}"
+                                           required>
+                                    {% if form.email.errors %}
+                                    <div class="invalid-feedback">{{ form.email.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                                
+                                <hr class="my-4">
+                                <h6 class="text-muted mb-3">Preferencias</h6>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id_default_currency" class="form-label">Moneda principal</label>
+                                        <select name="default_currency" id="id_default_currency" class="form-select">
+                                            <option value="ARS" {% if form.default_currency.value == 'ARS' %}selected{% endif %}>
+                                                Peso Argentino (ARS)
+                                            </option>
+                                            <option value="USD" {% if form.default_currency.value == 'USD' %}selected{% endif %}>
+                                                Dólar Estadounidense (USD)
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id_alert_threshold" class="form-label">Umbral de alerta (%)</label>
+                                        <input type="number" 
+                                               name="alert_threshold" 
+                                               id="id_alert_threshold"
+                                               class="form-control"
+                                               min="1" 
+                                               max="100"
+                                               value="{{ form.alert_threshold.value|default:80 }}">
+                                        <small class="text-muted">
+                                            Te avisaremos cuando alcances este porcentaje del presupuesto.
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex gap-2 mt-4">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-check-lg me-1"></i>Guardar Cambios
+                                    </button>
+                                    <a href="{% url 'users:password_change' %}" class="btn btn-outline-secondary">
+                                        <i class="bi bi-key me-1"></i>Cambiar Contraseña
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Info de cuenta -->
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-info-circle me-2"></i>Información
+                        </div>
+                        <div class="card-body">
+                            <dl class="mb-0">
+                                <dt class="text-muted small">Usuario</dt>
+                                <dd>{{ user.username }}</dd>
+                                
+                                <dt class="text-muted small">Miembro desde</dt>
+                                <dd>{{ user.date_joined|date:"d M Y" }}</dd>
+                                
+                                <dt class="text-muted small">Último acceso</dt>
+                                <dd>{{ user.last_login|date:"d M Y, H:i"|default:"Nunca" }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
