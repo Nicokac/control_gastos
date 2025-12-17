@@ -233,3 +233,28 @@ main {
 .transition-all {
     transition: all 0.2s ease-in-out;
 }
+
+/* ============================================
+   Dropdown Logout Button Fix
+   ============================================ */
+
+/* Hacer que el botón de logout se vea como un dropdown-item normal */
+.dropdown-menu form {
+    margin: 0;
+}
+
+.dropdown-menu form .dropdown-item {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.dropdown-menu form .dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+.dropdown-menu form .dropdown-item:active {
+    background-color: #e9ecef;
+}
