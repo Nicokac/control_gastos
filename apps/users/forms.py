@@ -1,6 +1,5 @@
 """Formulario de autenticación y perfil de usuario."""
 
-from django.db import models
 from django import forms 
 from django.contrib.auth.forms import (
     UserCreationForm,
@@ -8,6 +7,8 @@ from django.contrib.auth.forms import (
     PasswordChangeForm
 )
 from django.contrib.auth import authenticate
+from django.db.models import Q
+
 from .models import User
 
 class LoginForm(AuthenticationForm):
@@ -42,7 +43,7 @@ class LoginForm(AuthenticationForm):
         if username and password:
             # Verificar si el usuario existe
             user_exists = User.objects.filter(
-                models.Q(username=username) | models.Q(email=username)
+                Q(username=username) | Q(email=username)
             ).exists()
 
             if not user_exists:
