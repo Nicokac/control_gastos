@@ -9,7 +9,7 @@ from django.views.generic import TemplateView
 class DashboardView(LoginRequiredMixin, TemplateView):
     """Dashboard principal."""
 
-    template_name = 'reports/dashboard..html'
+    template_name = 'reports/dashboard.html'
 
     def get_content_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
