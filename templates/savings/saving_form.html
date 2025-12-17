@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Nuevo Gasto - Control de Gastos{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="h3 mb-0">
+        <i class="bi bi-plus-circle text-danger me-2"></i>Nuevo Gasto
+    </h1>
+</div>
+
+<div class="card">
+    <div class="card-body text-center py-5">
+        <i class="bi bi-clock-history display-1 text-muted mb-3"></i>
+        <p class="text-muted">El formulario de gastos estará disponible próximamente.</p>
+        <a href="{% url 'expenses:list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Volver
+        </a>
+    </div>
+</div>
+{% endblock %}
