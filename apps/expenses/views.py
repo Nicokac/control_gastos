@@ -14,7 +14,7 @@ from apps.categories.models import Category
 
 
 # Create your views here.
-class ExpenseListView(LoginRequiredMixin, TemplateView):
+class ExpenseListView(LoginRequiredMixin, ListView):
     """Lista de gastos del usuario con filtros."""
     
     model = Expense
@@ -27,35 +27,35 @@ class ExpenseListView(LoginRequiredMixin, TemplateView):
         queryset = Expense.objects.filter(
             user=self.request.user
         ).select_related('category')
-
+        
         # Aplicar filtros
         month = self.request.GET.get('month')
         year = self.request.GET.get('year')
         category = self.request.GET.get('category')
-
+        
         if month:
             queryset = queryset.filter(date__month=month)
         if year:
             queryset = queryset.filter(date__year=year)
         if category:
             queryset = queryset.filter(category_id=category)
-
+        
         return queryset
-    
+
     def get_context_data(self, **kwargs):
         """Agrega datos adicionales al contexto."""
         context = super().get_context_data(**kwargs)
-
-        # Formulario de filtros 
+        
+        # Formulario de filtros
         context['filter_form'] = ExpenseFilterForm(
             data=self.request.GET or None,
             user=self.request.user
         )
-
+        
         # Total del período filtrado
         queryset = self.get_queryset()
         context['total'] = queryset.aggregate(total=Sum('amount_ars'))['total'] or 0
-
+        
         # Mes y año actual para defaults
         today = timezone.now().date()
         context['current_month'] = today.month
@@ -64,7 +64,7 @@ class ExpenseListView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class ExpenseCreateView(LoginRequiredMixin, TemplateView):
+class ExpenseCreateView(LoginRequiredMixin, CreateView):
     """Crear nuevo gasto con formulario optimizado."""
 
     model = Expense
@@ -98,18 +98,51 @@ class ExpenseCreateView(LoginRequiredMixin, TemplateView):
         """Muestra errores."""
         messages.error(self.request, 'Corregí los errores del formulario.')
         return super().form_invalid(form)
+
+
+class ExpenseUpdateView(LoginRequiredMixin, UpdateView):
+    """Editar gasto existente."""
     
+    model = Expense
+    form_class = ExpenseForm
+    template_name = 'expenses/expense_form.html'
+    success_url = reverse_lazy('expenses:list')
+
+    def get_queryset(self):
+        """Solo permite editar gastos propios."""
+        return Expense.objects.filter(user=self.request.user)
+
+    def get_form_kwargs(self):
+        """Pasa el usuario al formulario."""
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        """Agrega categorías para los botones visuales."""
+        context = super().get_context_data(**kwargs)
+        context['categories'] = Category.get_expense_categories(self.request.user)
+        context['is_edit'] = True
+        return context
+
+    def form_valid(self, form):
+        """Guarda y muestra mensaje de éxito."""
+        response = super().form_valid(form)
+        messages.success(self.request, 'Gasto actualizado correctamente.')
+        return response
+
+
 class ExpenseDeleteView(LoginRequiredMixin, DeleteView):
     """Eliminar gasto (soft delete)."""
-
+    
     model = Expense
-    template_name = 'expense/expense_confirm_delete.html'
-    success_url = reverse_lazy('expense:list')
+    template_name = 'expenses/expense_confirm_delete.html'
+    success_url = reverse_lazy('expenses:list')
 
     def get_queryset(self):
         """Solo permite eliminar gastos propios."""
         return Expense.objects.filter(user=self.request.user)
-    
+
     def form_valid(self, form):
         """Realiza soft delete."""
         self.object = self.get_object()
@@ -117,7 +150,7 @@ class ExpenseDeleteView(LoginRequiredMixin, DeleteView):
         messages.success(self.request, 'Gasto eliminado correctamente.')
         from django.http import HttpResponseRedirect
         return HttpResponseRedirect(self.success_url)
-    
+
 
     class ExpenseDetailView(LoginRequiredMixin, DetailView):
         """Ver detalle de un gasto."""
