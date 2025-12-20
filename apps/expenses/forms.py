@@ -141,6 +141,15 @@ class ExpenseForm(forms.ModelForm):
                     'category': 'Categoría no válida.'
                 })
             
+            # Validar que la categoría sea de tipo EXPENSE
+            from apps.core.constants import CategoryType
+            if category.type != CategoryType.EXPENSE:
+                raise forms.ValidationError({
+                    'category': 'La categoría debe ser de tipo Gasto.'
+                })
+        
+        return cleaned_data
+            
     def save(self, commit=True):
         """Guarda el gasto asignando el usuario."""
         instance = super().save(commit=False)
@@ -157,7 +166,7 @@ class ExpenseFilterForm(forms.Form):
     month = forms.ChoiceField(
         choices=[],
         required=False,
-        widget=forms.Select(attrs={'class': 'forms-select form-select-sm'})
+        widget=forms.Select(attrs={'class': 'form-select form-select-sm'})
     )
     year = forms.ChoiceField(
         choices=[],
@@ -176,11 +185,11 @@ class ExpenseFilterForm(forms.Form):
         # Generar choices de meses
         from apps.core.utils import get_months_choices, get_years_choices
         self.fields['month'].choices = [('', 'Todos los meses')] + get_months_choices()
-        self.fields['year'].choices = [('', 'Todos los años')] + get_years_choices
+        self.fields['year'].choices = [('', 'Todos los años')] + get_years_choices()
 
         # Categorías del usuario
         if user:
             self.fields['category'].queryset = Category.get_expense_categories(user)
-            self.fields['categoty'].empty_label = 'Todos las categorías'
+            self.fields['category'].empty_label = 'Todos las categorías'
 
         

@@ -77,13 +77,6 @@ class Expense(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
             raise ValidationError({
                 'amount': 'El monto debe ser mayor a cero.'
             })
-        
-        # Validar que la categoría sea de tipo EXPENSE
-        if self.category_id:
-            if self.category.type != CategoryType.EXPENSE:
-                raise ValidationError({
-                    'category': 'La categoría debe ser de tipo Gasto.'
-                })
             
     def save(self, *args, **kwargs):
         """Ejecuta validacioines antes de guardar."""
@@ -107,7 +100,7 @@ class Expense(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
         queryset = cls.objects.filter(user=user)
 
         if month and year:
-            queryset = queryset.filter(date__month=year, date__year=year)
+            queryset = queryset.filter(date__month=month, date__year=year)
         elif year:
             queryset = queryset.filter(date__year=year)
 
