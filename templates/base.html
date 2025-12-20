@@ -34,11 +34,11 @@
     <!-- FAB Button - Nuevo Gasto (QW-2.1) -->
     {% if user.is_authenticated %}
     <a href="{% url 'expenses:create' %}" 
-       class="fab-button btn btn-danger rounded-circle shadow-lg d-flex align-items-center justify-content-center"
-       data-bs-toggle="tooltip" 
-       data-bs-placement="left"
-       title="Nuevo Gasto (Ctrl+N)">
-        <i class="bi bi-plus-lg fs-4"></i>
+        class="fab-button btn btn-danger rounded-circle shadow-lg d-flex align-items-center justify-content-center"
+        data-bs-toggle="tooltip" 
+        data-bs-placement="left"
+        title="Nuevo Gasto (Ctrl+N)">
+            <i class="bi bi-plus-lg fs-4"></i>
     </a>
     {% endif %}
     
