@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ expense.description }} - Control de Gastos{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <!-- Header -->
+            <div class="mb-4">
+                <a href="{% url 'expenses:list' %}" class="text-muted text-decoration-none">
+                    <i class="bi bi-arrow-left me-1"></i>Volver a gastos
+                </a>
+            </div>
+            
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-receipt text-danger me-2"></i>Detalle del Gasto
+                    </h5>
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'expenses:update' expense.pk %}" class="btn btn-outline-primary">
+                            <i class="bi bi-pencil me-1"></i>Editar
+                        </a>
+                        <a href="{% url 'expenses:delete' expense.pk %}" class="btn btn-outline-danger">
+                            <i class="bi bi-trash me-1"></i>Eliminar
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Monto destacado -->
+                    <div class="text-center mb-4 pb-4 border-bottom">
+                        <p class="text-muted mb-1">Monto</p>
+                        <h1 class="display-5 text-danger mb-0">{{ expense.formatted_amount }}</h1>
+                        {% if expense.currency != 'ARS' %}
+                        <small class="text-muted">{{ expense.formatted_amount_ars }} (TC: {{ expense.exchange_rate }})</small>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Detalles -->
+                    <dl class="row">
+                        <dt class="col-sm-4 text-muted">Descripción</dt>
+                        <dd class="col-sm-8">{{ expense.description }}</dd>
+                        
+                        <dt class="col-sm-4 text-muted">Fecha</dt>
+                        <dd class="col-sm-8">{{ expense.date|date:"l, d M Y" }}</dd>
+                        
+                        <dt class="col-sm-4 text-muted">Categoría</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge" style="background-color: {{ expense.category.color|default:'#6c757d' }}">
+                                {% if expense.category.icon %}
+                                <i class="{{ expense.category.icon }} me-1"></i>
+                                {% endif %}
+                                {{ expense.category.name }}
+                            </span>
+                        </dd>
+                        
+                        {% if expense.payment_method %}
+                        <dt class="col-sm-4 text-muted">Método de pago</dt>
+                        <dd class="col-sm-8">{{ expense.get_payment_method_display }}</dd>
+                        {% endif %}
+                        
+                        {% if expense.expense_type %}
+                        <dt class="col-sm-4 text-muted">Tipo</dt>
+                        <dd class="col-sm-8">{{ expense.get_expense_type_display }}</dd>
+                        {% endif %}
+                    </dl>
+                    
+                    <hr>
+                    
+                    <!-- Metadata -->
+                    <small class="text-muted">
+                        Creado: {{ expense.created_at|date:"d/m/Y H:i" }}
+                        {% if expense.updated_at != expense.created_at %}
+                        <br>Modificado: {{ expense.updated_at|date:"d/m/Y H:i" }}
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

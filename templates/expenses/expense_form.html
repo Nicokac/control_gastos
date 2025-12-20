@@ -1,21 +1,279 @@
 {% extends 'base.html' %}
 
-{% block title %}Nuevo Gasto - Control de Gastos{% endblock %}
+{% block title %}{% if is_edit %}Editar{% else %}Nuevo{% endif %} Gasto - Control de Gastos{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Estilos para el formulario optimizado */
+    .amount-input {
+        font-size: 2.5rem;
+        font-weight: bold;
+    }
+    
+    .amount-input input {
+        font-size: 2rem;
+        height: auto;
+        padding: 0.5rem 1rem;
+    }
+    
+    /* Categorías como grid de botones */
+    .category-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 0.75rem;
+    }
+    
+    .category-btn {
+        cursor: pointer;
+    }
+    
+    .category-btn input[type="radio"] {
+        display: none;
+    }
+    
+    .category-btn .btn {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem 0.5rem;
+        border: 2px solid #dee2e6;
+        transition: all 0.2s ease;
+    }
+    
+    .category-btn .btn i {
+        font-size: 1.5rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .category-btn .btn small {
+        font-size: 0.75rem;
+        text-align: center;
+        line-height: 1.2;
+    }
+    
+    .category-btn input[type="radio"]:checked + .btn {
+        border-color: var(--bs-danger);
+        background-color: rgba(220, 53, 69, 0.1);
+        color: var(--bs-danger);
+    }
+    
+    .category-btn:hover .btn {
+        border-color: var(--bs-danger);
+    }
+    
+    /* Exchange rate field */
+    .exchange-rate-field {
+        display: none;
+    }
+    
+    .exchange-rate-field.show {
+        display: block;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="mb-4">
-    <h1 class="h3 mb-0">
-        <i class="bi bi-plus-circle text-danger me-2"></i>Nuevo Gasto
-    </h1>
-</div>
-
-<div class="card">
-    <div class="card-body text-center py-5">
-        <i class="bi bi-clock-history display-1 text-muted mb-3"></i>
-        <p class="text-muted">El formulario de gastos estará disponible próximamente.</p>
-        <a href="{% url 'expenses:list' %}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i>Volver
-        </a>
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="mb-4">
+                <a href="{% url 'expenses:list' %}" class="text-muted text-decoration-none">
+                    <i class="bi bi-arrow-left me-1"></i>Volver a gastos
+                </a>
+                <h1 class="h3 mt-2">
+                    {% if is_edit %}
+                    <i class="bi bi-pencil text-primary me-2"></i>Editar Gasto
+                    {% else %}
+                    <i class="bi bi-plus-circle text-danger me-2"></i>Nuevo Gasto
+                    {% endif %}
+                </h1>
+            </div>
+            
+            <form method="post" novalidate id="expenseForm">
+                {% csrf_token %}
+                
+                <!-- Errores generales -->
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                    <p class="mb-0">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <!-- MONTO (campo principal, grande) -->
+                        <div class="mb-4">
+                            <label class="form-label">Monto</label>
+                            <div class="amount-input">
+                                <div class="input-group">
+                                    <span class="input-group-text fs-4">$</span>
+                                    <input type="number" 
+                                           name="amount" 
+                                           id="id_amount"
+                                           class="form-control form-control-lg text-end {% if form.amount.errors %}is-invalid{% endif %}"
+                                           placeholder="0.00"
+                                           step="0.01"
+                                           min="0.01"
+                                           value="{{ form.amount.value|default:'' }}"
+                                           autofocus
+                                           required>
+                                    <select name="currency" id="id_currency" class="form-select" style="max-width: 100px;">
+                                        <option value="ARS" {% if form.currency.value == 'ARS' %}selected{% endif %}>ARS</option>
+                                        <option value="USD" {% if form.currency.value == 'USD' %}selected{% endif %}>USD</option>
+                                    </select>
+                                </div>
+                                {% if form.amount.errors %}
+                                <div class="invalid-feedback d-block">{{ form.amount.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Exchange rate (solo visible si USD) -->
+                        <div class="mb-4 exchange-rate-field" id="exchangeRateField">
+                            <label class="form-label">Cotización del dólar</label>
+                            <div class="input-group" style="max-width: 200px;">
+                                <span class="input-group-text">1 USD =</span>
+                                <input type="number" 
+                                       name="exchange_rate" 
+                                       id="id_exchange_rate"
+                                       class="form-control text-end"
+                                       placeholder="1000.00"
+                                       step="0.01"
+                                       min="0.01"
+                                       value="{{ form.exchange_rate.value|default:'1.0000' }}">
+                                <span class="input-group-text">ARS</span>
+                            </div>
+                            {% if form.exchange_rate.errors %}
+                            <div class="text-danger small mt-1">{{ form.exchange_rate.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- CATEGORÍA (botones visuales) -->
+                        <div class="mb-4">
+                            <label class="form-label">Categoría</label>
+                            {% if form.category.errors %}
+                            <div class="text-danger small mb-2">{{ form.category.errors.0 }}</div>
+                            {% endif %}
+                            <div class="category-grid">
+                                {% for category in categories %}
+                                <label class="category-btn">
+                                    <input type="radio" 
+                                           name="category" 
+                                           value="{{ category.id }}"
+                                           {% if form.category.value|stringformat:"s" == category.id|stringformat:"s" %}checked{% endif %}
+                                           required>
+                                    <div class="btn btn-outline-secondary">
+                                        <i class="{{ category.icon|default:'bi-tag' }}" 
+                                           style="color: {{ category.color|default:'#6c757d' }}"></i>
+                                        <small>{{ category.name }}</small>
+                                    </div>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- FECHA y DESCRIPCIÓN -->
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label">Fecha</label>
+                                <input type="date" 
+                                       name="date" 
+                                       id="id_date"
+                                       class="form-control {% if form.date.errors %}is-invalid{% endif %}"
+                                       value="{{ form.date.value|date:'Y-m-d' }}"
+                                       required>
+                                {% if form.date.errors %}
+                                <div class="invalid-feedback">{{ form.date.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-8">
+                                <label class="form-label">Descripción</label>
+                                <input type="text" 
+                                       name="description" 
+                                       id="id_description"
+                                       class="form-control {% if form.description.errors %}is-invalid{% endif %}"
+                                       placeholder="Ej: Supermercado Coto, Nafta YPF..."
+                                       value="{{ form.description.value|default:'' }}"
+                                       required>
+                                {% if form.description.errors %}
+                                <div class="invalid-feedback">{{ form.description.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- CAMPOS OPCIONALES (colapsados por defecto) -->
+                        <div class="mb-4">
+                            <a class="text-decoration-none small" 
+                               data-bs-toggle="collapse" 
+                               href="#optionalFields"
+                               role="button">
+                                <i class="bi bi-chevron-down me-1"></i>Más opciones
+                            </a>
+                            <div class="collapse {% if form.payment_method.value or form.expense_type.value %}show{% endif %}" 
+                                 id="optionalFields">
+                                <div class="row mt-3 pt-3 border-top">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label text-muted">Método de pago</label>
+                                        <select name="payment_method" class="form-select">
+                                            <option value="">-- Opcional --</option>
+                                            <option value="CASH" {% if form.payment_method.value == 'CASH' %}selected{% endif %}>Efectivo</option>
+                                            <option value="DEBIT" {% if form.payment_method.value == 'DEBIT' %}selected{% endif %}>Tarjeta de Débito</option>
+                                            <option value="CREDIT" {% if form.payment_method.value == 'CREDIT' %}selected{% endif %}>Tarjeta de Crédito</option>
+                                            <option value="TRANSFER" {% if form.payment_method.value == 'TRANSFER' %}selected{% endif %}>Transferencia</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label text-muted">Tipo de gasto</label>
+                                        <select name="expense_type" class="form-select">
+                                            <option value="">-- Opcional --</option>
+                                            <option value="FIXED" {% if form.expense_type.value == 'FIXED' %}selected{% endif %}>Fijo</option>
+                                            <option value="VARIABLE" {% if form.expense_type.value == 'VARIABLE' %}selected{% endif %}>Variable</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- BOTÓN SUBMIT -->
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="{% url 'expenses:list' %}" class="btn btn-outline-secondary">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-danger btn-lg px-5">
+                        <i class="bi bi-check-lg me-2"></i>
+                        {% if is_edit %}Guardar Cambios{% else %}Registrar Gasto{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const currencySelect = document.getElementById('id_currency');
+    const exchangeRateField = document.getElementById('exchangeRateField');
+    
+    function toggleExchangeRate() {
+        if (currencySelect.value === 'USD') {
+            exchangeRateField.classList.add('show');
+        } else {
+            exchangeRateField.classList.remove('show');
+        }
+    }
+    
+    currencySelect.addEventListener('change', toggleExchangeRate);
+    toggleExchangeRate(); // Estado inicial
+});
+</script>
 {% endblock %}
