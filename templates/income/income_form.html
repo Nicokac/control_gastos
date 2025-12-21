@@ -3,73 +3,6 @@
 
 {% block title %}{% if is_edit %}Editar{% else %}Nuevo{% endif %} Ingreso - Control de Gastos{% endblock %}
 
-{% block extra_css %}
-<style>
-    /* Estilos para el formulario optimizado */
-    .amount-input input {
-        font-size: 2rem;
-        height: auto;
-        padding: 0.5rem 1rem;
-    }
-    
-    /* Categorías como grid de botones */
-    .category-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 0.75rem;
-    }
-    
-    .category-btn {
-        cursor: pointer;
-    }
-    
-    .category-btn input[type="radio"] {
-        display: none;
-    }
-    
-    .category-btn .btn {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 1rem 0.5rem;
-        border: 2px solid #dee2e6;
-        transition: all 0.2s ease;
-    }
-    
-    .category-btn .btn i {
-        font-size: 1.5rem;
-        margin-bottom: 0.25rem;
-    }
-    
-    .category-btn .btn small {
-        font-size: 0.75rem;
-        text-align: center;
-        line-height: 1.2;
-    }
-    
-    .category-btn input[type="radio"]:checked + .btn {
-        border-color: var(--bs-success);
-        background-color: rgba(25, 135, 84, 0.1);
-        color: var(--bs-success);
-    }
-    
-    .category-btn:hover .btn {
-        border-color: var(--bs-success);
-    }
-    
-    /* Exchange rate field */
-    .exchange-rate-field {
-        display: none;
-    }
-    
-    .exchange-rate-field.show {
-        display: block;
-    }
-</style>
-{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
@@ -134,7 +67,7 @@
                         <!-- Exchange rate (solo visible si USD) -->
                         <div class="mb-4 exchange-rate-field" id="exchangeRateField">
                             <label class="form-label">Cotización del dólar</label>
-                            <div class="input-group" style="max-width: 200px;">
+                            <div class="input-group" style="max-width: 250px;">
                                 <span class="input-group-text">1 USD =</span>
                                 <input type="number" 
                                        name="exchange_rate" 
