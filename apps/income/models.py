@@ -69,6 +69,18 @@ class Income(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
                 'amount': 'El monto debe ser mayor a cero.'
             })
         
+        # Validar que la categoría sea de tipo INCOME (seguridad para admin/shell)
+        if self.category_id:
+            from apps.categories.models import Category
+            try:
+                category = Category.objects.get(pk=self.category_id)
+                if category.type != CategoryType.INCOME:
+                    raise ValidationError({
+                        'category': 'La categoría debe ser de tipo Ingreso.'
+                    })
+            except Category.DoesNotExist:
+                pass
+        
     def save(self, *args, **kwargs):
         """Ejecuta validaciones antes de guardar."""
         self.full_clean()
