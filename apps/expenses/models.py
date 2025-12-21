@@ -77,6 +77,19 @@ class Expense(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
             raise ValidationError({
                 'amount': 'El monto debe ser mayor a cero.'
             })
+        
+        # Validar que la categoría sea de tipo EXPENSE (seguridad para admin/shell)
+        if self.category_id:
+            from apps.categories.models import Category
+            from apps.core.constants import CategoryType
+            try:
+                category = Category.objects.get(pk=self.category_id)
+                if category.type != CategoryType.EXPENSE:
+                    raise ValidationError({
+                        'category': 'La categoría debe ser de tipo Gasto.'
+                    })
+            except Category.DoesNotExist:
+                pass
             
     def save(self, *args, **kwargs):
         """Ejecuta validacioines antes de guardar."""
