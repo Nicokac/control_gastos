@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{% if is_edit %}Editar{% else %}Nuevo{% endif %} Gasto - Control de Gastos{% endblock %}
 
@@ -260,21 +261,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const currencySelect = document.getElementById('id_currency');
-    const exchangeRateField = document.getElementById('exchangeRateField');
-    
-    function toggleExchangeRate() {
-        if (currencySelect.value === 'USD') {
-            exchangeRateField.classList.add('show');
-        } else {
-            exchangeRateField.classList.remove('show');
-        }
-    }
-    
-    currencySelect.addEventListener('change', toggleExchangeRate);
-    toggleExchangeRate(); // Estado inicial
-});
-</script>
+<script src="{% static 'js/expense_form.js' %}"></script>
 {% endblock %}
