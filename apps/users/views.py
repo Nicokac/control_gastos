@@ -21,7 +21,7 @@ class CustomLoginView(LoginView):
     redirect_authenticated_user = True
 
     def get_success_url(self):
-        return reverse_lazy('reports:dashboard')
+        return reverse_lazy('categories:list')
     
     def form_valid(self, form):
         messages.success(

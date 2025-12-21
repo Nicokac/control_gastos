@@ -124,9 +124,12 @@ class ExpenseForm(forms.ModelForm):
             return Decimal('1.0000')
         
         # Si es USD y no hay exchange_rate, error
-        if currency == Currency.USD and (not exchange_rate or exchange_rate <= 0):
-            raise forms.ValidationError('Ingresá la cotización del dólar.')
-        
+        if currency == Currency.USD:
+            if not exchange_rate:
+                raise forms.ValidationError('Ingresá la cotización del dólar.')
+            if exchange_rate <= 0:
+                raise forms.ValidationError('La cotización debe ser mayor a cero.')
+            
         return exchange_rate or Decimal('1.0000')
     
     def clean(self):
