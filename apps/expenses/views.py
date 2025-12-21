@@ -33,12 +33,22 @@ class ExpenseListView(LoginRequiredMixin, ListView):
         year = self.request.GET.get('year')
         category = self.request.GET.get('category')
         
-        if month:
-            queryset = queryset.filter(date__month=month)
-        if year:
-            queryset = queryset.filter(date__year=year)
-        if category:
-            queryset = queryset.filter(category_id=category)
+        try:
+            if month:
+                month = int(month)
+                if 1 <= month <= 12:
+                    queryset = queryset.filter(date__month=month)
+
+            if year:
+                year = int(year)
+                if 1900 <= year <= 2100:
+                    queryset = queryset.filter(date_year=year)
+
+            if category:
+                category = int(category)
+                queryset = queryset.filter(category_id=category)
+        except (ValueError, TypeError):
+            pass 
         
         return queryset
 
