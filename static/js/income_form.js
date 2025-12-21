@@ -14,22 +14,40 @@ document.addEventListener('DOMContentLoaded', function() {
 
 /**
  * Toggle del campo exchange rate según la moneda seleccionada
+ * 
+ * - USD: muestra el campo y lo habilita
+ * - ARS: oculta el campo, lo deshabilita y limpia el valor
  */
 function initExchangeRateToggle() {
     const currencySelect = document.getElementById('id_currency');
     const exchangeRateField = document.getElementById('exchangeRateField');
-    
-    if (!currencySelect || !exchangeRateField) return;
-    
+    const exchangeRateInput = document.getElementById('id_exchange_rate');
+
+    if (!currencySelect || !exchangeRateField || !exchangeRateInput) return;
+
     function toggleExchangeRate() {
-        if (currencySelect.value === 'USD') {
-            exchangeRateField.classList.add('show');
-        } else {
-            exchangeRateField.classList.remove('show');
+        const isUSD = currencySelect.value === 'USD';
+        
+        // Toggle visibilidad con d-none de Bootstrap
+        exchangeRateField.classList.toggle('d-none', !isUSD);
+        
+        // Deshabilitar input cuando es ARS (no se envía al servidor)
+        exchangeRateInput.disabled = !isUSD;
+        
+        // Limpiar valor cuando cambia a ARS
+        if (!isUSD) {
+            exchangeRateInput.value = '';
+        }
+        
+        // Focus en el campo si es USD y está vacío
+        if (isUSD && !exchangeRateInput.value) {
+            exchangeRateInput.focus();
         }
     }
-    
+
     currencySelect.addEventListener('change', toggleExchangeRate);
+    
+    // Estado inicial
     toggleExchangeRate();
 }
 
