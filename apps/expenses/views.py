@@ -152,13 +152,13 @@ class ExpenseDeleteView(LoginRequiredMixin, DeleteView):
         return HttpResponseRedirect(self.success_url)
 
 
-    class ExpenseDetailView(LoginRequiredMixin, DetailView):
-        """Ver detalle de un gasto."""
+class ExpenseDetailView(LoginRequiredMixin, DetailView):
+    """Ver detalle de un gasto."""
+    
+    model = Expense
+    template_name = 'expenses/expense_detail.html'
+    context_object_name = 'expense'
 
-        model = Expense
-        template_name = 'expense/expense_detail.html'
-        context_object_name = 'expense'
-
-        def get_queryset(self):
-            """Solo permite ver gastos propios."""
-            return Expense.ojects.filter(user=self.request.user).select_related('category')
+    def get_queryset(self):
+        """Solo permite ver gastos propios."""
+        return Expense.objects.filter(user=self.request.user).select_related('category')
