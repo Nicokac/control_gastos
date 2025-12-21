@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Ingreso - Control de Gastos{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Confirmar Eliminación
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="lead">¿Estás seguro de que querés eliminar este ingreso?</p>
+                    
+                    <div class="bg-light p-3 rounded mb-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ object.description }}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    {{ object.date|date:"d/m/Y" }} - {{ object.category.name }}
+                                </small>
+                            </div>
+                            <div class="text-success h4 mb-0">
+                                {{ object.formatted_amount }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash me-1"></i>Sí, eliminar
+                            </button>
+                            <a href="{% url 'income:list' %}" class="btn btn-outline-secondary">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
