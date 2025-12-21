@@ -93,8 +93,16 @@ function initFormValidation() {
         
         if (!isValid) {
             e.preventDefault();
+            
+            // Mostrar toast de error
+            if (typeof showToast === 'function') {
+                showToast('Por favor completá todos los campos requeridos', 'danger');
+            }
+            
             if (firstError && firstError.focus) {
                 firstError.focus();
+            } else if (firstError && firstError.scrollIntoView) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }
     });
