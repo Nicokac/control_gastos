@@ -14,13 +14,12 @@ from .forms import IncomeForm, IncomeFilterForm
 from apps.categories.models import Category
 
 
-# Create your views here.
 class IncomeListView(LoginRequiredMixin, ListView):
-    """List de ingresos jdel usuario con filtros."""
-
+    """Lista de ingresos del usuario con filtros."""
+    
     model = Income
     template_name = 'income/income_list.html'
-    context_name = 'income'
+    context_object_name = 'incomes'
     paginate_by = 20
 
     def get_queryset(self):
@@ -28,56 +27,56 @@ class IncomeListView(LoginRequiredMixin, ListView):
         queryset = Income.objects.filter(
             user=self.request.user
         ).select_related('category')
-
+        
         # Aplicar filtros con validación
         month = self.request.GET.get('month')
         year = self.request.GET.get('year')
         category = self.request.GET.get('category')
-
+        
         try:
             if month:
                 month = int(month)
                 if 1 <= month <= 12:
                     queryset = queryset.filter(date__month=month)
-
+            
             if year:
                 year = int(year)
                 if 1900 <= year <= 2100:
                     queryset = queryset.filter(date__year=year)
-
+            
             if category:
                 category = int(category)
                 queryset = queryset.filter(category_id=category)
         except (ValueError, TypeError):
-            pass # Ignorar parámetros inválidos
-
+            pass  # Ignorar parámetros inválidos
+        
         return queryset
-    
+
     def get_context_data(self, **kwargs):
         """Agrega datos adicionales al contexto."""
         context = super().get_context_data(**kwargs)
-
+        
         # Formulario de filtros
         context['filter_form'] = IncomeFilterForm(
             data=self.request.GET or None,
             user=self.request.user
         )
-
+        
         # Total del período filtrado
         queryset = self.get_queryset()
         context['total'] = queryset.aggregate(total=Sum('amount_ars'))['total'] or 0
-
+        
         # Mes y año actual para defaults
         today = timezone.now().date()
         context['current_month'] = today.month
         context['current_year'] = today.year
-
+        
         return context
 
 
 class IncomeCreateView(LoginRequiredMixin, CreateView):
     """Crear nuevo ingreso."""
-
+    
     model = Income
     form_class = IncomeForm
     template_name = 'income/income_form.html'
@@ -88,22 +87,23 @@ class IncomeCreateView(LoginRequiredMixin, CreateView):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
-    
+
     def get_context_data(self, **kwargs):
         """Agrega categorías para los botones visuales."""
         context = super().get_context_data(**kwargs)
+        context['categories'] = Category.get_income_categories(self.request.user)
         context['is_edit'] = False
         return context
-    
+
     def form_valid(self, form):
         """Guarda y muestra mensaje de éxito."""
         response = super().form_valid(form)
         messages.success(
-            self.request,
-            f'Ingreso registrado: {self.object.decription} - {self.object.formatted_amount}'
+            self.request, 
+            f'Ingreso registrado: {self.object.description} - {self.object.formatted_amount}'
         )
         return response
-    
+
     def form_invalid(self, form):
         """Muestra errores."""
         messages.error(self.request, 'Corregí los errores del formulario.')
@@ -112,7 +112,7 @@ class IncomeCreateView(LoginRequiredMixin, CreateView):
 
 class IncomeUpdateView(LoginRequiredMixin, UpdateView):
     """Editar ingreso existente."""
-
+    
     model = Income
     form_class = IncomeForm
     template_name = 'income/income_form.html'
@@ -121,20 +121,20 @@ class IncomeUpdateView(LoginRequiredMixin, UpdateView):
     def get_queryset(self):
         """Solo permite editar ingresos propios."""
         return Income.objects.filter(user=self.request.user)
-    
+
     def get_form_kwargs(self):
         """Pasa el usuario al formulario."""
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
-    
+
     def get_context_data(self, **kwargs):
         """Agrega categorías para los botones visuales."""
         context = super().get_context_data(**kwargs)
         context['categories'] = Category.get_income_categories(self.request.user)
         context['is_edit'] = True
         return context
-    
+
     def form_valid(self, form):
         """Guarda y muestra mensaje de éxito."""
         response = super().form_valid(form)
