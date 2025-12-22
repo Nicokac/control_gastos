@@ -65,18 +65,19 @@
                         </div>
                         
                         <!-- Exchange rate (solo visible si USD) -->
-                        <div class="mb-4 exchange-rate-field" id="exchangeRateField">
+                        <div class="mb-4 {% if form.currency.value != 'USD' %}d-none{% endif %}" id="exchangeRateField">
                             <label class="form-label">Cotización del dólar</label>
                             <div class="input-group" style="max-width: 250px;">
                                 <span class="input-group-text">1 USD =</span>
                                 <input type="number" 
                                        name="exchange_rate" 
                                        id="id_exchange_rate"
-                                       class="form-control text-end"
+                                       class="form-control text-end {% if form.exchange_rate.errors %}is-invalid{% endif %}"
                                        placeholder="1000.00"
                                        step="0.01"
                                        min="0.01"
-                                       value="{{ form.exchange_rate.value|default:'1.0000' }}">
+                                       value="{{ form.exchange_rate.value|default:'' }}"
+                                       {% if form.currency.value != 'USD' %}disabled{% endif %}>
                                 <span class="input-group-text">ARS</span>
                             </div>
                             {% if form.exchange_rate.errors %}
