@@ -42,7 +42,7 @@ class ExpenseListView(LoginRequiredMixin, ListView):
             if year:
                 year = int(year)
                 if 1900 <= year <= 2100:
-                    queryset = queryset.filter(date_year=year)
+                    queryset = queryset.filter(date__year=year)
 
             if category:
                 category = int(category)

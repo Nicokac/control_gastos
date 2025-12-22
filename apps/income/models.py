@@ -48,7 +48,7 @@ class Income(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
 
     class Meta:
         verbose_name = 'Ingreso'
-        verbose_name_plural = 'Ingreso'
+        verbose_name_plural = 'Ingresos'
         ordering = ['-date', '-created_at']
         indexes = [
             models.Index(fields=['user', 'date']),
@@ -157,5 +157,5 @@ class Income(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
             'category__icon',
             'category__color',
         ).annotate(
-            total=Sum('amount.ars')
+            total=Sum('amount_ars')
         ).order_by('-total')
