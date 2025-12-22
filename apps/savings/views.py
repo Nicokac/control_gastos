@@ -23,13 +23,18 @@ class SavingListView(LoginRequiredMixin, ListView):
     context_object_name = 'savings'
 
     def get_queryset(self):
-        """Filtra metas del usuario actual."""
+        """Filtra metas del usuario actual con validación de parámetros."""
         queryset = Saving.objects.filter(user=self.request.user)
         
-        # Aplicar filtro de estado
+        # Aplicar filtro de estado con validación
         status = self.request.GET.get('status')
+        
         if status:
-            queryset = queryset.filter(status=status)
+            # Validar que sea un status válido
+            valid_statuses = [s[0] for s in SavingStatus.choices]
+            if status in valid_statuses:
+                queryset = queryset.filter(status=status)
+            # Si no es válido, ignorar el filtro
         
         return queryset
 
