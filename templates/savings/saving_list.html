@@ -1,21 +1,159 @@
 {% extends 'base.html' %}
 
-{% block title %}Gastos - Control de Gastos{% endblock %}
+{% block title %}Ahorro - Control de Gastos{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="h3 mb-0">
-        <i class="bi bi-arrow-up-circle text-danger me-2"></i>Gastos
+        <i class="bi bi-piggy-bank text-info me-2"></i>Metas de Ahorro
     </h1>
-    <a href="{% url 'expenses:create' %}" class="btn btn-danger">
-        <i class="bi bi-plus-lg me-1"></i>Nuevo Gasto
+    <a href="{% url 'savings:create' %}" class="btn btn-info">
+        <i class="bi bi-plus-lg me-1"></i>Nueva Meta
     </a>
 </div>
 
-<div class="card">
-    <div class="card-body text-center py-5">
-        <i class="bi bi-inbox display-1 text-muted mb-3"></i>
-        <p class="text-muted">Esta sección estará disponible próximamente.</p>
+<!-- Resumen -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-info h-100">
+            <div class="card-body text-center">
+                <p class="text-muted mb-1">Total Ahorrado</p>
+                <h3 class="text-info mb-0">$ {{ total_saved|floatformat:2|default:"0.00" }}</h3>
+            </div>
+        </div>
     </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <p class="text-muted mb-1">Metas Activas</p>
+                <h3 class="mb-0">{{ active_count }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-success h-100">
+            <div class="card-body text-center">
+                <p class="text-muted mb-1">Completadas</p>
+                <h3 class="text-success mb-0">{{ completed_count }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small text-muted">Estado</label>
+                {{ filter_form.status }}
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-outline-primary btn-sm w-100">
+                    <i class="bi bi-funnel me-1"></i>Filtrar
+                </button>
+            </div>
+            <div class="col-md-2">
+                <a href="{% url 'savings:list' %}" class="btn btn-outline-secondary btn-sm w-100">
+                    <i class="bi bi-x-lg me-1"></i>Limpiar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Lista de metas -->
+<div class="row g-4">
+    {% for saving in savings %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 {% if saving.is_completed %}border-success{% elif saving.is_overdue %}border-warning{% endif %}">
+            <div class="card-header d-flex justify-content-between align-items-center" 
+                 style="background-color: {{ saving.color }}20;">
+                <div class="d-flex align-items-center">
+                    <i class="{{ saving.icon }} fs-4 me-2" style="color: {{ saving.color }};"></i>
+                    <h6 class="mb-0">{{ saving.name }}</h6>
+                </div>
+                {% if saving.is_completed %}
+                <span class="badge bg-success">
+                    <i class="bi bi-check-circle me-1"></i>Completada
+                </span>
+                {% elif saving.is_overdue %}
+                <span class="badge bg-warning text-dark">
+                    <i class="bi bi-exclamation-triangle me-1"></i>Vencida
+                </span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <!-- Progreso -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <small class="text-muted">Progreso</small>
+                        <small class="fw-bold">{{ saving.progress_percentage }}%</small>
+                    </div>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar" 
+                             role="progressbar" 
+                             style="width: {{ saving.progress_percentage }}%; background-color: {{ saving.color }};"
+                             aria-valuenow="{{ saving.progress_percentage }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Montos -->
+                <div class="row text-center mb-3">
+                    <div class="col-6 border-end">
+                        <small class="text-muted d-block">Actual</small>
+                        <strong class="text-info">{{ saving.formatted_current }}</strong>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">Objetivo</small>
+                        <strong>{{ saving.formatted_target }}</strong>
+                    </div>
+                </div>
+                
+                {% if saving.target_date %}
+                <div class="text-center mb-3">
+                    <small class="text-muted">
+                        <i class="bi bi-calendar me-1"></i>
+                        Meta: {{ saving.target_date|date:"d M Y" }}
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-transparent">
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'savings:detail' saving.pk %}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-eye me-1"></i>Ver
+                    </a>
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'savings:add_movement' saving.pk %}" class="btn btn-info" title="Agregar movimiento">
+                            <i class="bi bi-plus-lg"></i>
+                        </a>
+                        <a href="{% url 'savings:update' saving.pk %}" class="btn btn-outline-secondary" title="Editar">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'savings:delete' saving.pk %}" class="btn btn-outline-danger" title="Eliminar">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-piggy-bank display-4 text-muted"></i>
+                <p class="text-muted mt-2 mb-0">No tenés metas de ahorro.</p>
+                <a href="{% url 'savings:create' %}" class="btn btn-info btn-sm mt-3">
+                    <i class="bi bi-plus-lg me-1"></i>Crear primera meta
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
 </div>
 {% endblock %}

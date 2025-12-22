@@ -1,21 +1,206 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Nuevo Gasto - Control de Gastos{% endblock %}
+{% block title %}{% if is_edit %}Editar{% else %}Nueva{% endif %} Meta de Ahorro - Control de Gastos{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Icon selector */
+    .icon-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .icon-option {
+        cursor: pointer;
+    }
+    
+    .icon-option input[type="radio"] {
+        display: none;
+    }
+    
+    .icon-option .btn {
+        width: 100%;
+        padding: 0.75rem;
+        font-size: 1.25rem;
+    }
+    
+    .icon-option input[type="radio"]:checked + .btn {
+        background-color: var(--bs-info);
+        color: white;
+        border-color: var(--bs-info);
+    }
+    
+    /* Color selector */
+    .color-grid {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .color-option {
+        cursor: pointer;
+    }
+    
+    .color-option input[type="radio"] {
+        display: none;
+    }
+    
+    .color-option .color-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 3px solid transparent;
+        transition: all 0.2s ease;
+    }
+    
+    .color-option input[type="radio"]:checked + .color-btn {
+        border-color: #333;
+        transform: scale(1.1);
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="mb-4">
-    <h1 class="h3 mb-0">
-        <i class="bi bi-plus-circle text-danger me-2"></i>Nuevo Gasto
-    </h1>
-</div>
-
-<div class="card">
-    <div class="card-body text-center py-5">
-        <i class="bi bi-clock-history display-1 text-muted mb-3"></i>
-        <p class="text-muted">El formulario de gastos estará disponible próximamente.</p>
-        <a href="{% url 'expenses:list' %}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left me-1"></i>Volver
-        </a>
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="mb-4">
+                <a href="{% url 'savings:list' %}" class="text-muted text-decoration-none">
+                    <i class="bi bi-arrow-left me-1"></i>Volver a metas
+                </a>
+                <h1 class="h3 mt-2">
+                    {% if is_edit %}
+                    <i class="bi bi-pencil text-primary me-2"></i>Editar Meta
+                    {% else %}
+                    <i class="bi bi-piggy-bank text-info me-2"></i>Nueva Meta de Ahorro
+                    {% endif %}
+                </h1>
+            </div>
+            
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                <!-- Errores generales -->
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                    <p class="mb-0">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <!-- Nombre -->
+                        <div class="mb-4">
+                            <label class="form-label">Nombre de la meta</label>
+                            <input type="text" 
+                                   name="name" 
+                                   class="form-control {% if form.name.errors %}is-invalid{% endif %}"
+                                   placeholder="Ej: Vacaciones, Auto nuevo, Fondo de emergencia..."
+                                   value="{{ form.name.value|default:'' }}"
+                                   autofocus
+                                   required>
+                            {% if form.name.errors %}
+                            <div class="invalid-feedback">{{ form.name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Descripción -->
+                        <div class="mb-4">
+                            <label class="form-label">Descripción <small class="text-muted">(opcional)</small></label>
+                            <textarea name="description" 
+                                      class="form-control" 
+                                      rows="2"
+                                      placeholder="Descripción opcional...">{{ form.description.value|default:'' }}</textarea>
+                        </div>
+                        
+                        <!-- Monto objetivo y moneda -->
+                        <div class="row mb-4">
+                            <div class="col-md-8">
+                                <label class="form-label">Monto objetivo</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" 
+                                           name="target_amount" 
+                                           class="form-control form-control-lg text-end {% if form.target_amount.errors %}is-invalid{% endif %}"
+                                           placeholder="0.00"
+                                           step="0.01"
+                                           min="0.01"
+                                           value="{{ form.target_amount.value|default:'' }}"
+                                           required>
+                                    <select name="currency" class="form-select" style="max-width: 100px;">
+                                        <option value="ARS" {% if form.currency.value == 'ARS' %}selected{% endif %}>ARS</option>
+                                        <option value="USD" {% if form.currency.value == 'USD' %}selected{% endif %}>USD</option>
+                                    </select>
+                                </div>
+                                {% if form.target_amount.errors %}
+                                <div class="text-danger small mt-1">{{ form.target_amount.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Fecha objetivo <small class="text-muted">(opcional)</small></label>
+                                <input type="date" 
+                                       name="target_date" 
+                                       class="form-control {% if form.target_date.errors %}is-invalid{% endif %}"
+                                       value="{{ form.target_date.value|date:'Y-m-d'|default:'' }}">
+                                {% if form.target_date.errors %}
+                                <div class="invalid-feedback">{{ form.target_date.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Ícono -->
+                        <div class="mb-4">
+                            <label class="form-label">Ícono</label>
+                            <div class="icon-grid">
+                                {% for value, label in form.icon.field.choices %}
+                                <label class="icon-option">
+                                    <input type="radio" 
+                                           name="icon" 
+                                           value="{{ value }}"
+                                           {% if form.icon.value == value %}checked{% endif %}>
+                                    <div class="btn btn-outline-secondary" title="{{ label }}">
+                                        <i class="{{ value }}"></i>
+                                    </div>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Color -->
+                        <div class="mb-4">
+                            <label class="form-label">Color</label>
+                            <div class="color-grid">
+                                {% for value, label in form.color.field.choices %}
+                                <label class="color-option">
+                                    <input type="radio" 
+                                           name="color" 
+                                           value="{{ value }}"
+                                           {% if form.color.value == value %}checked{% endif %}>
+                                    <div class="color-btn" style="background-color: {{ value }};" title="{{ label }}"></div>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Botones -->
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="{% url 'savings:list' %}" class="btn btn-outline-secondary">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-info btn-lg px-5">
+                        <i class="bi bi-check-lg me-2"></i>
+                        {% if is_edit %}Guardar Cambios{% else %}Crear Meta{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}

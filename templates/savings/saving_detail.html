@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ saving.name }} - Control de Gastos{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="mb-4">
+                <a href="{% url 'savings:list' %}" class="text-muted text-decoration-none">
+                    <i class="bi bi-arrow-left me-1"></i>Volver a metas
+                </a>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center"
+                     style="background-color: {{ saving.color }}20;">
+                    <div class="d-flex align-items-center">
+                        <i class="{{ saving.icon }} fs-3 me-3" style="color: {{ saving.color }};"></i>
+                        <div>
+                            <h4 class="mb-0">{{ saving.name }}</h4>
+                            {% if saving.description %}
+                            <small class="text-muted">{{ saving.description }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <a href="{% url 'savings:update' saving.pk %}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-pencil me-1"></i>Editar
+                        </a>
+                        <a href="{% url 'savings:delete' saving.pk %}" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-trash me-1"></i>Eliminar
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Estado y progreso -->
+                    <div class="text-center mb-4">
+                        {% if saving.is_completed %}
+                        <span class="badge bg-success fs-6 mb-3">
+                            <i class="bi bi-check-circle me-1"></i>Meta Completada
+                        </span>
+                        {% elif saving.is_overdue %}
+                        <span class="badge bg-warning text-dark fs-6 mb-3">
+                            <i class="bi bi-exclamation-triangle me-1"></i>Fecha Vencida
+                        </span>
+                        {% endif %}
+                        
+                        <div class="display-4 mb-2" style="color: {{ saving.color }};">
+                            {{ saving.progress_percentage }}%
+                        </div>
+                        
+                        <div class="progress mb-3" style="height: 20px;">
+                            <div class="progress-bar" 
+                                 role="progressbar" 
+                                 style="width: {{ saving.progress_percentage }}%; background-color: {{ saving.color }};">
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-4 text-start">
+                                <small class="text-muted d-block">Actual</small>
+                                <strong class="text-info">{{ saving.formatted_current }}</strong>
+                            </div>
+                            <div class="col-4 text-center">
+                                <small class="text-muted d-block">Restante</small>
+                                <strong>{{ saving.formatted_remaining }}</strong>
+                            </div>
+                            <div class="col-4 text-end">
+                                <small class="text-muted d-block">Objetivo</small>
+                                <strong>{{ saving.formatted_target }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if saving.target_date %}
+                    <div class="text-center mb-4 pb-4 border-bottom">
+                        <small class="text-muted">
+                            <i class="bi bi-calendar me-1"></i>
+                            Fecha objetivo: {{ saving.target_date|date:"d M Y" }}
+                        </small>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Botón agregar movimiento -->
+                    {% if saving.status == 'ACTIVE' %}
+                    <div class="d-grid">
+                        <a href="{% url 'savings:add_movement' saving.pk %}" class="btn btn-info btn-lg">
+                            <i class="bi bi-plus-lg me-2"></i>Agregar Movimiento
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Historial de movimientos -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-clock-history me-2"></i>Historial de Movimientos
+                </div>
+                <div class="card-body p-0">
+                    {% if movements %}
+                    <ul class="list-group list-group-flush">
+                        {% for movement in movements %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi {% if movement.is_deposit %}bi-arrow-down-circle text-success{% else %}bi-arrow-up-circle text-danger{% endif %} me-2"></i>
+                                <span>{{ movement.description|default:movement.get_type_display }}</span>
+                                <br>
+                                <small class="text-muted">{{ movement.date|date:"d M Y" }}</small>
+                            </div>
+                            <span class="{% if movement.is_deposit %}text-success{% else %}text-danger{% endif %} fw-bold">
+                                {{ movement.formatted_amount }}
+                            </span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-inbox display-6 text-muted"></i>
+                        <p class="text-muted mt-2 mb-0">No hay movimientos registrados.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
