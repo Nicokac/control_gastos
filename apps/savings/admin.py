@@ -7,11 +7,27 @@ from .models import Saving, SavingMovement
 
 
 class SavingMovementInline(admin.TabularInline):
-    """Inline para movimientos de ahorro."""
+    """
+    Inline para movimientos de ahorro.
+    
+    Los movimientos son de solo lectura para proteger la integridad
+    de current_amount. Los movimientos deben crearse solo a través
+    de add_deposit() y add_withdrawal().
+    """
     model = SavingMovement
     extra = 0
-    readonly_fields = ('date', 'created_at')
-    fields = ('type', 'amount', 'description', 'date')
+    readonly_fields = ('type', 'amount', 'description', 'date', 'created_at')
+    fields = ('type', 'amount', 'description', 'date', 'created_at')
+    can_delete = False
+    ordering = ('-date', '-created_at')
+    
+    def has_add_permission(self, request, obj=None):
+        """No permitir agregar movimientos desde admin."""
+        return False
+    
+    def has_change_permission(self, request, obj=None):
+        """No permitir editar movimientos desde admin."""
+        return False
 
 
 @admin.register(Saving)
@@ -71,12 +87,18 @@ class SavingAdmin(admin.ModelAdmin):
 
 @admin.register(SavingMovement)
 class SavingMovementAdmin(admin.ModelAdmin):
+    """
+    Admin para movimientos de ahorro.
+    
+    Solo lectura para proteger la integridad de los datos.
+    """
     list_display = (
         'saving',
         'type',
         'formatted_amount',
         'description',
         'date',
+        'created_at',
     )
     list_filter = (
         'type',
@@ -89,4 +111,16 @@ class SavingMovementAdmin(admin.ModelAdmin):
     )
     ordering = ('-date', '-created_at')
     
-    readonly_fields = ('date', 'created_at', 'updated_at')
+    readonly_fields = ('saving', 'type', 'amount', 'description', 'date', 'created_at', 'updated_at')
+    
+    def has_add_permission(self, request):
+        """No permitir agregar movimientos desde admin."""
+        return False
+    
+    def has_change_permission(self, request, obj=None):
+        """No permitir editar movimientos desde admin."""
+        return False
+    
+    def has_delete_permission(self, request, obj=None):
+        """No permitir eliminar movimientos desde admin."""
+        return False
