@@ -6,6 +6,7 @@ from django.db import models
 from django.core.validators import MinValueValidator
 from django.core.exceptions import ValidationError
 from decimal import Decimal
+from django.db.models import F
 
 from apps.core.mixins import TimestampMixin, SoftDeleteMixin
 from apps.core.constants import Currency
@@ -116,13 +117,8 @@ class Saving(TimestampMixin, SoftDeleteMixin, models.Model):
             })
 
     def save(self, *args, **kwargs):
-        """Ejecuta validaciones y actualiza estado."""
+        """Ejecuta validaciones antes de guardar."""
         self.full_clean()
-        
-        # Auto-completar si alcanzó la meta
-        if self.current_amount >= self.target_amount and self.status == SavingStatus.ACTIVE:
-            self.status = SavingStatus.COMPLETED
-        
         super().save(*args, **kwargs)
 
     @property
@@ -174,6 +170,8 @@ class Saving(TimestampMixin, SoftDeleteMixin, models.Model):
         """
         Agrega un depósito a la meta de ahorro.
         
+        Usa F() expressions para evitar race conditions.
+        
         Args:
             amount: Monto a depositar
             description: Descripción opcional
@@ -184,6 +182,7 @@ class Saving(TimestampMixin, SoftDeleteMixin, models.Model):
         if amount <= 0:
             raise ValueError('El monto debe ser mayor a cero.')
         
+        # Crear el movimiento
         movement = SavingMovement.objects.create(
             saving=self,
             type=MovementType.DEPOSIT,
@@ -191,8 +190,18 @@ class Saving(TimestampMixin, SoftDeleteMixin, models.Model):
             description=description
         )
         
-        self.current_amount += amount
-        self.save()
+        # Actualizar current_amount usando F() para evitar race conditions
+        Saving.objects.filter(pk=self.pk).update(
+            current_amount=F('current_amount') + amount
+        )
+        
+        # Refrescar la instancia para obtener el valor actualizado
+        self.refresh_from_db()
+        
+        # Verificar si se completó la meta
+        if self.current_amount >= self.target_amount and self.status == SavingStatus.ACTIVE:
+            self.status = SavingStatus.COMPLETED
+            self.save(update_fields=['status'])
         
         return movement
 
@@ -200,19 +209,28 @@ class Saving(TimestampMixin, SoftDeleteMixin, models.Model):
         """
         Agrega un retiro de la meta de ahorro.
         
+        Usa F() expressions para evitar race conditions.
+        
         Args:
             amount: Monto a retirar
             description: Descripción opcional
         
         Returns:
             SavingMovement creado
+        
+        Raises:
+            ValueError: Si el monto es inválido o no hay suficiente saldo
         """
         if amount <= 0:
             raise ValueError('El monto debe ser mayor a cero.')
         
+        # Refrescar para tener el valor más actualizado
+        self.refresh_from_db()
+        
         if amount > self.current_amount:
             raise ValueError('No hay suficiente saldo para este retiro.')
         
+        # Crear el movimiento
         movement = SavingMovement.objects.create(
             saving=self,
             type=MovementType.WITHDRAWAL,
@@ -220,8 +238,13 @@ class Saving(TimestampMixin, SoftDeleteMixin, models.Model):
             description=description
         )
         
-        self.current_amount -= amount
-        self.save()
+        # Actualizar current_amount usando F() para evitar race conditions
+        Saving.objects.filter(pk=self.pk).update(
+            current_amount=F('current_amount') - amount
+        )
+        
+        # Refrescar la instancia para obtener el valor actualizado
+        self.refresh_from_db()
         
         return movement
 
