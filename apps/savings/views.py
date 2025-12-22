@@ -176,10 +176,25 @@ class SavingDetailView(LoginRequiredMixin, DetailView):
         return Saving.objects.filter(user=self.request.user)
 
     def get_context_data(self, **kwargs):
-        """Agrega movimientos al contexto."""
+        """Agrega movimientos paginados al contexto."""
         context = super().get_context_data(**kwargs)
-        context['movements'] = self.object.movements.all()[:10]
+        
+        # Paginar movimientos
+        from django.core.paginator import Paginator
+        
+        movements_list = self.object.movements.all().order_by('-date', '-created_at')
+        paginator = Paginator(movements_list, 10)  # 10 movimientos por página
+        
+        page = self.request.GET.get('page', 1)
+        
+        try:
+            movements = paginator.get_page(page)
+        except:
+            movements = paginator.get_page(1)
+        
+        context['movements'] = movements
         context['movement_form'] = SavingMovementForm(saving=self.object)
+        
         return context
 
 
