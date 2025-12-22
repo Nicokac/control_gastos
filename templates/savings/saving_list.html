@@ -12,29 +12,54 @@
     </a>
 </div>
 
-<!-- Resumen -->
+<!-- Resumen Global -->
+<div class="card bg-info bg-opacity-10 mb-4">
+    <div class="card-body">
+        <div class="row text-center">
+            <div class="col-md-3">
+                <p class="text-muted mb-1 small">Objetivo Total</p>
+                <h4 class="text-info mb-0">$ {{ summary.total_target|floatformat:2|default:"0.00" }}</h4>
+            </div>
+            <div class="col-md-3">
+                <p class="text-muted mb-1 small">Ahorrado</p>
+                <h4 class="text-success mb-0">$ {{ summary.total_current|floatformat:2|default:"0.00" }}</h4>
+            </div>
+            <div class="col-md-3">
+                <p class="text-muted mb-1 small">Restante</p>
+                <h4 class="text-warning mb-0">$ {{ summary.total_remaining|floatformat:2|default:"0.00" }}</h4>
+            </div>
+            <div class="col-md-3">
+                <p class="text-muted mb-1 small">Progreso Global</p>
+                <h4 class="text-info mb-0">{{ summary.overall_progress|floatformat:1 }}%</h4>
+            </div>
+        </div>
+        <div class="progress mt-3" style="height: 8px;">
+            <div class="progress-bar bg-info" 
+                 role="progressbar"
+                 style="width: {{ summary.overall_progress }}%;"
+                 aria-valuenow="{{ summary.overall_progress }}" 
+                 aria-valuemin="0" 
+                 aria-valuemax="100">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contadores rápidos -->
 <div class="row g-3 mb-4">
-    <div class="col-md-4">
-        <div class="card border-info h-100">
-            <div class="card-body text-center">
-                <p class="text-muted mb-1">Total Ahorrado</p>
-                <h3 class="text-info mb-0">$ {{ total_saved|floatformat:2|default:"0.00" }}</h3>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
+    <div class="col-md-6">
         <div class="card h-100">
-            <div class="card-body text-center">
-                <p class="text-muted mb-1">Metas Activas</p>
-                <h3 class="mb-0">{{ active_count }}</h3>
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <span class="text-muted">Metas Activas</span>
+                <span class="h4 mb-0">{{ active_count }}</span>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-6">
         <div class="card border-success h-100">
-            <div class="card-body text-center">
-                <p class="text-muted mb-1">Completadas</p>
-                <h3 class="text-success mb-0">{{ completed_count }}</h3>
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <span class="text-muted">Completadas</span>
+                <span class="h4 mb-0 text-success">{{ completed_count }}</span>
             </div>
         </div>
     </div>
@@ -128,9 +153,11 @@
                         <i class="bi bi-eye me-1"></i>Ver
                     </a>
                     <div class="btn-group btn-group-sm">
+                        {% if saving.status == 'ACTIVE' %}
                         <a href="{% url 'savings:add_movement' saving.pk %}" class="btn btn-info" title="Agregar movimiento">
                             <i class="bi bi-plus-lg"></i>
                         </a>
+                        {% endif %}
                         <a href="{% url 'savings:update' saving.pk %}" class="btn btn-outline-secondary" title="Editar">
                             <i class="bi bi-pencil"></i>
                         </a>

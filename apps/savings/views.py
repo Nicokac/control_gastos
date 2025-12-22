@@ -9,6 +9,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView, D
 from django.views.generic.edit import FormView
 from django.shortcuts import get_object_or_404, redirect
 from django.http import HttpResponseRedirect
+from decimal import Decimal
 
 from .models import Saving, SavingMovement, SavingStatus
 from .forms import SavingForm, SavingMovementForm, SavingFilterForm
@@ -39,11 +40,41 @@ class SavingListView(LoginRequiredMixin, ListView):
         # Formulario de filtros
         context['filter_form'] = SavingFilterForm(data=self.request.GET or None)
         
-        # Totales
+        # Obtener metas activas del usuario
         user_savings = Saving.objects.filter(user=self.request.user, is_active=True)
-        context['total_saved'] = Saving.get_total_saved(self.request.user)
-        context['active_count'] = user_savings.filter(status=SavingStatus.ACTIVE).count()
+        active_savings = user_savings.filter(status=SavingStatus.ACTIVE)
+        
+        # Contadores
+        context['active_count'] = active_savings.count()
         context['completed_count'] = user_savings.filter(status=SavingStatus.COMPLETED).count()
+        
+        # Resumen global de metas activas
+        from django.db.models import Sum
+        
+        totals = active_savings.aggregate(
+            total_target=Sum('target_amount'),
+            total_current=Sum('current_amount')
+        )
+        
+        total_target = totals['total_target'] or Decimal('0')
+        total_current = totals['total_current'] or Decimal('0')
+        total_remaining = total_target - total_current
+        
+        # Calcular progreso global
+        if total_target > 0:
+            overall_progress = round((total_current / total_target) * 100, 1)
+        else:
+            overall_progress = 0
+        
+        context['summary'] = {
+            'total_target': total_target,
+            'total_current': total_current,
+            'total_remaining': max(total_remaining, Decimal('0')),
+            'overall_progress': min(overall_progress, 100),
+        }
+        
+        # Total ahorrado (para compatibilidad)
+        context['total_saved'] = total_current
         
         return context
 
