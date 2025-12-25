@@ -107,8 +107,8 @@ class Budget(TimestampMixin, SoftDeleteMixin, models.Model):
     @property
     def month_name(self):
         """Retorna el nombre del mes."""
-        from apps.core.utils import MONTHS
-        return MONTHS.get(self.month, '')
+        from apps.core.utils import get_month_name
+        return get_month_name(self.month)
 
     @property
     def period_display(self):

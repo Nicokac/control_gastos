@@ -95,8 +95,8 @@ class BudgetListView(LoginRequiredMixin, ListView):
         )
         
         # Nombre del mes
-        from apps.core.utils import MONTHS
-        context['period_name'] = f"{MONTHS.get(month, '')} {year}"
+        from apps.core.utils import get_month_name
+        context['period_name'] = f"{get_month_name(month)} {year}"
         
         return context
 
