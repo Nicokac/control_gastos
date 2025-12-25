@@ -110,6 +110,13 @@ class BudgetForm(forms.ModelForm):
         
         # Validar que no exista otro presupuesto para la misma categoría/mes/año
         if category and month and year and self.user:
+            # Convertir a int si vienen como string
+            try:
+                month = int(month)
+                year = int(year)
+            except (ValueError, TypeError):
+                return cleaned_data
+            
             existing = Budget.objects.filter(
                 user=self.user,
                 category=category,
@@ -123,8 +130,15 @@ class BudgetForm(forms.ModelForm):
                 existing = existing.exclude(pk=self.instance.pk)
             
             if existing.exists():
+                existing_budget = existing.first()
+                from apps.core.utils import MONTHS
+                month_name = MONTHS.get(month, str(month))
                 raise forms.ValidationError({
-                    'category': f'Ya existe un presupuesto para {category.name} en este período.'
+                    'category': (
+                        f'Ya existe un presupuesto para "{category.name}" '
+                        f'en {month_name} {year} '
+                        f'(Monto: ${existing_budget.amount:,.2f}).'
+                    )
                 })
         
         return cleaned_data
