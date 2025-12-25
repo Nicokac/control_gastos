@@ -1,9 +1,8 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
     <div class="container-fluid">
         <!-- Logo -->
-        <a class="navbar-brand d-flex align-items-center" href="{% if user.is_authenticated %}{% url 'reports:dashboard' %}{% else %}/{% endif %}">
-            <i class="bi bi-wallet2 me-2"></i>
-            <span class="fw-semibold">Control de Gastos</span>
+        <a class="navbar-brand" href="{% url 'reports:dashboard' %}">
+            <i class="bi bi-wallet2 me-2"></i>Control de Gastos
         </a>
         
         <!-- Mobile toggle -->

@@ -2,13 +2,12 @@
 <nav class="sidebar d-none d-md-block">
     <div class="pt-3">
         <!-- Sección: Principal -->
-        <div class="sidebar-section">
-            <a href="{% url 'reports:dashboard' %}" 
-               class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-                <i class="bi bi-speedometer2"></i>
-                <span>Dashboard</span>
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
+               href="{% url 'reports:dashboard' %}">
+                <i class="bi bi-speedometer2 me-2"></i>Dashboard
             </a>
-        </div>
+        </li>
         
         <!-- Sección: Transacciones -->
         <div class="sidebar-section">
