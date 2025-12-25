@@ -21,39 +21,50 @@ class BudgetListView(LoginRequiredMixin, ListView):
     model = Budget
     template_name = 'budgets/budget_list.html'
     context_object_name = 'budgets'
+    paginate_by = 12  # 12 presupuestos por página
 
     def get_queryset(self):
-        """Filtra presupuestos del usuario actual."""
-        queryset = Budget.objects.filter(
-            user=self.request.user
-        ).select_related('category')
-        
-        # Aplicar filtros con validación
+        """Filtra presupuestos del usuario actual con spent pre-calculado."""
+        # Determinar período
         month = self.request.GET.get('month')
         year = self.request.GET.get('year')
         category = self.request.GET.get('category')
         
+        # Valores por defecto: mes actual
+        if not month and not year:
+            from django.utils import timezone
+            today = timezone.now().date()
+            month = today.month
+            year = today.year
+        
+        # Validar parámetros
         try:
             if month:
                 month = int(month)
-                if 1 <= month <= 12:
-                    queryset = queryset.filter(month=month)
-            
+                if not (1 <= month <= 12):
+                    month = None
             if year:
                 year = int(year)
-                if 2020 <= year <= 2100:
-                    queryset = queryset.filter(year=year)
-            
-            if category:
-                category = int(category)
-                queryset = queryset.filter(category_id=category)
+                if not (2020 <= year <= 2100):
+                    year = None
         except (ValueError, TypeError):
-            pass  # Ignorar parámetros inválidos
+            month = None
+            year = None
         
-        # Si no hay filtros, mostrar mes actual por defecto
-        if not month and not year and not category:
-            today = timezone.now().date()
-            queryset = queryset.filter(month=today.month, year=today.year)
+        # Usar método optimizado que evita N+1
+        queryset = Budget.get_with_spent(
+            user=self.request.user,
+            month=month,
+            year=year
+        )
+        
+        # Filtro adicional por categoría
+        if category:
+            try:
+                category_id = int(category)
+                queryset = queryset.filter(category_id=category_id)
+            except (ValueError, TypeError):
+                pass
         
         return queryset
 
@@ -72,6 +83,7 @@ class BudgetListView(LoginRequiredMixin, ListView):
         year = self.request.GET.get('year')
         
         if not month or not year:
+            from django.utils import timezone
             today = timezone.now().date()
             month = today.month
             year = today.year
@@ -80,6 +92,7 @@ class BudgetListView(LoginRequiredMixin, ListView):
                 month = int(month)
                 year = int(year)
             except (ValueError, TypeError):
+                from django.utils import timezone
                 today = timezone.now().date()
                 month = today.month
                 year = today.year
@@ -87,16 +100,25 @@ class BudgetListView(LoginRequiredMixin, ListView):
         context['current_month'] = month
         context['current_year'] = year
         
-        # Resumen del período
-        context['summary'] = Budget.get_monthly_summary(
-            self.request.user,
-            month,
-            year
-        )
+        # Calcular resumen usando los presupuestos ya cargados (con _spent_annotated)
+        budgets = list(context['budgets'])
+        
+        total_budgeted = sum(b.amount for b in budgets)
+        total_spent = sum(b.spent_amount for b in budgets)
+        
+        context['summary'] = {
+            'total_budgeted': total_budgeted,
+            'total_spent': total_spent,
+            'total_remaining': total_budgeted - total_spent,
+            'overall_percentage': round((total_spent / total_budgeted * 100), 1) if total_budgeted > 0 else 0,
+            'budget_count': len(budgets),
+            'over_budget_count': sum(1 for b in budgets if b.is_over_budget),
+            'warning_count': sum(1 for b in budgets if b.is_near_limit),
+        }
         
         # Nombre del mes
-        from apps.core.utils import get_month_name
-        context['period_name'] = f"{get_month_name(month)} {year}"
+        from apps.core.utils import MONTHS
+        context['period_name'] = f"{MONTHS.get(month, '')} {year}"
         
         return context
 

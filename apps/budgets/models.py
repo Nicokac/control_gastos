@@ -117,7 +117,17 @@ class Budget(TimestampMixin, SoftDeleteMixin, models.Model):
 
     @property
     def spent_amount(self):
-        """Calcula el monto gastado en el período para esta categoría."""
+        """
+        Calcula el monto gastado en el período para esta categoría.
+        
+        Si el QuerySet fue anotado con 'spent', usa ese valor para evitar N+1.
+        De lo contrario, calcula on-the-fly (fallback).
+        """
+        # Si ya está anotado (desde el QuerySet), usar ese valor
+        if hasattr(self, '_spent_annotated'):
+            return self._spent_annotated or Decimal('0')
+        
+        # Fallback: calcular on-the-fly
         from apps.expenses.models import Expense
         
         result = Expense.objects.filter(
@@ -307,3 +317,46 @@ class Budget(TimestampMixin, SoftDeleteMixin, models.Model):
                 created.append(new_budget)
         
         return created
+    
+    @classmethod
+    def get_with_spent(cls, user, month=None, year=None):
+        """
+        Obtiene presupuestos con spent_amount pre-calculado (evita N+1).
+        
+        Args:
+            user: Usuario
+            month: Mes (1-12)
+            year: Año
+        
+        Returns:
+            QuerySet de presupuestos con _spent_annotated
+        """
+        from django.db.models import Sum, Q, OuterRef, Subquery
+        from django.db.models.functions import Coalesce
+        from apps.expenses.models import Expense
+        
+        # Subquery para calcular spent por cada budget
+        spent_subquery = Expense.objects.filter(
+            user=user,
+            category=OuterRef('category'),
+            date__month=OuterRef('month'),
+            date__year=OuterRef('year'),
+            is_active=True
+        ).values('category').annotate(
+            total=Sum('amount_ars')
+        ).values('total')
+        
+        queryset = cls.objects.filter(user=user).select_related('category')
+        
+        # Filtrar por período si se especifica
+        if month and year:
+            queryset = queryset.filter(month=month, year=year)
+        elif year:
+            queryset = queryset.filter(year=year)
+        
+        # Anotar con spent
+        queryset = queryset.annotate(
+            _spent_annotated=Coalesce(Subquery(spent_subquery), Decimal('0'))
+        )
+        
+        return queryset
