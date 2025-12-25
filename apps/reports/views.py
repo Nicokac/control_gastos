@@ -32,7 +32,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # Información del período
         context['current_month'] = current_month
         context['current_year'] = current_year
-        context['month_name'] = get_month_name.get(current_month)
+        context['month_name'] = get_month_name(current_month)
         context['today'] = today
         
         # Obtener datos de cada módulo
@@ -112,7 +112,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             'expense_percentage': expense_percentage,
             'expense_variation': expense_variation,
             'income_variation': income_variation,
-            'prev_month_name': get_month_name.get(prev_month),
+            'prev_month_name': get_month_name(prev_month),
         }
 
     def _get_budget_data(self, user, month, year):
