@@ -5,7 +5,7 @@ Vistas para dashboard y reportes.
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 from django.utils import timezone
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from decimal import Decimal
 
 from apps.expenses.models import Expense
@@ -45,22 +45,60 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         return context
 
     def _get_balance_data(self, user, month, year):
-        """Obtiene datos de balance: ingresos vs gastos."""
-        # Total de ingresos del mes
-        income_total = Income.objects.filter(
-            user=user,
-            date__month=month,
-            date__year=year,
-            is_active=True
-        ).aggregate(total=Sum('amount_ars'))['total'] or Decimal('0')
+        """
+        Obtiene datos de balance: ingresos vs gastos.
         
-        # Total de gastos del mes
-        expense_total = Expense.objects.filter(
+        Optimizado: 2 queries en lugar de 6.
+        """
+        from django.db.models import Q, Sum
+        
+        # Calcular mes anterior
+        if month == 1:
+            prev_month, prev_year = 12, year - 1
+        else:
+            prev_month, prev_year = month - 1, year
+        
+        # Query 1: Gastos (mes actual + anterior en 1 sola query)
+        expense_data = Expense.objects.filter(
             user=user,
-            date__month=month,
-            date__year=year,
             is_active=True
-        ).aggregate(total=Sum('amount_ars'))['total'] or Decimal('0')
+        ).filter(
+            Q(date__month=month, date__year=year) |
+            Q(date__month=prev_month, date__year=prev_year)
+        ).aggregate(
+            current=Sum(
+                'amount_ars',
+                filter=Q(date__month=month, date__year=year)
+            ),
+            previous=Sum(
+                'amount_ars',
+                filter=Q(date__month=prev_month, date__year=prev_year)
+            )
+        )
+        
+        # Query 2: Ingresos (mes actual + anterior en 1 sola query)
+        income_data = Income.objects.filter(
+            user=user,
+            is_active=True
+        ).filter(
+            Q(date__month=month, date__year=year) |
+            Q(date__month=prev_month, date__year=prev_year)
+        ).aggregate(
+            current=Sum(
+                'amount_ars',
+                filter=Q(date__month=month, date__year=year)
+            ),
+            previous=Sum(
+                'amount_ars',
+                filter=Q(date__month=prev_month, date__year=prev_year)
+            )
+        )
+        
+        # Extraer valores
+        expense_total = expense_data['current'] or Decimal('0')
+        prev_expense_total = expense_data['previous'] or Decimal('0')
+        income_total = income_data['current'] or Decimal('0')
+        prev_income_total = income_data['previous'] or Decimal('0')
         
         # Balance
         balance = income_total - expense_total
@@ -71,36 +109,21 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         else:
             expense_percentage = 0
         
-        # Comparación con mes anterior
-        if month == 1:
-            prev_month = 12
-            prev_year = year - 1
-        else:
-            prev_month = month - 1
-            prev_year = year
-        
-        prev_expense_total = Expense.objects.filter(
-            user=user,
-            date__month=prev_month,
-            date__year=prev_year,
-            is_active=True
-        ).aggregate(total=Sum('amount_ars'))['total'] or Decimal('0')
-        
-        prev_income_total = Income.objects.filter(
-            user=user,
-            date__month=prev_month,
-            date__year=prev_year,
-            is_active=True
-        ).aggregate(total=Sum('amount_ars'))['total'] or Decimal('0')
-        
-        # Variación porcentual
+        # Variación porcentual de gastos
         if prev_expense_total > 0:
-            expense_variation = round(((expense_total - prev_expense_total) / prev_expense_total) * 100, 1)
+            expense_variation = round(
+                ((expense_total - prev_expense_total) / prev_expense_total) * 100, 
+                1
+            )
         else:
             expense_variation = 0
         
+        # Variación porcentual de ingresos
         if prev_income_total > 0:
-            income_variation = round(((income_total - prev_income_total) / prev_income_total) * 100, 1)
+            income_variation = round(
+                ((income_total - prev_income_total) / prev_income_total) * 100, 
+                1
+            )
         else:
             income_variation = 0
         
