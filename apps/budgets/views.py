@@ -245,25 +245,86 @@ class CopyBudgetsView(LoginRequiredMixin, FormView):
     success_url = reverse_lazy('budgets:list')
 
     def form_valid(self, form):
-        """Copia los presupuestos."""
+        """Copia los presupuestos con feedback detallado."""
+        from apps.core.utils import MONTHS
+        
         target_month = int(form.cleaned_data['target_month'])
         target_year = int(form.cleaned_data['target_year'])
         
-        created = Budget.copy_from_previous_month(
-            self.request.user,
-            target_month,
-            target_year
+        # Calcular mes origen (mes anterior al destino)
+        if target_month == 1:
+            source_month = 12
+            source_year = target_year - 1
+        else:
+            source_month = target_month - 1
+            source_year = target_year
+        
+        source_period = f"{MONTHS.get(source_month)} {source_year}"
+        target_period = f"{MONTHS.get(target_month)} {target_year}"
+        
+        # Verificar que existan presupuestos en el mes origen
+        source_budgets = Budget.objects.filter(
+            user=self.request.user,
+            month=source_month,
+            year=source_year,
+            is_active=True
         )
         
-        if created:
-            messages.success(
-                self.request,
-                f'Se copiaron {len(created)} presupuesto(s) al período seleccionado.'
-            )
-        else:
+        if not source_budgets.exists():
             messages.warning(
                 self.request,
-                'No se encontraron presupuestos para copiar o ya existen en el período destino.'
+                f'No hay presupuestos en {source_period} para copiar.'
+            )
+            return HttpResponseRedirect(self.success_url)
+        
+        # Copiar presupuestos
+        copied_count = 0
+        skipped_count = 0
+        copied_categories = []
+        skipped_categories = []
+        
+        for budget in source_budgets:
+            # Verificar si ya existe en el período destino
+            if not Budget.objects.filter(
+                user=self.request.user,
+                category=budget.category,
+                month=target_month,
+                year=target_year
+            ).exists():
+                Budget.objects.create(
+                    user=self.request.user,
+                    category=budget.category,
+                    month=target_month,
+                    year=target_year,
+                    amount=budget.amount,
+                    alert_threshold=budget.alert_threshold,
+                    notes=f"Copiado de {source_period}"
+                )
+                copied_count += 1
+                copied_categories.append(budget.category.name)
+            else:
+                skipped_count += 1
+                skipped_categories.append(budget.category.name)
+        
+        # Mensaje detallado según resultado
+        if copied_count > 0 and skipped_count == 0:
+            messages.success(
+                self.request,
+                f'✅ Se copiaron {copied_count} presupuesto(s) de {source_period} a {target_period}.'
+            )
+        elif copied_count > 0 and skipped_count > 0:
+            messages.success(
+                self.request,
+                f'✅ Se copiaron {copied_count} presupuesto(s) a {target_period}. '
+                f'{skipped_count} ya existían y se omitieron ({", ".join(skipped_categories)}).'
+            )
+        else:
+            messages.info(
+                self.request,
+                f'ℹ️ Todos los presupuestos de {source_period} ya existen en {target_period}.'
             )
         
-        return super().form_valid(form)
+        # Redirigir al período destino
+        return HttpResponseRedirect(
+            f"{self.success_url}?month={target_month}&year={target_year}"
+        )

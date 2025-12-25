@@ -18,10 +18,15 @@
             
             <div class="card">
                 <div class="card-body">
-                    <p class="text-muted mb-4">
-                        Esta acción copiará todos los presupuestos del mes anterior al período que selecciones.
-                        Solo se copiarán categorías que no tengan presupuesto en el período destino.
-                    </p>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>¿Cómo funciona?</strong>
+                        <p class="mb-0 mt-2">
+                            Se copiarán todos los presupuestos del <strong>mes anterior</strong> 
+                            al período que selecciones. Las categorías que ya tengan presupuesto 
+                            en el período destino serán omitidas.
+                        </p>
+                    </div>
                     
                     <form method="post">
                         {% csrf_token %}
@@ -37,9 +42,11 @@
                             </div>
                         </div>
                         
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle me-2"></i>
-                            Se copiarán los presupuestos del mes inmediatamente anterior al seleccionado.
+                        <div class="bg-light p-3 rounded mb-4">
+                            <small class="text-muted">
+                                <i class="bi bi-arrow-right me-1"></i>
+                                Los presupuestos se copiarán del mes inmediatamente anterior al seleccionado.
+                            </small>
                         </div>
                         
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
