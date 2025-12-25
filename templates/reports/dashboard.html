@@ -1,36 +1,381 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Dashboard - Control de Gastos{% endblock %}
 
 {% block content %}
+<!-- Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3 mb-0">
-        <i class="bi bi-speedometer2 me-2"></i>Dashboard
-    </h1>
-    <span class="text-muted">{{ user.username }}</span>
+    <div>
+        <h1 class="h3 mb-0">Dashboard</h1>
+        <small class="text-muted">{{ month_name }} {{ current_year }}</small>
+    </div>
+    <div class="btn-group">
+        <a href="{% url 'expenses:create' %}" class="btn btn-danger">
+            <i class="bi bi-dash-lg me-1"></i>Gasto
+        </a>
+        <a href="{% url 'income:create' %}" class="btn btn-success">
+            <i class="bi bi-plus-lg me-1"></i>Ingreso
+        </a>
+    </div>
 </div>
 
-<!-- Placeholder mientras se implementa -->
-<div class="row g-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body text-center py-5">
-                <i class="bi bi-graph-up display-1 text-primary mb-3"></i>
-                <h4>¡Bienvenido a Control de Gastos!</h4>
-                <p class="text-muted mb-4">
-                    El dashboard completo estará disponible próximamente.<br>
-                    Mientras tanto, podés empezar a usar la aplicación:
-                </p>
-                <div class="d-flex justify-content-center gap-3">
-                    <a href="{% url 'expenses:create' %}" class="btn btn-danger">
-                        <i class="bi bi-plus-lg me-1"></i>Registrar Gasto
-                    </a>
-                    <a href="{% url 'categories:list' %}" class="btn btn-outline-primary">
-                        <i class="bi bi-tags me-1"></i>Ver Categorías
-                    </a>
+<!-- Balance Principal -->
+<div class="row g-4 mb-4">
+    <!-- Ingresos -->
+    <div class="col-md-4">
+        <div class="card border-success h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted mb-1">Ingresos</p>
+                        <h3 class="text-success mb-0">$ {{ income_total|floatformat:2 }}</h3>
+                    </div>
+                    <div class="bg-success bg-opacity-10 rounded p-2">
+                        <i class="bi bi-arrow-down-circle text-success fs-4"></i>
+                    </div>
                 </div>
+                {% if income_variation != 0 %}
+                <small class="{% if income_variation > 0 %}text-success{% else %}text-danger{% endif %}">
+                    <i class="bi bi-arrow-{% if income_variation > 0 %}up{% else %}down{% endif %}"></i>
+                    {{ income_variation|floatformat:1 }}% vs {{ prev_month_name }}
+                </small>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Gastos -->
+    <div class="col-md-4">
+        <div class="card border-danger h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted mb-1">Gastos</p>
+                        <h3 class="text-danger mb-0">$ {{ expense_total|floatformat:2 }}</h3>
+                    </div>
+                    <div class="bg-danger bg-opacity-10 rounded p-2">
+                        <i class="bi bi-arrow-up-circle text-danger fs-4"></i>
+                    </div>
+                </div>
+                {% if expense_variation != 0 %}
+                <small class="{% if expense_variation > 0 %}text-danger{% else %}text-success{% endif %}">
+                    <i class="bi bi-arrow-{% if expense_variation > 0 %}up{% else %}down{% endif %}"></i>
+                    {{ expense_variation|floatformat:1 }}% vs {{ prev_month_name }}
+                </small>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Balance -->
+    <div class="col-md-4">
+        <div class="card {% if balance_is_positive %}border-primary{% else %}border-warning{% endif %} h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="text-muted mb-1">Balance</p>
+                        <h3 class="{% if balance_is_positive %}text-primary{% else %}text-warning{% endif %} mb-0">
+                            {% if not balance_is_positive %}-{% endif %}$ {{ balance|floatformat:2|cut:"-" }}
+                        </h3>
+                    </div>
+                    <div class="{% if balance_is_positive %}bg-primary{% else %}bg-warning{% endif %} bg-opacity-10 rounded p-2">
+                        <i class="bi bi-wallet2 {% if balance_is_positive %}text-primary{% else %}text-warning{% endif %} fs-4"></i>
+                    </div>
+                </div>
+                <small class="text-muted">
+                    {{ expense_percentage|floatformat:0 }}% de ingresos gastados
+                </small>
             </div>
         </div>
     </div>
 </div>
+
+<div class="row g-4">
+    <!-- Columna izquierda -->
+    <div class="col-lg-8">
+        <!-- Presupuestos del mes -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>
+                    <i class="bi bi-wallet2 me-2"></i>Presupuestos de {{ month_name }}
+                </span>
+                <a href="{% url 'budgets:list' %}" class="btn btn-sm btn-outline-primary">
+                    Ver todos
+                </a>
+            </div>
+            <div class="card-body">
+                {% if budget_count > 0 %}
+                <!-- Resumen -->
+                <div class="row text-center mb-3">
+                    <div class="col-4">
+                        <small class="text-muted d-block">Presupuestado</small>
+                        <strong>$ {{ budget_total|floatformat:2 }}</strong>
+                    </div>
+                    <div class="col-4">
+                        <small class="text-muted d-block">Gastado</small>
+                        <strong class="text-danger">$ {{ budget_spent|floatformat:2 }}</strong>
+                    </div>
+                    <div class="col-4">
+                        <small class="text-muted d-block">Progreso</small>
+                        <strong>{{ budget_percentage|floatformat:1 }}%</strong>
+                    </div>
+                </div>
+                
+                <div class="progress mb-3" style="height: 8px;">
+                    <div class="progress-bar {% if budget_percentage > 100 %}bg-danger{% elif budget_percentage >= 80 %}bg-warning{% else %}bg-success{% endif %}" 
+                         style="width: {% if budget_percentage > 100 %}100{% else %}{{ budget_percentage }}{% endif %}%;">
+                    </div>
+                </div>
+                
+                <!-- Alertas -->
+                {% if budgets_over > 0 or budgets_warning > 0 %}
+                <div class="d-flex gap-2 mb-3">
+                    {% if budgets_over > 0 %}
+                    <span class="badge bg-danger">
+                        <i class="bi bi-exclamation-circle me-1"></i>{{ budgets_over }} excedido(s)
+                    </span>
+                    {% endif %}
+                    {% if budgets_warning > 0 %}
+                    <span class="badge bg-warning text-dark">
+                        <i class="bi bi-exclamation-triangle me-1"></i>{{ budgets_warning }} en alerta
+                    </span>
+                    {% endif %}
+                    {% if budgets_ok > 0 %}
+                    <span class="badge bg-success">
+                        <i class="bi bi-check-circle me-1"></i>{{ budgets_ok }} OK
+                    </span>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <!-- Top presupuestos -->
+                {% if top_budgets %}
+                <div class="list-group list-group-flush">
+                    {% for budget in top_budgets %}
+                    <a href="{% url 'budgets:detail' budget.pk %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            {% if budget.category.icon %}
+                            <i class="{{ budget.category.icon }} me-2" style="color: {{ budget.category.color }};"></i>
+                            {% endif %}
+                            <span>{{ budget.category.name }}</span>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-{{ budget.status_class }}">{{ budget.spent_percentage }}%</span>
+                            <br>
+                            <small class="text-muted">{{ budget.formatted_spent }} / {{ budget.formatted_amount }}</small>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% else %}
+                <div class="text-center py-3">
+                    <i class="bi bi-wallet2 display-6 text-muted"></i>
+                    <p class="text-muted mt-2 mb-2">No hay presupuestos este mes</p>
+                    <a href="{% url 'budgets:create' %}" class="btn btn-sm btn-outline-primary">
+                        Crear presupuesto
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Distribución de gastos -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-pie-chart me-2"></i>Distribución de Gastos
+            </div>
+            <div class="card-body">
+                {% if expense_distribution %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <canvas id="expenseChart" height="200"></canvas>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            {% for item in expense_distribution %}
+                            <li class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="d-flex align-items-center">
+                                    <span class="rounded-circle me-2" style="width: 12px; height: 12px; background-color: {{ item.category__color }}; display: inline-block;"></span>
+                                    <span>{{ item.category__name }}</span>
+                                </div>
+                                <strong>$ {{ item.total|floatformat:2 }}</strong>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center py-3">
+                    <i class="bi bi-pie-chart display-6 text-muted"></i>
+                    <p class="text-muted mt-2 mb-0">No hay gastos registrados este mes</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Columna derecha -->
+    <div class="col-lg-4">
+        <!-- Metas de Ahorro -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>
+                    <i class="bi bi-piggy-bank me-2"></i>Metas de Ahorro
+                </span>
+                <a href="{% url 'savings:list' %}" class="btn btn-sm btn-outline-info">
+                    Ver todas
+                </a>
+            </div>
+            <div class="card-body">
+                {% if savings_count > 0 %}
+                <!-- Resumen -->
+                <div class="text-center mb-3">
+                    <div class="display-6 text-info">{{ savings_progress|floatformat:0 }}%</div>
+                    <small class="text-muted">Progreso global</small>
+                    <div class="progress mt-2" style="height: 6px;">
+                        <div class="progress-bar bg-info" style="width: {{ savings_progress }}%;"></div>
+                    </div>
+                </div>
+                
+                <div class="row text-center mb-3">
+                    <div class="col-6">
+                        <small class="text-muted d-block">Ahorrado</small>
+                        <strong class="text-info">$ {{ savings_total_current|floatformat:2 }}</strong>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">Objetivo</small>
+                        <strong>$ {{ savings_total_target|floatformat:2 }}</strong>
+                    </div>
+                </div>
+                
+                {% if savings_completed_month > 0 %}
+                <div class="alert alert-success py-2 mb-3">
+                    <i class="bi bi-trophy me-1"></i>
+                    ¡{{ savings_completed_month }} meta(s) completada(s) este mes!
+                </div>
+                {% endif %}
+                
+                <!-- Top metas -->
+                {% for saving in top_savings %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <small>
+                            <i class="{{ saving.icon }}" style="color: {{ saving.color }};"></i>
+                            {{ saving.name }}
+                        </small>
+                        <small class="fw-bold">{{ saving.progress_percentage }}%</small>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar" style="width: {{ saving.progress_percentage }}%; background-color: {{ saving.color }};"></div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="text-center py-3">
+                    <i class="bi bi-piggy-bank display-6 text-muted"></i>
+                    <p class="text-muted mt-2 mb-2">No hay metas activas</p>
+                    <a href="{% url 'savings:create' %}" class="btn btn-sm btn-outline-info">
+                        Crear meta
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Últimas transacciones -->
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-clock-history me-2"></i>Últimas Transacciones
+            </div>
+            <div class="card-body p-0">
+                {% if recent_transactions %}
+                <ul class="list-group list-group-flush">
+                    {% for tx in recent_transactions %}
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <div class="me-2">
+                                    {% if tx.type == 'expense' %}
+                                    <i class="bi bi-arrow-up-circle text-danger"></i>
+                                    {% else %}
+                                    <i class="bi bi-arrow-down-circle text-success"></i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <a href="{% if tx.type == 'expense' %}{% url 'expenses:detail' tx.pk %}{% else %}{% url 'income:detail' tx.pk %}{% endif %}" 
+                                       class="text-decoration-none text-dark">
+                                        {{ tx.description|truncatechars:25 }}
+                                    </a>
+                                    <br>
+                                    <small class="text-muted">{{ tx.date|date:"d M" }}</small>
+                                </div>
+                            </div>
+                            <span class="{% if tx.type == 'expense' %}text-danger{% else %}text-success{% endif %} fw-bold">
+                                {% if tx.type == 'expense' %}-{% else %}+{% endif %}$ {{ tx.amount|floatformat:2 }}
+                            </span>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-inbox display-6 text-muted"></i>
+                    <p class="text-muted mt-2 mb-0">No hay transacciones</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gráfico de distribución de gastos
+    const ctx = document.getElementById('expenseChart');
+    
+    if (ctx) {
+        const labels = {{ chart_labels|safe }};
+        const data = {{ chart_data|safe }};
+        const colors = {{ chart_colors|safe }};
+        
+        if (labels.length > 0) {
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderWidth: 0,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false,
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.raw;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `$${value.toLocaleString('es-AR', {minimumFractionDigits: 2})} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '60%',
+                }
+            });
+        }
+    }
+});
+</script>
 {% endblock %}
