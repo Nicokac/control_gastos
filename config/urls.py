@@ -30,7 +30,8 @@ urlpatterns = [
     path('income/', include('apps.income.urls')),
     path('savings/', include('apps.savings.urls')),
     path('budgets/', include('apps.budgets.urls')),
-    path('dashboard/', include('apps.reports.urls')),
+    # Dashboard como página principal
+    path('', include('apps.reports.urls')),
 ]
 
 if settings.DEBUG:
