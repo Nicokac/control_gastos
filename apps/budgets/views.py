@@ -289,9 +289,12 @@ class CopyBudgetsView(LoginRequiredMixin, FormView):
         else:
             source_month = target_month - 1
             source_year = target_year
+
+        source_month_name = get_month_name(source_month)
+        target_month_name = get_month_name(target_month)
         
-        source_period = f"{get_month_name.get(source_month)} {source_year}"
-        target_period = f"{get_month_name.get(target_month)} {target_year}"
+        source_period = f"{source_month_name} {source_year}"
+        target_period = f"{target_month_name} {target_year}"
         
         # Verificar que existan presupuestos en el mes origen
         source_budgets = Budget.objects.filter(

@@ -132,7 +132,7 @@ class BudgetForm(forms.ModelForm):
             if existing.exists():
                 existing_budget = existing.first()
                 from apps.core.utils import get_month_name
-                month_name = get_month_name.get(month, str(month))
+                month_name = get_month_name(month)
                 raise forms.ValidationError({
                     'category': (
                         f'Ya existe un presupuesto para "{category.name}" '
