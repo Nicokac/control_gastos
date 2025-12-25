@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ budget.category.name }} - Presupuesto{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="mb-4">
+                <a href="{% url 'budgets:list' %}" class="text-muted text-decoration-none">
+                    <i class="bi bi-arrow-left me-1"></i>Volver a presupuestos
+                </a>
+            </div>
+            
+            <div class="card mb-4 border-{{ budget.status_class }}">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        {% if budget.category.icon %}
+                        <i class="{{ budget.category.icon }} fs-4 me-2" style="color: {{ budget.category.color }};"></i>
+                        {% endif %}
+                        <div>
+                            <h4 class="mb-0">{{ budget.category.name }}</h4>
+                            <small class="text-muted">{{ budget.period_display }}</small>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <a href="{% url 'budgets:update' budget.pk %}" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-pencil me-1"></i>Editar
+                        </a>
+                        <a href="{% url 'budgets:delete' budget.pk %}" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-trash me-1"></i>Eliminar
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Estado -->
+                    <div class="text-center mb-4">
+                        {% if budget.is_over_budget %}
+                        <span class="badge bg-danger fs-6 mb-3">
+                            <i class="bi bi-exclamation-circle me-1"></i>Presupuesto Excedido
+                        </span>
+                        {% elif budget.is_near_limit %}
+                        <span class="badge bg-warning text-dark fs-6 mb-3">
+                            <i class="bi bi-exclamation-triangle me-1"></i>Cerca del límite
+                        </span>
+                        {% else %}
+                        <span class="badge bg-success fs-6 mb-3">
+                            <i class="bi bi-check-circle me-1"></i>En buen estado
+                        </span>
+                        {% endif %}
+                        
+                        <div class="display-4 mb-2 text-{{ budget.status_class }}">
+                            {{ budget.spent_percentage }}%
+                        </div>
+                        
+                        <div class="progress mb-3" style="height: 20px;">
+                            <div class="progress-bar bg-{{ budget.status_class }}" 
+                                 role="progressbar" 
+                                 style="width: {% if budget.spent_percentage > 100 %}100{% else %}{{ budget.spent_percentage }}{% endif %}%;">
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-4 text-start">
+                                <small class="text-muted d-block">Gastado</small>
+                                <strong class="text-danger">{{ budget.formatted_spent }}</strong>
+                            </div>
+                            <div class="col-4 text-center">
+                                <small class="text-muted d-block">Disponible</small>
+                                <strong class="{% if budget.remaining_amount < 0 %}text-danger{% else %}text-success{% endif %}">
+                                    {{ budget.formatted_remaining }}
+                                </strong>
+                            </div>
+                            <div class="col-4 text-end">
+                                <small class="text-muted d-block">Presupuesto</small>
+                                <strong>{{ budget.formatted_amount }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if budget.notes %}
+                    <div class="bg-light p-3 rounded">
+                        <small class="text-muted d-block mb-1">Notas:</small>
+                        {{ budget.notes }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Gastos del período -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>
+                        <i class="bi bi-receipt me-2"></i>Gastos en {{ budget.category.name }}
+                    </span>
+                    <a href="{% url 'expenses:create' %}" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-plus-lg me-1"></i>Nuevo gasto
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    {% if expenses %}
+                    <ul class="list-group list-group-flush">
+                        {% for expense in expenses %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <span>{{ expense.description }}</span>
+                                <br>
+                                <small class="text-muted">{{ expense.date|date:"d M Y" }}</small>
+                            </div>
+                            <span class="text-danger fw-bold">
+                                {{ expense.formatted_amount }}
+                            </span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-inbox display-6 text-muted"></i>
+                        <p class="text-muted mt-2 mb-0">No hay gastos en esta categoría para el período.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

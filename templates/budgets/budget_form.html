@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if is_edit %}Editar{% else %}Nuevo{% endif %} Presupuesto - Control de Gastos{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <!-- Header -->
+            <div class="mb-4">
+                <a href="{% url 'budgets:list' %}" class="text-muted text-decoration-none">
+                    <i class="bi bi-arrow-left me-1"></i>Volver a presupuestos
+                </a>
+                <h1 class="h3 mt-2">
+                    {% if is_edit %}
+                    <i class="bi bi-pencil text-primary me-2"></i>Editar Presupuesto
+                    {% else %}
+                    <i class="bi bi-wallet2 text-primary me-2"></i>Nuevo Presupuesto
+                    {% endif %}
+                </h1>
+            </div>
+            
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                <!-- Errores generales -->
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                    <p class="mb-0">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <!-- Categoría -->
+                        <div class="mb-4">
+                            <label class="form-label">Categoría de gasto</label>
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                            <div class="text-danger small mt-1">{{ form.category.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Período -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">Mes</label>
+                                {{ form.month }}
+                                {% if form.month.errors %}
+                                <div class="text-danger small mt-1">{{ form.month.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Año</label>
+                                {{ form.year }}
+                                {% if form.year.errors %}
+                                <div class="text-danger small mt-1">{{ form.year.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Monto -->
+                        <div class="mb-4">
+                            <label class="form-label">Monto presupuestado</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                {{ form.amount }}
+                            </div>
+                            {% if form.amount.errors %}
+                            <div class="text-danger small mt-1">{{ form.amount.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Umbral de alerta -->
+                        <div class="mb-4">
+                            <label class="form-label">
+                                Umbral de alerta 
+                                <small class="text-muted">(% del presupuesto)</small>
+                            </label>
+                            <div class="input-group" style="max-width: 150px;">
+                                {{ form.alert_threshold }}
+                                <span class="input-group-text">%</span>
+                            </div>
+                            <small class="text-muted">
+                                Se mostrará una alerta cuando el gasto supere este porcentaje.
+                            </small>
+                            {% if form.alert_threshold.errors %}
+                            <div class="text-danger small mt-1">{{ form.alert_threshold.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Notas -->
+                        <div class="mb-4">
+                            <label class="form-label">
+                                Notas 
+                                <small class="text-muted">(opcional)</small>
+                            </label>
+                            {{ form.notes }}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Botones -->
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="{% url 'budgets:list' %}" class="btn btn-outline-secondary">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                        <i class="bi bi-check-lg me-2"></i>
+                        {% if is_edit %}Guardar Cambios{% else %}Crear Presupuesto{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

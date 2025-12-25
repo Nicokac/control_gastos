@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Copiar Presupuestos - Control de Gastos{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <!-- Header -->
+            <div class="mb-4">
+                <a href="{% url 'budgets:list' %}" class="text-muted text-decoration-none">
+                    <i class="bi bi-arrow-left me-1"></i>Volver a presupuestos
+                </a>
+                <h1 class="h3 mt-2">
+                    <i class="bi bi-copy text-primary me-2"></i>Copiar Presupuestos
+                </h1>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        Esta acción copiará todos los presupuestos del mes anterior al período que selecciones.
+                        Solo se copiarán categorías que no tengan presupuesto en el período destino.
+                    </p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label">Mes destino</label>
+                                {{ form.target_month }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Año destino</label>
+                                {{ form.target_year }}
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Se copiarán los presupuestos del mes inmediatamente anterior al seleccionado.
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'budgets:list' %}" class="btn btn-outline-secondary">
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-copy me-2"></i>Copiar Presupuestos
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
