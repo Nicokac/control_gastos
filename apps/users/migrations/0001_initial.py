@@ -98,7 +98,7 @@ class Migration(migrations.Migration):
                     models.CharField(
                         choices=[
                             ("ARS", "Peso Argentino"),
-                            ("USD", "Dólar Estadoudinense"),
+                            ("USD", "Dólar Estadounidense"),
                         ],
                         default="ARS",
                         max_length=3,
