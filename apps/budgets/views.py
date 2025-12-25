@@ -117,8 +117,8 @@ class BudgetListView(LoginRequiredMixin, ListView):
         }
         
         # Nombre del mes
-        from apps.core.utils import MONTHS
-        context['period_name'] = f"{MONTHS.get(month, '')} {year}"
+        from apps.core.utils import get_month_name
+        context['period_name'] = f"{get_month_name(month)} {year}"
         
         return context
 
@@ -277,7 +277,7 @@ class CopyBudgetsView(LoginRequiredMixin, FormView):
 
     def form_valid(self, form):
         """Copia los presupuestos con feedback detallado."""
-        from apps.core.utils import MONTHS
+        from apps.core.utils import get_month_name
         
         target_month = int(form.cleaned_data['target_month'])
         target_year = int(form.cleaned_data['target_year'])
@@ -290,8 +290,8 @@ class CopyBudgetsView(LoginRequiredMixin, FormView):
             source_month = target_month - 1
             source_year = target_year
         
-        source_period = f"{MONTHS.get(source_month)} {source_year}"
-        target_period = f"{MONTHS.get(target_month)} {target_year}"
+        source_period = f"{get_month_name.get(source_month)} {source_year}"
+        target_period = f"{get_month_name.get(target_month)} {target_year}"
         
         # Verificar que existan presupuestos en el mes origen
         source_budgets = Budget.objects.filter(
