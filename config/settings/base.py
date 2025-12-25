@@ -139,9 +139,9 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-LOGIN_URL = 'users:login'
-LOGIN_REDIRECT_URL = 'categories:list'
+LOGIN_REDIRECT_URL = 'reports:dashboard'
 LOGOUT_REDIRECT_URL = 'users:login'
+LOGIN_URL = 'users:login'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
