@@ -20,6 +20,80 @@
     </div>
 </div>
 
+{% if income_total == 0 and expense_total == 0 and savings_count == 0 %}
+<!-- Estado vacío para usuario nuevo -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-primary">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-wallet2 display-1 text-primary mb-4"></i>
+                <h3 class="mb-3">¡Bienvenido a Control de Gastos!</h3>
+                <p class="text-muted mb-4">
+                    Comenzá registrando tu primer gasto o ingreso para empezar a llevar control de tus finanzas.
+                </p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap mb-4">
+                    <a href="{% url 'expenses:create' %}" class="btn btn-danger btn-lg">
+                        <i class="bi bi-plus-lg me-2"></i>Registrar Gasto
+                    </a>
+                    <a href="{% url 'income:create' %}" class="btn btn-success btn-lg">
+                        <i class="bi bi-plus-lg me-2"></i>Registrar Ingreso
+                    </a>
+                </div>
+                <hr class="my-4">
+                <h5 class="text-muted mb-4">¿Qué podés hacer con esta app?</h5>
+                <div class="row text-start">
+                    <div class="col-md-3 mb-3">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-tags text-primary fs-4 me-3"></i>
+                            <div>
+                                <h6 class="mb-1">Categorías</h6>
+                                <p class="text-muted small mb-0">
+                                    Organizá tus gastos e ingresos por categorías personalizadas.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-wallet2 text-warning fs-4 me-3"></i>
+                            <div>
+                                <h6 class="mb-1">Presupuestos</h6>
+                                <p class="text-muted small mb-0">
+                                    Definí límites mensuales y recibí alertas.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-piggy-bank text-info fs-4 me-3"></i>
+                            <div>
+                                <h6 class="mb-1">Metas de Ahorro</h6>
+                                <p class="text-muted small mb-0">
+                                    Creá objetivos y seguí tu progreso.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-graph-up text-success fs-4 me-3"></i>
+                            <div>
+                                <h6 class="mb-1">Reportes</h6>
+                                <p class="text-muted small mb-0">
+                                    Visualizá tus finanzas con gráficos.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<!-- Dashboard normal con datos -->
+
 <!-- Balance Principal -->
 <div class="row g-4 mb-4">
     <!-- Ingresos -->
@@ -36,10 +110,18 @@
                     </div>
                 </div>
                 {% if income_variation != 0 %}
-                <small class="{% if income_variation > 0 %}text-success{% else %}text-danger{% endif %}">
-                    <i class="bi bi-arrow-{% if income_variation > 0 %}up{% else %}down{% endif %}"></i>
-                    {{ income_variation|floatformat:1 }}% vs {{ prev_month_name }}
-                </small>
+                <div class="mt-2">
+                    {% if income_variation > 0 %}
+                    <span class="badge bg-success">
+                        <i class="bi bi-arrow-up"></i> +{{ income_variation }}%
+                    </span>
+                    {% else %}
+                    <span class="badge bg-danger">
+                        <i class="bi bi-arrow-down"></i> {{ income_variation }}%
+                    </span>
+                    {% endif %}
+                    <small class="text-muted ms-1">vs {{ prev_month_name }}</small>
+                </div>
                 {% endif %}
             </div>
         </div>
@@ -59,10 +141,18 @@
                     </div>
                 </div>
                 {% if expense_variation != 0 %}
-                <small class="{% if expense_variation > 0 %}text-danger{% else %}text-success{% endif %}">
-                    <i class="bi bi-arrow-{% if expense_variation > 0 %}up{% else %}down{% endif %}"></i>
-                    {{ expense_variation|floatformat:1 }}% vs {{ prev_month_name }}
-                </small>
+                <div class="mt-2">
+                    {% if expense_variation > 0 %}
+                    <span class="badge bg-danger">
+                        <i class="bi bi-arrow-up"></i> +{{ expense_variation }}%
+                    </span>
+                    {% else %}
+                    <span class="badge bg-success">
+                        <i class="bi bi-arrow-down"></i> {{ expense_variation }}%
+                    </span>
+                    {% endif %}
+                    <small class="text-muted ms-1">vs {{ prev_month_name }}</small>
+                </div>
                 {% endif %}
             </div>
         </div>
@@ -83,9 +173,11 @@
                         <i class="bi bi-wallet2 {% if balance_is_positive %}text-primary{% else %}text-warning{% endif %} fs-4"></i>
                     </div>
                 </div>
-                <small class="text-muted">
-                    {{ expense_percentage|floatformat:0 }}% de ingresos gastados
-                </small>
+                <div class="mt-2">
+                    <small class="text-muted">
+                        {{ expense_percentage|floatformat:0 }}% de ingresos gastados
+                    </small>
+                </div>
             </div>
         </div>
     </div>
@@ -181,42 +273,43 @@
             </div>
         </div>
         
-    <!-- Distribución de gastos -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <i class="bi bi-pie-chart me-2"></i>Distribución de Gastos
-        </div>
-        <div class="card-body">
-            {% if expense_distribution and chart_data %}
-            <div class="row">
-                <div class="col-md-6">
-                    <div style="height: 200px;">
-                        <canvas id="expenseChart"></canvas>
+        <!-- Distribución de gastos -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="bi bi-pie-chart me-2"></i>Distribución de Gastos
+            </div>
+            <div class="card-body">
+                {% if expense_distribution and chart_data %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div style="height: 200px;">
+                            <canvas id="expenseChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            {% for item in expense_distribution %}
+                            <li class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="d-flex align-items-center">
+                                    <span class="rounded-circle me-2" style="width: 12px; height: 12px; background-color: {{ item.category__color|default:'#6c757d' }}; display: inline-block;"></span>
+                                    <span>{{ item.category__name }}</span>
+                                </div>
+                                <strong>$ {{ item.total|floatformat:2 }}</strong>
+                            </li>
+                            {% endfor %}
+                        </ul>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <ul class="list-unstyled">
-                        {% for item in expense_distribution %}
-                        <li class="d-flex justify-content-between align-items-center mb-2">
-                            <div class="d-flex align-items-center">
-                                <span class="rounded-circle me-2" style="width: 12px; height: 12px; background-color: {{ item.category__color|default:'#6c757d' }}; display: inline-block;"></span>
-                                <span>{{ item.category__name }}</span>
-                            </div>
-                            <strong>$ {{ item.total|floatformat:2 }}</strong>
-                        </li>
-                        {% endfor %}
-                    </ul>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-pie-chart display-4 text-muted mb-3"></i>
+                    <p class="text-muted mb-3">No hay gastos registrados en {{ month_name }}</p>
+                    <a href="{% url 'expenses:create' %}" class="btn btn-danger btn-sm">
+                        <i class="bi bi-plus-lg me-1"></i>Registrar primer gasto
+                    </a>
                 </div>
+                {% endif %}
             </div>
-            {% else %}
-            <div class="text-center py-4">
-                <i class="bi bi-pie-chart display-4 text-muted mb-3"></i>
-                <p class="text-muted mb-3">No hay gastos registrados en {{ month_name }}</p>
-                <a href="{% url 'expenses:create' %}" class="btn btn-danger btn-sm">
-                    <i class="bi bi-plus-lg me-1"></i>Registrar primer gasto
-                </a>
-            </div>
-            {% endif %}
         </div>
     </div>
     
@@ -333,6 +426,8 @@
         </div>
     </div>
 </div>
+
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}
