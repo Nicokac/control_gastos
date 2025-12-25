@@ -220,19 +220,50 @@ class BudgetDetailView(LoginRequiredMixin, DetailView):
         return Budget.objects.filter(user=self.request.user).select_related('category')
 
     def get_context_data(self, **kwargs):
-        """Agrega gastos del período al contexto."""
+        """Agrega gastos del período y comparación año anterior."""
         context = super().get_context_data(**kwargs)
+        
+        budget = self.object
         
         # Obtener gastos de esta categoría en el período
         from apps.expenses.models import Expense
         
         context['expenses'] = Expense.objects.filter(
             user=self.request.user,
-            category=self.object.category,
-            date__month=self.object.month,
-            date__year=self.object.year,
+            category=budget.category,
+            date__month=budget.month,
+            date__year=budget.year,
             is_active=True
         ).order_by('-date')[:10]
+        
+        # Comparación con año anterior
+        try:
+            last_year_budget = Budget.objects.get(
+                user=self.request.user,
+                category=budget.category,
+                month=budget.month,
+                year=budget.year - 1,
+                is_active=True
+            )
+            context['last_year_budget'] = last_year_budget
+            
+            # Calcular diferencia
+            current_spent = budget.spent_amount
+            last_year_spent = last_year_budget.spent_amount
+            difference = current_spent - last_year_spent
+            
+            context['year_comparison'] = {
+                'last_year_spent': last_year_spent,
+                'current_spent': current_spent,
+                'difference': difference,
+                'difference_abs': abs(difference),
+                'is_increase': difference > 0,
+                'is_decrease': difference < 0,
+                'percentage_change': round((difference / last_year_spent * 100), 1) if last_year_spent > 0 else 0,
+            }
+        except Budget.DoesNotExist:
+            context['last_year_budget'] = None
+            context['year_comparison'] = None
         
         return context
 
