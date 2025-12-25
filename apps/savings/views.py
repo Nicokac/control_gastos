@@ -13,6 +13,7 @@ from decimal import Decimal
 
 from .models import Saving, SavingMovement, SavingStatus
 from .forms import SavingForm, SavingMovementForm, SavingFilterForm
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 class SavingListView(LoginRequiredMixin, ListView):
@@ -185,15 +186,14 @@ class SavingDetailView(LoginRequiredMixin, DetailView):
         movements_list = self.object.movements.all().order_by('-date', '-created_at')
         paginator = Paginator(movements_list, 10)  # 10 movimientos por página
         
-        page = self.request.GET.get('page', 1)
+        page_number = self.request.GET.get('page', 1)
         
         try:
-            movements = paginator.get_page(page)
-        except:
-            movements = paginator.get_page(1)
-        
-        context['movements'] = movements
-        context['movement_form'] = SavingMovementForm(saving=self.object)
+            movements = paginator.page(page_number)
+        except PageNotAnInteger:
+            movements = paginator.page(1)
+        except EmptyPage:
+            movements = paginator.page(paginator.num_pages)
         
         return context
 

@@ -143,7 +143,7 @@ class Expense(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
             is_active=True
         ).aggregate(total=Sum('amount_ars'))
 
-        return result['total'] or Decimal ('0')
+        return result['total'] or Decimal('0')
     
     @classmethod
     def get_by_category(cls, user, month, year):

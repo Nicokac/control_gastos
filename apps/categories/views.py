@@ -95,13 +95,6 @@ class CategoryDeleteView(LoginRequiredMixin, DeleteView):
             is_system=False
         )
 
-    def form_valid(self, form):
-        """Realiza soft delete en lugar de eliminación física."""
-        self.object = self.get_object()
-        self.object.soft_delete()
-        messages.success(self.request, 'Categoría eliminada correctamente.')
-        return super().delete(self.request)
-
     def delete(self, request, *args, **kwargs):
         """Override para usar soft delete."""
         self.object = self.get_object()

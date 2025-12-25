@@ -89,6 +89,7 @@ class CurrencyMixin(models.Model):
     amount_ars = models.DecimalField(
         max_digits=14,
         decimal_places=2,
+        default=Decimal('0.00'),
         editable=False,
         verbose_name='Monto en ARS'
     )

@@ -102,7 +102,7 @@ function initKeyboardShortcuts() {
         // Ctrl+D = Dashboard
         if (e.ctrlKey && e.key === 'd') {
             e.preventDefault();
-            window.location.href = '/dashboard/';
+            window.location.href = '/';
         }
     });
 }

@@ -26,7 +26,7 @@ class IncomeForm(forms.ModelForm):
         ]
         widgets = {
             'amount': forms.NumberInput(attrs={
-                'class': 'forms-control form-control-lg text-end',
+                'class': 'form-control form-control-lg text-end',
                 'placeholder': '0.00',
                 'step': '0.01',
                 'min': '0.01',

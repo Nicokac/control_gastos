@@ -8,7 +8,7 @@ class User(AbstractUser):
 
     class Currency(models.TextChoices):
         ARS = 'ARS', 'Peso Argentino'
-        USD = 'USD', 'Dólar Estadoudinense'
+        USD = 'USD', 'Dólar Estadounidense'
 
     email = models.EmailField(unique=True)
     default_currency = models.CharField(
