@@ -3,3 +3,4 @@ django-debug-toolbar>=4.2
 black>=24.0
 flake8>=7.0
 pytest-django>=4.7
+pytest-cov>=4.1
