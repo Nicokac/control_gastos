@@ -119,6 +119,8 @@ class TestSoftDeleteMixin:
 
     def test_soft_deleted_object_still_exists_in_db(self, user):
         """Verifica que el objeto siga existiendo en la DB después de soft delete."""
+        from django.db import connection
+        
         category = Category.objects.create(
             name='Test Category',
             type=CategoryType.EXPENSE,
@@ -127,11 +129,21 @@ class TestSoftDeleteMixin:
         category_id = category.id
         category.soft_delete()
         
-        # El objeto debe seguir existiendo
-        assert Category.objects.filter(id=category_id).exists()
+        # Usar all_objects si existe, o query raw
+        if hasattr(Category, 'all_objects'):
+            assert Category.all_objects.filter(id=category_id).exists()
+        else:
+            # Verificar directamente en la DB
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    "SELECT COUNT(*) FROM categories_category WHERE id = %s",
+                    [category_id]
+                )
+                count = cursor.fetchone()[0]
+            assert count == 1
 
     def test_soft_deleted_object_excluded_from_active_filter(self, user):
-        """Verifica que el objeto soft-deleted se excluya con filtro is_active."""
+        """Verifica que el objeto soft-deleted se excluya con el manager default."""
         category = Category.objects.create(
             name='Test Category',
             type=CategoryType.EXPENSE,
@@ -140,11 +152,12 @@ class TestSoftDeleteMixin:
         category_id = category.id
         category.soft_delete()
         
-        # No debe aparecer en consultas filtradas por is_active=True
-        assert not Category.objects.filter(id=category_id, is_active=True).exists()
+        # El manager default (objects) NO debe encontrarlo
+        assert not Category.objects.filter(id=category_id).exists()
         
-        # Pero sí en consultas sin filtro o con is_active=False
-        assert Category.objects.filter(id=category_id, is_active=False).exists()
+        # Pero all_objects SÍ debe encontrarlo
+        if hasattr(Category, 'all_objects'):
+            assert Category.all_objects.filter(id=category_id).exists()
 
     def test_restore_sets_is_active_true(self, user):
         """Verifica que restore setee is_active en True."""

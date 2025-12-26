@@ -1,0 +1,1 @@
+"""Tests para los modelos de expenses."""
