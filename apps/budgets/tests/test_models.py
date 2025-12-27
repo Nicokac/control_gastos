@@ -5,6 +5,7 @@ Tests para el modelo Budget.
 import pytest
 from decimal import Decimal
 from django.utils import timezone
+from django.db import IntegrityError
 
 from apps.budgets.models import Budget
 from apps.expenses.models import Expense
@@ -288,3 +289,112 @@ class TestBudgetQuerySet:
         
         assert budgets.count() == 1
         assert budgets.first().spent_amount == Decimal('3000.00')
+
+@pytest.mark.django_db
+class TestBudgetConstraints:
+    """Tests para constraints del modelo Budget."""
+
+    def test_unique_budget_per_category_month_year(self, user, expense_category):
+        """Verifica constraint único por usuario/categoría/mes/año."""
+        today = timezone.now().date()
+        
+        Budget.objects.create(
+            user=user,
+            category=expense_category,
+            month=today.month,
+            year=today.year,
+            amount=Decimal('5000.00')
+        )
+        
+        # Intentar crear otro presupuesto para la misma categoría/mes/año
+        with pytest.raises(IntegrityError):
+            Budget.objects.create(
+                user=user,
+                category=expense_category,
+                month=today.month,
+                year=today.year,
+                amount=Decimal('10000.00')
+            )
+
+    def test_same_category_different_month_allowed(self, user, expense_category):
+        """Verifica que misma categoría en diferente mes sea permitido."""
+        today = timezone.now().date()
+        
+        Budget.objects.create(
+            user=user,
+            category=expense_category,
+            month=today.month,
+            year=today.year,
+            amount=Decimal('5000.00')
+        )
+        
+        # Calcular próximo mes
+        if today.month == 12:
+            next_month = 1
+            next_year = today.year + 1
+        else:
+            next_month = today.month + 1
+            next_year = today.year
+        
+        # Diferente mes debería funcionar
+        budget2 = Budget.objects.create(
+            user=user,
+            category=expense_category,
+            month=next_month,
+            year=next_year,
+            amount=Decimal('7000.00')
+        )
+        
+        assert budget2.pk is not None
+
+    def test_same_month_different_category_allowed(self, user, expense_category_factory):
+        """Verifica que mismo mes con diferente categoría sea permitido."""
+        today = timezone.now().date()
+        
+        cat1 = expense_category_factory(user, name='Categoría 1')
+        cat2 = expense_category_factory(user, name='Categoría 2')
+        
+        budget1 = Budget.objects.create(
+            user=user,
+            category=cat1,
+            month=today.month,
+            year=today.year,
+            amount=Decimal('5000.00')
+        )
+        
+        budget2 = Budget.objects.create(
+            user=user,
+            category=cat2,
+            month=today.month,
+            year=today.year,
+            amount=Decimal('3000.00')
+        )
+        
+        assert budget1.pk is not None
+        assert budget2.pk is not None
+
+    def test_same_category_month_different_user_allowed(self, user, other_user, expense_category_factory):
+        """Verifica que mismo mes/categoría con diferente usuario sea permitido."""
+        today = timezone.now().date()
+        
+        cat1 = expense_category_factory(user, name='Alimentación')
+        cat2 = expense_category_factory(other_user, name='Alimentación')
+        
+        budget1 = Budget.objects.create(
+            user=user,
+            category=cat1,
+            month=today.month,
+            year=today.year,
+            amount=Decimal('5000.00')
+        )
+        
+        budget2 = Budget.objects.create(
+            user=other_user,
+            category=cat2,
+            month=today.month,
+            year=today.year,
+            amount=Decimal('8000.00')
+        )
+        
+        assert budget1.pk is not None
+        assert budget2.pk is not None
