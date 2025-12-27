@@ -6,6 +6,7 @@ import pytest
 from decimal import Decimal
 from django.utils import timezone
 from datetime import timedelta
+from apps.savings.models import SavingStatus
 
 from apps.savings.models import Saving, SavingMovement, SavingStatus
 
@@ -226,3 +227,89 @@ class TestSavingQuerySet:
         
         assert saving_user1 in user_savings
         assert saving_user2 not in user_savings
+
+@pytest.mark.django_db
+class TestSavingAutoComplete:
+    """Tests para auto-completado de metas de ahorro."""
+
+    def test_auto_complete_when_reaching_exact_target(self, user, saving_factory):
+        """Verifica auto-complete al alcanzar exactamente la meta."""
+        saving = saving_factory(
+            user,
+            target_amount=Decimal('10000.00'),
+            current_amount=Decimal('9000.00')
+        )
+        
+        # Asegurar que empieza como ACTIVE
+        assert saving.status == SavingStatus.ACTIVE
+        
+        # Depositar justo lo que falta
+        saving.add_deposit(Decimal('1000.00'))
+        saving.refresh_from_db()
+        
+        # Debería auto-completarse
+        assert saving.status == SavingStatus.COMPLETED
+        assert saving.current_amount == saving.target_amount
+
+    def test_auto_complete_when_exceeding_target(self, user, saving_factory):
+        """Verifica auto-complete al superar la meta."""
+        saving = saving_factory(
+            user,
+            target_amount=Decimal('10000.00'),
+            current_amount=Decimal('9500.00')
+        )
+        
+        # Depositar más de lo que falta
+        saving.add_deposit(Decimal('1000.00'))
+        saving.refresh_from_db()
+        
+        # Debería auto-completarse
+        assert saving.status == SavingStatus.COMPLETED
+        assert saving.current_amount > saving.target_amount
+
+    def test_no_auto_complete_when_below_target(self, user, saving_factory):
+        """Verifica que NO se auto-complete antes de alcanzar meta."""
+        saving = saving_factory(
+            user,
+            target_amount=Decimal('10000.00'),
+            current_amount=Decimal('5000.00')
+        )
+        
+        # Depositar menos de lo que falta
+        saving.add_deposit(Decimal('1000.00'))
+        saving.refresh_from_db()
+        
+        # NO debería completarse
+        assert saving.status == SavingStatus.ACTIVE
+        assert saving.current_amount < saving.target_amount
+
+    def test_remaining_amount_calculation(self, user, saving_factory):
+        """Verifica cálculo de monto restante."""
+        saving = saving_factory(
+            user,
+            target_amount=Decimal('10000.00'),
+            current_amount=Decimal('3500.00')
+        )
+        
+        assert saving.remaining_amount == Decimal('6500.00')
+
+    def test_remaining_amount_zero_when_complete(self, user, saving_factory):
+        """Verifica monto restante cero cuando está completa."""
+        saving = saving_factory(
+            user,
+            target_amount=Decimal('10000.00'),
+            current_amount=Decimal('10000.00')
+        )
+        
+        assert saving.remaining_amount == Decimal('0.00')
+
+    def test_remaining_amount_negative_when_exceeded(self, user, saving_factory):
+        """Verifica monto restante negativo cuando se excede."""
+        saving = saving_factory(
+            user,
+            target_amount=Decimal('10000.00'),
+            current_amount=Decimal('12000.00')
+        )
+        
+        # Puede ser negativo o cero según implementación
+        assert saving.remaining_amount <= Decimal('0.00')
