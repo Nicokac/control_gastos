@@ -5,6 +5,8 @@ Tests para el modelo Income.
 import pytest
 from decimal import Decimal
 from django.utils import timezone
+from django.db import IntegrityError
+from django.core.exceptions import ValidationError
 
 from apps.income.models import Income
 from apps.core.constants import Currency
@@ -158,3 +160,101 @@ class TestIncomeQuerySet:
         )['total']
         
         assert total == Decimal('80000.00')
+
+@pytest.mark.django_db
+class TestIncomeValidations:
+    """Tests de validaciones del modelo Income."""
+
+    def test_negative_amount_raises_error(self, user, income_category):
+        """Verifica que monto negativo lance error."""
+        income = Income(
+            user=user,
+            category=income_category,
+            description='Monto negativo',
+            amount=Decimal('-100.00'),
+            currency=Currency.ARS,
+            exchange_rate=Decimal('1.00'),
+            date=timezone.now().date()
+        )
+        
+        with pytest.raises(ValidationError):
+            income.full_clean()
+
+    def test_zero_amount_raises_error(self, user, income_category):
+        """Verifica que monto cero lance error."""
+        income = Income(
+            user=user,
+            category=income_category,
+            description='Monto cero',
+            amount=Decimal('0.00'),
+            currency=Currency.ARS,
+            exchange_rate=Decimal('1.00'),
+            date=timezone.now().date()
+        )
+        
+        with pytest.raises(ValidationError):
+            income.full_clean()
+
+    def test_usd_requires_exchange_rate(self, user, income_category):
+        """Verifica que USD requiera exchange_rate."""
+        income = Income(
+            user=user,
+            category=income_category,
+            description='Ingreso USD sin TC',
+            amount=Decimal('100.00'),
+            currency=Currency.USD,
+            exchange_rate=None,
+            date=timezone.now().date()
+        )
+        
+        with pytest.raises((ValidationError, IntegrityError)):
+            income.full_clean()
+            income.save()
+
+    def test_usd_exchange_rate_must_be_positive(self, user, income_category):
+        """Verifica que exchange_rate sea positivo para USD."""
+        income = Income(
+            user=user,
+            category=income_category,
+            description='Ingreso USD TC cero',
+            amount=Decimal('100.00'),
+            currency=Currency.USD,
+            exchange_rate=Decimal('0.00'),
+            date=timezone.now().date()
+        )
+        
+        with pytest.raises(ValidationError):
+            income.full_clean()
+
+    def test_ars_allows_default_exchange_rate(self, user, income_category):
+        """Verifica que ARS permita exchange_rate por defecto."""
+        income = Income(
+            user=user,
+            category=income_category,
+            description='Ingreso ARS',
+            amount=Decimal('100.00'),
+            currency=Currency.ARS,
+            exchange_rate=Decimal('1.00'),
+            date=timezone.now().date()
+        )
+        
+        # No debería lanzar error
+        income.full_clean()
+        income.save()
+        
+        assert income.pk is not None
+
+    def test_description_required(self, user, income_category):
+        """Verifica que descripción sea requerida."""
+        income = Income(
+            user=user,
+            category=income_category,
+            description='',  # Vacío
+            amount=Decimal('100.00'),
+            currency=Currency.ARS,
+            exchange_rate=Decimal('1.00'),
+            date=timezone.now().date()
+        )
+        
+        with pytest.raises(ValidationError):
+            income.full_clean()
