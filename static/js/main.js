@@ -130,27 +130,40 @@ function showToast(message, type = 'success') {
     const toastEl = document.getElementById('actionToast');
     const toastIcon = document.getElementById('toastIcon');
     const toastMessage = document.getElementById('toastMessage');
-    
+    const toastCloseBtn = document.getElementById('toastCloseBtn');
+
     if (!toastEl) return;
-    
-    // Set icon based on type
+
     const icons = {
         success: 'bi-check-circle-fill',
         danger: 'bi-x-circle-fill',
         warning: 'bi-exclamation-triangle-fill',
         info: 'bi-info-circle-fill'
     };
-    
-    // Reset classes
+
+    // Reset classes base
     toastEl.className = 'toast align-items-center border-0';
-    toastEl.classList.add(`bg-${type}`, 'text-white');
-    
-    // Set content
+
+    // Background
+    toastEl.classList.add(`bg-${type}`);
+
+    // Text color: warning/info son fondos claros -> texto oscuro
+    const isLightBg = ['warning', 'info'].includes(type);
+    toastEl.classList.add(isLightBg ? 'text-dark' : 'text-white');
+
+    // Close button contrast
+    if (toastCloseBtn) {
+        toastCloseBtn.classList.remove('btn-close-white');
+        const needsWhiteClose = !isLightBg; // success/danger -> blanco
+        if (needsWhiteClose) toastCloseBtn.classList.add('btn-close-white');
+    }
+
+    // Content
     toastIcon.className = `bi ${icons[type] || icons.info} me-2`;
     toastMessage.textContent = message;
-    
-    // Show toast
-    const toast = new bootstrap.Toast(toastEl, { delay: 4000 });
+
+    // Show
+    const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 4000 });
     toast.show();
 }
 

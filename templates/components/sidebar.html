@@ -1,64 +1,82 @@
 {% if user.is_authenticated %}
-<nav class="sidebar d-none d-md-block">
-    <div class="pt-3">
-        <!-- Sección: Principal -->
-        <li class="nav-item">
-            <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
-               href="{% url 'reports:dashboard' %}">
-                <i class="bi bi-speedometer2 me-2"></i>Dashboard
-            </a>
-        </li>
-        
-        <!-- Sección: Transacciones -->
-        <div class="sidebar-section">
-            <small class="sidebar-label">TRANSACCIONES</small>
-            
-            <a href="{% url 'expenses:list' %}" 
-               class="sidebar-link {% if 'expenses' in request.path %}active{% endif %}">
-                <i class="bi bi-arrow-up-circle text-danger"></i>
-                <span>Gastos</span>
-            </a>
-            
-            <a href="{% url 'income:list' %}" 
-               class="sidebar-link {% if 'income' in request.path %}active{% endif %}">
-                <i class="bi bi-arrow-down-circle text-success"></i>
-                <span>Ingresos</span>
-            </a>
-            
-            <a href="{% url 'savings:list' %}" 
-               class="sidebar-link {% if 'savings' in request.path %}active{% endif %}">
-                <i class="bi bi-piggy-bank text-info"></i>
-                <span>Ahorro</span>
-            </a>
-        </div>
-        
-        <!-- Sección: Planificación -->
-        <div class="sidebar-section">
-            <small class="sidebar-label">PLANIFICACIÓN</small>
-            
-            <a href="{% url 'budgets:list' %}" 
-               class="sidebar-link {% if 'budgets' in request.path %}active{% endif %}">
-                <i class="bi bi-clipboard-data text-warning"></i>
-                <span>Presupuestos</span>
-            </a>
-            
-            <a href="{% url 'categories:list' %}" 
-               class="sidebar-link {% if 'categories' in request.path %}active{% endif %}">
-                <i class="bi bi-tags"></i>
-                <span>Categorías</span>
-            </a>
-        </div>
-        
-        <!-- Sección: Cuenta -->
-        <div class="sidebar-section">
-            <small class="sidebar-label">CUENTA</small>
-            
-            <a href="{% url 'users:profile' %}" 
-               class="sidebar-link {% if 'profile' in request.path %}active{% endif %}">
-                <i class="bi bi-gear"></i>
-                <span>Configuración</span>
-            </a>
-        </div>
-    </div>
+<nav class="sidebar d-none d-md-block" aria-label="Sidebar">
+  <div class="pt-3">
+
+    <ul class="nav flex-column">
+
+      <!-- Sección: Principal -->
+      <li class="nav-item">
+        <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+           href="{% url 'reports:dashboard' %}">
+          <i class="bi bi-speedometer2 me-2" aria-hidden="true"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+
+      <!-- Sección: Transacciones -->
+      <li class="mt-3">
+        <small class="sidebar-label d-block px-3 text-uppercase">TRANSACCIONES</small>
+      </li>
+
+      <li class="nav-item">
+        <a href="{% url 'expenses:list' %}"
+           class="nav-link {% if 'expenses' in request.path %}active{% endif %}">
+          <i class="bi bi-arrow-up-circle text-danger me-2" aria-hidden="true"></i>
+          <span>Gastos</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a href="{% url 'income:list' %}"
+           class="nav-link {% if 'income' in request.path %}active{% endif %}">
+          <i class="bi bi-arrow-down-circle text-success me-2" aria-hidden="true"></i>
+          <span>Ingresos</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a href="{% url 'savings:list' %}"
+           class="nav-link {% if 'savings' in request.path %}active{% endif %}">
+          <i class="bi bi-piggy-bank text-info me-2" aria-hidden="true"></i>
+          <span>Ahorro</span>
+        </a>
+      </li>
+
+      <!-- Sección: Planificación -->
+      <li class="mt-3">
+        <small class="sidebar-label d-block px-3 text-uppercase">PLANIFICACIÓN</small>
+      </li>
+
+      <li class="nav-item">
+        <a href="{% url 'budgets:list' %}"
+           class="nav-link {% if 'budgets' in request.path %}active{% endif %}">
+          <i class="bi bi-clipboard-data text-warning me-2" aria-hidden="true"></i>
+          <span>Presupuestos</span>
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a href="{% url 'categories:list' %}"
+           class="nav-link {% if 'categories' in request.path %}active{% endif %}">
+          <i class="bi bi-tags me-2" aria-hidden="true"></i>
+          <span>Categorías</span>
+        </a>
+      </li>
+
+      <!-- Sección: Cuenta -->
+      <li class="mt-3">
+        <small class="sidebar-label d-block px-3 text-uppercase">CUENTA</small>
+      </li>
+
+      <li class="nav-item">
+        <a href="{% url 'users:profile' %}"
+           class="nav-link {% if 'profile' in request.path %}active{% endif %}">
+          <i class="bi bi-gear me-2" aria-hidden="true"></i>
+          <span>Configuración</span>
+        </a>
+      </li>
+
+    </ul>
+  </div>
 </nav>
 {% endif %}
