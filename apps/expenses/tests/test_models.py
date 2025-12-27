@@ -6,6 +6,8 @@ import pytest
 from decimal import Decimal
 from django.utils import timezone
 from datetime import timedelta
+from django.db import IntegrityError
+from django.core.exceptions import ValidationError
 
 from apps.expenses.models import Expense
 from apps.core.constants import Currency
@@ -218,3 +220,116 @@ class TestExpenseQuerySet:
         ).aggregate(total=Sum('amount_ars'))['total']
         
         assert total == Decimal('600.00')
+
+@pytest.mark.django_db
+class TestExpenseValidations:
+    """Tests de validaciones del modelo Expense."""
+
+    def test_negative_amount_raises_error(self, user, expense_category):
+        """Verifica que monto negativo lance error."""
+        expense = Expense(
+            user=user,
+            category=expense_category,
+            description='Monto negativo',
+            amount=Decimal('-100.00'),
+            currency=Currency.ARS,
+            exchange_rate=Decimal('1.00'),
+            date=timezone.now().date()
+        )
+        
+        with pytest.raises(ValidationError):
+            expense.full_clean()
+
+    def test_zero_amount_raises_error(self, user, expense_category):
+        """Verifica que monto cero lance error."""
+        expense = Expense(
+            user=user,
+            category=expense_category,
+            description='Monto cero',
+            amount=Decimal('0.00'),
+            currency=Currency.ARS,
+            exchange_rate=Decimal('1.00'),
+            date=timezone.now().date()
+        )
+        
+        with pytest.raises(ValidationError):
+            expense.full_clean()
+
+    def test_usd_requires_exchange_rate(self, user, expense_category):
+        """Verifica que USD requiera exchange_rate."""
+        expense = Expense(
+            user=user,
+            category=expense_category,
+            description='Compra USD sin TC',
+            amount=Decimal('100.00'),
+            currency=Currency.USD,
+            exchange_rate=None,
+            date=timezone.now().date()
+        )
+        
+        with pytest.raises((ValidationError, IntegrityError)):
+            expense.full_clean()
+            expense.save()
+
+    def test_usd_exchange_rate_must_be_positive(self, user, expense_category):
+        """Verifica que exchange_rate sea positivo para USD."""
+        expense = Expense(
+            user=user,
+            category=expense_category,
+            description='Compra USD TC cero',
+            amount=Decimal('100.00'),
+            currency=Currency.USD,
+            exchange_rate=Decimal('0.00'),
+            date=timezone.now().date()
+        )
+        
+        with pytest.raises(ValidationError):
+            expense.full_clean()
+
+    def test_ars_allows_default_exchange_rate(self, user, expense_category):
+        """Verifica que ARS permita exchange_rate por defecto."""
+        expense = Expense(
+            user=user,
+            category=expense_category,
+            description='Gasto ARS',
+            amount=Decimal('100.00'),
+            currency=Currency.ARS,
+            exchange_rate=Decimal('1.00'),
+            date=timezone.now().date()
+        )
+        
+        # No debería lanzar error
+        expense.full_clean()
+        expense.save()
+        
+        assert expense.pk is not None
+
+    def test_description_required(self, user, expense_category):
+        """Verifica que descripción sea requerida."""
+        expense = Expense(
+            user=user,
+            category=expense_category,
+            description='',  # Vacío
+            amount=Decimal('100.00'),
+            currency=Currency.ARS,
+            exchange_rate=Decimal('1.00'),
+            date=timezone.now().date()
+        )
+        
+        with pytest.raises(ValidationError):
+            expense.full_clean()
+
+    def test_category_required(self, user):
+        """Verifica que categoría sea requerida."""
+        with pytest.raises((ValidationError, IntegrityError)):
+            expense = Expense(
+                user=user,
+                category=None,
+                description='Sin categoría',
+                amount=Decimal('100.00'),
+                currency=Currency.ARS,
+                exchange_rate=Decimal('1.00'),
+                date=timezone.now().date()
+            )
+            expense.full_clean()
+            expense.save()
