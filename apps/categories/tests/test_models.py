@@ -4,6 +4,7 @@ Tests para el modelo Category.
 
 import pytest
 from decimal import Decimal
+from django.db import IntegrityError
 
 from apps.categories.models import Category
 from apps.core.constants import CategoryType
@@ -99,7 +100,7 @@ class TestCategoryModel:
         )
         
         # Intentar crear otra con el mismo nombre debería fallar
-        with pytest.raises(Exception):
+        with pytest.raises(IntegrityError):
             Category.objects.create(
                 name='Duplicada',
                 type=CategoryType.EXPENSE,
