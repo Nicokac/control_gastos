@@ -5,6 +5,7 @@ Tests para el modelo Category.
 import pytest
 from decimal import Decimal
 from django.db import IntegrityError
+from django.core.exceptions import ValidationError
 
 from apps.categories.models import Category
 from apps.core.constants import CategoryType
@@ -60,7 +61,8 @@ class TestCategoryModel:
             user=user
         )
         
-        assert str(category) == 'Transporte'
+        # El __str__ incluye el tipo
+        assert 'Transporte' in str(category)
 
     def test_category_default_values(self, user):
         """Verifica valores por defecto."""
@@ -99,8 +101,8 @@ class TestCategoryModel:
             user=user
         )
         
-        # Intentar crear otra con el mismo nombre debería fallar
-        with pytest.raises(IntegrityError):
+        # Lanza ValidationError porque full_clean() se llama en save()
+        with pytest.raises(ValidationError):
             Category.objects.create(
                 name='Duplicada',
                 type=CategoryType.EXPENSE,

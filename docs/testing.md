@@ -104,10 +104,4 @@ pytest -s
 pytest -n auto
 ```
 ```
-
-### 7.2 Commit
-
-```bash
-git add docs/testing.md
-git commit -m "docs: add testing guide with commands"
 ```

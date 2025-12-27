@@ -347,7 +347,7 @@ def saving_movement_factory(db):
             'type': movement_type,
             'amount': Decimal('1000.00'),
             'date': timezone.now().date(),
-            'notes': 'Movimiento de prueba',
+            # 'notes': 'Movimiento de prueba',  # ELIMINAR - Campo no existe
         }
         defaults.update(kwargs)
         return SavingMovement.objects.create(**defaults)

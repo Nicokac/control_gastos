@@ -6,6 +6,7 @@ import pytest
 from decimal import Decimal
 from django.utils import timezone
 from django.db import IntegrityError
+from django.core.exceptions import ValidationError
 
 from apps.budgets.models import Budget
 from apps.expenses.models import Expense
@@ -306,8 +307,8 @@ class TestBudgetConstraints:
             amount=Decimal('5000.00')
         )
         
-        # Intentar crear otro presupuesto para la misma categoría/mes/año
-        with pytest.raises(IntegrityError):
+        # Lanza ValidationError porque full_clean() se llama en save()
+        with pytest.raises(ValidationError):
             Budget.objects.create(
                 user=user,
                 category=expense_category,
