@@ -53,7 +53,7 @@ def admin_user(db):
 @pytest.fixture
 def authenticated_client(client, user):
     """Cliente autenticado con el usuario de prueba."""
-    client.login(username='testuser', password='testpass123')
+    client.force_login(user)
     return client
 
 
@@ -66,8 +66,8 @@ def admin_client(client, admin_user):
 
 @pytest.fixture
 def other_user_client(client, other_user):
-    """Cliente autenticado con otro usuario (para tests de permisos)."""
-    client.login(username='otheruser', password='otherpass123')
+    """Cliente autenticado con otro usuario."""
+    client.force_login(other_user)
     return client
 
 
@@ -352,17 +352,3 @@ def saving_movement_factory(db):
         defaults.update(kwargs)
         return SavingMovement.objects.create(**defaults)
     return _create_movement
-
-
-@pytest.fixture
-def authenticated_client(client, user):
-    """Cliente autenticado con usuario de prueba."""
-    client.force_login(user)
-    return client
-
-
-@pytest.fixture
-def other_user_client(client, other_user):
-    """Cliente autenticado con otro usuario."""
-    client.force_login(other_user)
-    return client
