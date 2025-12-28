@@ -35,11 +35,29 @@ def check_security():
     # CHECKS CRÍTICOS (Bloquean deploy)
     # =========================================================================
     
-    # SECRET_KEY
-    if 'dev-secret' in settings.SECRET_KEY.lower() or len(settings.SECRET_KEY) < 50:
-        errors.append("SECRET_KEY insegura o muy corta")
+    # SECRET_KEY - Existencia
+    if not settings.SECRET_KEY:
+        errors.append("SECRET_KEY no está configurada")
     else:
-        print("✅ SECRET_KEY configurada correctamente")
+        # SECRET_KEY - Longitud
+        if len(settings.SECRET_KEY) < 50:
+            errors.append(f"SECRET_KEY muy corta ({len(settings.SECRET_KEY)} chars, mínimo 50)")
+        else:
+            # SECRET_KEY - Valores inseguros
+            insecure_patterns = [
+                'dev-secret', 'secret-key', 'change-me', 'your-secret',
+                'django-insecure', 'placeholder', 'xxx', '123456'
+            ]
+            
+            is_insecure = any(
+                pattern in settings.SECRET_KEY.lower() 
+                for pattern in insecure_patterns
+            )
+            
+            if is_insecure:
+                errors.append("SECRET_KEY contiene patrones inseguros")
+            else:
+                print(f"✅ SECRET_KEY configurada ({len(settings.SECRET_KEY)} chars)")
     
     # DEBUG
     if settings.DEBUG:
@@ -54,10 +72,14 @@ def check_security():
         print(f"✅ ALLOWED_HOSTS: {settings.ALLOWED_HOSTS}")
     
     # HSTS
-    if not getattr(settings, 'SECURE_HSTS_SECONDS', 0):
+    hsts_seconds = getattr(settings, 'SECURE_HSTS_SECONDS', 0)
+    if not hsts_seconds:
         errors.append("SECURE_HSTS_SECONDS no configurado")
+    elif hsts_seconds < 31536000:  # Menos de 1 año
+        warnings.append(f"HSTS muy corto ({hsts_seconds}s), recomendado 31536000 (1 año)")
+        print(f"⚠️  HSTS configurado: {hsts_seconds} segundos (recomendado: 31536000)")
     else:
-        print(f"✅ HSTS configurado: {settings.SECURE_HSTS_SECONDS} segundos")
+        print(f"✅ HSTS configurado: {hsts_seconds} segundos")
     
     # SSL Redirect
     if not getattr(settings, 'SECURE_SSL_REDIRECT', False):
@@ -100,6 +122,14 @@ def check_security():
         warnings.append("SECURE_REFERRER_POLICY no configurado")
     else:
         print(f"✅ SECURE_REFERRER_POLICY: {referrer}")
+    
+    # HSTS Subdomains
+    if hsts_seconds and not getattr(settings, 'SECURE_HSTS_INCLUDE_SUBDOMAINS', False):
+        warnings.append("SECURE_HSTS_INCLUDE_SUBDOMAINS no está activado")
+    
+    # Session Cookie HttpOnly
+    if not getattr(settings, 'SESSION_COOKIE_HTTPONLY', True):
+        warnings.append("SESSION_COOKIE_HTTPONLY debería estar activado")
     
     # =========================================================================
     # RESUMEN
