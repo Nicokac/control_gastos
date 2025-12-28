@@ -116,11 +116,14 @@ class SavingForm(forms.ModelForm):
     def save(self, commit=True):
         """Guarda la meta asignando el usuario."""
         instance = super().save(commit=False)
-        instance.user = self.user
-        
+
+        # Solo asignar user si fue provisto (evita pisar user en edits y permite commit=False en tests)
+        if self.user is not None:
+            instance.user = self.user
+
         if commit:
             instance.save()
-        
+
         return instance
 
 

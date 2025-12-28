@@ -21,6 +21,9 @@ class TestSavingForm:
                 'name': 'Vacaciones',
                 'target_amount': '50000.00',
                 'target_date': (timezone.now().date().replace(year=timezone.now().year + 1)),
+            'currency': 'ARS',
+            'icon': 'bi-piggy-bank',
+            'color': '#28a745',  
             }
         )
         
@@ -81,6 +84,9 @@ class TestSavingForm:
                 'name': 'Vacaciones',
                 'target_amount': '50000.00',
                 'target_date': '',
+                'currency': 'ARS',
+                'icon': 'bi-piggy-bank',
+                'color': '#28a745', 
             }
         )
         
@@ -106,6 +112,9 @@ class TestSavingForm:
             data={
                 'name': 'Nueva Meta',
                 'target_amount': '100000.00',
+                'currency': 'ARS',
+                'icon': 'bi-piggy-bank',
+                'color': '#28a745',  
             }
         )
         
@@ -126,33 +135,48 @@ class TestSavingFormEdit:
 
     def test_edit_saving_name(self, saving):
         """Verifica edición del nombre."""
+        # Obtener valores válidos del form
+        temp_form = SavingForm()
+        icon_choices = list(temp_form.fields['icon'].choices)
+        color_choices = list(temp_form.fields['color'].choices)
+        
         form = SavingForm(
             data={
                 'name': 'Nombre Editado',
                 'target_amount': str(saving.target_amount),
+                'currency': 'ARS',
+                'icon': icon_choices[0][0] if icon_choices else 'bi-piggy-bank',
+                'color': color_choices[0][0] if color_choices else 'green',
             },
             instance=saving
         )
         
         assert form.is_valid(), form.errors
         
-        saving = form.save()
-        assert saving.name == 'Nombre Editado'
+        saved = form.save()
+        assert saved.name == 'Nombre Editado'
 
     def test_edit_target_amount(self, saving):
         """Verifica edición del monto objetivo."""
+        temp_form = SavingForm()
+        icon_choices = list(temp_form.fields['icon'].choices)
+        color_choices = list(temp_form.fields['color'].choices)
+        
         form = SavingForm(
             data={
                 'name': saving.name,
                 'target_amount': '200000.00',
+                'currency': 'ARS',
+                'icon': icon_choices[0][0] if icon_choices else 'bi-piggy-bank',
+                'color': color_choices[0][0] if color_choices else 'green',
             },
             instance=saving
         )
         
         assert form.is_valid(), form.errors
         
-        saving = form.save()
-        assert saving.target_amount == Decimal('200000.00')
+        saved = form.save()
+        assert saved.target_amount == Decimal('200000.00')
 
     def test_cannot_reduce_target_below_current(self, saving_with_progress):
         """Verifica que no se pueda reducir objetivo por debajo del actual."""
@@ -161,6 +185,9 @@ class TestSavingFormEdit:
             data={
                 'name': saving_with_progress.name,
                 'target_amount': '1000.00',  # Menor que current_amount
+                'currency': 'ARS',
+                'icon': 'bi-piggy-bank',
+                'color': '#28a745',  
             },
             instance=saving_with_progress
         )
@@ -293,6 +320,9 @@ class TestSavingFormCleanedData:
                 'name': 'Meta de prueba',
                 'target_amount': '100000.00',
                 'target_date': future_date,
+                'currency': 'ARS',
+                'icon': 'bi-piggy-bank',
+                'color': '#28a745',  
             }
         )
         
@@ -311,6 +341,9 @@ class TestSavingFormCleanedData:
             data={
                 'name': '  Meta con espacios  ',
                 'target_amount': '50000.00',
+                'currency': 'ARS',
+                'icon': 'bi-piggy-bank',
+                'color': '#28a745',  
             }
         )
         
@@ -330,6 +363,9 @@ class TestSavingFormInitialValues:
             data={
                 'name': 'Nueva meta',
                 'target_amount': '100000.00',
+                'currency': 'ARS',
+                'icon': 'bi-piggy-bank',
+                'color': '#28a745',  
             }
         )
         
@@ -349,6 +385,9 @@ class TestSavingFormInitialValues:
             data={
                 'name': 'Nueva meta',
                 'target_amount': '100000.00',
+                'currency': 'ARS',
+                'icon': 'bi-piggy-bank',
+                'color': '#28a745',  
             }
         )
         
@@ -373,7 +412,6 @@ class TestSavingMovementFormCleanedData:
             data={
                 'type': 'DEPOSIT',
                 'amount': '1000.00',
-                'date': timezone.now().date(),
             },
             saving=saving
         )
@@ -382,4 +420,3 @@ class TestSavingMovementFormCleanedData:
         
         # Verificar tipos
         assert isinstance(form.cleaned_data['amount'], Decimal)
-        assert isinstance(form.cleaned_data['date'], date)

@@ -9,6 +9,7 @@ from django.utils import timezone
 from apps.expenses.forms import ExpenseForm
 from apps.expenses.models import Expense
 from apps.core.constants import Currency, PaymentMethod
+from apps.core.constants import Currency, CategoryType
 
 
 @pytest.mark.django_db

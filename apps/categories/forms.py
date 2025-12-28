@@ -48,24 +48,31 @@ class CategoryForm(forms.ModelForm):
 
         if not name:
             return name
-        
-        # Verificar duplicados en categorías del usuario.
-        queryset = Category.objects.filter(
-            name__iexact=name,
-            user=self.user,
-            type=category_type
-        )
 
-        # Excluir la instancia actual si estamos editando
-        if self.instance.pk:
-            queryset = queryset.exclude(pk=self.instance.pk)
+        # Si no pasaron user (tests/edit), usar el user de la instancia
+        effective_user = self.user or getattr(self.instance, "user", None)
 
-        if queryset.exists():
-            raise forms.ValidationError(
-                'Ya tenés una categoría con este nombre para este tipo.'
+        # Si es creación y no hay user, que falle limpio (evita llegar al model.clean)
+        if self.instance.pk is None and effective_user is None:
+            raise forms.ValidationError("Debés estar autenticado para crear categorías.")
+
+        # Duplicados del usuario (solo si sabemos qué usuario es)
+        if effective_user is not None:
+            queryset = Category.objects.filter(
+                name__iexact=name,
+                user=effective_user,
+                type=category_type
             )
-        
-        # Verificar que no coincida categorías del sistema
+
+            if self.instance.pk:
+                queryset = queryset.exclude(pk=self.instance.pk)
+
+            if queryset.exists():
+                raise forms.ValidationError(
+                    'Ya tenés una categoría con este nombre para este tipo.'
+                )
+
+        # Duplicados en categorías del sistema
         if Category.objects.filter(
             name__iexact=name,
             is_system=True,
@@ -74,14 +81,19 @@ class CategoryForm(forms.ModelForm):
             raise forms.ValidationError(
                 'Ya existe una categoría del sistema con este nombre.'
             )
-        
+
         return name
     
     def save(self, commit=True):
         """Guarda la categoría asignando el usuario."""
         instance = super().save(commit=False)
-        instance.user = self.user
+
+        # Siempre user-category desde este form
         instance.is_system = False
+
+        # Solo asignar user si fue provisto (evita pisar user en edits y permite commit=False en tests)
+        if self.user is not None:
+            instance.user = self.user
 
         if commit:
             instance.save()
