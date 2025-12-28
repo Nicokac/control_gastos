@@ -3,7 +3,19 @@ from decouple import config
 
 DEBUG = False
 
+# Obtener hosts desde variable de entorno
+# Formato: "dominio1.com,dominio2.com,www.dominio1.com"
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
+
+# Eliminar strings vacíos si no hay hosts configurados
+ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS if host.strip()]
+
+# Validación: No permitir deploy sin ALLOWED_HOSTS configurado
+if not ALLOWED_HOSTS:
+    raise ValueError(
+        "ALLOWED_HOSTS no está configurado. "
+        "Define la variable de entorno ALLOWED_HOSTS con los dominios permitidos."
+    )
 
 DATABASES = {
     'default':{
