@@ -20,8 +20,31 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY', default='dev-secret-key-change-in-prod')
+# =============================================================================
+# SECRET KEY
+# =============================================================================
+
+# En producción, SECRET_KEY DEBE estar configurada como variable de entorno
+# En desarrollo, se permite un default para facilitar el setup inicial
+SECRET_KEY = config('SECRET_KEY', default=None)
+
+# Validación: Si no hay SECRET_KEY, mostrar error claro
+if SECRET_KEY is None:
+    raise ValueError(
+        "\n"
+        "=" * 60 + "\n"
+        "❌ ERROR: SECRET_KEY no está configurada\n"
+        "=" * 60 + "\n"
+        "\n"
+        "Opciones:\n"
+        "1. Crear archivo .env con: SECRET_KEY=tu-clave-secreta\n"
+        "2. Exportar variable: export SECRET_KEY=tu-clave-secreta\n"
+        "\n"
+        "Generar clave segura con:\n"
+        "  python -c \"from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())\"\n"
+        "\n"
+        "=" * 60
+    )
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
