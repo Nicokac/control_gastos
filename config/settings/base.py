@@ -61,9 +61,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
     # Third party
     'crispy_forms',
     'crispy_bootstrap5',
+    'axes',
+
     # Local apps
     'apps.users',
     'apps.expenses',
@@ -76,6 +79,15 @@ INSTALLED_APPS = [
 ]
 
 AUTH_USER_MODEL = 'users.User'
+
+# =============================================================================
+# AUTENTICACIÓN
+# =============================================================================
+
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesStandaloneBackend',  # ← Primero axes
+    'django.contrib.auth.backends.ModelBackend',  # ← Después el default
+]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
@@ -90,6 +102,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'axes.middleware.AxesMiddleware',
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -172,3 +185,47 @@ LOGIN_URL = 'users:login'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# =============================================================================
+# DJANGO-AXES - Rate Limiting
+# =============================================================================
+
+# Número de intentos fallidos antes de bloquear
+AXES_FAILURE_LIMIT = 5
+
+# Tiempo de bloqueo en horas (None = hasta desbloqueo manual)
+AXES_COOLOFF_TIME = 1  # 1 hora
+
+# Qué considerar para el bloqueo
+# 'ip_address' = solo IP
+# 'username' = solo usuario
+# 'ip_address,username' = combinación (más seguro)
+AXES_LOCKOUT_PARAMETERS = ['ip_address', 'username']
+
+# Reset de intentos después de login exitoso
+AXES_RESET_ON_SUCCESS = True
+
+# Habilitar logging
+AXES_VERBOSE = True
+
+# Ignorar URLs específicas (no aplicar rate limiting)
+# AXES_NEVER_LOCKOUT_WHITELIST = True
+# AXES_WHITELIST = ['admin']
+
+# Guardar intentos en base de datos
+AXES_ENABLE_ACCESS_FAILURE_LOG = True
+
+# Mensaje personalizado (se mostrará en la página de lockout)
+AXES_LOCKOUT_TEMPLATE = 'users/account_locked.html'
+
+# URL a redirigir cuando está bloqueado (alternativa al template)
+# AXES_LOCKOUT_URL = '/cuenta-bloqueada/'
+
+# Excluir IPs específicas del rate limiting (ej: tu IP de desarrollo)
+# AXES_NEVER_LOCKOUT_GET = True  # No bloquear requests GET
+# AXES_IP_WHITELIST = ['127.0.0.1']
+
+# Para proxies/load balancers - obtener IP real del header
+# AXES_PROXY_COUNT = 1
+# AXES_META_PRECEDENCE_ORDER = ['HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR']
