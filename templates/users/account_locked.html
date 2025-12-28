@@ -39,13 +39,9 @@
                             <li>Contactar al administrador si el problema persiste</li>
                         </ul>
                     </div>
-                    
                     <!-- Acciones -->
                     <div class="d-grid gap-2">
-                        <a href="{% url 'users:password_reset' %}" class="btn btn-outline-primary">
-                            <i class="bi bi-key me-2"></i>Recuperar Contraseña
-                        </a>
-                        <a href="{% url 'users:login' %}" class="btn btn-secondary">
+                        <a href="{% url 'users:login' %}" class="btn btn-primary">
                             <i class="bi bi-arrow-left me-2"></i>Volver al Login
                         </a>
                     </div>
