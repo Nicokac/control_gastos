@@ -166,6 +166,42 @@ def check_security():
         print("\n🚀 Deploy LISTO")
         sys.exit(0)
 
+    # =========================================================================
+    # CHECKS DE RATE LIMITING
+    # =========================================================================
+    
+    # Django-axes instalado
+    if 'axes' in settings.INSTALLED_APPS:
+        print("✅ Django-axes instalado")
+        
+        # Verificar configuración
+        failure_limit = getattr(settings, 'AXES_FAILURE_LIMIT', None)
+        if failure_limit:
+            print(f"   • Límite de intentos: {failure_limit}")
+        else:
+            warnings.append("AXES_FAILURE_LIMIT no configurado")
+        
+        cooloff = getattr(settings, 'AXES_COOLOFF_TIME', None)
+        if cooloff:
+            print(f"   • Tiempo de bloqueo: {cooloff} hora(s)")
+        else:
+            warnings.append("AXES_COOLOFF_TIME no configurado (bloqueo permanente)")
+        
+        # Verificar middleware
+        if 'axes.middleware.AxesMiddleware' in settings.MIDDLEWARE:
+            print("   • Middleware configurado")
+        else:
+            errors.append("AxesMiddleware no está en MIDDLEWARE")
+        
+        # Verificar backend
+        backends = getattr(settings, 'AUTHENTICATION_BACKENDS', [])
+        if 'axes.backends.AxesStandaloneBackend' in backends:
+            print("   • Backend de autenticación configurado")
+        else:
+            errors.append("AxesStandaloneBackend no está en AUTHENTICATION_BACKENDS")
+    else:
+        warnings.append("Django-axes no está instalado (sin rate limiting)")
+
 
 if __name__ == '__main__':
     check_security()

@@ -1,5 +1,4 @@
 -r base.txt
 psycopg2-binary>=2.9
 gunicorn>=21.0
-whitenoise>=6.6
 django-csp==3.8
