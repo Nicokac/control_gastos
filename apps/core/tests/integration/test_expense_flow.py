@@ -13,6 +13,8 @@ from apps.budgets.models import Budget
 from apps.core.constants import Currency, CategoryType
 
 
+@pytest.mark.slow
+@pytest.mark.integration
 @pytest.mark.django_db
 class TestExpenseCreationFlow:
     """Tests del flujo completo de creación de gastos."""
@@ -112,6 +114,8 @@ class TestExpenseCreationFlow:
         assert expense.amount_ars == Decimal('60000.00')  # 50 * 1200
 
 
+@pytest.mark.slow
+@pytest.mark.integration
 @pytest.mark.django_db
 class TestExpenseBudgetIntegration:
     """Tests de integración entre gastos y presupuestos."""
@@ -215,6 +219,8 @@ class TestExpenseBudgetIntegration:
         assert budget.spent_percentage > 100
 
 
+@pytest.mark.slow
+@pytest.mark.integration
 @pytest.mark.django_db
 class TestExpenseFilteringFlow:
     """Tests de filtrado de gastos."""

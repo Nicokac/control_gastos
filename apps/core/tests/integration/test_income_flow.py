@@ -12,6 +12,8 @@ from apps.income.models import Income
 from apps.core.constants import Currency
 
 
+@pytest.mark.slow
+@pytest.mark.integration
 @pytest.mark.django_db
 class TestIncomeCreationFlow:
     """Tests del flujo completo de creación de ingresos."""
@@ -104,6 +106,8 @@ class TestIncomeCreationFlow:
         assert income.amount_ars == Decimal('600000.00')  # 500 * 1200
 
 
+@pytest.mark.slow
+@pytest.mark.integration
 @pytest.mark.django_db
 class TestIncomeBalanceCalculation:
     """Tests de cálculo de balance con ingresos."""

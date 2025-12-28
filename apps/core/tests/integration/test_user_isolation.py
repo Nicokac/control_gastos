@@ -15,6 +15,8 @@ from apps.categories.models import Category
 from apps.core.constants import Currency, CategoryType
 
 
+@pytest.mark.slow
+@pytest.mark.integration
 @pytest.mark.django_db
 class TestUserDataIsolation:
     """Tests de aislamiento de datos entre usuarios."""
@@ -133,6 +135,8 @@ class TestUserDataIsolation:
         assert response.status_code in [403, 404]
 
 
+@pytest.mark.slow
+@pytest.mark.integration
 @pytest.mark.django_db
 class TestCategoryIsolation:
     """Tests de aislamiento de categorías."""

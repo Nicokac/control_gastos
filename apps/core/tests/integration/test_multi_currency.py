@@ -12,6 +12,8 @@ from apps.income.models import Income
 from apps.core.constants import Currency
 
 
+@pytest.mark.slow
+@pytest.mark.integration
 @pytest.mark.django_db
 class TestMultiCurrencyExpenses:
     """Tests de gastos multi-moneda."""
@@ -97,6 +99,8 @@ class TestMultiCurrencyExpenses:
         assert budget.spent_amount == Decimal('150000.00')
 
 
+@pytest.mark.slow
+@pytest.mark.integration
 @pytest.mark.django_db
 class TestMultiCurrencyIncome:
     """Tests de ingresos multi-moneda."""
@@ -141,6 +145,8 @@ class TestMultiCurrencyIncome:
         assert income.amount_ars == Decimal('1200000.00')
 
 
+@pytest.mark.slow
+@pytest.mark.integration
 @pytest.mark.django_db
 class TestExchangeRateEdgeCases:
     """Tests de casos límite con tipos de cambio."""

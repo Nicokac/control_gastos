@@ -14,6 +14,8 @@ from apps.categories.models import Category
 from apps.budgets.models import Budget
 
 
+@pytest.mark.slow
+@pytest.mark.integration
 @pytest.mark.django_db
 class TestSoftDeleteBehavior:
     """Tests de comportamiento de soft delete."""
@@ -120,6 +122,8 @@ class TestSoftDeleteBehavior:
         assert movements.count() >= 1
 
 
+@pytest.mark.slow
+@pytest.mark.integration
 @pytest.mark.django_db
 class TestSoftDeleteRecovery:
     """Tests de recuperación de datos eliminados (si aplica)."""

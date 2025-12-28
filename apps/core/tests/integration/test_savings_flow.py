@@ -11,6 +11,8 @@ from apps.savings.models import Saving, SavingMovement, SavingStatus
 from apps.savings.forms import SavingForm
 
 
+@pytest.mark.slow
+@pytest.mark.integration
 @pytest.mark.django_db
 class TestSavingCreationFlow:
     """Tests del flujo completo de metas de ahorro."""
@@ -52,6 +54,8 @@ class TestSavingCreationFlow:
         assert 'Viaje a Europa' in response.content.decode()
 
 
+@pytest.mark.slow
+@pytest.mark.integration
 @pytest.mark.django_db
 class TestSavingMovementsFlow:
     """Tests del flujo de movimientos de ahorro."""
@@ -147,6 +151,8 @@ class TestSavingMovementsFlow:
         assert saving.current_amount == Decimal('25000.00')
 
 
+@pytest.mark.slow
+@pytest.mark.integration
 @pytest.mark.django_db
 class TestSavingCompletionFlow:
     """Tests del flujo de completar metas de ahorro."""
