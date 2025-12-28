@@ -352,3 +352,39 @@ def saving_movement_factory(db):
         defaults.update(kwargs)
         return SavingMovement.objects.create(**defaults)
     return _create_movement
+
+
+# ============================================================
+# Helpers para URLs
+# ============================================================
+
+def get_url(name, **kwargs):
+    """
+    Helper para obtener URL con fallback de namespace.
+    Intenta primero sin namespace, luego con namespace común.
+    """
+    from django.urls import reverse, NoReverseMatch
+    
+    # Mapeo de posibles namespaces
+    namespace_map = {
+        'dashboard': ['dashboard', 'reports:dashboard', 'core:dashboard'],
+        'home': ['home', 'core:home'],
+    }
+    
+    # Si el nombre está en el mapeo, probar variantes
+    if name in namespace_map:
+        for variant in namespace_map[name]:
+            try:
+                return reverse(variant, kwargs=kwargs)
+            except NoReverseMatch:
+                continue
+        raise NoReverseMatch(f"No se encontró URL para '{name}'")
+    
+    # Si no, intentar directamente
+    return reverse(name, kwargs=kwargs)
+
+
+@pytest.fixture
+def url_helper():
+    """Fixture que expone el helper de URLs."""
+    return get_url
