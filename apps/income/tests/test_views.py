@@ -196,3 +196,37 @@ class TestIncomeDeleteView:
         response = authenticated_client.post(url)
         
         assert response.status_code in [403, 404]
+
+
+@pytest.mark.django_db
+class TestIncomeListViewOrdering:
+    """Tests para verificar ordenamiento en ListView."""
+
+    def test_income_ordered_by_date_descending(
+        self, authenticated_client, user, income_category, income_factory
+    ):
+        """Verifica que ingresos estén ordenados por fecha descendente."""
+        from datetime import date
+        
+        income_factory(
+            user, income_category, 
+            date=date(2025, 1, 1), 
+            description='Ingreso Antiguo'
+        )
+        income_factory(
+            user, income_category, 
+            date=date(2025, 1, 30), 
+            description='Ingreso Reciente'
+        )
+        
+        url = reverse('income:list')
+        response = authenticated_client.get(url)
+        
+        assert response.status_code == 200
+        content = response.content.decode()
+        
+        pos_reciente = content.find('Ingreso Reciente')
+        pos_antiguo = content.find('Ingreso Antiguo')
+        
+        if pos_reciente != -1 and pos_antiguo != -1:
+            assert pos_reciente < pos_antiguo

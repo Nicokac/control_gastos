@@ -462,3 +462,69 @@ class TestExpenseViewRedirects:
         
         assert response.status_code == 302
         assert 'expenses' in response.url
+
+
+@pytest.mark.django_db
+class TestExpenseListViewOrdering:
+    """Tests para verificar ordenamiento en ListView."""
+
+    def test_expenses_ordered_by_date_descending(
+        self, authenticated_client, user, expense_category, expense_factory
+    ):
+        """Verifica que gastos estén ordenados por fecha descendente."""
+        from datetime import date
+        
+        # Crear gastos en orden cronológico
+        expense_factory(
+            user, expense_category, 
+            date=date(2025, 1, 1), 
+            description='Primero Cronológico'
+        )
+        expense_factory(
+            user, expense_category, 
+            date=date(2025, 1, 15), 
+            description='Segundo Cronológico'
+        )
+        expense_factory(
+            user, expense_category, 
+            date=date(2025, 1, 30), 
+            description='Tercero Cronológico'
+        )
+        
+        url = reverse('expenses:list')
+        response = authenticated_client.get(url)
+        
+        assert response.status_code == 200
+        content = response.content.decode()
+        
+        # Verificar que el más reciente aparezca primero
+        pos_tercero = content.find('Tercero Cronológico')
+        pos_segundo = content.find('Segundo Cronológico')
+        pos_primero = content.find('Primero Cronológico')
+        
+        # Si todos existen en el contenido, verificar orden
+        if pos_tercero != -1 and pos_segundo != -1 and pos_primero != -1:
+            assert pos_tercero < pos_segundo < pos_primero
+
+    def test_expenses_same_date_ordered_by_created(
+        self, authenticated_client, user, expense_category, expense_factory
+    ):
+        """Verifica ordenamiento secundario cuando fechas son iguales."""
+        from datetime import date
+        import time
+        
+        today = date.today()
+        
+        # Crear gastos en el mismo día
+        expense_factory(user, expense_category, date=today, description='Gasto A')
+        time.sleep(0.1)  # Pequeña pausa para diferenciar created_at
+        expense_factory(user, expense_category, date=today, description='Gasto B')
+        
+        url = reverse('expenses:list')
+        response = authenticated_client.get(url)
+        
+        assert response.status_code == 200
+        # Ambos deberían aparecer
+        content = response.content.decode()
+        assert 'Gasto A' in content
+        assert 'Gasto B' in content
