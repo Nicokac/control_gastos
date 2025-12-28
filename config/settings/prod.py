@@ -1,6 +1,60 @@
 from .base import *
 from decouple import config
 
+# =============================================================================
+# VALIDACIONES DE SEGURIDAD
+# =============================================================================
+
+from django.core.exceptions import ImproperlyConfigured
+
+# Validar longitud mínima de SECRET_KEY (50 caracteres recomendado)
+if len(SECRET_KEY) < 50:
+    raise ImproperlyConfigured(
+        "\n"
+        "=" * 60 + "\n"
+        "❌ ERROR: SECRET_KEY es demasiado corta\n"
+        "=" * 60 + "\n"
+        f"\n"
+        f"Longitud actual: {len(SECRET_KEY)} caracteres\n"
+        f"Longitud mínima: 50 caracteres\n"
+        "\n"
+        "Generar clave segura con:\n"
+        "  python -c \"from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())\"\n"
+        "\n"
+        "=" * 60
+    )
+
+# Validar que no contenga valores inseguros conocidos
+INSECURE_KEYS = [
+    'dev-secret',
+    'secret-key',
+    'change-me',
+    'your-secret',
+    'django-insecure',
+    'placeholder',
+    'xxx',
+    '123',
+]
+
+for insecure in INSECURE_KEYS:
+    if insecure in SECRET_KEY.lower():
+        raise ImproperlyConfigured(
+            f"\n"
+            "=" * 60 + "\n"
+            "❌ ERROR: SECRET_KEY contiene valor inseguro\n"
+            "=" * 60 + "\n"
+            f"\n"
+            f"Se detectó '{insecure}' en SECRET_KEY\n"
+            "\n"
+            "Generar clave segura con:\n"
+            "  python -c \"from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())\"\n"
+            "\n"
+            "=" * 60
+        )
+
+print("✅ SECRET_KEY validada correctamente")
+
+
 DEBUG = False
 
 # Obtener hosts desde variable de entorno
