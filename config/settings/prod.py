@@ -203,3 +203,27 @@ CSP_BASE_URI = ("'self'",)
 
 # Form actions
 CSP_FORM_ACTION = ("'self'",)
+
+
+# =============================================================================
+# DJANGO-AXES - Configuración de Producción
+# =============================================================================
+
+# Más estricto en producción
+AXES_FAILURE_LIMIT = 5  # Mantener en 5
+AXES_COOLOFF_TIME = 2  # 2 horas en producción
+
+# Para proxies/load balancers (Railway, Render, Heroku, etc.)
+AXES_PROXY_COUNT = 1
+AXES_META_PRECEDENCE_ORDER = [
+    'HTTP_X_FORWARDED_FOR',
+    'HTTP_X_REAL_IP',
+    'REMOTE_ADDR',
+]
+
+# Logging de intentos
+AXES_VERBOSE = True
+
+# No bloquear requests GET (solo POST de login)
+AXES_ONLY_ADMIN_SITE = False
+AXES_NEVER_LOCKOUT_GET = True
