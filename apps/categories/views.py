@@ -6,13 +6,13 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseRedirect
 
 from .models import Category
 from .forms import CategoryForm
 from apps.core.constants import CategoryType
 
-# Create your views here.
+
 class CategoryListView(LoginRequiredMixin, ListView):
     """Lista de categorías del usuario."""
 
@@ -34,6 +34,7 @@ class CategoryListView(LoginRequiredMixin, ListView):
         
         return context
 
+
 class CategoryCreateView(LoginRequiredMixin, CreateView):
     """Crear nueva categoría."""
     
@@ -48,10 +49,18 @@ class CategoryCreateView(LoginRequiredMixin, CreateView):
         kwargs['user'] = self.request.user
         return kwargs
 
+    def get_form(self, form_class=None):
+        """Asigna el usuario a la instancia antes de validar."""
+        form = super().get_form(form_class)
+        if not form.instance.pk:  # Solo para nuevas categorías
+            form.instance.user = self.request.user
+        return form
+
     def form_valid(self, form):
-        """Muestra mensaje de éxito."""
+        """Guarda y muestra mensaje de éxito."""
+        response = super().form_valid(form)
         messages.success(self.request, 'Categoría creada correctamente.')
-        return super().form_valid(form)
+        return response
 
 
 class CategoryUpdateView(LoginRequiredMixin, UpdateView):
@@ -76,9 +85,10 @@ class CategoryUpdateView(LoginRequiredMixin, UpdateView):
         return kwargs
 
     def form_valid(self, form):
-        """Muestra mensaje de éxito."""
+        """Guarda y muestra mensaje de éxito."""
+        response = super().form_valid(form)
         messages.success(self.request, 'Categoría actualizada correctamente.')
-        return super().form_valid(form)
+        return response
 
 
 class CategoryDeleteView(LoginRequiredMixin, DeleteView):
@@ -100,5 +110,4 @@ class CategoryDeleteView(LoginRequiredMixin, DeleteView):
         self.object = self.get_object()
         self.object.soft_delete()
         messages.success(request, 'Categoría eliminada correctamente.')
-        from django.http import HttpResponseRedirect
         return HttpResponseRedirect(self.success_url)
