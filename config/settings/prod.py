@@ -91,3 +91,61 @@ CSRF_COOKIE_SAMESITE = 'Lax'
 
 # Edad de la sesión (2 semanas)
 SESSION_COOKIE_AGE = 1209600
+
+
+# =============================================================================
+# CONTENT SECURITY POLICY (CSP)
+# =============================================================================
+
+# Política de seguridad de contenido
+# Controla qué recursos puede cargar la página
+
+# Fuentes por defecto: solo mismo origen
+CSP_DEFAULT_SRC = ("'self'",)
+
+# Scripts: mismo origen + CDNs necesarios
+CSP_SCRIPT_SRC = (
+    "'self'",
+    "'unsafe-inline'",  # Necesario para algunos scripts inline de Bootstrap/HTMX
+    "https://cdn.jsdelivr.net",  # Bootstrap, Chart.js, etc.
+    "https://cdnjs.cloudflare.com",
+)
+
+# Estilos: mismo origen + CDNs
+CSP_STYLE_SRC = (
+    "'self'",
+    "'unsafe-inline'",  # Necesario para estilos inline
+    "https://cdn.jsdelivr.net",
+    "https://fonts.googleapis.com",
+)
+
+# Fuentes
+CSP_FONT_SRC = (
+    "'self'",
+    "https://cdn.jsdelivr.net",
+    "https://fonts.gstatic.com",
+)
+
+# Imágenes
+CSP_IMG_SRC = (
+    "'self'",
+    "data:",  # Para imágenes base64
+    "https:",  # Permitir imágenes HTTPS externas
+)
+
+# Conexiones (fetch, XHR, WebSocket)
+CSP_CONNECT_SRC = (
+    "'self'",
+)
+
+# Frames: ninguno (ya tenemos X-Frame-Options)
+CSP_FRAME_SRC = ("'none'",)
+
+# Objetos (Flash, etc.): ninguno
+CSP_OBJECT_SRC = ("'none'",)
+
+# Base URI
+CSP_BASE_URI = ("'self'",)
+
+# Form actions
+CSP_FORM_ACTION = ("'self'",)
