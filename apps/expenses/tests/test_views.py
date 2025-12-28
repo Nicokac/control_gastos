@@ -415,3 +415,50 @@ class TestExpenseListViewFilters:
         assert response.status_code == 200
         content = response.content.decode()
         assert 'Único Gasto' not in content
+
+
+@pytest.mark.django_db
+class TestExpenseViewRedirects:
+    """Tests para verificar redirecciones correctas."""
+
+    def test_create_redirects_to_list(self, authenticated_client, user, expense_category):
+        """Verifica que crear redirija a lista."""
+        url = reverse('expenses:create')
+        data = {
+            'category': expense_category.pk,
+            'description': 'Nuevo Gasto',
+            'amount': '1500.00',
+            'currency': Currency.ARS,
+            'date': timezone.now().date().isoformat(),
+        }
+        
+        response = authenticated_client.post(url, data)
+        
+        assert response.status_code == 302
+        assert 'expenses' in response.url
+
+    def test_update_redirects_correctly(self, authenticated_client, expense):
+        """Verifica que actualizar redirija correctamente."""
+        url = reverse('expenses:update', kwargs={'pk': expense.pk})
+        data = {
+            'category': expense.category.pk,
+            'description': 'Actualizado',
+            'amount': str(expense.amount),
+            'currency': expense.currency,
+            'date': expense.date.isoformat(),
+        }
+        
+        response = authenticated_client.post(url, data)
+        
+        assert response.status_code == 302
+        # Puede redirigir a list o a detail
+        assert 'expenses' in response.url
+
+    def test_delete_redirects_to_list(self, authenticated_client, expense):
+        """Verifica que eliminar redirija a lista."""
+        url = reverse('expenses:delete', kwargs={'pk': expense.pk})
+        
+        response = authenticated_client.post(url)
+        
+        assert response.status_code == 302
+        assert 'expenses' in response.url

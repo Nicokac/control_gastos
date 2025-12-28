@@ -213,3 +213,61 @@ class TestCategoryDeleteView:
         response = authenticated_client.get(url)
         
         assert response.status_code == 200
+
+
+@pytest.mark.django_db
+class TestCategoryViewRedirects:
+    """Tests para verificar redirecciones correctas."""
+
+    def test_create_redirects_to_list(self, authenticated_client, user):
+        """Verifica que crear redirija a lista."""
+        url = reverse('categories:create')
+        data = {
+            'name': 'Nueva Categoría',
+            'type': CategoryType.EXPENSE,
+            'icon': 'bi-tag',
+            'color': '#FF5733',
+        }
+        
+        response = authenticated_client.post(url, data)
+        
+        assert response.status_code == 302
+        
+        # Verificar URL de redirección
+        expected_url = reverse('categories:list')
+        assert response.url == expected_url or expected_url in response.url
+
+    def test_update_redirects_to_list(self, authenticated_client, expense_category):
+        """Verifica que actualizar redirija a lista."""
+        url = reverse('categories:update', kwargs={'pk': expense_category.pk})
+        data = {
+            'name': 'Actualizada',
+            'type': expense_category.type,
+            'icon': expense_category.icon or 'bi-tag',
+            'color': expense_category.color or '#000000',
+        }
+        
+        response = authenticated_client.post(url, data)
+        
+        assert response.status_code == 302
+        assert 'categories' in response.url
+
+    def test_delete_redirects_to_list(self, authenticated_client, expense_category):
+        """Verifica que eliminar redirija a lista."""
+        url = reverse('categories:delete', kwargs={'pk': expense_category.pk})
+        
+        response = authenticated_client.post(url)
+        
+        assert response.status_code == 302
+        
+        expected_url = reverse('categories:list')
+        assert response.url == expected_url or expected_url in response.url
+
+    def test_login_redirect_preserves_next(self, client):
+        """Verifica que login preserve parámetro next."""
+        protected_url = reverse('categories:create')
+        response = client.get(protected_url)
+        
+        assert response.status_code == 302
+        assert 'login' in response.url
+        assert f'next={protected_url}' in response.url or 'next=' in response.url
