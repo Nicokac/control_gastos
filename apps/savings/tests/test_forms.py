@@ -276,3 +276,110 @@ class TestSavingMovementForm:
         saving.refresh_from_db()
         
         assert saving.current_amount == initial_amount + Decimal('5000.00')
+
+
+@pytest.mark.django_db
+class TestSavingFormCleanedData:
+    """Tests para cleaned_data de SavingForm."""
+
+    def test_cleaned_data_types(self, user):
+        """Verifica tipos correctos en cleaned_data."""
+        from datetime import date
+        
+        future_date = timezone.now().date().replace(year=timezone.now().year + 1)
+        
+        form = SavingForm(
+            data={
+                'name': 'Meta de prueba',
+                'target_amount': '100000.00',
+                'target_date': future_date,
+            }
+        )
+        
+        assert form.is_valid(), form.errors
+        
+        # Verificar tipos
+        assert isinstance(form.cleaned_data['name'], str)
+        assert isinstance(form.cleaned_data['target_amount'], Decimal)
+        
+        if form.cleaned_data.get('target_date'):
+            assert isinstance(form.cleaned_data['target_date'], date)
+
+    def test_name_is_stripped(self, user):
+        """Verifica que el nombre se limpie de espacios."""
+        form = SavingForm(
+            data={
+                'name': '  Meta con espacios  ',
+                'target_amount': '50000.00',
+            }
+        )
+        
+        assert form.is_valid(), form.errors
+        
+        cleaned_name = form.cleaned_data['name']
+        assert cleaned_name == cleaned_name.strip()
+
+
+@pytest.mark.django_db
+class TestSavingFormInitialValues:
+    """Tests para valores iniciales de SavingForm."""
+
+    def test_current_amount_starts_at_zero(self, user):
+        """Verifica que current_amount inicie en cero."""
+        form = SavingForm(
+            data={
+                'name': 'Nueva meta',
+                'target_amount': '100000.00',
+            }
+        )
+        
+        assert form.is_valid(), form.errors
+        
+        saving = form.save(commit=False)
+        saving.user = user
+        saving.save()
+        
+        assert saving.current_amount == Decimal('0.00')
+
+    def test_status_starts_as_active(self, user):
+        """Verifica que status inicie como ACTIVE."""
+        from apps.savings.models import SavingStatus
+        
+        form = SavingForm(
+            data={
+                'name': 'Nueva meta',
+                'target_amount': '100000.00',
+            }
+        )
+        
+        assert form.is_valid(), form.errors
+        
+        saving = form.save(commit=False)
+        saving.user = user
+        saving.save()
+        
+        assert saving.status == SavingStatus.ACTIVE
+
+
+@pytest.mark.django_db
+class TestSavingMovementFormCleanedData:
+    """Tests para cleaned_data de SavingMovementForm."""
+
+    def test_cleaned_data_types(self, saving):
+        """Verifica tipos correctos en cleaned_data."""
+        from datetime import date
+        
+        form = SavingMovementForm(
+            data={
+                'type': 'DEPOSIT',
+                'amount': '1000.00',
+                'date': timezone.now().date(),
+            },
+            saving=saving
+        )
+        
+        assert form.is_valid(), form.errors
+        
+        # Verificar tipos
+        assert isinstance(form.cleaned_data['amount'], Decimal)
+        assert isinstance(form.cleaned_data['date'], date)
