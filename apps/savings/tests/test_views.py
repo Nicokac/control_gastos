@@ -162,11 +162,18 @@ class TestSavingDeleteView:
 class TestSavingMovementView:
     """Tests para la vista de movimientos de ahorro."""
 
-    def test_login_required(self, client, saving):
+    def test_login_required(self, client, user, saving_factory):
         """Verifica que requiera autenticación."""
+        # Crear saving con un usuario específico
+        from apps.savings.models import Saving
+        saving = saving_factory(user)
+        
         url = reverse('savings:add_movement', kwargs={'pk': saving.pk})
+        
+        # Usar cliente sin autenticar
         response = client.get(url)
         
+        # Debería redirigir a login
         assert response.status_code == 302
         assert 'login' in response.url
 
