@@ -203,26 +203,27 @@ class SavingMovementCreateView(LoginRequiredMixin, FormView):
     
     form_class = SavingMovementForm
     template_name = 'savings/saving_movement_form.html'
-
-    def dispatch(self, request, *args, **kwargs):
-        """Obtiene la meta de ahorro."""
-        self.saving = get_object_or_404(
-            Saving, 
-            pk=kwargs['pk'], 
-            user=request.user
-        )
-        return super().dispatch(request, *args, **kwargs)
+    
+    def get_saving(self):
+        """Obtiene la meta de ahorro de forma lazy."""
+        if not hasattr(self, '_saving'):
+            self._saving = get_object_or_404(
+                Saving,
+                pk=self.kwargs['pk'],
+                user=self.request.user
+            )
+        return self._saving
 
     def get_form_kwargs(self):
         """Pasa la meta al formulario."""
         kwargs = super().get_form_kwargs()
-        kwargs['saving'] = self.saving
+        kwargs['saving'] = self.get_saving()
         return kwargs
 
     def get_context_data(self, **kwargs):
         """Agrega la meta al contexto."""
         context = super().get_context_data(**kwargs)
-        context['saving'] = self.saving
+        context['saving'] = self.get_saving()
         return context
 
     def form_valid(self, form):
@@ -240,7 +241,7 @@ class SavingMovementCreateView(LoginRequiredMixin, FormView):
                 f'Retiro de ${movement.amount:,.2f} registrado correctamente.'
             )
         
-        return redirect('savings:detail', pk=self.saving.pk)
+        return redirect('savings:detail', pk=self.get_saving().pk)
 
     def form_invalid(self, form):
         """Muestra errores."""
@@ -248,4 +249,4 @@ class SavingMovementCreateView(LoginRequiredMixin, FormView):
         return super().form_invalid(form)
 
     def get_success_url(self):
-        return reverse('savings:detail', kwargs={'pk': self.saving.pk})
+        return reverse('savings:detail', kwargs={'pk': self.get_saving().pk})
