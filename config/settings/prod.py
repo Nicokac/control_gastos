@@ -227,3 +227,24 @@ AXES_VERBOSE = True
 # No bloquear requests GET (solo POST de login)
 AXES_ONLY_ADMIN_SITE = False
 AXES_NEVER_LOCKOUT_GET = True
+
+
+# =============================================================================
+# LOGGING - Producción
+# =============================================================================
+
+# Sobrescribir configuración de logging para producción
+LOGGING['handlers']['console']['level'] = 'WARNING'  # Menos verbose en consola
+
+# Agregar handler para logs críticos (opcional: enviar por email)
+LOGGING['handlers']['mail_admins'] = {
+    'level': 'ERROR',
+    'class': 'django.utils.log.AdminEmailHandler',
+    'include_html': True,
+}
+
+# Agregar mail_admins a errores de request
+LOGGING['loggers']['django.request']['handlers'].append('mail_admins')
+
+# Configurar ADMINS para recibir emails de errores
+# ADMINS = [('Tu Nombre', 'tu@email.com')]
