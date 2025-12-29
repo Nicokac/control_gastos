@@ -203,5 +203,36 @@ def check_security():
         warnings.append("Django-axes no está instalado (sin rate limiting)")
 
 
+    # =========================================================================
+    # CHECKS DE LOGGING
+    # =========================================================================
+    
+    # Verificar configuración de logging
+    logging_config = getattr(settings, 'LOGGING', None)
+    if logging_config:
+        print("✅ Logging configurado")
+        
+        handlers = logging_config.get('handlers', {})
+        if 'security_file' in handlers:
+            print("   • Handler de seguridad configurado")
+        else:
+            warnings.append("No hay handler de seguridad configurado")
+        
+        if 'error_file' in handlers:
+            print("   • Handler de errores configurado")
+        else:
+            warnings.append("No hay handler de errores configurado")
+        
+        # Verificar que el directorio de logs existe
+        from pathlib import Path
+        logs_dir = settings.BASE_DIR / 'logs'
+        if logs_dir.exists():
+            print(f"   • Directorio de logs existe: {logs_dir}")
+        else:
+            warnings.append(f"Directorio de logs no existe: {logs_dir}")
+    else:
+        warnings.append("LOGGING no está configurado")
+
+
 if __name__ == '__main__':
     check_security()
