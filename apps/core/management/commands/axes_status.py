@@ -71,23 +71,24 @@ class Command(BaseCommand):
 
     def _show_stats(self):
         """Muestra estadísticas generales."""
-        from axes.helpers import get_lockout_parameters
         from django.conf import settings
         
         attempts_count = AccessAttempt.objects.count()
+        failure_limit = getattr(settings, 'AXES_FAILURE_LIMIT', 5)
+        cooloff_time = getattr(settings, 'AXES_COOLOFF_TIME', 1)
+        lockout_params = getattr(settings, 'AXES_LOCKOUT_PARAMETERS', ['ip_address'])
         
         self.stdout.write(f"📊 Configuración:")
-        self.stdout.write(f"   • Intentos antes de bloqueo: {settings.AXES_FAILURE_LIMIT}")
-        self.stdout.write(f"   • Tiempo de bloqueo: {settings.AXES_COOLOFF_TIME} hora(s)")
-        self.stdout.write(f"   • Parámetros de bloqueo: {settings.AXES_LOCKOUT_PARAMETERS}")
+        self.stdout.write(f"   • Intentos antes de bloqueo: {failure_limit}")
+        self.stdout.write(f"   • Tiempo de bloqueo: {cooloff_time} hora(s)")
+        self.stdout.write(f"   • Parámetros de bloqueo: {lockout_params}")
         self.stdout.write("")
         self.stdout.write(f"📈 Estadísticas:")
         self.stdout.write(f"   • Total de intentos registrados: {attempts_count}")
         
         # Contar bloqueados actuales
-        from axes.helpers import is_already_locked
         blocked_count = AccessAttempt.objects.filter(
-            failures_since_start__gte=settings.AXES_FAILURE_LIMIT
+            failures_since_start__gte=failure_limit
         ).count()
         
         self.stdout.write(f"   • IPs/usuarios actualmente bloqueados: {blocked_count}")
