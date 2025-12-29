@@ -229,3 +229,120 @@ AXES_LOCKOUT_TEMPLATE = 'users/account_locked.html'
 # Para proxies/load balancers - obtener IP real del header
 # AXES_PROXY_COUNT = 1
 # AXES_META_PRECEDENCE_ORDER = ['HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR']
+
+
+# =============================================================================
+# LOGGING
+# =============================================================================
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    
+    # Formateadores
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}] {levelname} {name} {module} {message}',
+            'style': '{',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+        'simple': {
+            'format': '[{asctime}] {levelname} {message}',
+            'style': '{',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+        'security': {
+            'format': '[{asctime}] {levelname} SECURITY {message}',
+            'style': '{',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+    },
+    
+    # Handlers (destinos de los logs)
+    'handlers': {
+        # Consola - para desarrollo
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+        
+        # Archivo general
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR / 'logs' / 'app.log',
+            'maxBytes': 5 * 1024 * 1024,  # 5 MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+            'encoding': 'utf-8',
+        },
+        
+        # Archivo de errores
+        'error_file': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR / 'logs' / 'error.log',
+            'maxBytes': 5 * 1024 * 1024,  # 5 MB
+            'backupCount': 10,
+            'formatter': 'verbose',
+            'encoding': 'utf-8',
+        },
+        
+        # Archivo de seguridad
+        'security_file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR / 'logs' / 'security.log',
+            'maxBytes': 5 * 1024 * 1024,  # 5 MB
+            'backupCount': 10,
+            'formatter': 'security',
+            'encoding': 'utf-8',
+        },
+    },
+    
+    # Loggers
+    'loggers': {
+        # Logger principal de Django
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        
+        # Errores de Django
+        'django.request': {
+            'handlers': ['error_file', 'console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        
+        # Seguridad de Django
+        'django.security': {
+            'handlers': ['security_file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        
+        # Django-axes (rate limiting)
+        'axes': {
+            'handlers': ['security_file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        
+        # Logger de nuestra aplicación
+        'apps': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        
+        # Logger de seguridad personalizado
+        'security': {
+            'handlers': ['security_file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
