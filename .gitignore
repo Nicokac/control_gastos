@@ -31,7 +31,10 @@ Thumbs.db
 # Coverage
 htmlcov/
 .coverage
+.coverage.*
 coverage.xml
+*.cover
+*.py,cover
 
 # Logs
 logs/*.log
