@@ -10,9 +10,15 @@ from django.views.generic import CreateView, UpdateView
 
 from .forms import LoginForm, RegisterForm, ProfileForm
 from .models import User
+from apps.core.logging import (
+    log_login_attempt,
+    log_logout,
+    log_password_change,
+    log_user_registration,
+    get_client_ip,
+)
 
 
-# Create your views here.
 class CustomLoginView(LoginView):
     """Vista de login personalizada."""
 
@@ -24,11 +30,34 @@ class CustomLoginView(LoginView):
         return reverse_lazy('categories:list')
     
     def form_valid(self, form):
+        """Login exitoso."""
+        response = super().form_valid(form)
+        
+        # Loggear login exitoso
+        log_login_attempt(
+            username=self.request.user.email,
+            ip_address=get_client_ip(self.request),
+            success=True
+        )
+        
         messages.success(
             self.request,
             f'¡Bienvenido de vuelta, {form.get_user().username}!'
         )
-        return super().form_valid(form)
+        return response
+    
+    def form_invalid(self, form):
+        """Login fallido."""
+        # Obtener username del intento fallido
+        username = form.cleaned_data.get('username', 'unknown')
+        
+        log_login_attempt(
+            username=username,
+            ip_address=get_client_ip(self.request),
+            success=False
+        )
+        
+        return super().form_invalid(form)
     
 
 class CustomLogoutView(LogoutView):
@@ -38,6 +67,11 @@ class CustomLogoutView(LogoutView):
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
+            # Loggear logout antes de cerrar sesión
+            log_logout(
+                username=request.user.email,
+                ip_address=get_client_ip(request)
+            )
             messages.info(request, 'Sesión cerrada correctamente.')
         return super().dispatch(request, *args, **kwargs)
     
@@ -59,6 +93,13 @@ class RegisterView(CreateView):
     def form_valid(self, form):
         """Loguea al usuario después del registro."""
         response = super().form_valid(form)
+        
+        # Loggear registro
+        log_user_registration(
+            username=self.object.email,
+            ip_address=get_client_ip(self.request)
+        )
+        
         login(self.request, self.object, backend='django.contrib.auth.backends.ModelBackend')
         messages.success(
             self.request,
@@ -66,6 +107,7 @@ class RegisterView(CreateView):
         )
         return response
     
+
 class ProfileView(LoginRequiredMixin, UpdateView):
     """Vista para editar perfil de usuario."""
 
@@ -82,6 +124,7 @@ class ProfileView(LoginRequiredMixin, UpdateView):
         messages.success(self.request, 'Perfil actualizado correctamente.')
         return super().form_valid(form)
     
+
 class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
     """Vista para cambiar contraseña."""
 
@@ -89,5 +132,14 @@ class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
     success_url = reverse_lazy('users:profile')
 
     def form_valid(self, form):
+        """Cambio de contraseña exitoso."""
+        response = super().form_valid(form)
+        
+        # Loggear cambio de contraseña
+        log_password_change(
+            username=self.request.user.email,
+            ip_address=get_client_ip(self.request)
+        )
+        
         messages.success(self.request, 'Contraseña actualizada correctamente')
-        return super().form_valid(form)
+        return response
