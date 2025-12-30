@@ -4,16 +4,37 @@
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings.dev"
-python_files = ["test_*.py"]
 testpaths = ["apps"]
+
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
 addopts = [
-    "-v",
-    "--tb=short",
-    "--strict-markers",
+  "-v",
+  "--tb=short",
+  "--strict-markers",
+  "--reuse-db",
+  "--nomigrations",
+
+  # coverage
+  "--cov=apps",
+  "--cov-config=pyproject.toml",
+  "--cov-report=term-missing:skip-covered",
+  "--cov-report=html",
+  "--cov-report=xml",
+  "--cov-fail-under=80",
 ]
+
+filterwarnings = [
+  "ignore::DeprecationWarning",
+  "ignore::PendingDeprecationWarning",
+]
+
 markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "integration: marks tests as integration tests",
+  "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+  "integration: marks tests as integration tests",
+  "unit: marks tests as unit tests",
 ]
 
 # =============================================================================
@@ -29,12 +50,15 @@ source = ["apps"]
 
 # Archivos a excluir de la medición
 omit = [
-    "*/migrations/*",
-    "*/tests/*",
-    "*/__pycache__/*",
-    "*/management/commands/*",
-    "conftest.py",
-    "*/admin.py",
+  "*/migrations/*",
+  "*/tests/*",
+  "*/__pycache__/*",
+  "*/management/commands/*", # Comandos CLI
+  "*/admin.py",
+  "conftest.py",
+  "*/conftest.py", 
+  "apps/core/export.py", # Feature no implementada
+  "apps/core/views.py",       # Archivo mínimo
 ]
 
 # Ejecutar en paralelo (opcional, para tests grandes)
@@ -46,25 +70,25 @@ fail_under = 80
 
 # Excluir líneas específicas del reporte
 exclude_lines = [
-    # Patrones estándar
-    "pragma: no cover",
-    "def __repr__",
-    "def __str__",
-    
-    # Debug
-    "if self.debug:",
-    "if settings.DEBUG",
-    
-    # Abstractos
-    "raise AssertionError",
-    "raise NotImplementedError",
-    
-    # Type checking
-    "if TYPE_CHECKING:",
-    "if typing.TYPE_CHECKING:",
-    
-    # Defensive programming
-    "if __name__ == .__main__.:",
+  # Patrones estándar
+  "pragma: no cover",
+  "def __repr__",
+  "def __str__",
+
+  # Debug
+  "if self.debug:",
+  "if settings.DEBUG",
+
+  # Abstractos
+  "raise AssertionError",
+  "raise NotImplementedError",
+
+  # Type checking
+  "if TYPE_CHECKING:",
+  "if typing.TYPE_CHECKING:",
+
+  # Defensive programming
+  "if __name__ == .__main__.:",
 ]
 
 # Mostrar líneas faltantes en el reporte
