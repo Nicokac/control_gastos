@@ -1,6 +1,7 @@
 # Python
 __pycache__/
 *.py[cod]
+.pytest_cache/
 *$py.class
 *.so
 .Python
@@ -8,7 +9,7 @@ venv/
 ENV/
 
 # Django
-*.log 
+*.log
 local_settings.py
 db.sqlite3
 media/
@@ -22,7 +23,7 @@ staticfiles/
 .env
 *.env
 .env.local
-.env.*.local 
+.env.*.local
 
 # OS
 .DS_Store

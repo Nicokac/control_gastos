@@ -15,36 +15,36 @@ repos:
       # Previene commits a branches protegidas
       - id: no-commit-to-branch
         args: [--branch, main, --branch, master]
-      
+
       # Verifica sintaxis YAML
       - id: check-yaml
         args: [--unsafe]
-      
+
       # Verifica sintaxis TOML
       - id: check-toml
-      
+
       # Verifica JSON
       - id: check-json
-        exclude: ^\.vscode/
-      
+        exclude: '^\.vscode/'
+
       # Elimina espacios en blanco al final
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
-      
+
       # Asegura archivo termine con newline
       - id: end-of-file-fixer
-        exclude: ^(htmlcov/|staticfiles/)
-      
+        exclude: '^(htmlcov/|staticfiles/)'
+
       # Verifica archivos grandes
       - id: check-added-large-files
         args: [--maxkb=1000]
-      
+
       # Detecta claves privadas
       - id: detect-private-key
-      
+
       # Verifica casos de merge sin resolver
       - id: check-merge-conflict
-      
+
       # Verifica nombres de archivos
       - id: check-case-conflict
 
@@ -58,7 +58,7 @@ repos:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
         types_or: [python, pyi]
-      
+
       # Formatter
       - id: ruff-format
         types_or: [python, pyi]
@@ -75,7 +75,7 @@ repos:
         entry: djhtml
         types: [html]
         # Solo en templates
-        files: ^apps/.*/templates/
+        files: '^apps/.*/templates/'
 
   # ==========================================================================
   # Seguridad
@@ -86,7 +86,7 @@ repos:
       # Detecta secretos hardcodeados
       - id: detect-secrets
         args: [--baseline, .secrets.baseline]
-        exclude: (\.env\.example|requirements/.*\.txt)$
+        exclude: '(^\.env$|^\.env\..*|^\.pytest_cache[\\/]|^\.ruff_cache[\\/]|^htmlcov[\\/]|^staticfiles[\\/]|^node_modules[\\/]|^coverage\.xml$|^\.coverage$|^venv[\\/]|^\.venv[\\/]|requirements[\\/].*\.txt$)'
 
 # Configuración global
 default_language_version:
