@@ -19,10 +19,10 @@
                     {% endif %}
                 </h1>
             </div>
-            
+
             <form method="post" novalidate>
                 {% csrf_token %}
-                
+
                 <!-- Errores generales -->
                 {% if form.non_field_errors %}
                 <div class="alert alert-danger">
@@ -31,7 +31,7 @@
                     {% endfor %}
                 </div>
                 {% endif %}
-                
+
                 <div class="card mb-4">
                     <div class="card-body">
                         <!-- Categoría -->
@@ -42,7 +42,7 @@
                             <div class="text-danger small mt-1">{{ form.category.errors.0 }}</div>
                             {% endif %}
                         </div>
-                        
+
                         <!-- Período -->
                         <div class="row mb-4">
                             <div class="col-md-6">
@@ -60,7 +60,7 @@
                                 {% endif %}
                             </div>
                         </div>
-                        
+
                         <!-- Monto -->
                         <div class="mb-4">
                             <label class="form-label">Monto presupuestado</label>
@@ -72,11 +72,11 @@
                             <div class="text-danger small mt-1">{{ form.amount.errors.0 }}</div>
                             {% endif %}
                         </div>
-                        
+
                         <!-- Umbral de alerta -->
                         <div class="mb-4">
                             <label class="form-label">
-                                Umbral de alerta 
+                                Umbral de alerta
                                 <small class="text-muted">(% del presupuesto)</small>
                             </label>
                             <div class="input-group" style="max-width: 150px;">
@@ -90,18 +90,18 @@
                             <div class="text-danger small mt-1">{{ form.alert_threshold.errors.0 }}</div>
                             {% endif %}
                         </div>
-                        
+
                         <!-- Notas -->
                         <div class="mb-4">
                             <label class="form-label">
-                                Notas 
+                                Notas
                                 <small class="text-muted">(opcional)</small>
                             </label>
                             {{ form.notes }}
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Botones -->
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                     <a href="{% url 'budgets:list' %}" class="btn btn-outline-secondary">

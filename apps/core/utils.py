@@ -4,14 +4,17 @@ Funciones de utilidad para todo el proyecto
 
 from datetime import date
 from decimal import Decimal
+
 from django.utils import timezone
+
 
 def get_current_month_year():
     """Retorna el mes y año actuales como tupla (month, year)."""
     today = timezone.now().date()
     return today.month, today.year
 
-def get_month_date_range(month: int, year:int):
+
+def get_month_date_range(month: int, year: int):
     """Retorna el rango de fechas para un mes específico
 
     Args:
@@ -30,6 +33,7 @@ def get_month_date_range(month: int, year:int):
 
     return start_date, end_date
 
+
 def calculate_percentage(partial: Decimal, total: Decimal) -> Decimal:
     """Calcula el porcentaje de un valor parciual sobre un total
 
@@ -41,10 +45,11 @@ def calculate_percentage(partial: Decimal, total: Decimal) -> Decimal:
         Porcentaje como Decimal (0-100)
     """
     if total == 0:
-        return Decimal('0')
+        return Decimal("0")
     return (partial / total) * 100
 
-def format_currency(amount: Decimal, currency: str = 'ARS') -> str:
+
+def format_currency(amount: Decimal, currency: str = "ARS") -> str:
     """Formatea un monto cohn el símbolo de moneda correspondiente.
 
     Args:
@@ -54,8 +59,9 @@ def format_currency(amount: Decimal, currency: str = 'ARS') -> str:
     Returns:
         String formateado (ej: "$ 1.234,56" o "US$ 100.00")
     """
-    symbol = '$' if currency == 'ARS' else 'US$'
+    symbol = "$" if currency == "ARS" else "US$"
     return f"{symbol} {amount:,.2f}"
+
 
 def get_month_name(month: int) -> str:
     """Retorna el nombre del mes en español.
@@ -67,20 +73,21 @@ def get_month_name(month: int) -> str:
         String: Nombre del mes
     """
     months = {
-        1: 'Enero',
-        2: 'Febrero',
-        3: 'Marzo',
-        4: 'Abril',
-        5: 'Mayo',
-        6: 'Junio',
-        7: 'Julio',
-        8: 'Agosto',
-        9: 'Septiembre',
-        10: 'Octubre',
-        11: 'Noviembre',
-        12: 'Diciembre',
+        1: "Enero",
+        2: "Febrero",
+        3: "Marzo",
+        4: "Abril",
+        5: "Mayo",
+        6: "Junio",
+        7: "Julio",
+        8: "Agosto",
+        9: "Septiembre",
+        10: "Octubre",
+        11: "Noviembre",
+        12: "Diciembre",
     }
-    return months.get(month, '')
+    return months.get(month, "")
+
 
 def get_years_choices(start_year: int = 2020):
     """Genera una lista de años para usar en formularios.
@@ -94,11 +101,11 @@ def get_years_choices(start_year: int = 2020):
     current_year = timezone.now().year
     return [(year, str(year)) for year in range(start_year, current_year + 2)]
 
+
 def get_months_choices():
     """Genera una lista de meses para usar en formularios.
 
     Returns:
         Lista de tuplas (month_number, month_name) para choices
     """
-    return [(i, get_month_name(i)) for i in range(1,13)]
-
+    return [(i, get_month_name(i)) for i in range(1, 13)]

@@ -2,27 +2,27 @@
 Configuración global de pytest y fixtures compartidas.
 """
 
-import pytest
-from decimal import Decimal
-from django.utils import timezone
 from datetime import date, timedelta
+from decimal import Decimal
 
-from apps.users.models import User
+from django.utils import timezone
+
+import pytest
+
 from apps.categories.models import Category
 from apps.core.constants import CategoryType, Currency
-
+from apps.users.models import User
 
 # =============================================================================
 # USER FIXTURES
 # =============================================================================
 
+
 @pytest.fixture
 def user(db):
     """Crea un usuario de prueba."""
     return User.objects.create_user(
-        username='testuser',
-        email='test@example.com',
-        password='testpass123'
+        username="testuser", email="test@example.com", password="testpass123"
     )
 
 
@@ -30,9 +30,7 @@ def user(db):
 def other_user(db):
     """Crea otro usuario de prueba (para tests de permisos)."""
     return User.objects.create_user(
-        username='otheruser',
-        email='other@example.com',
-        password='otherpass123'
+        username="otheruser", email="other@example.com", password="otherpass123"
     )
 
 
@@ -40,15 +38,14 @@ def other_user(db):
 def admin_user(db):
     """Crea un usuario administrador."""
     return User.objects.create_superuser(
-        username='admin',
-        email='admin@example.com',
-        password='adminpass123'
+        username="admin", email="admin@example.com", password="adminpass123"
     )
 
 
 # =============================================================================
 # CLIENT FIXTURES
 # =============================================================================
+
 
 @pytest.fixture
 def authenticated_client(client, user):
@@ -60,7 +57,7 @@ def authenticated_client(client, user):
 @pytest.fixture
 def admin_client(client, admin_user):
     """Cliente autenticado con el usuario admin."""
-    client.login(username='admin', password='adminpass123')
+    client.login(username="admin", password="adminpass123")
     return client
 
 
@@ -74,6 +71,7 @@ def other_user_client(client, other_user):
 # =============================================================================
 # DATE FIXTURES
 # =============================================================================
+
 
 @pytest.fixture
 def today():
@@ -125,59 +123,65 @@ def current_year():
 # AMOUNT FIXTURES
 # =============================================================================
 
+
 @pytest.fixture
 def sample_amount():
     """Monto de ejemplo en ARS."""
-    return Decimal('1500.50')
+    return Decimal("1500.50")
 
 
 @pytest.fixture
 def sample_usd_amount():
     """Monto en USD de ejemplo."""
-    return Decimal('100.00')
+    return Decimal("100.00")
 
 
 @pytest.fixture
 def exchange_rate():
     """Tipo de cambio de ejemplo."""
-    return Decimal('1150.00')
+    return Decimal("1150.00")
 
 
 # =============================================================================
 # CATEGORY FACTORIES
 # =============================================================================
 
+
 @pytest.fixture
 def expense_category_factory(db):
     """Factory para crear categorías de gasto."""
+
     def _create_category(user=None, **kwargs):
         defaults = {
-            'name': 'Categoría Gasto Test',
-            'type': CategoryType.EXPENSE,
-            'icon': 'bi-cart',
-            'color': '#FF5733',
-            'user': user,
-            'is_system': user is None,
+            "name": "Categoría Gasto Test",
+            "type": CategoryType.EXPENSE,
+            "icon": "bi-cart",
+            "color": "#FF5733",
+            "user": user,
+            "is_system": user is None,
         }
         defaults.update(kwargs)
         return Category.objects.create(**defaults)
+
     return _create_category
 
 
 @pytest.fixture
 def income_category_factory(db):
     """Factory para crear categorías de ingreso."""
+
     def _create_category(user=None, **kwargs):
         defaults = {
-            'name': 'Categoría Ingreso Test',
-            'type': CategoryType.INCOME,
-            'icon': 'bi-cash',
-            'color': '#28A745',
-            'user': user,
-            'is_system': user is None,
+            "name": "Categoría Ingreso Test",
+            "type": CategoryType.INCOME,
+            "icon": "bi-cash",
+            "color": "#28A745",
+            "user": user,
+            "is_system": user is None,
         }
         defaults.update(kwargs)
         return Category.objects.create(**defaults)
+
     return _create_category
 
 
@@ -185,51 +189,55 @@ def income_category_factory(db):
 # CATEGORY FIXTURES (usando factories)
 # =============================================================================
 
+
 @pytest.fixture
 def expense_category(user, expense_category_factory):
     """Crea una categoría de gasto para el usuario de prueba."""
-    return expense_category_factory(user=user, name='Alimentación')
+    return expense_category_factory(user=user, name="Alimentación")
 
 
 @pytest.fixture
 def income_category(user, income_category_factory):
     """Crea una categoría de ingreso para el usuario de prueba."""
-    return income_category_factory(user=user, name='Salario')
+    return income_category_factory(user=user, name="Salario")
 
 
 @pytest.fixture
 def system_expense_category(expense_category_factory):
     """Crea una categoría de sistema (gasto)."""
-    return expense_category_factory(user=None, name='Otros Gastos', is_system=True)
+    return expense_category_factory(user=None, name="Otros Gastos", is_system=True)
 
 
 @pytest.fixture
 def system_income_category(income_category_factory):
     """Crea una categoría de sistema (ingreso)."""
-    return income_category_factory(user=None, name='Otros Ingresos', is_system=True)
+    return income_category_factory(user=None, name="Otros Ingresos", is_system=True)
 
 
 # =============================================================================
 # EXPENSE FACTORY
 # =============================================================================
 
+
 @pytest.fixture
 def expense_factory(db):
     """Factory para crear gastos."""
+
     def _create_expense(user, category, **kwargs):
         from apps.expenses.models import Expense
-        
+
         defaults = {
-            'user': user,
-            'category': category,
-            'date': timezone.now().date(),
-            'description': 'Gasto de prueba',
-            'amount': Decimal('100.00'),
-            'currency': Currency.ARS,
-            'exchange_rate': Decimal('1.00'),
+            "user": user,
+            "category": category,
+            "date": timezone.now().date(),
+            "description": "Gasto de prueba",
+            "amount": Decimal("100.00"),
+            "currency": Currency.ARS,
+            "exchange_rate": Decimal("1.00"),
         }
         defaults.update(kwargs)
         return Expense.objects.create(**defaults)
+
     return _create_expense
 
 
@@ -243,23 +251,26 @@ def expense(user, expense_category, expense_factory):
 # INCOME FACTORY
 # =============================================================================
 
+
 @pytest.fixture
 def income_factory(db):
     """Factory para crear ingresos."""
+
     def _create_income(user, category, **kwargs):
         from apps.income.models import Income
-        
+
         defaults = {
-            'user': user,
-            'category': category,
-            'date': timezone.now().date(),
-            'description': 'Ingreso de prueba',
-            'amount': Decimal('1000.00'),
-            'currency': Currency.ARS,
-            'exchange_rate': Decimal('1.00'),
+            "user": user,
+            "category": category,
+            "date": timezone.now().date(),
+            "description": "Ingreso de prueba",
+            "amount": Decimal("1000.00"),
+            "currency": Currency.ARS,
+            "exchange_rate": Decimal("1.00"),
         }
         defaults.update(kwargs)
         return Income.objects.create(**defaults)
+
     return _create_income
 
 
@@ -273,23 +284,26 @@ def income(user, income_category, income_factory):
 # BUDGET FACTORY
 # =============================================================================
 
+
 @pytest.fixture
 def budget_factory(db):
     """Factory para crear presupuestos."""
+
     def _create_budget(user, category, **kwargs):
         from apps.budgets.models import Budget
-        
+
         today = timezone.now().date()
         defaults = {
-            'user': user,
-            'category': category,
-            'month': today.month,
-            'year': today.year,
-            'amount': Decimal('5000.00'),
-            'alert_threshold': 80,
+            "user": user,
+            "category": category,
+            "month": today.month,
+            "year": today.year,
+            "amount": Decimal("5000.00"),
+            "alert_threshold": 80,
         }
         defaults.update(kwargs)
         return Budget.objects.create(**defaults)
+
     return _create_budget
 
 
@@ -303,20 +317,23 @@ def budget(user, expense_category, budget_factory):
 # SAVING FACTORY
 # =============================================================================
 
+
 @pytest.fixture
 def saving_factory(db):
     """Factory para crear metas de ahorro."""
+
     def _create_saving(user, **kwargs):
         from apps.savings.models import Saving
-        
+
         defaults = {
-            'user': user,
-            'name': 'Meta de prueba',
-            'target_amount': Decimal('10000.00'),
-            'current_amount': Decimal('0.00'),
+            "user": user,
+            "name": "Meta de prueba",
+            "target_amount": Decimal("10000.00"),
+            "current_amount": Decimal("0.00"),
         }
         defaults.update(kwargs)
         return Saving.objects.create(**defaults)
+
     return _create_saving
 
 
@@ -329,28 +346,31 @@ def saving(user, saving_factory):
 @pytest.fixture
 def saving_with_progress(user, saving_factory):
     """Crea una meta de ahorro con progreso."""
-    return saving_factory(user, current_amount=Decimal('5000.00'))
+    return saving_factory(user, current_amount=Decimal("5000.00"))
 
 
 # =============================================================================
 # SAVING MOVEMENT FACTORY
 # =============================================================================
 
+
 @pytest.fixture
 def saving_movement_factory(db):
     """Factory para crear movimientos de ahorro."""
-    def _create_movement(saving, movement_type='DEPOSIT', **kwargs):
+
+    def _create_movement(saving, movement_type="DEPOSIT", **kwargs):
         from apps.savings.models import SavingMovement
-        
+
         defaults = {
-            'saving': saving,
-            'type': movement_type,
-            'amount': Decimal('1000.00'),
-            'date': timezone.now().date(),
+            "saving": saving,
+            "type": movement_type,
+            "amount": Decimal("1000.00"),
+            "date": timezone.now().date(),
             # 'notes': 'Movimiento de prueba',  # ELIMINAR - Campo no existe
         }
         defaults.update(kwargs)
         return SavingMovement.objects.create(**defaults)
+
     return _create_movement
 
 
@@ -358,19 +378,20 @@ def saving_movement_factory(db):
 # Helpers para URLs
 # ============================================================
 
+
 def get_url(name, **kwargs):
     """
     Helper para obtener URL con fallback de namespace.
     Intenta primero sin namespace, luego con namespace común.
     """
-    from django.urls import reverse, NoReverseMatch
-    
+    from django.urls import NoReverseMatch, reverse
+
     # Mapeo de posibles namespaces
     namespace_map = {
-        'dashboard': ['dashboard', 'reports:dashboard', 'core:dashboard'],
-        'home': ['home', 'core:home'],
+        "dashboard": ["dashboard", "reports:dashboard", "core:dashboard"],
+        "home": ["home", "core:home"],
     }
-    
+
     # Si el nombre está en el mapeo, probar variantes
     if name in namespace_map:
         for variant in namespace_map[name]:
@@ -379,7 +400,7 @@ def get_url(name, **kwargs):
             except NoReverseMatch:
                 continue
         raise NoReverseMatch(f"No se encontró URL para '{name}'")
-    
+
     # Si no, intentar directamente
     return reverse(name, kwargs=kwargs)
 

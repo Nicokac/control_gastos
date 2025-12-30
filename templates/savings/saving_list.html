@@ -34,11 +34,11 @@
             </div>
         </div>
         <div class="progress mt-3" style="height: 8px;">
-            <div class="progress-bar bg-info" 
+            <div class="progress-bar bg-info"
                  role="progressbar"
                  style="width: {{ summary.overall_progress }}%;"
-                 aria-valuenow="{{ summary.overall_progress }}" 
-                 aria-valuemin="0" 
+                 aria-valuenow="{{ summary.overall_progress }}"
+                 aria-valuemin="0"
                  aria-valuemax="100">
             </div>
         </div>
@@ -92,7 +92,7 @@
     {% for saving in savings %}
     <div class="col-md-6 col-lg-4">
         <div class="card h-100 {% if saving.is_completed %}border-success{% elif saving.is_overdue %}border-warning{% endif %}">
-            <div class="card-header d-flex justify-content-between align-items-center" 
+            <div class="card-header d-flex justify-content-between align-items-center"
                  style="background-color: {{ saving.color }}20;">
                 <div class="d-flex align-items-center">
                     <i class="{{ saving.icon }} fs-4 me-2" style="color: {{ saving.color }};"></i>
@@ -116,16 +116,16 @@
                         <small class="fw-bold">{{ saving.progress_percentage }}%</small>
                     </div>
                     <div class="progress" style="height: 10px;">
-                        <div class="progress-bar" 
-                             role="progressbar" 
+                        <div class="progress-bar"
+                             role="progressbar"
                              style="width: {{ saving.progress_percentage }}%; background-color: {{ saving.color }};"
-                             aria-valuenow="{{ saving.progress_percentage }}" 
-                             aria-valuemin="0" 
+                             aria-valuenow="{{ saving.progress_percentage }}"
+                             aria-valuemin="0"
                              aria-valuemax="100">
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Montos -->
                 <div class="row text-center mb-3">
                     <div class="col-6 border-end">
@@ -137,7 +137,7 @@
                         <strong>{{ saving.formatted_target }}</strong>
                     </div>
                 </div>
-                
+
                 {% if saving.target_date %}
                 <div class="text-center mb-3">
                     <small class="text-muted">

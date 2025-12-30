@@ -15,23 +15,22 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
-from django.contrib import admin
-from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib import admin
+from django.urls import include, path
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-
     # Apps
-    path('users/', include('apps.users.urls')),
-    path('categories/', include('apps.categories.urls')),
-    path('expenses/', include('apps.expenses.urls')),
-    path('income/', include('apps.income.urls')),
-    path('savings/', include('apps.savings.urls')),
-    path('budgets/', include('apps.budgets.urls')),
+    path("users/", include("apps.users.urls")),
+    path("categories/", include("apps.categories.urls")),
+    path("expenses/", include("apps.expenses.urls")),
+    path("income/", include("apps.income.urls")),
+    path("savings/", include("apps.savings.urls")),
+    path("budgets/", include("apps.budgets.urls")),
     # Dashboard como página principal
-    path('', include('apps.reports.urls')),
+    path("", include("apps.reports.urls")),
 ]
 
 if settings.DEBUG:
@@ -40,6 +39,7 @@ if settings.DEBUG:
 
     try:
         import debug_toolbar
-        urlpatterns += [path('__debug__/', include(debug_toolbar.urls))]
+
+        urlpatterns += [path("__debug__/", include(debug_toolbar.urls))]
     except ImportError:
         pass

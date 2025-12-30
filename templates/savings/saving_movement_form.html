@@ -15,7 +15,7 @@
                     <i class="bi bi-plus-circle text-info me-2"></i>Agregar Movimiento
                 </h1>
             </div>
-            
+
             <!-- Info de la meta -->
             <div class="card mb-4" style="background-color: {{ saving.color }}10;">
                 <div class="card-body">
@@ -35,10 +35,10 @@
                     </div>
                 </div>
             </div>
-            
+
             <form method="post" novalidate>
                 {% csrf_token %}
-                
+
                 <!-- Errores generales -->
                 {% if form.non_field_errors %}
                 <div class="alert alert-danger">
@@ -47,7 +47,7 @@
                     {% endfor %}
                 </div>
                 {% endif %}
-                
+
                 <div class="card mb-4">
                     <div class="card-body">
                         <!-- Tipo de movimiento -->
@@ -55,8 +55,8 @@
                             <label class="form-label">Tipo de movimiento</label>
                             <div class="d-flex gap-3">
                                 <label class="flex-fill">
-                                    <input type="radio" name="type" value="DEPOSIT" 
-                                           class="btn-check" 
+                                    <input type="radio" name="type" value="DEPOSIT"
+                                           class="btn-check"
                                            {% if form.type.value == 'DEPOSIT' or not form.type.value %}checked{% endif %}>
                                     <div class="btn btn-outline-success w-100 py-3">
                                         <i class="bi bi-arrow-down-circle fs-4 d-block mb-1"></i>
@@ -64,7 +64,7 @@
                                     </div>
                                 </label>
                                 <label class="flex-fill">
-                                    <input type="radio" name="type" value="WITHDRAWAL" 
+                                    <input type="radio" name="type" value="WITHDRAWAL"
                                            class="btn-check"
                                            {% if form.type.value == 'WITHDRAWAL' %}checked{% endif %}>
                                     <div class="btn btn-outline-danger w-100 py-3">
@@ -74,14 +74,14 @@
                                 </label>
                             </div>
                         </div>
-                        
+
                         <!-- Monto -->
                         <div class="mb-4">
                             <label class="form-label">Monto</label>
                             <div class="input-group">
                                 <span class="input-group-text">$</span>
-                                <input type="number" 
-                                       name="amount" 
+                                <input type="number"
+                                       name="amount"
                                        class="form-control form-control-lg text-end {% if form.amount.errors %}is-invalid{% endif %}"
                                        placeholder="0.00"
                                        step="0.01"
@@ -94,19 +94,19 @@
                             <div class="text-danger small mt-1">{{ form.amount.errors.0 }}</div>
                             {% endif %}
                         </div>
-                        
+
                         <!-- Descripción -->
                         <div class="mb-4">
                             <label class="form-label">Descripción <small class="text-muted">(opcional)</small></label>
-                            <input type="text" 
-                                   name="description" 
+                            <input type="text"
+                                   name="description"
                                    class="form-control"
                                    placeholder="Ej: Depósito mensual, Retiro para emergencia..."
                                    value="{{ form.description.value|default:'' }}">
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Botones -->
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                     <a href="{% url 'savings:detail' saving.pk %}" class="btn btn-outline-secondary">

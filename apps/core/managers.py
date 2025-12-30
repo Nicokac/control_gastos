@@ -1,7 +1,7 @@
-"""Managers personalizados para modelos con soft delete.
-"""
+"""Managers personalizados para modelos con soft delete."""
 
 from django.db import models
+
 
 class SoftDeleteManager(models.Manager):
     """Manger que filtra automáticamente los registros eliminados."""
@@ -17,4 +17,3 @@ class SoftDeleteManager(models.Manager):
     def deleted_only(self):
         """Retorna solo los registros eliminados."""
         return super().get_queryset().filter(is_active=False)
-

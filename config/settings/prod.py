@@ -1,11 +1,11 @@
-from .base import *
-from decouple import config
-
 # =============================================================================
 # VALIDACIONES DE SEGURIDAD
 # =============================================================================
-
 from django.core.exceptions import ImproperlyConfigured
+
+from decouple import config
+
+from .base import *
 
 # Validar longitud mínima de SECRET_KEY (50 caracteres recomendado)
 if len(SECRET_KEY) < 50:
@@ -19,27 +19,27 @@ if len(SECRET_KEY) < 50:
         f"Longitud mínima: 50 caracteres\n"
         "\n"
         "Generar clave segura con:\n"
-        "  python -c \"from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())\"\n"
+        '  python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"\n'
         "\n"
         "=" * 60
     )
 
 # Validar que no contenga valores inseguros conocidos
 INSECURE_KEYS = [
-    'dev-secret',
-    'secret-key',
-    'change-me',
-    'your-secret',
-    'django-insecure',
-    'placeholder',
-    'xxx',
-    '123',
+    "dev-secret",
+    "secret-key",
+    "change-me",
+    "your-secret",
+    "django-insecure",
+    "placeholder",
+    "xxx",
+    "123",
 ]
 
 for insecure in INSECURE_KEYS:
     if insecure in SECRET_KEY.lower():
         raise ImproperlyConfigured(
-            f"\n"
+            "\n"
             "=" * 60 + "\n"
             "❌ ERROR: SECRET_KEY contiene valor inseguro\n"
             "=" * 60 + "\n"
@@ -47,7 +47,7 @@ for insecure in INSECURE_KEYS:
             f"Se detectó '{insecure}' en SECRET_KEY\n"
             "\n"
             "Generar clave segura con:\n"
-            "  python -c \"from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())\"\n"
+            '  python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"\n'
             "\n"
             "=" * 60
         )
@@ -59,7 +59,7 @@ DEBUG = False
 
 # Obtener hosts desde variable de entorno
 # Formato: "dominio1.com,dominio2.com,www.dominio1.com"
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="").split(",")
 
 # Eliminar strings vacíos si no hay hosts configurados
 ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS if host.strip()]
@@ -72,13 +72,13 @@ if not ALLOWED_HOSTS:
     )
 
 DATABASES = {
-    'default':{
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='5432'),
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": config("DB_NAME"),
+        "USER": config("DB_USER"),
+        "PASSWORD": config("DB_PASSWORD"),
+        "HOST": config("DB_HOST", default="localhost"),
+        "PORT": config("DB_PORT", default="5432"),
     }
 }
 
@@ -89,8 +89,8 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
 # Static files with WhiteNoise
-MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 
 # =============================================================================
@@ -109,7 +109,7 @@ SECURE_SSL_REDIRECT = True
 # Protección contra Clickjacking
 # DENY = No permite que la página sea embebida en iframe de ningún sitio
 # SAMEORIGIN = Solo permite iframe del mismo dominio
-X_FRAME_OPTIONS = 'DENY'
+X_FRAME_OPTIONS = "DENY"
 
 # Previene que el navegador adivine el tipo de contenido
 # Protege contra ataques de sniffing de MIME type
@@ -121,7 +121,7 @@ SECURE_BROWSER_XSS_FILTER = True
 # Política de Referrer - Controla qué información se envía en el header Referer
 # strict-origin-when-cross-origin = Envía origen completo para same-origin,
 # solo el origen para cross-origin, nada para downgrade HTTPS->HTTP
-SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 
 # Proxy SSL - Si estás detrás de un proxy/load balancer que maneja SSL
 # Descomenta si usas Railway, Render, Heroku, etc.
@@ -140,8 +140,8 @@ SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
 
 # SameSite - Protección contra CSRF
-SESSION_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
 
 # Edad de la sesión (2 semanas)
 SESSION_COOKIE_AGE = 1209600
@@ -188,9 +188,7 @@ CSP_IMG_SRC = (
 )
 
 # Conexiones (fetch, XHR, WebSocket)
-CSP_CONNECT_SRC = (
-    "'self'",
-)
+CSP_CONNECT_SRC = ("'self'",)
 
 # Frames: ninguno (ya tenemos X-Frame-Options)
 CSP_FRAME_SRC = ("'none'",)
@@ -216,9 +214,9 @@ AXES_COOLOFF_TIME = 2  # 2 horas en producción
 # Para proxies/load balancers (Railway, Render, Heroku, etc.)
 AXES_PROXY_COUNT = 1
 AXES_META_PRECEDENCE_ORDER = [
-    'HTTP_X_FORWARDED_FOR',
-    'HTTP_X_REAL_IP',
-    'REMOTE_ADDR',
+    "HTTP_X_FORWARDED_FOR",
+    "HTTP_X_REAL_IP",
+    "REMOTE_ADDR",
 ]
 
 # Logging de intentos
@@ -234,17 +232,17 @@ AXES_NEVER_LOCKOUT_GET = True
 # =============================================================================
 
 # Sobrescribir configuración de logging para producción
-LOGGING['handlers']['console']['level'] = 'WARNING'  # Menos verbose en consola
+LOGGING["handlers"]["console"]["level"] = "WARNING"  # Menos verbose en consola
 
 # Agregar handler para logs críticos (opcional: enviar por email)
-LOGGING['handlers']['mail_admins'] = {
-    'level': 'ERROR',
-    'class': 'django.utils.log.AdminEmailHandler',
-    'include_html': True,
+LOGGING["handlers"]["mail_admins"] = {
+    "level": "ERROR",
+    "class": "django.utils.log.AdminEmailHandler",
+    "include_html": True,
 }
 
 # Agregar mail_admins a errores de request
-LOGGING['loggers']['django.request']['handlers'].append('mail_admins')
+LOGGING["loggers"]["django.request"]["handlers"].append("mail_admins")
 
 # Configurar ADMINS para recibir emails de errores
 # ADMINS = [('Tu Nombre', 'tu@email.com')]

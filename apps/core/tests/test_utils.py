@@ -2,19 +2,19 @@
 Tests para las funciones de utilidad.
 """
 
-import pytest
-from decimal import Decimal
 from datetime import date
+from decimal import Decimal
+
 from django.utils import timezone
 
 from apps.core.utils import (
-    get_current_month_year,
-    get_month_date_range,
     calculate_percentage,
     format_currency,
+    get_current_month_year,
+    get_month_date_range,
     get_month_name,
-    get_years_choices,
     get_months_choices,
+    get_years_choices,
 )
 
 
@@ -84,40 +84,40 @@ class TestCalculatePercentage:
 
     def test_basic_percentage(self):
         """Verifica cálculo básico de porcentaje."""
-        result = calculate_percentage(Decimal('25'), Decimal('100'))
-        assert result == Decimal('25')
+        result = calculate_percentage(Decimal("25"), Decimal("100"))
+        assert result == Decimal("25")
 
     def test_fifty_percent(self):
         """Verifica 50%."""
-        result = calculate_percentage(Decimal('50'), Decimal('100'))
-        assert result == Decimal('50')
+        result = calculate_percentage(Decimal("50"), Decimal("100"))
+        assert result == Decimal("50")
 
     def test_hundred_percent(self):
         """Verifica 100%."""
-        result = calculate_percentage(Decimal('100'), Decimal('100'))
-        assert result == Decimal('100')
+        result = calculate_percentage(Decimal("100"), Decimal("100"))
+        assert result == Decimal("100")
 
     def test_zero_partial(self):
         """Verifica con parcial en cero."""
-        result = calculate_percentage(Decimal('0'), Decimal('100'))
-        assert result == Decimal('0')
+        result = calculate_percentage(Decimal("0"), Decimal("100"))
+        assert result == Decimal("0")
 
     def test_zero_total_returns_zero(self):
         """Verifica que total cero retorne cero (evita división por cero)."""
-        result = calculate_percentage(Decimal('50'), Decimal('0'))
-        assert result == Decimal('0')
+        result = calculate_percentage(Decimal("50"), Decimal("0"))
+        assert result == Decimal("0")
 
     def test_over_hundred_percent(self):
         """Verifica porcentaje mayor a 100."""
-        result = calculate_percentage(Decimal('150'), Decimal('100'))
-        assert result == Decimal('150')
+        result = calculate_percentage(Decimal("150"), Decimal("100"))
+        assert result == Decimal("150")
 
     def test_decimal_precision(self):
         """Verifica precisión decimal."""
-        result = calculate_percentage(Decimal('1'), Decimal('3'))
+        result = calculate_percentage(Decimal("1"), Decimal("3"))
         # 1/3 * 100 = 33.333...
-        assert result > Decimal('33')
-        assert result < Decimal('34')
+        assert result > Decimal("33")
+        assert result < Decimal("34")
 
 
 class TestFormatCurrency:
@@ -125,29 +125,29 @@ class TestFormatCurrency:
 
     def test_format_ars_default(self):
         """Verifica formato ARS por defecto."""
-        result = format_currency(Decimal('1500.50'))
-        assert '$' in result
-        assert '1' in result  # Contiene el número
+        result = format_currency(Decimal("1500.50"))
+        assert "$" in result
+        assert "1" in result  # Contiene el número
 
     def test_format_ars_explicit(self):
         """Verifica formato ARS explícito."""
-        result = format_currency(Decimal('1500.50'), 'ARS')
-        assert '$' in result
+        result = format_currency(Decimal("1500.50"), "ARS")
+        assert "$" in result
 
     def test_format_usd(self):
         """Verifica formato USD."""
-        result = format_currency(Decimal('100.00'), 'USD')
-        assert 'US$' in result
+        result = format_currency(Decimal("100.00"), "USD")
+        assert "US$" in result
 
     def test_format_zero(self):
         """Verifica formato de cero."""
-        result = format_currency(Decimal('0'))
-        assert '0' in result
+        result = format_currency(Decimal("0"))
+        assert "0" in result
 
     def test_format_negative(self):
         """Verifica formato de número negativo."""
-        result = format_currency(Decimal('-500.00'))
-        assert '-' in result or '500' in result
+        result = format_currency(Decimal("-500.00"))
+        assert "-" in result or "500" in result
 
 
 class TestGetMonthName:
@@ -155,28 +155,28 @@ class TestGetMonthName:
 
     def test_january(self):
         """Verifica nombre de enero."""
-        assert get_month_name(1) == 'Enero'
+        assert get_month_name(1) == "Enero"
 
     def test_february(self):
         """Verifica nombre de febrero."""
-        assert get_month_name(2) == 'Febrero'
+        assert get_month_name(2) == "Febrero"
 
     def test_december(self):
         """Verifica nombre de diciembre."""
-        assert get_month_name(12) == 'Diciembre'
+        assert get_month_name(12) == "Diciembre"
 
     def test_all_months_exist(self):
         """Verifica que todos los meses tengan nombre."""
         for month in range(1, 13):
             name = get_month_name(month)
-            assert name != ''
+            assert name != ""
             assert len(name) > 0
 
     def test_invalid_month_returns_empty(self):
         """Verifica que mes inválido retorne vacío."""
-        assert get_month_name(0) == ''
-        assert get_month_name(13) == ''
-        assert get_month_name(-1) == ''
+        assert get_month_name(0) == ""
+        assert get_month_name(13) == ""
+        assert get_month_name(-1) == ""
 
 
 class TestGetYearsChoices:
@@ -229,13 +229,13 @@ class TestGetMonthsChoices:
         """Verifica que el primer mes sea enero."""
         result = get_months_choices()
         assert result[0][0] == 1
-        assert result[0][1] == 'Enero'
+        assert result[0][1] == "Enero"
 
     def test_last_month_is_december(self):
         """Verifica que el último mes sea diciembre."""
         result = get_months_choices()
         assert result[11][0] == 12
-        assert result[11][1] == 'Diciembre'
+        assert result[11][1] == "Diciembre"
 
     def test_months_are_in_order(self):
         """Verifica que los meses estén en orden."""

@@ -93,13 +93,13 @@
                     </td>
                     <td class="text-center">
                         <div class="btn-group btn-group-sm">
-                            <a href="{% url 'expenses:update' expense.pk %}" 
-                               class="btn btn-outline-primary" 
+                            <a href="{% url 'expenses:update' expense.pk %}"
+                               class="btn btn-outline-primary"
                                title="Editar">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <a href="{% url 'expenses:delete' expense.pk %}" 
-                               class="btn btn-outline-danger" 
+                            <a href="{% url 'expenses:delete' expense.pk %}"
+                               class="btn btn-outline-danger"
                                title="Eliminar">
                                 <i class="bi bi-trash"></i>
                             </a>
@@ -133,13 +133,13 @@
             </a>
         </li>
         {% endif %}
-        
+
         <li class="page-item disabled">
             <span class="page-link">
                 Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
             </span>
         </li>
-        
+
         {% if page_obj.has_next %}
         <li class="page-item">
             <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">

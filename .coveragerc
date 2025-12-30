@@ -1,6 +1,6 @@
 [run]
 source = apps
-omit = 
+omit =
     */migrations/*
     */tests/*
     */test_*.py
@@ -19,7 +19,7 @@ exclude_lines =
     if __name__ == .__main__.:
     if TYPE_CHECKING:
     @abstract
-    
+
 precision = 2
 show_missing = True
 skip_covered = False

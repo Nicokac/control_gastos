@@ -15,11 +15,11 @@
                     <h1 class="h4 fw-bold">Bienvenido de vuelta</h1>
                     <p class="text-muted">Ingresá tus datos para continuar</p>
                 </div>
-                
+
                 <!-- Formulario -->
                 <form method="post" novalidate>
                     {% csrf_token %}
-                    
+
                     <!-- Errores generales -->
                     {% if form.non_field_errors %}
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -30,14 +30,14 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                     {% endif %}
-                    
+
                     <!-- Campo Usuario/Email -->
                     <div class="mb-3">
                         <label for="id_username" class="form-label">
                             <i class="bi bi-person me-1"></i>Email o Usuario
                         </label>
-                        <input type="text" 
-                               name="username" 
+                        <input type="text"
+                               name="username"
                                id="id_username"
                                class="form-control {% if form.username.errors %}is-invalid{% endif %}"
                                placeholder="tu@email.com"
@@ -50,20 +50,20 @@
                         </div>
                         {% endif %}
                     </div>
-                    
+
                     <!-- Campo Contraseña con toggle (QW-1.2) -->
                     <div class="mb-4">
                         <label for="id_password" class="form-label">
                             <i class="bi bi-lock me-1"></i>Contraseña
                         </label>
                         <div class="input-group">
-                            <input type="password" 
-                                   name="password" 
+                            <input type="password"
+                                   name="password"
                                    id="id_password"
                                    class="form-control {% if form.password.errors %}is-invalid{% endif %}"
                                    placeholder="••••••••"
                                    required>
-                            <button type="button" 
+                            <button type="button"
                                     class="btn btn-outline-secondary toggle-password"
                                     tabindex="-1">
                                 <i class="bi bi-eye"></i>
@@ -75,7 +75,7 @@
                             {% endif %}
                         </div>
                     </div>
-                    
+
                     <!-- Botón Submit con loading state (QW-1.1) -->
                     <div class="d-grid mb-4">
                         <button type="submit" class="btn btn-primary btn-lg">
@@ -83,7 +83,7 @@
                         </button>
                     </div>
                 </form>
-                
+
                 <!-- Link a registro -->
                 <div class="text-center">
                     <span class="text-muted">¿No tenés cuenta?</span>
@@ -91,7 +91,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Footer -->
         <p class="text-center text-muted mt-4 small">
             Control de Gastos &copy; {% now "Y" %}

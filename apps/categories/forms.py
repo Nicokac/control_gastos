@@ -2,39 +2,34 @@
 Formularios para categorías.
 """
 
-from django import forms 
+from django import forms
+
 from .models import Category
-from apps.core.constants import CategoryType
+
 
 class CategoryForm(forms.ModelForm):
     """Formulario para crear/editar categorías de usuario."""
 
     class Meta:
         model = Category
-        fields = ['name', 'type', 'icon', 'color']
+        fields = ["name", "type", "icon", "color"]
         widgets = {
-            'name': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Nombre de la categoría'
-            }),
-            'type': forms.Select(attrs={
-                'class': 'form-select'
-            }),
-            'icon': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'bi-cart (opcional)'
-            }),
-            'color': forms.TextInput(attrs={
-                'class': 'form-control',
-                'type': 'color',
-                'value': '#6c757d'
-            }),
+            "name": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "Nombre de la categoría"}
+            ),
+            "type": forms.Select(attrs={"class": "form-select"}),
+            "icon": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "bi-cart (opcional)"}
+            ),
+            "color": forms.TextInput(
+                attrs={"class": "form-control", "type": "color", "value": "#6c757d"}
+            ),
         }
 
     def __init__(self, *args, user=None, **kwargs):
         """
         Inicializa el formulario con el usuario.
-        
+
         Args:
             user: Usuario que crea la categoría
         """
@@ -43,8 +38,8 @@ class CategoryForm(forms.ModelForm):
 
     def clean_name(self):
         """Válida que el nombre no esté duplicado para el usuario."""
-        name = self.cleaned_data.get('name')
-        category_type = self.cleaned_data.get('type') or self.instance.type
+        name = self.cleaned_data.get("name")
+        category_type = self.cleaned_data.get("type") or self.instance.type
 
         if not name:
             return name
@@ -59,9 +54,7 @@ class CategoryForm(forms.ModelForm):
         # Duplicados del usuario (solo si sabemos qué usuario es)
         if effective_user is not None:
             queryset = Category.objects.filter(
-                name__iexact=name,
-                user=effective_user,
-                type=category_type
+                name__iexact=name, user=effective_user, type=category_type
             )
 
             if self.instance.pk:
@@ -69,21 +62,15 @@ class CategoryForm(forms.ModelForm):
 
             if queryset.exists():
                 raise forms.ValidationError(
-                    'Ya tenés una categoría con este nombre para este tipo.'
+                    "Ya tenés una categoría con este nombre para este tipo."
                 )
 
         # Duplicados en categorías del sistema
-        if Category.objects.filter(
-            name__iexact=name,
-            is_system=True,
-            type=category_type
-        ).exists():
-            raise forms.ValidationError(
-                'Ya existe una categoría del sistema con este nombre.'
-            )
+        if Category.objects.filter(name__iexact=name, is_system=True, type=category_type).exists():
+            raise forms.ValidationError("Ya existe una categoría del sistema con este nombre.")
 
         return name
-    
+
     def save(self, commit=True):
         """Guarda la categoría asignando el usuario."""
         instance = super().save(commit=False)
@@ -99,4 +86,3 @@ class CategoryForm(forms.ModelForm):
             instance.save()
 
         return instance
-

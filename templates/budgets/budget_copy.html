@@ -15,22 +15,22 @@
                     <i class="bi bi-copy text-primary me-2"></i>Copiar Presupuestos
                 </h1>
             </div>
-            
+
             <div class="card">
                 <div class="card-body">
                     <div class="alert alert-info">
                         <i class="bi bi-info-circle me-2"></i>
                         <strong>¿Cómo funciona?</strong>
                         <p class="mb-0 mt-2">
-                            Se copiarán todos los presupuestos del <strong>mes anterior</strong> 
-                            al período que selecciones. Las categorías que ya tengan presupuesto 
+                            Se copiarán todos los presupuestos del <strong>mes anterior</strong>
+                            al período que selecciones. Las categorías que ya tengan presupuesto
                             en el período destino serán omitidas.
                         </p>
                     </div>
-                    
+
                     <form method="post">
                         {% csrf_token %}
-                        
+
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <label class="form-label">Mes destino</label>
@@ -41,14 +41,14 @@
                                 {{ form.target_year }}
                             </div>
                         </div>
-                        
+
                         <div class="bg-light p-3 rounded mb-4">
                             <small class="text-muted">
                                 <i class="bi bi-arrow-right me-1"></i>
                                 Los presupuestos se copiarán del mes inmediatamente anterior al seleccionado.
                             </small>
                         </div>
-                        
+
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                             <a href="{% url 'budgets:list' %}" class="btn btn-outline-secondary">
                                 Cancelar

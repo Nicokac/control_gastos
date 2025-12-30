@@ -11,7 +11,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
-from decouple import config #Averiguar
+
+from decouple import config  # Averiguar
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -26,7 +27,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # En producción, SECRET_KEY DEBE estar configurada como variable de entorno
 # En desarrollo, se permite un default para facilitar el setup inicial
-SECRET_KEY = config('SECRET_KEY', default=None)
+SECRET_KEY = config("SECRET_KEY", default=None)
 
 # Validación: Si no hay SECRET_KEY, mostrar error claro
 if SECRET_KEY is None:
@@ -41,7 +42,7 @@ if SECRET_KEY is None:
         "2. Exportar variable: export SECRET_KEY=tu-clave-secreta\n"
         "\n"
         "Generar clave segura con:\n"
-        "  python -c \"from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())\"\n"
+        '  python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"\n'
         "\n"
         "=" * 60
     )
@@ -61,48 +62,46 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     # Third party
-    'crispy_forms',
-    'crispy_bootstrap5',
-    'axes',
-
+    "crispy_forms",
+    "crispy_bootstrap5",
+    "axes",
     # Local apps
-    'apps.users',
-    'apps.expenses',
-    'apps.income',
-    'apps.savings',
-    'apps.budgets',
-    'apps.reports',
-    'apps.core',
-    'apps.categories',
+    "apps.users",
+    "apps.expenses",
+    "apps.income",
+    "apps.savings",
+    "apps.budgets",
+    "apps.reports",
+    "apps.core",
+    "apps.categories",
 ]
 
-AUTH_USER_MODEL = 'users.User'
+AUTH_USER_MODEL = "users.User"
 
 # =============================================================================
 # AUTENTICACIÓN
 # =============================================================================
 
 AUTHENTICATION_BACKENDS = [
-    'axes.backends.AxesStandaloneBackend',  # ← Primero axes
-    'django.contrib.auth.backends.ModelBackend',  # ← Después el default
+    "axes.backends.AxesStandaloneBackend",  # ← Primero axes
+    "django.contrib.auth.backends.ModelBackend",  # ← Después el default
 ]
 
-CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
-CRISPY_TEMPLATE_PACK = 'bootstrap5'
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'csp.middleware.CSPMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "csp.middleware.CSPMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'axes.middleware.AxesMiddleware',
+    "axes.middleware.AxesMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -110,7 +109,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / 'templates'],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -160,7 +159,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "es-ar"
 
-TIME_ZONE = 'America/Argentina/Buenos_Aires'
+TIME_ZONE = "America/Argentina/Buenos_Aires"
 
 USE_I18N = True
 
@@ -171,15 +170,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
-STATICFILES_DIRS = [BASE_DIR / 'static']
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
-MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
-LOGIN_REDIRECT_URL = 'reports:dashboard'
-LOGOUT_REDIRECT_URL = 'users:login'
-LOGIN_URL = 'users:login'
+LOGIN_REDIRECT_URL = "reports:dashboard"
+LOGOUT_REDIRECT_URL = "users:login"
+LOGIN_URL = "users:login"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -201,7 +200,7 @@ AXES_COOLOFF_TIME = 1  # 1 hora
 # 'ip_address' = solo IP
 # 'username' = solo usuario
 # 'ip_address,username' = combinación (más seguro)
-AXES_LOCKOUT_PARAMETERS = ['ip_address', 'username']
+AXES_LOCKOUT_PARAMETERS = ["ip_address", "username"]
 
 # Reset de intentos después de login exitoso
 AXES_RESET_ON_SUCCESS = True
@@ -217,7 +216,7 @@ AXES_VERBOSE = True
 AXES_ENABLE_ACCESS_FAILURE_LOG = True
 
 # Mensaje personalizado (se mostrará en la página de lockout)
-AXES_LOCKOUT_TEMPLATE = 'users/account_locked.html'
+AXES_LOCKOUT_TEMPLATE = "users/account_locked.html"
 
 # URL a redirigir cuando está bloqueado (alternativa al template)
 # AXES_LOCKOUT_URL = '/cuenta-bloqueada/'
@@ -236,113 +235,102 @@ AXES_LOCKOUT_TEMPLATE = 'users/account_locked.html'
 # =============================================================================
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    
+    "version": 1,
+    "disable_existing_loggers": False,
     # Formateadores
-    'formatters': {
-        'verbose': {
-            'format': '[{asctime}] {levelname} {name} {module} {message}',
-            'style': '{',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
+    "formatters": {
+        "verbose": {
+            "format": "[{asctime}] {levelname} {name} {module} {message}",
+            "style": "{",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
         },
-        'simple': {
-            'format': '[{asctime}] {levelname} {message}',
-            'style': '{',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
+        "simple": {
+            "format": "[{asctime}] {levelname} {message}",
+            "style": "{",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
         },
-        'security': {
-            'format': '[{asctime}] {levelname} SECURITY {message}',
-            'style': '{',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
+        "security": {
+            "format": "[{asctime}] {levelname} SECURITY {message}",
+            "style": "{",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
         },
     },
-    
     # Handlers (destinos de los logs)
-    'handlers': {
+    "handlers": {
         # Consola - para desarrollo
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
         },
-        
         # Archivo general
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': BASE_DIR / 'logs' / 'app.log',
-            'maxBytes': 5 * 1024 * 1024,  # 5 MB
-            'backupCount': 5,
-            'formatter': 'verbose',
-            'encoding': 'utf-8',
+        "file": {
+            "level": "INFO",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": BASE_DIR / "logs" / "app.log",
+            "maxBytes": 5 * 1024 * 1024,  # 5 MB
+            "backupCount": 5,
+            "formatter": "verbose",
+            "encoding": "utf-8",
         },
-        
         # Archivo de errores
-        'error_file': {
-            'level': 'ERROR',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': BASE_DIR / 'logs' / 'error.log',
-            'maxBytes': 5 * 1024 * 1024,  # 5 MB
-            'backupCount': 10,
-            'formatter': 'verbose',
-            'encoding': 'utf-8',
+        "error_file": {
+            "level": "ERROR",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": BASE_DIR / "logs" / "error.log",
+            "maxBytes": 5 * 1024 * 1024,  # 5 MB
+            "backupCount": 10,
+            "formatter": "verbose",
+            "encoding": "utf-8",
         },
-        
         # Archivo de seguridad
-        'security_file': {
-            'level': 'INFO',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': BASE_DIR / 'logs' / 'security.log',
-            'maxBytes': 5 * 1024 * 1024,  # 5 MB
-            'backupCount': 10,
-            'formatter': 'security',
-            'encoding': 'utf-8',
+        "security_file": {
+            "level": "INFO",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": BASE_DIR / "logs" / "security.log",
+            "maxBytes": 5 * 1024 * 1024,  # 5 MB
+            "backupCount": 10,
+            "formatter": "security",
+            "encoding": "utf-8",
         },
     },
-    
     # Loggers
-    'loggers': {
+    "loggers": {
         # Logger principal de Django
-        'django': {
-            'handlers': ['console', 'file'],
-            'level': 'INFO',
-            'propagate': True,
+        "django": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
+            "propagate": True,
         },
-        
         # Errores de Django
-        'django.request': {
-            'handlers': ['error_file', 'console'],
-            'level': 'ERROR',
-            'propagate': False,
+        "django.request": {
+            "handlers": ["error_file", "console"],
+            "level": "ERROR",
+            "propagate": False,
         },
-        
         # Seguridad de Django
-        'django.security': {
-            'handlers': ['security_file', 'console'],
-            'level': 'INFO',
-            'propagate': False,
+        "django.security": {
+            "handlers": ["security_file", "console"],
+            "level": "INFO",
+            "propagate": False,
         },
-        
         # Django-axes (rate limiting)
-        'axes': {
-            'handlers': ['security_file', 'console'],
-            'level': 'INFO',
-            'propagate': False,
+        "axes": {
+            "handlers": ["security_file", "console"],
+            "level": "INFO",
+            "propagate": False,
         },
-        
         # Logger de nuestra aplicación
-        'apps': {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',
-            'propagate': False,
+        "apps": {
+            "handlers": ["console", "file"],
+            "level": "DEBUG",
+            "propagate": False,
         },
-        
         # Logger de seguridad personalizado
-        'security': {
-            'handlers': ['security_file', 'console'],
-            'level': 'INFO',
-            'propagate': False,
+        "security": {
+            "handlers": ["security_file", "console"],
+            "level": "INFO",
+            "propagate": False,
         },
     },
 }

@@ -13,13 +13,13 @@
             </div>
             <div class="card-body">
                 <p class="lead">
-                    ¿Estás seguro de que querés eliminar la categoría 
+                    ¿Estás seguro de que querés eliminar la categoría
                     <strong>{{ object.name }}</strong>?
                 </p>
                 <p class="text-muted">
                     Esta acción no eliminará los gastos o ingresos asociados a esta categoría.
                 </p>
-                
+
                 <form method="post">
                     {% csrf_token %}
                     <div class="d-flex gap-2 mt-4">

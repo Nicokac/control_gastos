@@ -4,17 +4,17 @@
         <a class="navbar-brand" href="{% url 'reports:dashboard' %}">
             <i class="bi bi-wallet2 me-2"></i>Control de Gastos
         </a>
-        
+
         <!-- Mobile toggle -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
-        
+
         <!-- Navbar content -->
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto align-items-center">
                 {% if user.is_authenticated %}
-                
+
                 <!-- Quick Actions (M-2.1) -->
                 <li class="nav-item dropdown me-2">
                     <button class="btn btn-outline-light btn-sm dropdown-toggle" data-bs-toggle="dropdown">
@@ -39,7 +39,7 @@
                         </li>
                     </ul>
                 </li>
-                
+
                 <!-- User dropdown -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown">
@@ -73,7 +73,7 @@
                         </li>
                     </ul>
                 </li>
-                
+
                 {% else %}
                 <!-- Guest links -->
                 <li class="nav-item">

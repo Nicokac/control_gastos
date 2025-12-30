@@ -20,7 +20,7 @@ Control de Gastos permite a los usuarios:
 
 ## Stack Tecnológico
 
-| Componente| Tecnología| 
+| Componente| Tecnología|
 |------------|--------------------------------|
 | **Backend**| Python 3.11+ / Django 5.x|
 | **Frontend**| Django Templates + Bootstrap 5|

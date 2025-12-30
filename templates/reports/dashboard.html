@@ -126,7 +126,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Gastos -->
     <div class="col-md-4">
         <div class="card border-danger h-100">
@@ -157,7 +157,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Balance -->
     <div class="col-md-4">
         <div class="card {% if balance_is_positive %}border-primary{% else %}border-warning{% endif %} h-100">
@@ -213,13 +213,13 @@
                         <strong>{{ budget_percentage|floatformat:1 }}%</strong>
                     </div>
                 </div>
-                
+
                 <div class="progress mb-3" style="height: 8px;">
-                    <div class="progress-bar {% if budget_percentage > 100 %}bg-danger{% elif budget_percentage >= 80 %}bg-warning{% else %}bg-success{% endif %}" 
+                    <div class="progress-bar {% if budget_percentage > 100 %}bg-danger{% elif budget_percentage >= 80 %}bg-warning{% else %}bg-success{% endif %}"
                          style="width: {% if budget_percentage > 100 %}100{% else %}{{ budget_percentage }}{% endif %}%;">
                     </div>
                 </div>
-                
+
                 <!-- Alertas -->
                 {% if budgets_over > 0 or budgets_warning > 0 %}
                 <div class="d-flex gap-2 mb-3">
@@ -240,7 +240,7 @@
                     {% endif %}
                 </div>
                 {% endif %}
-                
+
                 <!-- Top presupuestos -->
                 {% if top_budgets %}
                 <div class="list-group list-group-flush">
@@ -272,7 +272,7 @@
                 {% endif %}
             </div>
         </div>
-        
+
         <!-- Distribución de gastos -->
         <div class="card mb-4">
             <div class="card-header">
@@ -312,7 +312,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Columna derecha -->
     <div class="col-lg-4">
         <!-- Metas de Ahorro -->
@@ -335,7 +335,7 @@
                         <div class="progress-bar bg-info" style="width: {{ savings_progress }}%;"></div>
                     </div>
                 </div>
-                
+
                 <div class="row text-center mb-3">
                     <div class="col-6">
                         <small class="text-muted d-block">Ahorrado</small>
@@ -346,14 +346,14 @@
                         <strong>$ {{ savings_total_target|floatformat:2 }}</strong>
                     </div>
                 </div>
-                
+
                 {% if savings_completed_month > 0 %}
                 <div class="alert alert-success py-2 mb-3">
                     <i class="bi bi-trophy me-1"></i>
                     ¡{{ savings_completed_month }} meta(s) completada(s) este mes!
                 </div>
                 {% endif %}
-                
+
                 <!-- Top metas -->
                 {% for saving in top_savings %}
                 <div class="mb-3">
@@ -380,7 +380,7 @@
                 {% endif %}
             </div>
         </div>
-        
+
         <!-- Últimas transacciones -->
         <div class="card">
             <div class="card-header">
@@ -401,7 +401,7 @@
                                     {% endif %}
                                 </div>
                                 <div>
-                                    <a href="{% if tx.type == 'expense' %}{% url 'expenses:detail' tx.pk %}{% else %}{% url 'income:detail' tx.pk %}{% endif %}" 
+                                    <a href="{% if tx.type == 'expense' %}{% url 'expenses:detail' tx.pk %}{% else %}{% url 'income:detail' tx.pk %}{% endif %}"
                                        class="text-decoration-none text-dark">
                                         {{ tx.description|truncatechars:25 }}
                                     </a>
@@ -436,12 +436,12 @@ document.addEventListener('DOMContentLoaded', function() {
     {% if chart_data and chart_labels %}
     // Solo crear gráfico si hay datos
     const ctx = document.getElementById('expenseChart');
-    
+
     if (ctx) {
         const labels = {{ chart_labels|safe }};
         const data = {{ chart_data|safe }};
         const colors = {{ chart_colors|safe }};
-        
+
         // Verificar que hay datos válidos
         if (labels.length > 0 && data.length > 0) {
             new Chart(ctx, {

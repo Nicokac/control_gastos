@@ -15,11 +15,11 @@
                     <h1 class="h4 fw-bold">Crear cuenta</h1>
                     <p class="text-muted">Empezá a controlar tus finanzas</p>
                 </div>
-                
+
                 <!-- Formulario -->
                 <form method="post" novalidate>
                     {% csrf_token %}
-                    
+
                     <!-- Errores generales -->
                     {% if form.non_field_errors %}
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -30,14 +30,14 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                     {% endif %}
-                    
+
                     <!-- Campo Usuario -->
                     <div class="mb-3">
                         <label for="id_username" class="form-label">
                             <i class="bi bi-person me-1"></i>Nombre de usuario
                         </label>
-                        <input type="text" 
-                               name="username" 
+                        <input type="text"
+                               name="username"
                                id="id_username"
                                class="form-control {% if form.username.errors %}is-invalid{% endif %}"
                                placeholder="juanperez"
@@ -50,14 +50,14 @@
                         </div>
                         {% endif %}
                     </div>
-                    
+
                     <!-- Campo Email -->
                     <div class="mb-3">
                         <label for="id_email" class="form-label">
                             <i class="bi bi-envelope me-1"></i>Email
                         </label>
-                        <input type="email" 
-                               name="email" 
+                        <input type="email"
+                               name="email"
                                id="id_email"
                                class="form-control {% if form.email.errors %}is-invalid{% endif %}"
                                placeholder="tu@email.com"
@@ -69,20 +69,20 @@
                         </div>
                         {% endif %}
                     </div>
-                    
+
                     <!-- Campo Contraseña con toggle -->
                     <div class="mb-3">
                         <label for="id_password1" class="form-label">
                             <i class="bi bi-lock me-1"></i>Contraseña
                         </label>
                         <div class="input-group">
-                            <input type="password" 
-                                   name="password1" 
+                            <input type="password"
+                                   name="password1"
                                    id="id_password1"
                                    class="form-control {% if form.password1.errors %}is-invalid{% endif %}"
                                    placeholder="Mínimo 8 caracteres"
                                    required>
-                            <button type="button" 
+                            <button type="button"
                                     class="btn btn-outline-secondary toggle-password"
                                     tabindex="-1">
                                 <i class="bi bi-eye"></i>
@@ -94,20 +94,20 @@
                         </div>
                         {% endif %}
                     </div>
-                    
+
                     <!-- Campo Confirmar Contraseña -->
                     <div class="mb-4">
                         <label for="id_password2" class="form-label">
                             <i class="bi bi-lock-fill me-1"></i>Confirmar contraseña
                         </label>
                         <div class="input-group">
-                            <input type="password" 
-                                   name="password2" 
+                            <input type="password"
+                                   name="password2"
                                    id="id_password2"
                                    class="form-control {% if form.password2.errors %}is-invalid{% endif %}"
                                    placeholder="Repetí tu contraseña"
                                    required>
-                            <button type="button" 
+                            <button type="button"
                                     class="btn btn-outline-secondary toggle-password"
                                     tabindex="-1">
                                 <i class="bi bi-eye"></i>
@@ -119,7 +119,7 @@
                         </div>
                         {% endif %}
                     </div>
-                    
+
                     <!-- Botón Submit -->
                     <div class="d-grid mb-4">
                         <button type="submit" class="btn btn-primary btn-lg">
@@ -127,7 +127,7 @@
                         </button>
                     </div>
                 </form>
-                
+
                 <!-- Link a login -->
                 <div class="text-center">
                     <span class="text-muted">¿Ya tenés cuenta?</span>
@@ -135,7 +135,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Footer -->
         <p class="text-center text-muted mt-4 small">
             Control de Gastos &copy; 2024

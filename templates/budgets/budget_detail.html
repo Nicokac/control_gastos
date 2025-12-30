@@ -12,7 +12,7 @@
                     <i class="bi bi-arrow-left me-1"></i>Volver a presupuestos
                 </a>
             </div>
-            
+
             <div class="card mb-4 border-{{ budget.status_class }}">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
@@ -49,18 +49,18 @@
                             <i class="bi bi-check-circle me-1"></i>En buen estado
                         </span>
                         {% endif %}
-                        
+
                         <div class="display-4 mb-2 text-{{ budget.status_class }}">
                             {{ budget.spent_percentage }}%
                         </div>
-                        
+
                         <div class="progress mb-3" style="height: 20px;">
-                            <div class="progress-bar bg-{{ budget.status_class }}" 
-                                 role="progressbar" 
+                            <div class="progress-bar bg-{{ budget.status_class }}"
+                                 role="progressbar"
                                  style="width: {% if budget.spent_percentage > 100 %}100{% else %}{{ budget.spent_percentage }}{% endif %}%;">
                             </div>
                         </div>
-                        
+
                         <div class="row">
                             <div class="col-4 text-start">
                                 <small class="text-muted d-block">Gastado</small>
@@ -78,7 +78,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     {% if budget.notes %}
                     <div class="bg-light p-3 rounded">
                         <small class="text-muted d-block mb-1">Notas:</small>
@@ -87,7 +87,7 @@
                     {% endif %}
                 </div>
             </div>
-            
+
             <!-- Comparación con año anterior -->
             {% if year_comparison %}
             <div class="card mb-4">
@@ -125,7 +125,7 @@
                             {% endif %}
                         </div>
                     </div>
-                    
+
                     {% if last_year_budget %}
                     <hr>
                     <div class="row text-center small text-muted">
@@ -142,7 +142,7 @@
                 </div>
             </div>
             {% endif %}
-            
+
             <!-- Gastos del período -->
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -173,7 +173,7 @@
                     </ul>
                     {% if expenses.count == 10 %}
                     <div class="card-footer text-center">
-                        <a href="{% url 'expenses:list' %}?category={{ budget.category.pk }}&month={{ budget.month }}&year={{ budget.year }}" 
+                        <a href="{% url 'expenses:list' %}?category={{ budget.category.pk }}&month={{ budget.month }}&year={{ budget.year }}"
                            class="text-decoration-none">
                             Ver todos los gastos →
                         </a>

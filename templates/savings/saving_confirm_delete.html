@@ -14,7 +14,7 @@
                 </div>
                 <div class="card-body">
                     <p class="lead">¿Estás seguro de que querés eliminar esta meta de ahorro?</p>
-                    
+
                     <div class="bg-light p-3 rounded mb-4">
                         <div class="d-flex align-items-center">
                             <i class="{{ object.icon }} fs-3 me-3" style="color: {{ object.color }};"></i>
@@ -22,18 +22,18 @@
                                 <strong>{{ object.name }}</strong>
                                 <br>
                                 <small class="text-muted">
-                                    Progreso: {{ object.progress_percentage }}% 
+                                    Progreso: {{ object.progress_percentage }}%
                                     ({{ object.formatted_current }} / {{ object.formatted_target }})
                                 </small>
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="alert alert-warning">
                         <i class="bi bi-info-circle me-2"></i>
                         Se eliminarán también todos los movimientos asociados a esta meta.
                     </div>
-                    
+
                     <form method="post">
                         {% csrf_token %}
                         <div class="d-flex gap-2">

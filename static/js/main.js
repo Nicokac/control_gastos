@@ -5,16 +5,16 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize Bootstrap tooltips
     initTooltips();
-    
+
     // Initialize password toggles
     initPasswordToggles();
-    
+
     // Initialize loading buttons
     initLoadingButtons();
-    
+
     // Initialize keyboard shortcuts
     initKeyboardShortcuts();
-    
+
     // Initialize toasts from session messages
     initSessionToasts();
 });
@@ -35,7 +35,7 @@ function initPasswordToggles() {
         button.addEventListener('click', function() {
             const input = this.closest('.input-group').querySelector('input');
             const icon = this.querySelector('i');
-            
+
             if (input.type === 'password') {
                 input.type = 'text';
                 icon.classList.remove('bi-eye');
@@ -60,14 +60,14 @@ function initLoadingButtons() {
                 // Store original content
                 const originalContent = submitBtn.innerHTML;
                 submitBtn.dataset.originalContent = originalContent;
-                
+
                 // Show loading state
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = `
                     <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                     Procesando...
                 `;
-                
+
                 // Re-enable after timeout (fallback)
                 setTimeout(() => {
                     if (submitBtn.disabled) {
@@ -89,7 +89,7 @@ function initKeyboardShortcuts() {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
             return;
         }
-        
+
         // Ctrl+N = New expense
         if (e.ctrlKey && e.key === 'n') {
             e.preventDefault();
@@ -98,7 +98,7 @@ function initKeyboardShortcuts() {
                 window.location.href = fabButton.href;
             }
         }
-        
+
         // Ctrl+D = Dashboard
         if (e.ctrlKey && e.key === 'd') {
             e.preventDefault();
@@ -169,4 +169,3 @@ function showToast(message, type = 'success') {
 
 // Make showToast globally available
 window.showToast = showToast;
-
