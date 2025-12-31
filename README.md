@@ -1,6 +1,20 @@
 # Control de Gastos
 
-Aplicación web para el control y seguimiento de finanzas personales desarrollada con Django.
+![CI](https://github.com/Nicokac/control_gastos/actions/workflows/ci.yml/badge.svg)
+![Coverage](https://img.shields.io/badge/coverage-83%25-green)
+![Python](https://img.shields.io/badge/python-3.11-blue)
+![Django](https://img.shields.io/badge/django-5.2-green)
+
+> Aplicación web para el control y seguimiento de finanzas personales desarrollada con Django.
+
+## Estado del Proyecto
+
+| Métrica | Valor |
+|---------|-------|
+| Tests | 556 |
+| Coverage | 83.39% |
+| Python | 3.11+ |
+| Django | 5.2 |
 
 ## Descripción
 
