@@ -79,7 +79,7 @@ class TestExpenseCreationFlow:
         assert response.status_code == 302
 
         expense.refresh_from_db()
-        assert expense.is_active == False
+        assert not expense.is_active  # 🔧 E712
 
         # 4. Verificar que no aparece en lista
         list_url = reverse("expenses:list")
@@ -201,7 +201,7 @@ class TestExpenseBudgetIntegration:
         authenticated_client.post(create_url, data)
 
         budget.refresh_from_db()
-        assert budget.is_over_budget == True
+        assert budget.is_over_budget  # 🔧 E712
         assert budget.spent_percentage > 100
 
 

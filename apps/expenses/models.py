@@ -34,15 +34,15 @@ class Expense(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
     payment_method = models.CharField(
         max_length=10,
         choices=PaymentMethod.choices,
-        null=True,
         blank=True,
+        default="",
         verbose_name="Método de pago",
     )
     expense_type = models.CharField(
         max_length=10,
         choices=ExpenseType.choices,
-        null=True,
         blank=True,
+        default="",
         verbose_name="Tipo de gasto",
     )
 
@@ -58,6 +58,11 @@ class Expense(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
 
     def __str__(self):
         return f"{self.description} - {self.formatted_amount} ({self.date})"
+
+    def save(self, *args, **kwargs):
+        """Ejecuta validaciones antes de guardar."""
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     def clean(self):
         """Validaciones del modelo."""
@@ -78,11 +83,6 @@ class Expense(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
                     raise ValidationError({"category": "La categoría debe ser de tipo Gasto."})
             except Category.DoesNotExist:
                 pass
-
-    def save(self, *args, **kwargs):
-        """Ejecuta validacioines antes de guardar."""
-        self.full_clean()
-        super().save(*args, **kwargs)
 
     @classmethod
     def get_user_expenses(cls, user, month=None, year=None):

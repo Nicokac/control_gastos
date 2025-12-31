@@ -191,6 +191,8 @@ class SavingDetailView(LoginRequiredMixin, DetailView):
         except EmptyPage:
             movements = paginator.page(paginator.num_pages)
 
+        context["movements"] = movements  # 🔧 F841
+
         return context
 
 

@@ -25,7 +25,7 @@ class TestUserDataIsolation:
         """Verifica que un usuario no vea gastos de otro."""
         # Crear gasto del otro usuario
         other_cat = expense_category_factory(other_user, name="Otra Cat")
-        other_expense = expense_factory(
+        expense_factory(
             other_user, other_cat, description="Gasto Secreto", amount=Decimal("9999.00")
         )
 
@@ -42,7 +42,7 @@ class TestUserDataIsolation:
     ):
         """Verifica que un usuario no vea ingresos de otro."""
         other_cat = income_category_factory(other_user, name="Otra Cat Income")
-        other_income = income_factory(
+        income_factory(
             other_user, other_cat, description="Ingreso Secreto", amount=Decimal("999999.00")
         )
 
@@ -56,9 +56,7 @@ class TestUserDataIsolation:
         self, authenticated_client, user, other_user, saving_factory
     ):
         """Verifica que un usuario no vea metas de ahorro de otro."""
-        other_saving = saving_factory(
-            other_user, name="Meta Secreta", target_amount=Decimal("1000000.00")
-        )
+        saving_factory(other_user, name="Meta Secreta", target_amount=Decimal("1000000.00"))
 
         list_url = reverse("savings:list")
         response = authenticated_client.get(list_url)
@@ -71,7 +69,7 @@ class TestUserDataIsolation:
     ):
         """Verifica que un usuario no vea presupuestos de otro."""
         other_cat = expense_category_factory(other_user, name="Otra Cat Budget")
-        other_budget = budget_factory(other_user, other_cat, amount=Decimal("50000.00"))
+        budget_factory(other_user, other_cat, amount=Decimal("50000.00"))
 
         list_url = reverse("budgets:list")
         response = authenticated_client.get(list_url)
@@ -105,7 +103,8 @@ class TestUserDataIsolation:
 
         # Verificar que no se eliminó
         other_expense.refresh_from_db()
-        assert other_expense.is_active == True
+        # 🔧 E712: evitar comparación con True
+        assert other_expense.is_active
 
     def test_user_cannot_access_other_user_saving_movements(
         self, authenticated_client, user, other_user, saving_factory
@@ -142,7 +141,8 @@ class TestCategoryIsolation:
         self, authenticated_client, user, other_user, expense_category_factory
     ):
         """Verifica que usuario no vea categorías de otro usuario."""
-        other_cat = expense_category_factory(other_user, name="Categoría Privada")
+        # 🔧 F841: no necesitamos la variable, solo crear la categoría
+        expense_category_factory(other_user, name="Categoría Privada")
 
         list_url = reverse("categories:list")
         response = authenticated_client.get(list_url)

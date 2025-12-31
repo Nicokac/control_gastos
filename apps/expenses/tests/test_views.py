@@ -38,7 +38,7 @@ class TestExpenseListView:
     ):
         """Verifica que no muestre gastos de otros usuarios."""
         other_cat = expense_category_factory(other_user, name="Otra")
-        other_expense = expense_factory(other_user, other_cat, description="Gasto Otro")
+        expense_factory(other_user, other_cat, description="Gasto Otro")  # 🔧 F841
 
         url = reverse("expenses:list")
         response = authenticated_client.get(url)
@@ -247,7 +247,7 @@ class TestExpenseDeleteView:
         assert response.status_code == 302
 
         expense.refresh_from_db()
-        assert expense.is_active == False
+        assert not expense.is_active  # 🔧 E712
 
     def test_cannot_delete_other_user_expense(
         self, authenticated_client, other_user, expense_category_factory, expense_factory

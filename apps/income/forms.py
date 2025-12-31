@@ -135,15 +135,14 @@ class IncomeForm(forms.ModelForm):
 
         return Decimal("1.0000")
 
-    def clean(self):
+    def clean(self):  # 🔧 E SIM102
         """Validaciones adicionales."""
         cleaned_data = super().clean()
 
         # Validar que la categoría pertenezca al usuario o sea del sistema
         category = cleaned_data.get("category")
-        if category and self.user:
-            if not category.is_system and category.user != self.user:
-                raise forms.ValidationError({"category": "Categoría no válida."})
+        if category and self.user and not category.is_system and category.user != self.user:
+            raise forms.ValidationError({"category": "Categoría no válida."})
 
         return cleaned_data
 

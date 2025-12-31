@@ -80,7 +80,7 @@ class TestSavingMovementsFlow:
         movement_url = reverse("savings:add_movement", kwargs={"pk": saving.pk})
 
         # Hacer 3 depósitos
-        for i in range(3):
+        for _i in range(3):
             data = {
                 "type": "DEPOSIT",
                 "amount": "5000.00",

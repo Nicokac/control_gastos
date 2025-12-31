@@ -70,6 +70,11 @@ class Budget(TimestampMixin, SoftDeleteMixin, models.Model):
     def __str__(self):
         return f"{self.category.name} - {self.month_name} {self.year}"
 
+    def save(self, *args, **kwargs):
+        """Ejecuta validaciones antes de guardar."""
+        self.full_clean()
+        super().save(*args, **kwargs)
+
     def clean(self):
         """Validaciones del modelo."""
         super().clean()
@@ -90,11 +95,6 @@ class Budget(TimestampMixin, SoftDeleteMixin, models.Model):
                     )
             except Category.DoesNotExist:
                 pass
-
-    def save(self, *args, **kwargs):
-        """Ejecuta validaciones antes de guardar."""
-        self.full_clean()
-        super().save(*args, **kwargs)
 
     @property
     def month_name(self):

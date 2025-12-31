@@ -36,7 +36,8 @@ class TestBudgetListView:
     ):
         """Verifica que no muestre presupuestos de otros usuarios."""
         other_cat = expense_category_factory(other_user, name="Otra")
-        other_budget = budget_factory(other_user, other_cat)
+        # Crear presupuesto de otro usuario que no debería aparecer en el listado
+        budget_factory(other_user, other_cat)
 
         url = reverse("budgets:list")
         response = authenticated_client.get(url)
@@ -215,7 +216,8 @@ class TestBudgetDeleteView:
         assert response.status_code == 302
 
         budget.refresh_from_db()
-        assert budget.is_active == False
+        # 🔧 E712: evitar comparación con False
+        assert not budget.is_active
 
     def test_cannot_delete_other_user_budget(
         self, authenticated_client, other_user, expense_category_factory, budget_factory

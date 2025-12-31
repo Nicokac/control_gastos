@@ -96,7 +96,7 @@ class TestDashboardDataIntegration:
         today = date.today()
 
         # Crear presupuesto
-        budget = budget_factory(
+        budget_factory(
             user,
             expense_category,
             month=today.month,
@@ -122,13 +122,13 @@ class TestDashboardDataIntegration:
 
         # Debería mostrar algún indicador de alerta
         content = response.content.decode().lower()
-        has_warning = (
+        assert (
             "warning" in content
             or "alerta" in content
             or "excedido" in content
             or "cerca" in content
             or "85" in content
-        )
+        )  # 🔧 F841
 
         # Al menos debería cargar sin error
         assert response.status_code == 200
@@ -144,7 +144,7 @@ class TestDashboardDataIntegration:
         today = date.today()
 
         # Crear presupuesto
-        budget = budget_factory(
+        budget_factory(  # 🔧 F841
             user, expense_category, month=today.month, year=today.year, amount=Decimal("10000.00")
         )
 
@@ -240,8 +240,9 @@ class TestDashboardAfterOperations:
         assert response.status_code == 200
 
         # El monto eliminado no debería aparecer
-        content = response.content.decode()
+        content = response.content.decode()  # 🔧 F841
         # 50000 no debería estar (o debería ser 0 si era el único)
+        assert "50000" not in content and "50.000" not in content
 
 
 @pytest.mark.slow

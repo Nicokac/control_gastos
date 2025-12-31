@@ -60,9 +60,7 @@ class TestLoginLogging:
         assert mock_log.called
 
         # Buscar la llamada con success=False
-        failed_calls = [
-            call for call in mock_log.call_args_list if call.kwargs.get("success") == False
-        ]
+        failed_calls = [call for call in mock_log.call_args_list if not call.kwargs.get("success")]
         assert len(failed_calls) >= 1, "No se encontró llamada con success=False"
 
 
@@ -80,7 +78,7 @@ class TestLogoutLogging:
         client.force_login(user)
 
         # Logout
-        response = client.post(reverse("users:logout"))
+        client.post(reverse("users:logout"))
 
         # Verificar que se llamó al log
         assert mock_log.called

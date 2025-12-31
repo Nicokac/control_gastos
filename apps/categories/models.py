@@ -30,14 +30,14 @@ class Category(TimestampMixin, SoftDeleteMixin, models.Model):
     )
     icon = models.CharField(
         max_length=50,
-        null=True,
+        default="bi-tag",
         blank=True,
         verbose_name="Ícono",
         help_text="Nombre del ícono de Bootstrap Icons (ej: bi-cart)",
     )
     color = models.CharField(
         max_length=7,
-        null=True,
+        default="#6c757d",
         blank=True,
         verbose_name="Color",
         help_text="Color hexadecimal (ej: #28a745)",
@@ -56,6 +56,11 @@ class Category(TimestampMixin, SoftDeleteMixin, models.Model):
     def __str__(self):
         return f"{self.name} ({self.get_type_display()})"
 
+    def save(self, *args, **kwargs):
+        """Ejecuta validaciones antes de guardar."""
+        self.full_clean()
+        super().save(*args, **kwargs)
+
     def clean(self):
         """Validaciones del módelo."""
         super().clean()
@@ -71,11 +76,6 @@ class Category(TimestampMixin, SoftDeleteMixin, models.Model):
             raise ValidationError(
                 {"user": "Las categorías personalizadas deben tener un usuario asignado."}
             )
-
-    def save(self, *args, **kwargs):
-        """Ejecuta validaciones antes de guardar."""
-        self.full_clean()
-        super().save(*args, **kwargs)
 
     @property
     def is_editable(self):

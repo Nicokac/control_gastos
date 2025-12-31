@@ -115,8 +115,9 @@ def export_to_excel(
                     cell_length = len(str(cell.value))
                     if cell_length > max_length:
                         max_length = cell_length
-                except:
-                    pass
+                except Exception:
+                    # Si algo falla al calcular la longitud, ignoramos esa celda
+                    continue
 
         adjusted_width = min(max_length + 2, 50)
         ws.column_dimensions[column_letter].width = adjusted_width

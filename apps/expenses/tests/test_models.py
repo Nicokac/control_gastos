@@ -93,9 +93,9 @@ class TestExpenseModel:
         assert expense.created_at is not None
         assert expense.updated_at is not None
 
-    def test_expense_date_required(self, user, expense_category):
+    def test_expense_date_required(self, user, expense_category):  # 🔧 B017
         """Verifica que la fecha es requerida."""
-        with pytest.raises(Exception):
+        with pytest.raises((ValidationError, IntegrityError)):
             Expense.objects.create(
                 user=user,
                 category=expense_category,

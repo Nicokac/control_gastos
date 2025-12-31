@@ -33,8 +33,9 @@ class SoftDeleteMixin(models.Model):
     deleted_at = models.DateTimeField(null=True, blank=True, verbose_name="Fecha de eliminación")
 
     # Managers
-    objects = SoftDeleteManager()
+    # Primero el manager "normal" y luego el custom, para satisfacer DJ012
     all_objects = models.Manager()
+    objects = SoftDeleteManager()
 
     class Meta:
         abstract = True

@@ -48,6 +48,11 @@ class Income(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
     def __str__(self):
         return f"{self.description} - {self.formatted_amount} ({self.date})"
 
+    def save(self, *args, **kwargs):
+        """Ejecuta validaciones antes de guardar."""
+        self.full_clean()
+        super().save(*args, **kwargs)
+
     def clean(self):
         """Validaciones del modelo."""
         super().clean()
@@ -66,11 +71,6 @@ class Income(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
                     raise ValidationError({"category": "La categoría debe ser de tipo Ingreso."})
             except Category.DoesNotExist:
                 pass
-
-    def save(self, *args, **kwargs):
-        """Ejecuta validaciones antes de guardar."""
-        self.full_clean()
-        super().save(*args, **kwargs)
 
     @classmethod
     def get_user_incomes(cls, user, month=None, year=None):

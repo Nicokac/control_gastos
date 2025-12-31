@@ -36,7 +36,8 @@ class TestIncomeListView:
     ):
         """Verifica que no muestre ingresos de otros usuarios."""
         other_cat = income_category_factory(other_user, name="Otra")
-        other_income = income_factory(other_user, other_cat, description="Ingreso Otro")
+        # Creamos un income de otro usuario que no debería aparecer en el listado
+        income_factory(other_user, other_cat, description="Ingreso Otro")
 
         url = reverse("income:list")
         response = authenticated_client.get(url)
@@ -189,7 +190,7 @@ class TestIncomeDeleteView:
         assert response.status_code == 302
 
         income.refresh_from_db()
-        assert income.is_active == False
+        assert not income.is_active
 
     def test_cannot_delete_other_user_income(
         self, authenticated_client, other_user, income_category_factory, income_factory

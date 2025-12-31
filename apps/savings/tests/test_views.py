@@ -34,7 +34,8 @@ class TestSavingListView:
 
     def test_excludes_other_user_savings(self, authenticated_client, other_user, saving_factory):
         """Verifica que no muestre metas de otros usuarios."""
-        other_saving = saving_factory(other_user, name="Otra Meta")
+        # Crear una meta de otro usuario que no debería aparecer en el listado
+        saving_factory(other_user, name="Otra Meta")
 
         url = reverse("savings:list")
         response = authenticated_client.get(url)
@@ -158,7 +159,7 @@ class TestSavingDeleteView:
         assert response.status_code == 302
 
         saving.refresh_from_db()
-        assert saving.is_active == False
+        assert not saving.is_active
 
 
 @pytest.mark.django_db

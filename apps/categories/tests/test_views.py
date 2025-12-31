@@ -206,7 +206,7 @@ class TestCategoryDeleteView:
         # Intentar con all_objects (soft delete)
         try:
             cat = Category.all_objects.get(pk=pk)
-            assert cat.is_active == False  # Soft delete
+            assert not cat.is_active  # 🔧 E712 Soft delete
         except Category.DoesNotExist:
             # Hard delete - verificar que no existe
             assert not Category.objects.filter(pk=pk).exists()

@@ -77,7 +77,7 @@ class Command(BaseCommand):
                 continue
 
             try:
-                with open(log_path, encoding="utf-8") as f:
+                with log_path.open(encoding="utf-8") as f:  # 🔧 PTH123
                     lines = f.readlines()
                     last_lines = lines[-num_lines:] if len(lines) > num_lines else lines
 
@@ -98,7 +98,7 @@ class Command(BaseCommand):
         file_handles = {}
         for log_type, log_path in log_files.items():
             if log_path.exists():
-                f = open(log_path, encoding="utf-8")
+                f = log_path.open(encoding="utf-8")  # 🔧 PTH123
                 f.seek(0, 2)  # Ir al final
                 file_handles[log_type] = f
 
@@ -130,7 +130,11 @@ class Command(BaseCommand):
         elif "SUCCESS" in line or "LOGIN SUCCESS" in line:
             style = self.style.SUCCESS
         else:
-            style = lambda x: x
+
+            def _identity(x: str) -> str:  # 🔧 E731
+                return x
+
+            style = _identity  # 🔧 W293
 
         if prefix:
             self.stdout.write(f"{prefix} {style(line)}")
@@ -144,7 +148,7 @@ class Command(BaseCommand):
         for log_type, log_path in log_files.items():
             if log_path.exists():
                 try:
-                    open(log_path, "w").close()
+                    log_path.open("w").close()  # 🔧 PTH123
                     self.stdout.write(self.style.SUCCESS(f"   ✅ {log_type}.log limpiado"))
                 except Exception as e:
                     self.stdout.write(

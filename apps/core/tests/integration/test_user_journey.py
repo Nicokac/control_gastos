@@ -112,8 +112,8 @@ class TestNewUserJourney:
         assert budget.spent_amount == Decimal("20000.00"), "Presupuesto debería sumar ambos gastos"
         assert budget.spent_percentage == Decimal("40.0"), "Porcentaje debería ser 40%"
         assert budget.remaining_amount == Decimal("30000.00")
-        assert budget.is_over_budget == False
-        assert budget.is_near_limit == False  # 40% < 80%
+        assert not budget.is_over_budget  # 🔧 E712
+        assert not budget.is_near_limit  # 🔧 E712  (40% < 80%)
 
         # ============================================
         # PASO 5: Editar gasto
@@ -144,7 +144,7 @@ class TestNewUserJourney:
 
         # Verificar soft delete
         expense_2.refresh_from_db()
-        assert expense_2.is_active == False
+        assert not expense_2.is_active  # 🔧 E712
 
         # Presupuesto debería actualizarse
         budget.refresh_from_db()
@@ -402,14 +402,14 @@ class TestUserJourneyWithMultipleEntities:
         # Comida: 13000 / 30000 = 43.3%
         budgets["Comida"].refresh_from_db()
         assert budgets["Comida"].spent_amount == Decimal("13000.00")
-        assert budgets["Comida"].is_over_budget == False
+        assert not budgets["Comida"].is_over_budget  # 🔧 E712
 
         # Transporte: 13000 / 15000 = 86.7% (cerca del límite)
         budgets["Transporte"].refresh_from_db()
         assert budgets["Transporte"].spent_amount == Decimal("13000.00")
-        assert budgets["Transporte"].is_near_limit == True  # > 80%
+        assert budgets["Transporte"].is_near_limit  # 🔧 E712  # > 80%
 
         # Entretenimiento: 4000 / 10000 = 40%
         budgets["Entretenimiento"].refresh_from_db()
         assert budgets["Entretenimiento"].spent_amount == Decimal("4000.00")
-        assert budgets["Entretenimiento"].is_over_budget == False
+        assert not budgets["Entretenimiento"].is_over_budget  # 🔧 E712

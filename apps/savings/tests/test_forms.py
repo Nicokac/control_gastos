@@ -285,7 +285,7 @@ class TestSavingMovementForm:
         assert not form.is_valid()
         assert "amount" in form.errors or "__all__" in form.errors
 
-    def test_save_updates_saving_balance(self, saving, user):
+    def test_save_updates_saving_balance(self, saving, user):  # 🔧 F841
         """Verifica que save() actualice el saldo de la meta."""
         initial_amount = saving.current_amount
 
@@ -300,7 +300,7 @@ class TestSavingMovementForm:
 
         assert form.is_valid(), form.errors
 
-        movement = form.save()
+        form.save()
         saving.refresh_from_db()
 
         assert saving.current_amount == initial_amount + Decimal("5000.00")

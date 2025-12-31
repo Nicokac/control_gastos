@@ -40,7 +40,7 @@ class TestSoftDeleteBehavior:
 
         # Debería existir con all_objects
         deleted = Expense.all_objects.get(pk=pk)
-        assert deleted.is_active == False
+        assert not deleted.is_active  # 🔧 E712
         assert deleted.deleted_at is not None
 
     def test_deleted_expense_not_counted_in_budget(
@@ -105,7 +105,7 @@ class TestSoftDeleteBehavior:
         from apps.savings.models import SavingMovement
 
         saving_deleted = Saving.all_objects.get(pk=saving.pk)
-        assert saving_deleted.is_active == False
+        assert not saving_deleted.is_active  # 🔧 E712
 
         movements = SavingMovement.objects.filter(saving=saving)
         assert movements.count() >= 1
@@ -132,7 +132,7 @@ class TestSoftDeleteRecovery:
         # Visible con all_objects
         deleted = Expense.all_objects.get(pk=pk)
         assert deleted.description == description
-        assert deleted.is_active == False
+        assert not deleted.is_active  # 🔧 E712
 
     def test_multiple_soft_deletes_tracked(
         self, authenticated_client, user, expense_category, expense_factory

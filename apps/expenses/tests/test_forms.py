@@ -241,9 +241,8 @@ class TestExpenseFormCategories:
         form = ExpenseForm(user=user)
         category_queryset = form.fields["category"].queryset
 
-        # Las categorías de sistema deberían estar disponibles
-        # Esto depende de la implementación
-        # assert system_expense_category in category_queryset
+        # Las categorías del sistema deberían estar disponibles en el form
+        assert system_expense_category in category_queryset
 
 
 @pytest.mark.django_db

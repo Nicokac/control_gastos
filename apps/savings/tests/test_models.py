@@ -132,7 +132,7 @@ class TestSavingMethods:
         """Verifica que no se puede retirar más del saldo."""
         current = saving_with_progress.current_amount
 
-        with pytest.raises(Exception):
+        with pytest.raises(ValueError):  # 🔧 B017
             saving_with_progress.add_withdrawal(current + Decimal("1.00"))
 
     def test_deposit_completes_saving(self, user, saving_factory):

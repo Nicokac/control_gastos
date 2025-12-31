@@ -76,6 +76,11 @@ class Saving(TimestampMixin, SoftDeleteMixin, models.Model):
     def __str__(self):
         return f"{self.name} - {self.progress_percentage}%"
 
+    def save(self, *args, **kwargs):
+        """Ejecuta validaciones antes de guardar."""
+        self.full_clean()
+        super().save(*args, **kwargs)
+
     def clean(self):
         """Validaciones del modelo."""
         super().clean()
@@ -87,11 +92,6 @@ class Saving(TimestampMixin, SoftDeleteMixin, models.Model):
         # Validar que el monto actual no sea negativo
         if self.current_amount is not None and self.current_amount < 0:
             raise ValidationError({"current_amount": "El monto actual no puede ser negativo."})
-
-    def save(self, *args, **kwargs):
-        """Ejecuta validaciones antes de guardar."""
-        self.full_clean()
-        super().save(*args, **kwargs)
 
     @property
     def progress_percentage(self):

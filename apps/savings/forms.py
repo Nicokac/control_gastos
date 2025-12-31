@@ -175,7 +175,7 @@ class SavingMovementForm(forms.ModelForm):
 
         return amount
 
-    def clean(self):
+    def clean(self):  # 🔧 E SIM102
         """Validaciones adicionales."""
         cleaned_data = super().clean()
 
@@ -183,13 +183,15 @@ class SavingMovementForm(forms.ModelForm):
         amount = cleaned_data.get("amount")
 
         # Validar que hay suficiente saldo para retiro
-        if movement_type == MovementType.WITHDRAWAL and self.saving:
-            if amount and amount > self.saving.current_amount:
-                raise forms.ValidationError(
-                    {
-                        "amount": f"No hay suficiente saldo. Disponible: {self.saving.formatted_current}"
-                    }
-                )
+        if (
+            movement_type == MovementType.WITHDRAWAL
+            and self.saving
+            and amount
+            and amount > self.saving.current_amount
+        ):
+            raise forms.ValidationError(
+                {"amount": f"No hay suficiente saldo. Disponible: {self.saving.formatted_current}"}
+            )
 
         return cleaned_data
 

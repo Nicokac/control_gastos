@@ -74,7 +74,7 @@ class TestBudgetModel:
             amount=Decimal("10000.00"),
         )
 
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):  # 🔧 B017
             Budget.objects.create(
                 user=user,
                 category=expense_category,
@@ -252,7 +252,7 @@ class TestBudgetQuerySet:
     def test_get_with_spent(self, user, expense_category, budget_factory, expense_factory):
         """Verifica método get_with_spent."""
         today = timezone.now().date()
-        budget = budget_factory(
+        budget_factory(
             user, expense_category, month=today.month, year=today.year, amount=Decimal("10000.00")
         )
 
