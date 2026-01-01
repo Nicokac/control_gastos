@@ -1,0 +1,42 @@
+# =============================================================================
+# Deploy Pipeline - Control de Gastos
+# =============================================================================
+# Solo se ejecuta cuando se hace merge a main
+# =============================================================================
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # Permite ejecutar manualmente
+
+jobs:
+  deploy:
+    name: 🚀 Deploy
+    runs-on: ubuntu-latest
+    # Solo ejecutar si CI pasó
+    needs: []
+
+    # Solo en el branch main
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🚀 Deploy to production
+        run: |
+          echo "🚀 Deploy step placeholder"
+          echo "Configurar según tu hosting (Railway, Render, etc.)"
+
+      # Ejemplo para Railway:
+      # - name: Deploy to Railway
+      #   uses: bervProject/railway-deploy@main
+      #   with:
+      #     railway_token: ${{ secrets.RAILWAY_TOKEN }}
+      #     service: control-gastos
+
+      # Ejemplo para Render:
+      # - name: Deploy to Render
+      #   run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
