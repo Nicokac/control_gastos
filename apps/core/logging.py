@@ -44,7 +44,7 @@ def log_user_registration(username: str, ip_address: str):
 def log_permission_denied(username: str, ip_address: str, resource: str):
     """Registra un intento de acceso denegado."""
     security_logger.warning(
-        f"PERMISSION_DENIED | User: {username} | IP: {ip_address} | " f"Resource: {resource}"
+        f"PERMISSION_DENIED | User: {username} | IP: {ip_address} | Resource: {resource}"
     )
 
 

@@ -342,8 +342,8 @@ class CopyBudgetsView(LoginRequiredMixin, FormView):
         elif copied_count > 0 and skipped_count > 0:
             messages.success(
                 self.request,
-                f'✅ Se copiaron {copied_count} presupuesto(s) a {target_period}. '
-                f'{skipped_count} ya existían y se omitieron ({", ".join(skipped_categories)}).',
+                f"✅ Se copiaron {copied_count} presupuesto(s) a {target_period}. "
+                f"{skipped_count} ya existían y se omitieron ({', '.join(skipped_categories)}).",
             )
         else:
             messages.info(

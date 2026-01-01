@@ -117,7 +117,7 @@ class TestIncomeBalanceCalculation:
         for i, amount in enumerate(amounts):
             data = {
                 "category": income_category.pk,
-                "description": f"Ingreso {i+1}",
+                "description": f"Ingreso {i + 1}",
                 "amount": amount,
                 "currency": Currency.ARS,
                 "date": date.today().isoformat(),

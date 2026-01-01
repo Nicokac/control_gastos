@@ -161,7 +161,7 @@ class TestExpenseBudgetIntegration:
         for i in range(3):
             data = {
                 "category": expense_category.pk,
-                "description": f"Gasto {i+1}",
+                "description": f"Gasto {i + 1}",
                 "amount": "2000.00",
                 "currency": Currency.ARS,
                 "date": today.isoformat(),
