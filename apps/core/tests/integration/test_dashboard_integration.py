@@ -62,9 +62,9 @@ def assert_amount_in_content(content: str, amount: int | str) -> None:
             }
         )
 
-    assert any(
-        c in content for c in candidates
-    ), f"Monto {amount} no encontrado en el HTML. Patrones usados: {sorted(candidates)}"
+    assert any(c in content for c in candidates), (
+        f"Monto {amount} no encontrado en el HTML. Patrones usados: {sorted(candidates)}"
+    )
 
 
 @pytest.mark.slow
