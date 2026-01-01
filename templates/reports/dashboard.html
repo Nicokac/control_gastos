@@ -283,7 +283,12 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div style="height: 200px;">
-                            <canvas id="expenseChart"></canvas>
+                            <canvas
+                                id="expenseChart"
+                                data-labels='{{ chart_labels|escapejs }}'
+                                data-data='{{ chart_data|escapejs }}'
+                                data-colors='{{ chart_colors|escapejs }}'>
+                            </canvas>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -431,54 +436,10 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    {% if chart_data and chart_labels %}
-    // Solo crear gráfico si hay datos
-    const ctx = document.getElementById('expenseChart');
-
-    if (ctx) {
-        const labels = {{ chart_labels|safe }};
-        const data = {{ chart_data|safe }};
-        const colors = {{ chart_colors|safe }};
-
-        // Verificar que hay datos válidos
-        if (labels.length > 0 && data.length > 0) {
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: colors,
-                        borderWidth: 2,
-                        borderColor: '#fff',
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false,
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const value = context.raw;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = ((value / total) * 100).toFixed(1);
-                                    return `$ ${value.toLocaleString('es-AR', {minimumFractionDigits: 2})} (${percentage}%)`;
-                                }
-                            }
-                        }
-                    },
-                    cutout: '60%',
-                }
-            });
-        }
-    }
+    {% if chart_data and chart_labels and chart_colors %}
+        {{ chart_labels|json_script:"chart-labels-data" }}
+        {{ chart_data|json_script:"chart-values-data" }}
+        {{ chart_colors|json_script:"chart-colors-data" }}
     {% endif %}
-});
-</script>
+    <script src="{% static 'js/dashboard.js' %}"></script>
 {% endblock %}

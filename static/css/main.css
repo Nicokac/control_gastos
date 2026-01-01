@@ -19,6 +19,12 @@ body {
     background-color: #f8f9fa;
 }
 
+/* En static/css/main.css */
+
+.custom-toast-container {
+    z-index: 1100;
+}
+
 /* --- Sidebar (QW-2.2: Agrupado) --- */
 .sidebar {
     position: fixed;
