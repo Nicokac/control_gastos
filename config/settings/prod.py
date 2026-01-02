@@ -70,6 +70,9 @@ if not ALLOWED_HOSTS:
         "ALLOWED_HOSTS no está configurado. "
         "Define la variable de entorno ALLOWED_HOSTS con los dominios permitidos."
     )
+# CSRF Trusted Origins - Necesario para formularios desde dominios externos
+# Construir automáticamente desde ALLOWED_HOSTS
+CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS if host]
 
 DATABASES = {
     "default": {
@@ -125,7 +128,7 @@ SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 
 # Proxy SSL - Si estás detrás de un proxy/load balancer que maneja SSL
 # Descomenta si usas Railway, Render, Heroku, etc.
-# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # =============================================================================
 # SEGURIDAD - Cookies
@@ -158,17 +161,20 @@ SESSION_COOKIE_AGE = 1209600
 CSP_DEFAULT_SRC = ("'self'",)
 
 # Scripts: mismo origen + CDNs necesarios
+# TODO: Eliminar 'unsafe-inline' migrando scripts inline a archivos estáticos
+# Esto es una deuda técnica de seguridad - ver issue #XX
 CSP_SCRIPT_SRC = (
     "'self'",
-    "'unsafe-inline'",  # Necesario para algunos scripts inline de Bootstrap/HTMX
+    "'unsafe-inline'",  # DEUDA TÉCNICA: Necesario para scripts inline de Bootstrap/Chart.js
     "https://cdn.jsdelivr.net",  # Bootstrap, Chart.js, etc.
     "https://cdnjs.cloudflare.com",
 )
 
 # Estilos: mismo origen + CDNs
+# TODO: Eliminar 'unsafe-inline' usando nonces o migrando estilos inline
 CSP_STYLE_SRC = (
     "'self'",
-    "'unsafe-inline'",  # Necesario para estilos inline
+    "'unsafe-inline'",  # DEUDA TÉCNICA: Necesario para estilos inline de Bootstrap
     "https://cdn.jsdelivr.net",
     "https://fonts.googleapis.com",
 )
