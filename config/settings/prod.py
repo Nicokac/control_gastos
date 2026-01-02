@@ -57,6 +57,10 @@ print("✅ SECRET_KEY validada correctamente")
 
 DEBUG = False
 
+# Validación extra: asegurar que DEBUG nunca esté activo en producción
+if DEBUG:
+    raise ImproperlyConfigured("❌ ERROR: DEBUG=True no está permitido en producción")
+
 # Obtener hosts desde variable de entorno
 # Formato: "dominio1.com,dominio2.com,www.dominio1.com"
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="").split(",")

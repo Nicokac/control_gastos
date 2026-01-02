@@ -48,7 +48,8 @@ if SECRET_KEY is None:
     )
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG se define en dev.py o prod.py - NO en base.py
+# Esto fuerza a cada entorno a definirlo explícitamente
 
 ALLOWED_HOSTS = []
 
