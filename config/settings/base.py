@@ -85,6 +85,7 @@ AUTH_USER_MODEL = "users.User"
 
 AUTHENTICATION_BACKENDS = [
     "axes.backends.AxesStandaloneBackend",  # ← Primero axes
+    "apps.users.backends.EmailOrUsernameModelBackend",
     "django.contrib.auth.backends.ModelBackend",  # ← Después el default
 ]
 
