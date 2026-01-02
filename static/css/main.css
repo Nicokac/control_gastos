@@ -82,9 +82,14 @@ body {
 }
 
 /* --- Main Content --- */
-main {
-    margin-left: var(--sidebar-width);
+/* main {
+    margin-left: var(--sidebar-width); */
+.app-main {
     min-height: calc(100vh - var(--navbar-height));
+}
+
+.app-main--with-sidebar {
+    margin-left: var(--sidebar-width);
 }
 
 @media (max-width: 767.98px) {
@@ -94,7 +99,8 @@ main {
         top: 0;
     }
 
-    main {
+    /* main { */
+    .app-main--with-sidebar {
         margin-left: 0;
     }
 }
