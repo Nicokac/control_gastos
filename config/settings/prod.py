@@ -218,12 +218,13 @@ AXES_FAILURE_LIMIT = 5  # Mantener en 5
 AXES_COOLOFF_TIME = 2  # 2 horas en producción
 
 # Para proxies/load balancers (Railway, Render, Heroku, etc.)
-AXES_PROXY_COUNT = 1
-AXES_META_PRECEDENCE_ORDER = [
+# Usar AXES_IPWARE_PROXY_COUNT y AXES_IPWARE_META_PRECEDENCE_ORDER (v6+)
+AXES_IPWARE_PROXY_COUNT = 1
+AXES_IPWARE_META_PRECEDENCE_ORDER = (
     "HTTP_X_FORWARDED_FOR",
     "HTTP_X_REAL_IP",
     "REMOTE_ADDR",
-]
+)
 
 # Logging de intentos
 AXES_VERBOSE = True
