@@ -17,19 +17,22 @@
 <body>
     {% include 'components/navbar.html' %}
 
+    {% if user.is_authenticated %}
     <div class="container-fluid">
         <div class="row">
-            {% if user.is_authenticated %}
             {% include 'components/sidebar.html' %}
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
-            {% else %}
-            <main class="col-12">
-            {% endif %}
+            <main class="app-main app-main--with-sidebar col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
                 {% include 'components/alerts.html' %}
                 {% block content %}{% endblock %}
             </main>
         </div>
     </div>
+    {% else %}
+    <main class="app-main">
+        {% include 'components/alerts.html' %}
+        {% block auth_content %}{% endblock %}
+    </main>
+    {% endif %}
 
     <!-- FAB Button - Nuevo Gasto (QW-2.1) -->
     {% if user.is_authenticated %}
