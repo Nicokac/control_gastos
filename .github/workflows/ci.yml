@@ -176,9 +176,13 @@ jobs:
           pip install -r requirements/dev.txt
 
       - name: ✅ Run Django system checks (deploy)
-        run: python manage.py check --deploy --fail-level WARNING
+        run: |
+          export SECRET_KEY="$(python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())")"
+          python manage.py check --deploy --fail-level WARNING
         env:
           DJANGO_SETTINGS_MODULE: config.settings.prod
+          DEBUG: "False"
+          ALLOWED_HOSTS: "localhost,127.0.0.1"
 
       - name: 📋 Check for missing migrations
         run: python manage.py makemigrations --check --dry-run
