@@ -52,7 +52,8 @@ for insecure in INSECURE_KEYS:
             "=" * 60
         )
 
-print("✅ SECRET_KEY validada correctamente")
+if config("CI_DEPLOY_CHECK", default=False, cast=bool):
+    print("✅ SECRET_KEY validada correctamente")
 
 
 DEBUG = False
@@ -78,16 +79,33 @@ if not ALLOWED_HOSTS:
 # Construir automáticamente desde ALLOWED_HOSTS
 CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in ALLOWED_HOSTS if host]
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DB_NAME"),
-        "USER": config("DB_USER"),
-        "PASSWORD": config("DB_PASSWORD"),
-        "HOST": config("DB_HOST", default="localhost"),
-        "PORT": config("DB_PORT", default="5432"),
+# =============================================================================
+# BASE DE DATOS
+# =============================================================================
+
+# Modo CI: permite correr `check --deploy` sin DB real
+_CI_DEPLOY_CHECK = config("CI_DEPLOY_CHECK", default=False, cast=bool)
+
+if _CI_DEPLOY_CHECK:
+    # En CI solo validamos configuración, no conectamos a DB
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ":memory:",
+        }
     }
-}
+else:
+    # Producción real: PostgreSQL obligatorio
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": config("DB_NAME"),
+            "USER": config("DB_USER"),
+            "PASSWORD": config("DB_PASSWORD"),
+            "HOST": config("DB_HOST", default="localhost"),
+            "PORT": config("DB_PORT", default="5432"),
+        }
+    }
 
 # Security
 SECURE_BROWSER_XSS_FILTER = True
