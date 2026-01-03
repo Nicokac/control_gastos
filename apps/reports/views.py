@@ -203,22 +203,26 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         }
 
     def _get_recent_transactions(self, user):
-        """Obtiene las últimas transacciones (gastos e ingresos)."""
-        # Últimos 5 gastos
-        recent_expenses = (
+        """
+        Obtiene las últimas 8 transacciones (gastos e ingresos combinados).
+
+        Optimizado: Usa queries separadas pero obtiene suficientes registros
+        para garantizar las 8 transacciones más recientes reales.
+        """
+        # Obtener últimos 8 de cada tipo para garantizar cobertura
+        recent_expenses = list(
             Expense.objects.filter(user=user, is_active=True)
             .select_related("category")
-            .order_by("-date", "-created_at")[:5]
+            .order_by("-date", "-created_at")[:8]
         )
 
-        # Últimos 5 ingresos
-        recent_incomes = (
+        recent_incomes = list(
             Income.objects.filter(user=user, is_active=True)
             .select_related("category")
-            .order_by("-date", "-created_at")[:5]
+            .order_by("-date", "-created_at")[:8]
         )
 
-        # Combinar y ordenar por fecha
+        # Combinar en lista unificada
         transactions = []
 
         for expense in recent_expenses:
@@ -226,6 +230,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 {
                     "type": "expense",
                     "date": expense.date,
+                    "created_at": expense.created_at,
                     "description": expense.description,
                     "amount": expense.amount_ars,
                     "formatted_amount": expense.formatted_amount,
@@ -239,6 +244,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 {
                     "type": "income",
                     "date": income.date,
+                    "created_at": income.created_at,
                     "description": income.description,
                     "amount": income.amount_ars,
                     "formatted_amount": income.formatted_amount,
@@ -247,8 +253,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 }
             )
 
-        # Ordenar por fecha descendente
-        transactions.sort(key=lambda x: x["date"], reverse=True)
+        # Ordenar por fecha y created_at descendente, luego cortar a 8
+        transactions.sort(key=lambda x: (x["date"], x["created_at"]), reverse=True)
 
         return {
             "recent_transactions": transactions[:8],
