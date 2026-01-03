@@ -333,3 +333,201 @@ class TestExpenseValidations:
             )
             expense.full_clean()
             expense.save()
+
+
+@pytest.mark.django_db
+class TestExpenseCategoryValidation:
+    """Tests para validación de categoría en Expense."""
+
+    def test_expense_requires_expense_category(self, user, income_category):
+        """Verifica que no se puede crear gasto con categoría de ingreso."""
+        expense = Expense(
+            user=user,
+            category=income_category,  # Categoría de tipo INCOME
+            description="Gasto con categoría incorrecta",
+            amount=Decimal("100.00"),
+            currency=Currency.ARS,
+            exchange_rate=Decimal("1.00"),
+            date=timezone.now().date(),
+        )
+
+        with pytest.raises(ValidationError) as exc_info:
+            expense.full_clean()
+
+        assert "category" in exc_info.value.message_dict
+
+    def test_expense_accepts_expense_category(self, user, expense_category):
+        """Verifica que se puede crear gasto con categoría de gasto."""
+        expense = Expense(
+            user=user,
+            category=expense_category,
+            description="Gasto válido",
+            amount=Decimal("100.00"),
+            currency=Currency.ARS,
+            exchange_rate=Decimal("1.00"),
+            date=timezone.now().date(),
+        )
+
+        # No debe lanzar error
+        expense.full_clean()
+        expense.save()
+        assert expense.pk is not None
+
+
+@pytest.mark.django_db
+class TestExpenseClassMethods:
+    """Tests para métodos de clase de Expense."""
+
+    def test_get_user_expenses_returns_user_expenses(
+        self, user, other_user, expense_category, expense_factory
+    ):
+        """Verifica que get_user_expenses retorna solo gastos del usuario."""
+        exp1 = expense_factory(user, expense_category, description="Gasto 1")
+        exp2 = expense_factory(user, expense_category, description="Gasto 2")
+
+        # Crear categoría y gasto para otro usuario
+        from apps.categories.models import Category
+        from apps.core.constants import CategoryType
+
+        other_cat = Category.objects.create(
+            name="Otra Cat",
+            type=CategoryType.EXPENSE,
+            user=other_user,
+        )
+        expense_factory(other_user, other_cat, description="Gasto otro")
+
+        expenses = Expense.get_user_expenses(user)
+
+        assert expenses.count() == 2
+        assert exp1 in expenses
+        assert exp2 in expenses
+
+    def test_get_user_expenses_filters_by_month_year(self, user, expense_category, expense_factory):
+        """Verifica filtro por mes y año en get_user_expenses."""
+        from datetime import date
+
+        # Gasto en enero 2026
+        expense_factory(user, expense_category, description="Enero", date=date(2026, 1, 15))
+
+        # Gasto en febrero 2026
+        expense_factory(user, expense_category, description="Febrero", date=date(2026, 2, 15))
+
+        expenses = Expense.get_user_expenses(user, month=1, year=2026)
+
+        assert expenses.count() == 1
+        assert expenses.first().description == "Enero"
+
+    def test_get_user_expenses_filters_by_year_only(self, user, expense_category, expense_factory):
+        """Verifica filtro solo por año en get_user_expenses."""
+        from datetime import date
+
+        # Gastos en 2026
+        expense_factory(user, expense_category, description="2026-1", date=date(2026, 1, 15))
+        expense_factory(user, expense_category, description="2026-2", date=date(2026, 6, 15))
+
+        # Gasto en 2025
+        expense_factory(user, expense_category, description="2025", date=date(2025, 12, 15))
+
+        expenses = Expense.get_user_expenses(user, year=2026)
+
+        assert expenses.count() == 2
+
+    def test_get_user_expenses_includes_category(self, user, expense_category, expense_factory):
+        """Verifica que get_user_expenses incluye select_related de categoría."""
+        expense_factory(user, expense_category, description="Test")
+
+        expenses = Expense.get_user_expenses(user)
+
+        # No debe hacer query adicional para categoría
+        expense = expenses.first()
+        assert expense.category.name == expense_category.name
+
+    def test_get_monthly_total_calculates_sum(self, user, expense_category, expense_factory):
+        """Verifica que get_monthly_total suma correctamente."""
+        from datetime import date
+
+        expense_factory(user, expense_category, amount=Decimal("100.00"), date=date(2026, 1, 10))
+        expense_factory(user, expense_category, amount=Decimal("200.00"), date=date(2026, 1, 15))
+        expense_factory(user, expense_category, amount=Decimal("300.00"), date=date(2026, 1, 20))
+
+        total = Expense.get_monthly_total(user, month=1, year=2026)
+
+        assert total == Decimal("600.00")
+
+    def test_get_monthly_total_returns_zero_if_no_expenses(self, user):
+        """Verifica que get_monthly_total retorna 0 si no hay gastos."""
+        total = Expense.get_monthly_total(user, month=1, year=2026)
+
+        assert total == Decimal("0")
+
+    def test_get_monthly_total_excludes_inactive(self, user, expense_category, expense_factory):
+        """Verifica que get_monthly_total excluye gastos inactivos."""
+        from datetime import date
+
+        expense_factory(user, expense_category, amount=Decimal("100.00"), date=date(2026, 1, 10))
+        exp2 = expense_factory(
+            user, expense_category, amount=Decimal("200.00"), date=date(2026, 1, 15)
+        )
+
+        # Soft delete uno
+        exp2.soft_delete()
+
+        total = Expense.get_monthly_total(user, month=1, year=2026)
+
+        assert total == Decimal("100.00")
+
+    def test_get_monthly_total_excludes_other_months(self, user, expense_category, expense_factory):
+        """Verifica que get_monthly_total solo incluye el mes especificado."""
+        from datetime import date
+
+        expense_factory(user, expense_category, amount=Decimal("100.00"), date=date(2026, 1, 10))
+        expense_factory(user, expense_category, amount=Decimal("500.00"), date=date(2026, 2, 10))
+
+        total = Expense.get_monthly_total(user, month=1, year=2026)
+
+        assert total == Decimal("100.00")
+
+    def test_get_by_category_groups_correctly(
+        self, user, expense_category_factory, expense_factory
+    ):
+        """Verifica que get_by_category agrupa por categoría."""
+        from datetime import date
+
+        cat1 = expense_category_factory(user, name="Comida")
+        cat2 = expense_category_factory(user, name="Transporte")
+
+        expense_factory(user, cat1, amount=Decimal("100.00"), date=date(2026, 1, 10))
+        expense_factory(user, cat1, amount=Decimal("150.00"), date=date(2026, 1, 15))
+        expense_factory(user, cat2, amount=Decimal("50.00"), date=date(2026, 1, 10))
+
+        result = list(Expense.get_by_category(user, month=1, year=2026))
+
+        assert len(result) == 2
+
+        # Ordenado por total descendente
+        assert result[0]["category__name"] == "Comida"
+        assert result[0]["total"] == Decimal("250.00")
+        assert result[1]["category__name"] == "Transporte"
+        assert result[1]["total"] == Decimal("50.00")
+
+    def test_get_by_category_returns_empty_if_no_expenses(self, user):
+        """Verifica que get_by_category retorna vacío si no hay gastos."""
+        result = list(Expense.get_by_category(user, month=1, year=2026))
+
+        assert result == []
+
+    def test_get_by_category_excludes_inactive(self, user, expense_category, expense_factory):
+        """Verifica que get_by_category excluye gastos inactivos."""
+        from datetime import date
+
+        expense_factory(user, expense_category, amount=Decimal("100.00"), date=date(2026, 1, 10))
+        exp2 = expense_factory(
+            user, expense_category, amount=Decimal("200.00"), date=date(2026, 1, 15)
+        )
+
+        exp2.soft_delete()
+
+        result = list(Expense.get_by_category(user, month=1, year=2026))
+
+        assert len(result) == 1
+        assert result[0]["total"] == Decimal("100.00")
