@@ -264,6 +264,8 @@ class Budget(TimestampMixin, SoftDeleteMixin, models.Model):
         """
         Copia los presupuestos del mes anterior al mes objetivo.
 
+        Optimizado: usa bulk_create y evita N+1 queries.
+
         Args:
             user: Usuario
             target_month: Mes destino (1-12)
@@ -280,29 +282,45 @@ class Budget(TimestampMixin, SoftDeleteMixin, models.Model):
             source_month = target_month - 1
             source_year = target_year
 
-        # Obtener presupuestos del mes anterior
-        source_budgets = cls.objects.filter(
-            user=user, month=source_month, year=source_year, is_active=True
+        # Obtener presupuestos del mes anterior (1 query)
+        source_budgets = list(
+            cls.objects.filter(
+                user=user, month=source_month, year=source_year, is_active=True
+            ).select_related("category")
         )
 
-        created = []
-        for budget in source_budgets:
-            # Verificar que no exista ya
-            if not cls.objects.filter(
-                user=user, category=budget.category, month=target_month, year=target_year
-            ).exists():
-                new_budget = cls.objects.create(
-                    user=user,
-                    category=budget.category,
-                    month=target_month,
-                    year=target_year,
-                    amount=budget.amount,
-                    alert_threshold=budget.alert_threshold,
-                    notes=f"Copiado de {budget.period_display}",
-                )
-                created.append(new_budget)
+        if not source_budgets:
+            return []
 
-        return created
+        # Obtener categorías que YA tienen presupuesto en el mes destino (1 query)
+        existing_category_ids = set(
+            cls.objects.filter(user=user, month=target_month, year=target_year).values_list(
+                "category_id", flat=True
+            )
+        )
+
+        # Preparar presupuestos a crear (solo los que no existen)
+        budgets_to_create = []
+        for budget in source_budgets:
+            if budget.category_id not in existing_category_ids:
+                budgets_to_create.append(
+                    cls(
+                        user=user,
+                        category=budget.category,
+                        month=target_month,
+                        year=target_year,
+                        amount=budget.amount,
+                        alert_threshold=budget.alert_threshold,
+                        notes=f"Copiado de {budget.period_display}",
+                    )
+                )
+
+        # Crear todos de una vez (1 query)
+        if budgets_to_create:
+            created = cls.objects.bulk_create(budgets_to_create)
+            return created
+
+        return []
 
     @classmethod
     def get_with_spent(cls, user, month=None, year=None):

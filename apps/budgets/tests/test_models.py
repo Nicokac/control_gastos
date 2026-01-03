@@ -362,3 +362,226 @@ class TestBudgetConstraints:
 
         assert budget1.pk is not None
         assert budget2.pk is not None
+
+
+@pytest.mark.django_db
+class TestCopyFromPreviousMonth:
+    """Tests para el método copy_from_previous_month."""
+
+    def test_copy_budgets_from_previous_month(self, user, expense_category_factory):
+        """Verifica que se copian los presupuestos del mes anterior."""
+        # Crear categorías
+        cat1 = expense_category_factory(user, name="Comida")
+        cat2 = expense_category_factory(user, name="Transporte")
+
+        # Crear presupuestos en mes anterior (Diciembre 2025)
+        Budget.objects.create(
+            user=user,
+            category=cat1,
+            month=12,
+            year=2025,
+            amount=Decimal("10000.00"),
+            alert_threshold=80,
+        )
+        Budget.objects.create(
+            user=user,
+            category=cat2,
+            month=12,
+            year=2025,
+            amount=Decimal("5000.00"),
+            alert_threshold=70,
+        )
+
+        # Copiar a Enero 2026
+        created = Budget.copy_from_previous_month(user, target_month=1, target_year=2026)
+
+        assert len(created) == 2
+
+        # Verificar que se crearon correctamente
+        new_budgets = Budget.objects.filter(user=user, month=1, year=2026)
+        assert new_budgets.count() == 2
+
+        # Verificar montos y umbrales copiados
+        budget_comida = new_budgets.get(category=cat1)
+        assert budget_comida.amount == Decimal("10000.00")
+        assert budget_comida.alert_threshold == 80
+        assert "Copiado de" in budget_comida.notes
+
+        budget_transporte = new_budgets.get(category=cat2)
+        assert budget_transporte.amount == Decimal("5000.00")
+        assert budget_transporte.alert_threshold == 70
+
+    def test_copy_skips_existing_budgets(self, user, expense_category_factory):
+        """Verifica que no duplica presupuestos existentes."""
+        cat1 = expense_category_factory(user, name="Comida")
+        cat2 = expense_category_factory(user, name="Transporte")
+
+        # Crear presupuestos en mes anterior
+        Budget.objects.create(
+            user=user,
+            category=cat1,
+            month=12,
+            year=2025,
+            amount=Decimal("10000.00"),
+        )
+        Budget.objects.create(
+            user=user,
+            category=cat2,
+            month=12,
+            year=2025,
+            amount=Decimal("5000.00"),
+        )
+
+        # Crear presupuesto existente en mes destino (cat1 ya existe)
+        Budget.objects.create(
+            user=user,
+            category=cat1,
+            month=1,
+            year=2026,
+            amount=Decimal("12000.00"),  # Monto diferente
+        )
+
+        # Copiar
+        created = Budget.copy_from_previous_month(user, target_month=1, target_year=2026)
+
+        # Solo debe crear 1 (cat2), no duplicar cat1
+        assert len(created) == 1
+        assert created[0].category == cat2
+
+        # Verificar que cat1 mantiene su monto original
+        budget_comida = Budget.objects.get(user=user, category=cat1, month=1, year=2026)
+        assert budget_comida.amount == Decimal("12000.00")
+
+    def test_copy_returns_empty_if_no_source_budgets(self, user):
+        """Verifica que retorna lista vacía si no hay presupuestos en mes anterior."""
+        created = Budget.copy_from_previous_month(user, target_month=1, target_year=2026)
+
+        assert created == []
+
+    def test_copy_returns_empty_if_all_exist(self, user, expense_category_factory):
+        """Verifica que retorna lista vacía si todos los presupuestos ya existen."""
+        cat1 = expense_category_factory(user, name="Comida")
+
+        # Crear en mes anterior
+        Budget.objects.create(
+            user=user,
+            category=cat1,
+            month=12,
+            year=2025,
+            amount=Decimal("10000.00"),
+        )
+
+        # Crear en mes destino (ya existe)
+        Budget.objects.create(
+            user=user,
+            category=cat1,
+            month=1,
+            year=2026,
+            amount=Decimal("10000.00"),
+        )
+
+        created = Budget.copy_from_previous_month(user, target_month=1, target_year=2026)
+
+        assert created == []
+
+    def test_copy_handles_year_boundary(self, user, expense_category_factory):
+        """Verifica que maneja correctamente el cambio de año (Enero -> Diciembre anterior)."""
+        cat1 = expense_category_factory(user, name="Comida")
+
+        # Crear presupuesto en Diciembre 2025
+        Budget.objects.create(
+            user=user,
+            category=cat1,
+            month=12,
+            year=2025,
+            amount=Decimal("10000.00"),
+        )
+
+        # Copiar a Enero 2026
+        created = Budget.copy_from_previous_month(user, target_month=1, target_year=2026)
+
+        assert len(created) == 1
+        assert created[0].month == 1
+        assert created[0].year == 2026
+
+    def test_copy_handles_mid_year(self, user, expense_category_factory):
+        """Verifica copia en meses intermedios del año."""
+        cat1 = expense_category_factory(user, name="Comida")
+
+        # Crear presupuesto en Mayo
+        Budget.objects.create(
+            user=user,
+            category=cat1,
+            month=5,
+            year=2026,
+            amount=Decimal("8000.00"),
+        )
+
+        # Copiar a Junio
+        created = Budget.copy_from_previous_month(user, target_month=6, target_year=2026)
+
+        assert len(created) == 1
+        assert created[0].month == 6
+        assert created[0].year == 2026
+
+    def test_copy_ignores_inactive_budgets(self, user, expense_category_factory):
+        """Verifica que no copia presupuestos inactivos (soft deleted)."""
+        cat1 = expense_category_factory(user, name="Comida")
+        cat2 = expense_category_factory(user, name="Transporte")
+
+        # Crear presupuesto activo
+        Budget.objects.create(
+            user=user,
+            category=cat1,
+            month=12,
+            year=2025,
+            amount=Decimal("10000.00"),
+        )
+
+        # Crear presupuesto inactivo (soft deleted)
+        inactive_budget = Budget.objects.create(
+            user=user,
+            category=cat2,
+            month=12,
+            year=2025,
+            amount=Decimal("5000.00"),
+        )
+        inactive_budget.soft_delete()
+
+        # Copiar
+        created = Budget.copy_from_previous_month(user, target_month=1, target_year=2026)
+
+        # Solo debe copiar el activo
+        assert len(created) == 1
+        assert created[0].category == cat1
+
+    def test_copy_does_not_affect_other_users(self, user, other_user, expense_category_factory):
+        """Verifica que la copia no afecta a otros usuarios."""
+        cat_user = expense_category_factory(user, name="Comida User")
+        cat_other = expense_category_factory(other_user, name="Comida Other")
+
+        # Crear presupuestos para ambos usuarios
+        Budget.objects.create(
+            user=user,
+            category=cat_user,
+            month=12,
+            year=2025,
+            amount=Decimal("10000.00"),
+        )
+        Budget.objects.create(
+            user=other_user,
+            category=cat_other,
+            month=12,
+            year=2025,
+            amount=Decimal("8000.00"),
+        )
+
+        # Copiar solo para user
+        created = Budget.copy_from_previous_month(user, target_month=1, target_year=2026)
+
+        assert len(created) == 1
+        assert created[0].user == user
+
+        # Verificar que other_user no tiene presupuestos en Enero
+        other_budgets = Budget.objects.filter(user=other_user, month=1, year=2026)
+        assert other_budgets.count() == 0
