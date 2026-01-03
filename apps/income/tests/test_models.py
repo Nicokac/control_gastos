@@ -2,6 +2,7 @@
 Tests para el modelo Income.
 """
 
+from datetime import date
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError
@@ -258,3 +259,176 @@ class TestIncomeValidations:
 
         with pytest.raises(ValidationError):
             income.full_clean()
+
+
+@pytest.mark.django_db
+class TestIncomeCategoryValidation:
+    """Tests para validación de categoría en Income."""
+
+    def test_income_requires_income_category(self, user, expense_category):
+        """No se puede crear income con categoría de gasto."""
+        income = Income(
+            user=user,
+            category=expense_category,  # Categoría EXPENSE
+            description="Ingreso con categoría incorrecta",
+            amount=Decimal("100.00"),
+            currency=Currency.ARS,
+            exchange_rate=Decimal("1.00"),
+            date=timezone.now().date(),
+        )
+
+        with pytest.raises(ValidationError) as exc_info:
+            income.full_clean()
+
+        assert "category" in exc_info.value.message_dict
+
+    def test_income_accepts_income_category(self, user, income_category):
+        """Se puede crear income con categoría de ingreso."""
+        income = Income(
+            user=user,
+            category=income_category,
+            description="Ingreso válido",
+            amount=Decimal("100.00"),
+            currency=Currency.ARS,
+            exchange_rate=Decimal("1.00"),
+            date=timezone.now().date(),
+        )
+
+        income.full_clean()
+        income.save()
+        assert income.pk is not None
+
+    def test_clean_category_does_not_raise_if_category_missing(self, user):
+        """
+        Si category_id apunta a una categoría inexistente, Income.clean() no debe explotar
+        (tu código hace try/except DoesNotExist y hace pass).
+        OJO: no usamos full_clean() porque Django valida el FK y falla antes.
+        """
+        income = Income(
+            user=user,
+            category_id=999999,  # no existe
+            description="Ingreso con category inexistente",
+            amount=Decimal("100.00"),
+            currency=Currency.ARS,
+            exchange_rate=Decimal("1.00"),
+            date=timezone.now().date(),
+        )
+
+        # Ejecutar SOLO la validación custom del modelo
+        income.clean()  # No debería lanzar
+
+
+@pytest.mark.django_db
+class TestIncomeClassMethods:
+    """Tests para métodos de clase de Income."""
+
+    def test_get_user_incomes_returns_only_user_incomes(
+        self, user, other_user, income_category_factory, income_factory
+    ):
+        cat_user = income_category_factory(user, name="Sueldo")
+        cat_other = income_category_factory(other_user, name="Sueldo Other")
+
+        inc1 = income_factory(user, cat_user, description="Ingreso 1")
+        inc2 = income_factory(user, cat_user, description="Ingreso 2")
+        income_factory(other_user, cat_other, description="Ingreso otro")
+
+        qs = Income.get_user_incomes(user)
+
+        assert qs.count() == 2
+        assert inc1 in qs
+        assert inc2 in qs
+
+    def test_get_user_incomes_filters_by_month_year(self, user, income_category, income_factory):
+        inc_jan = income_factory(user, income_category, description="Enero", date=date(2026, 1, 15))
+        income_factory(user, income_category, description="Febrero", date=date(2026, 2, 15))
+
+        qs = Income.get_user_incomes(user, month=1, year=2026)
+
+        assert qs.count() == 1
+        assert inc_jan in qs
+
+    def test_get_user_incomes_filters_by_year_only(self, user, income_category, income_factory):
+        income_factory(user, income_category, description="2026-1", date=date(2026, 1, 15))
+        income_factory(user, income_category, description="2026-2", date=date(2026, 6, 15))
+        income_factory(user, income_category, description="2025", date=date(2025, 12, 15))
+
+        qs = Income.get_user_incomes(user, year=2026)
+
+        assert qs.count() == 2
+
+    def test_get_user_incomes_select_related_category(
+        self, user, income_category, income_factory, django_assert_num_queries
+    ):
+        """
+        get_user_incomes hace select_related('category').
+        Validamos que acceder a category no dispare query extra (best-effort).
+        """
+        income_factory(user, income_category, description="Ingreso")
+
+        with django_assert_num_queries(1):
+            inc = Income.get_user_incomes(user).first()
+            _ = inc.category.name
+
+    def test_get_monthly_total_sums_correctly(self, user, income_category, income_factory):
+        income_factory(user, income_category, amount=Decimal("100.00"), date=date(2026, 1, 10))
+        income_factory(user, income_category, amount=Decimal("200.00"), date=date(2026, 1, 15))
+        income_factory(user, income_category, amount=Decimal("300.00"), date=date(2026, 1, 20))
+
+        total = Income.get_monthly_total(user, month=1, year=2026)
+
+        assert total == Decimal("600.00")
+
+    def test_get_monthly_total_returns_zero_if_no_incomes(self, user):
+        total = Income.get_monthly_total(user, month=1, year=2026)
+        assert total == Decimal("0")
+
+    def test_get_monthly_total_excludes_inactive(self, user, income_category, income_factory):
+        income_factory(user, income_category, amount=Decimal("100.00"), date=date(2026, 1, 10))
+        inc2 = income_factory(
+            user, income_category, amount=Decimal("200.00"), date=date(2026, 1, 15)
+        )
+        inc2.soft_delete()
+
+        total = Income.get_monthly_total(user, month=1, year=2026)
+
+        assert total == Decimal("100.00")
+
+    def test_get_monthly_total_excludes_other_months(self, user, income_category, income_factory):
+        income_factory(user, income_category, amount=Decimal("100.00"), date=date(2026, 1, 10))
+        income_factory(user, income_category, amount=Decimal("500.00"), date=date(2026, 2, 10))
+
+        total = Income.get_monthly_total(user, month=1, year=2026)
+
+        assert total == Decimal("100.00")
+
+    def test_get_by_category_groups_and_orders(self, user, income_category_factory, income_factory):
+        cat1 = income_category_factory(user, name="Sueldo")
+        cat2 = income_category_factory(user, name="Freelance")
+
+        income_factory(user, cat1, amount=Decimal("100.00"), date=date(2026, 1, 10))
+        income_factory(user, cat1, amount=Decimal("150.00"), date=date(2026, 1, 15))
+        income_factory(user, cat2, amount=Decimal("50.00"), date=date(2026, 1, 10))
+
+        result = list(Income.get_by_category(user, month=1, year=2026))
+
+        assert len(result) == 2
+        assert result[0]["category__name"] == "Sueldo"
+        assert result[0]["total"] == Decimal("250.00")
+        assert result[1]["category__name"] == "Freelance"
+        assert result[1]["total"] == Decimal("50.00")
+
+    def test_get_by_category_returns_empty_if_no_incomes(self, user):
+        result = list(Income.get_by_category(user, month=1, year=2026))
+        assert result == []
+
+    def test_get_by_category_excludes_inactive(self, user, income_category, income_factory):
+        income_factory(user, income_category, amount=Decimal("100.00"), date=date(2026, 1, 10))
+        inc2 = income_factory(
+            user, income_category, amount=Decimal("200.00"), date=date(2026, 1, 15)
+        )
+        inc2.soft_delete()
+
+        result = list(Income.get_by_category(user, month=1, year=2026))
+
+        assert len(result) == 1
+        assert result[0]["total"] == Decimal("100.00")
