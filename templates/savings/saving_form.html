@@ -3,65 +3,6 @@
 
 {% block title %}{% if is_edit %}Editar{% else %}Nueva{% endif %} Meta de Ahorro - Control de Gastos{% endblock %}
 
-{% block extra_css %}
-<style>
-    /* Icon selector */
-    .icon-grid {
-        display: grid;
-        grid-template-columns: repeat(6, 1fr);
-        gap: 0.5rem;
-    }
-
-    .icon-option {
-        cursor: pointer;
-    }
-
-    .icon-option input[type="radio"] {
-        display: none;
-    }
-
-    .icon-option .btn {
-        width: 100%;
-        padding: 0.75rem;
-        font-size: 1.25rem;
-    }
-
-    .icon-option input[type="radio"]:checked + .btn {
-        background-color: var(--bs-info);
-        color: white;
-        border-color: var(--bs-info);
-    }
-
-    /* Color selector */
-    .color-grid {
-        display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-    }
-
-    .color-option {
-        cursor: pointer;
-    }
-
-    .color-option input[type="radio"] {
-        display: none;
-    }
-
-    .color-option .color-btn {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        border: 3px solid transparent;
-        transition: all 0.2s ease;
-    }
-
-    .color-option input[type="radio"]:checked + .color-btn {
-        border-color: #333;
-        transform: scale(1.1);
-    }
-</style>
-{% endblock %}
-
 {% block content %}
 <div class="container-fluid">
     <div class="row justify-content-center">

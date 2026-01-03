@@ -60,3 +60,9 @@ CSP_IMG_SRC = (
     "'self'",
     "data:",
 )
+
+# Conexiones: permitir source maps para debugging en desarrollo
+CSP_CONNECT_SRC = (
+    "'self'",
+    "https://cdn.jsdelivr.net",
+)

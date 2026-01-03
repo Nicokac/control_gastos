@@ -164,21 +164,21 @@ SESSION_COOKIE_AGE = 1209600
 # Fuentes por defecto: solo mismo origen
 CSP_DEFAULT_SRC = ("'self'",)
 
-# Scripts: mismo origen + CDNs necesarios
-# TODO: Eliminar 'unsafe-inline' migrando scripts inline a archivos estáticos
-# Esto es una deuda técnica de seguridad - ver issue #XX
+# Scripts: mismo origen + CDNs (SIN unsafe-inline = más seguro contra XSS)
+# Todos los scripts están en archivos externos, no hay scripts inline
 CSP_SCRIPT_SRC = (
     "'self'",
-    "'unsafe-inline'",  # DEUDA TÉCNICA: Necesario para scripts inline de Bootstrap/Chart.js
-    "https://cdn.jsdelivr.net",  # Bootstrap, Chart.js, etc.
+    "https://cdn.jsdelivr.net",
     "https://cdnjs.cloudflare.com",
 )
 
-# Estilos: mismo origen + CDNs
-# TODO: Eliminar 'unsafe-inline' usando nonces o migrando estilos inline
+# Estilos: mismo origen + CDNs + unsafe-inline (requerido)
+# NOTA: unsafe-inline es necesario para atributos style="" dinámicos en templates
+# (colores de categorías, barras de progreso con % variable, etc.)
+# Migrar a CSS custom properties requeriría refactorización significativa
 CSP_STYLE_SRC = (
     "'self'",
-    "'unsafe-inline'",  # DEUDA TÉCNICA: Necesario para estilos inline de Bootstrap
+    "'unsafe-inline'",
     "https://cdn.jsdelivr.net",
     "https://fonts.googleapis.com",
 )
