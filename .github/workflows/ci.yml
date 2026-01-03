@@ -175,8 +175,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements/dev.txt
 
-      - name: ✅ Run Django system checks
-        run: python manage.py check --fail-level WARNING
+      - name: ✅ Run Django system checks (deploy)
+        run: python manage.py check --deploy --fail-level WARNING
+        env:
+          DJANGO_SETTINGS_MODULE: config.settings.prod
 
       - name: 📋 Check for missing migrations
         run: python manage.py makemigrations --check --dry-run
