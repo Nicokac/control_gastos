@@ -1,7 +1,7 @@
 # Control de Gastos
 
 ![CI](https://github.com/Nicokac/control_gastos/actions/workflows/ci.yml/badge.svg)
-![Coverage](https://img.shields.io/badge/coverage-83%25-green)
+![Coverage](https://img.shields.io/badge/coverage-95%25-green)
 ![Python](https://img.shields.io/badge/python-3.11-blue)
 ![Django](https://img.shields.io/badge/django-5.2-green)
 ![License](https://img.shields.io/badge/license-private-lightgrey)
@@ -33,7 +33,7 @@
 | Métrica | Valor |
 |---------|-------|
 | Tests | 556 |
-| Coverage | 83.39% |
+| Coverage | 95.29% |
 | Python | 3.11+ |
 | Django | 5.2 |
 | Estado | 🟢 **Listo para Producción** |
@@ -275,8 +275,8 @@ pytest --cov=apps --cov-fail-under=80
 ### Resultados actuales
 
 ```
-556 passed, 2 skipped
-Coverage: 83.39%
+705 passed, 2 skipped
+Coverage: 95.29%
 ```
 
 ---
