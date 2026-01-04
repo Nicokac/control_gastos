@@ -31,32 +31,58 @@ class LoginForm(AuthenticationForm):
         "inactive": "Esta cuenta está desactiva.",
     }
 
+    def clean_username(self):
+        """
+        Normaliza el identificador de login.
+        - strip()
+        - si parece email, lo pasa a lower()
+        """
+        username = self.cleaned_data.get("username")
+        if isinstance(username, str):
+            username = username.strip()
+            if "@" in username:
+                username = username.lower()
+        return username
+
+    def _user_exists(self, identifier: str) -> bool:
+        return User.objects.filter(Q(username=identifier) | Q(email=identifier)).exists()
+
+    def _authenticate(self, identifier: str, password: str):
+        return authenticate(self.request, username=identifier, password=password)
+
     def clean(self):
         """Validación con mensajes específicos (Ley de Postel)."""
-        username = self.cleaned_data.get("username")
-        password = self.cleaned_data.get("password")
+        cleaned = super().clean()
 
-        if username and password:
-            # Verificar si el usuario existe
-            user_exists = User.objects.filter(Q(username=username) | Q(email=username)).exists()
+        username = cleaned.get("username")
+        password = cleaned.get("password")
 
-            if not user_exists:
-                raise forms.ValidationError(
-                    "No existe una cuenta con ese usuario o email.", code="user_not_found"
-                )
+        if not username or not password:
+            return cleaned
 
-            # Intentar autenticar
-            self.user_cache = authenticate(self.request, username=username, password=password)
+        # Buscar usuario por username o email
+        user = (
+            User.objects.filter(Q(username=username) | Q(email=username))
+            .only("id", "is_active", "password", "username", "email")
+            .first()
+        )
 
-            if self.user_cache is None:
-                raise forms.ValidationError(
-                    "Contraseña incorrecta. Intentá nuevamente.", code="invalid_password"
-                )
+        if user is None:
+            raise forms.ValidationError(
+                "No existe una cuenta con ese usuario o email.", code="user_not_found"
+            )
 
-            if not self.user_cache.is_active:
-                raise forms.ValidationError(self.error_messages["inactive"], code="inactive")
+        if not user.is_active:
+            raise forms.ValidationError(self.error_messages["inactive"], code="inactive")
 
-        return self.cleaned_data
+        # Password incorrecta (sin depender de authenticate, evita caer al genérico)
+        if not user.check_password(password):
+            raise forms.ValidationError(
+                "Contraseña incorrecta. Intentá nuevamente.", code="invalid_password"
+            )
+
+        # OK: credenciales válidas -> dejamos que el LoginView autentique realmente.
+        return cleaned
 
 
 class RegisterForm(UserCreationForm):
@@ -90,16 +116,20 @@ class RegisterForm(UserCreationForm):
         self.fields["password2"].help_text = ""
 
     def clean_email(self):
-        """Valida que el email no esté en uso."""
         email = self.cleaned_data.get("email")
-        if User.objects.filter(email=email).exists():
+        if isinstance(email, str):
+            email = email.strip().lower()
+
+        if User.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError("Ya existe una cuenta con este email.")
         return email
 
     def clean_username(self):
-        """Valida que el username no esté en uso."""
         username = self.cleaned_data.get("username")
-        if User.objects.filter(username=username).exists():
+        if isinstance(username, str):
+            username = username.strip()
+
+        if User.objects.filter(username__iexact=username).exists():
             raise forms.ValidationError("Este nombre de usuario ya está en uso.")
         return username
 
@@ -133,8 +163,18 @@ class ProfileForm(forms.ModelForm):
         }
 
     def clean_email(self):
-        """Valida que el email no esté en uso por otro usuario."""
         email = self.cleaned_data.get("email")
-        if User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
+        if isinstance(email, str):
+            email = email.strip().lower()
+
+        if User.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).exists():
             raise forms.ValidationError("Este mail ya está en uso por otra cuenta.")
         return email
+
+    def clean_alert_threshold(self):
+        value = self.cleaned_data.get("alert_threshold")
+        if value is None:
+            return value
+        if not (1 <= value <= 100):
+            raise forms.ValidationError("El umbral debe estar entre 1 y 100.")
+        return value

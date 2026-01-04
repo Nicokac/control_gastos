@@ -9,7 +9,7 @@ from django.urls import reverse
 import pytest
 
 from apps.savings.forms import SavingForm
-from apps.savings.models import Saving
+from apps.savings.models import Saving, SavingStatus
 
 
 @pytest.mark.django_db
@@ -42,6 +42,153 @@ class TestSavingListView:
 
         assert response.status_code == 200
         assert "Otra Meta" not in response.content.decode()
+
+
+@pytest.mark.django_db
+class TestSavingListViewFilters:
+    def test_list_filters_by_valid_status(self, authenticated_client, user, saving_factory):
+        s_active = saving_factory(user, name="Meta Activa X", status=SavingStatus.ACTIVE)
+        s_completed = saving_factory(user, name="Meta Completada Y", status=SavingStatus.COMPLETED)
+
+        url = reverse("savings:list")
+        response = authenticated_client.get(url, {"status": SavingStatus.COMPLETED})
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert s_completed.name in content
+        assert s_active.name not in content
+
+    def test_list_ignores_invalid_status_filter(self, authenticated_client, user, saving_factory):
+        saving_factory(user, name="Activa", status=SavingStatus.ACTIVE)
+        saving_factory(user, name="Completada", status=SavingStatus.COMPLETED)
+
+        url = reverse("savings:list")
+        response = authenticated_client.get(url, {"status": "NOT_A_REAL_STATUS"})
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        # Si ignora el filtro, deberían aparecer ambas
+        assert "Activa" in content
+        assert "Completada" in content
+
+
+@pytest.mark.django_db
+class TestSavingListViewSummary:
+    def test_summary_overall_progress_zero_when_no_active_savings(self, authenticated_client):
+        url = reverse("savings:list")
+        response = authenticated_client.get(url)
+
+        assert response.status_code == 200
+        summary = response.context["summary"]
+        assert summary["overall_progress"] == 0
+        assert summary["total_target"] == Decimal("0")
+        assert summary["total_current"] == Decimal("0")
+        assert summary["total_remaining"] == Decimal("0")
+
+
+@pytest.mark.django_db
+class TestSavingListViewSummaryCap:
+    def test_summary_overall_progress_capped_to_100(
+        self, authenticated_client, user, saving_factory
+    ):
+        # ACTIVE y is_active=True => entra en active_savings
+        saving_factory(
+            user,
+            name="Meta",
+            status=SavingStatus.ACTIVE,
+            target_amount=Decimal("100.00"),
+            current_amount=Decimal("250.00"),  # > target
+        )
+
+        url = reverse("savings:list")
+        response = authenticated_client.get(url)
+
+        assert response.status_code == 200
+        summary = response.context["summary"]
+        assert summary["overall_progress"] == 100
+
+
+@pytest.mark.django_db
+class TestSavingDetailViewPagination:
+    def test_detail_page_not_an_integer_defaults_to_page_1(
+        self, authenticated_client, saving, saving_movement_factory
+    ):
+        # Crear 12 movimientos para tener 2 páginas
+        for _ in range(12):
+            saving_movement_factory(saving, "DEPOSIT", amount=Decimal("1.00"))
+
+        url = reverse("savings:detail", kwargs={"pk": saving.pk})
+        response = authenticated_client.get(url, {"page": "nope"})
+
+        assert response.status_code == 200
+        movements = response.context["movements"]
+        assert movements.number == 1  # PageNotAnInteger => page(1)
+
+    def test_detail_empty_page_returns_last_page(
+        self, authenticated_client, saving, saving_movement_factory
+    ):
+        for _ in range(12):
+            saving_movement_factory(saving, "DEPOSIT", amount=Decimal("1.00"))
+
+        url = reverse("savings:detail", kwargs={"pk": saving.pk})
+        response = authenticated_client.get(url, {"page": "9999"})
+
+        assert response.status_code == 200
+        movements = response.context["movements"]
+        assert movements.number == movements.paginator.num_pages  # EmptyPage => last page
+
+
+@pytest.mark.django_db
+class TestSavingMovementCreateView:
+    def test_create_movement_deposit_shows_success_message(self, authenticated_client, saving):
+        url = reverse("savings:add_movement", kwargs={"pk": saving.pk})
+        data = {"type": "DEPOSIT", "amount": "100.00", "description": "Dep"}
+
+        response = authenticated_client.post(url, data, follow=True)
+
+        assert response.status_code == 200
+        msgs = [m.message for m in response.context["messages"]]
+        assert any("Depósito" in m for m in msgs)
+
+    def test_create_movement_withdrawal_shows_success_message(
+        self, authenticated_client, saving_with_progress
+    ):
+        url = reverse("savings:add_movement", kwargs={"pk": saving_with_progress.pk})
+        data = {"type": "WITHDRAWAL", "amount": "10.00", "description": "W"}
+
+        response = authenticated_client.post(url, data, follow=True)
+
+        assert response.status_code == 200
+        msgs = [m.message for m in response.context["messages"]]
+        assert any("Retiro" in m for m in msgs)
+
+    def test_create_movement_invalid_shows_error_message(self, authenticated_client, saving):
+        url = reverse("savings:add_movement", kwargs={"pk": saving.pk})
+        data = {"type": "DEPOSIT", "amount": "", "description": "bad"}  # inválido
+
+        response = authenticated_client.post(url, data, follow=True)
+
+        assert response.status_code == 200
+        msgs = [m.message for m in response.context["messages"]]
+        assert any("Corregí los errores" in m for m in msgs)
+
+    def test_cannot_add_movement_to_other_users_saving(
+        self, authenticated_client, other_user, saving_factory
+    ):
+        other_saving = saving_factory(other_user, name="Ajena")
+        url = reverse("savings:add_movement", kwargs={"pk": other_saving.pk})
+
+        response = authenticated_client.get(url)
+        assert response.status_code == 404
+
+    def test_movement_create_redirects_to_detail(self, authenticated_client, saving):
+        url = reverse("savings:add_movement", kwargs={"pk": saving.pk})
+        data = {"type": "DEPOSIT", "amount": "1.00", "description": ""}
+
+        response = authenticated_client.post(url, data)
+
+        assert response.status_code == 302
+        assert reverse("savings:detail", kwargs={"pk": saving.pk}) in response.url
 
 
 @pytest.mark.django_db

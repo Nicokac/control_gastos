@@ -117,6 +117,44 @@ class TestIncomeCreateView:
         income = Income.objects.get(description="Mi Ingreso")
         assert income.user == user
 
+    def test_create_income_invalid_shows_error_message(self, authenticated_client, income_category):
+        url = reverse("income:create")
+        # invalid: amount vacío
+        data = {
+            "category": income_category.pk,
+            "description": "Ingreso inválido",
+            "amount": "",
+            "currency": Currency.ARS,
+            "date": timezone.now().date().isoformat(),
+        }
+
+        response = authenticated_client.post(url, data, follow=True)
+
+        assert response.status_code == 200  # vuelve al form
+        # messages framework
+        msgs = [m.message for m in response.context["messages"]]
+        assert any("Corregí los errores" in m for m in msgs)
+
+    def test_create_income_success_adds_success_message(
+        self, authenticated_client, user, income_category
+    ):
+        url = reverse("income:create")
+        data = {
+            "category": income_category.pk,
+            "description": "Ingreso con mensaje",
+            "amount": "1234.00",
+            "currency": Currency.ARS,
+            "date": timezone.now().date().isoformat(),
+        }
+
+        response = authenticated_client.post(url, data, follow=True)
+
+        assert response.status_code == 200
+        assert Income.objects.filter(description="Ingreso con mensaje", user=user).exists()
+
+        msgs = [m.message for m in response.context["messages"]]
+        assert any("Ingreso registrado" in m for m in msgs)
+
 
 @pytest.mark.django_db
 class TestIncomeUpdateView:
@@ -168,6 +206,22 @@ class TestIncomeUpdateView:
 
         assert response.status_code in [403, 404]
 
+    def test_update_income_adds_success_message(self, authenticated_client, income):
+        url = reverse("income:update", kwargs={"pk": income.pk})
+        data = {
+            "category": income.category.pk,
+            "description": "Edit msg",
+            "amount": str(income.amount),
+            "currency": income.currency,
+            "date": income.date.isoformat(),
+        }
+
+        response = authenticated_client.post(url, data, follow=True)
+
+        assert response.status_code == 200
+        msgs = [m.message for m in response.context["messages"]]
+        assert any("Ingreso actualizado" in m for m in msgs)
+
 
 @pytest.mark.django_db
 class TestIncomeDeleteView:
@@ -204,6 +258,15 @@ class TestIncomeDeleteView:
 
         assert response.status_code in [403, 404]
 
+    def test_delete_income_adds_success_message(self, authenticated_client, income):
+        url = reverse("income:delete", kwargs={"pk": income.pk})
+
+        response = authenticated_client.post(url, follow=True)
+
+        assert response.status_code == 200
+        msgs = [m.message for m in response.context["messages"]]
+        assert any("Ingreso eliminado" in m for m in msgs)
+
 
 @pytest.mark.django_db
 class TestIncomeListViewOrdering:
@@ -231,3 +294,76 @@ class TestIncomeListViewOrdering:
 
         if pos_reciente != -1 and pos_antiguo != -1:
             assert pos_reciente < pos_antiguo
+
+    def test_list_filters_by_month_year_and_category(
+        self, authenticated_client, user, income_category, income_factory
+    ):
+        from datetime import date
+
+        # Mismo usuario, mismos conceptos, pero distintas fechas/categorías
+        income_factory(user, income_category, date=date(2026, 1, 5), description="Enero OK")
+        income_factory(user, income_category, date=date(2026, 2, 5), description="Febrero NO")
+
+        url = reverse("income:list")
+        response = authenticated_client.get(
+            url,
+            {"month": "1", "year": "2026", "category": str(income_category.pk)},
+        )
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "Enero OK" in content
+        assert "Febrero NO" not in content
+
+    def test_list_ignores_invalid_filter_params(
+        self, authenticated_client, user, income_category, income_factory
+    ):
+        income_factory(user, income_category, description="Ingreso Visible")
+
+        url = reverse("income:list")
+        response = authenticated_client.get(url, {"month": "nope", "year": "??", "category": "x"})
+
+        assert response.status_code == 200
+        assert "Ingreso Visible" in response.content.decode()
+
+    def test_list_context_includes_total_and_current_period(
+        self, authenticated_client, user, income_category, income_factory
+    ):
+        today = timezone.now().date()
+        income_factory(user, income_category, amount="1000.00", date=today)
+        income_factory(user, income_category, amount="2500.00", date=today)
+
+        url = reverse("income:list")
+        response = authenticated_client.get(url)
+
+        assert response.status_code == 200
+        assert "filter_form" in response.context
+        assert "total" in response.context
+        assert response.context["current_month"] == today.month
+        assert response.context["current_year"] == today.year
+
+        # OJO: total usa amount_ars (no amount), pero para ARS suele coincidir.
+        assert response.context["total"] in (3500, 3500.0) or str(
+            response.context["total"]
+        ).startswith("3500")
+
+
+@pytest.mark.django_db
+class TestIncomeDetailView:
+    def test_income_detail_view_shows_income(self, authenticated_client, income):
+        url = reverse("income:detail", kwargs={"pk": income.pk})
+        response = authenticated_client.get(url)
+
+        assert response.status_code == 200
+        assert income.description in response.content.decode()
+
+    def test_cannot_view_other_user_income_detail(
+        self, authenticated_client, other_user, income_category_factory, income_factory
+    ):
+        other_cat = income_category_factory(other_user, name="Otra")
+        other_income = income_factory(other_user, other_cat, description="Ingreso Ajeno")
+
+        url = reverse("income:detail", kwargs={"pk": other_income.pk})
+        response = authenticated_client.get(url)
+
+        assert response.status_code in [403, 404]

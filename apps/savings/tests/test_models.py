@@ -4,6 +4,8 @@ Tests para los modelos Saving y SavingMovement.
 
 from decimal import Decimal
 
+from django.core.exceptions import ValidationError
+
 import pytest
 
 from apps.savings.models import Saving, SavingMovement, SavingStatus
@@ -65,7 +67,7 @@ class TestSavingModel:
             user, target_amount=Decimal("10000.00"), current_amount=Decimal("12000.00")
         )
 
-        assert saving.progress_percentage >= 100
+        assert saving.progress_percentage == 100
 
     def test_saving_remaining_amount(self, user, saving_factory):
         """Verifica monto restante."""
@@ -284,11 +286,177 @@ class TestSavingAutoComplete:
 
         assert saving.remaining_amount == Decimal("0.00")
 
-    def test_remaining_amount_negative_when_exceeded(self, user, saving_factory):
+    def test_remaining_amount_zero_when_exceeded(self, user, saving_factory):
         """Verifica monto restante negativo cuando se excede."""
         saving = saving_factory(
             user, target_amount=Decimal("10000.00"), current_amount=Decimal("12000.00")
         )
 
         # Puede ser negativo o cero según implementación
-        assert saving.remaining_amount <= Decimal("0.00")
+        assert saving.remaining_amount == Decimal("0.00")
+
+
+@pytest.mark.django_db
+class TestSavingValidation:
+    def test_target_amount_must_be_positive(self, user):
+        saving = Saving(
+            user=user,
+            name="Test",
+            target_amount=Decimal("0.00"),
+            current_amount=Decimal("0.00"),
+        )
+
+        with pytest.raises(ValidationError) as exc:
+            saving.full_clean()
+
+        err = exc.value.message_dict["target_amount"]
+        assert any("0.01" in msg or "mayor" in msg.lower() for msg in err)
+
+    def test_current_amount_cannot_be_negative(self, user):
+        saving = Saving(
+            user=user,
+            name="Meta inválida",
+            target_amount=Decimal("100.00"),
+            current_amount=Decimal("-1.00"),
+        )
+        with pytest.raises(ValidationError):
+            saving.full_clean()
+
+
+@pytest.mark.django_db
+class TestSavingFormatting:
+    def test_formatted_amounts_ars(self, user, saving_factory):
+        saving = saving_factory(
+            user,
+            target_amount=Decimal("10000.00"),
+            current_amount=Decimal("2500.00"),
+            currency="ARS",
+        )
+        assert saving.formatted_target.startswith("$ ")
+        assert saving.formatted_current.startswith("$ ")
+        assert saving.formatted_remaining.startswith("$ ")
+
+    def test_formatted_amounts_usd(self, user, saving_factory):
+        saving = saving_factory(
+            user,
+            target_amount=Decimal("10000.00"),
+            current_amount=Decimal("2500.00"),
+            currency="USD",
+        )
+        assert saving.formatted_target.startswith("US$ ")
+        assert saving.formatted_current.startswith("US$ ")
+        assert saving.formatted_remaining.startswith("US$ ")
+
+
+@pytest.mark.django_db
+class TestSavingStatusFlags:
+    def test_is_completed_true_when_completed(self, user, saving_factory):
+        saving = saving_factory(user)
+        saving.status = SavingStatus.COMPLETED
+        saving.save(update_fields=["status"])
+        assert saving.is_completed is True
+
+    def test_is_overdue_false_without_target_date(self, saving):
+        assert saving.is_overdue is False
+
+    def test_is_overdue_true_when_past_date_and_active(self, user, saving_factory, yesterday):
+        saving = saving_factory(user, target_date=yesterday)
+        assert saving.status == SavingStatus.ACTIVE
+        assert saving.is_overdue is True
+
+    def test_is_overdue_false_when_not_active(self, user, saving_factory, yesterday):
+        saving = saving_factory(user, target_date=yesterday)
+        saving.status = SavingStatus.COMPLETED
+        saving.save(update_fields=["status"])
+        assert saving.is_overdue is False
+
+
+@pytest.mark.django_db
+class TestSavingDepositWithdrawalValidation:
+    def test_add_deposit_rejects_zero_or_negative(self, saving):
+        with pytest.raises(ValueError):
+            saving.add_deposit(Decimal("0.00"))
+        with pytest.raises(ValueError):
+            saving.add_deposit(Decimal("-1.00"))
+
+    def test_add_withdrawal_rejects_zero_or_negative(self, saving_with_progress):
+        with pytest.raises(ValueError):
+            saving_with_progress.add_withdrawal(Decimal("0.00"))
+        with pytest.raises(ValueError):
+            saving_with_progress.add_withdrawal(Decimal("-1.00"))
+
+
+@pytest.mark.django_db
+class TestSavingClassmethods:
+    def test_get_user_savings_without_status(self, user, saving_factory):
+        s1 = saving_factory(user, name="A")
+        s2 = saving_factory(user, name="B")
+        qs = Saving.get_user_savings(user)
+        assert s1 in qs
+        assert s2 in qs
+
+    def test_get_user_savings_with_status_filter(self, user, saving_factory):
+        active = saving_factory(user, name="Activa")
+        completed = saving_factory(
+            user,
+            name="Completada",
+            target_amount=Decimal("100.00"),
+            current_amount=Decimal("100.00"),
+        )
+        completed.status = SavingStatus.COMPLETED
+        completed.save(update_fields=["status"])
+
+        qs = Saving.get_user_savings(user, status=SavingStatus.COMPLETED)
+        assert completed in qs
+        assert active not in qs
+
+    def test_get_total_saved_only_active_and_is_active(self, user, saving_factory):
+        saving_factory(user, current_amount=Decimal("100.00"))
+        s2 = saving_factory(user, current_amount=Decimal("50.00"))
+
+        # completed no cuenta
+        s3 = saving_factory(
+            user,
+            target_amount=Decimal("10.00"),
+            current_amount=Decimal("10.00"),
+        )
+        s3.status = SavingStatus.COMPLETED
+        s3.save(update_fields=["status"])
+
+        # soft-deleted no cuenta
+        s2.soft_delete()
+
+        total = Saving.get_total_saved(user)
+        assert total == Decimal("100.00")
+
+
+@pytest.mark.django_db
+class TestSavingMovementProperties:
+    def test_formatted_amount_deposit(self, saving):
+        movement = SavingMovement.objects.create(
+            saving=saving, type="DEPOSIT", amount=Decimal("1234.50"), description=""
+        )
+        assert movement.formatted_amount.startswith("+ $")
+
+    def test_formatted_amount_withdrawal(self, saving_with_progress):
+        movement = SavingMovement.objects.create(
+            saving=saving_with_progress,
+            type="WITHDRAWAL",
+            amount=Decimal("10.00"),
+            description="",
+        )
+        assert movement.formatted_amount.startswith("- $")
+
+    def test_is_deposit_and_is_withdrawal_flags(self, saving):
+        dep = SavingMovement.objects.create(
+            saving=saving, type="DEPOSIT", amount=Decimal("1.00"), description=""
+        )
+        wd = SavingMovement.objects.create(
+            saving=saving, type="WITHDRAWAL", amount=Decimal("1.00"), description=""
+        )
+
+        assert dep.is_deposit is True
+        assert dep.is_withdrawal is False
+
+        assert wd.is_deposit is False
+        assert wd.is_withdrawal is True

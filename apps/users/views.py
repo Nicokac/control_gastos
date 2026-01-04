@@ -23,7 +23,7 @@ from .models import User
 class CustomLoginView(LoginView):
     """Vista de login personalizada."""
 
-    form_class = LoginForm
+    authentication_form = LoginForm
     template_name = "users/login.html"
     redirect_authenticated_user = True
 

@@ -36,11 +36,30 @@ class CategoryForm(forms.ModelForm):
         self.user = user
         super().__init__(*args, **kwargs)
 
+    def clean(self):
+        cleaned = super().clean()
+
+        name = cleaned.get("name")
+        if isinstance(name, str):
+            cleaned["name"] = name.strip()
+
+        icon = cleaned.get("icon")
+        if icon is not None and isinstance(icon, str) and not icon.strip():
+            cleaned["icon"] = ""
+
+        color = cleaned.get("color")
+        if not color:
+            cleaned["color"] = "#6c757d"
+
+        return cleaned
+
     def clean_name(self):
         """Válida que el nombre no esté duplicado para el usuario."""
         name = self.cleaned_data.get("name")
-        category_type = self.cleaned_data.get("type") or self.instance.type
+        if isinstance(name, str):
+            name = name.strip()
 
+        category_type = self.cleaned_data.get("type") or self.instance.type
         if not name:
             return name
 

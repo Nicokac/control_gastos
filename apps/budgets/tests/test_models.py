@@ -585,3 +585,201 @@ class TestCopyFromPreviousMonth:
         # Verificar que other_user no tiene presupuestos en Enero
         other_budgets = Budget.objects.filter(user=other_user, month=1, year=2026)
         assert other_budgets.count() == 0
+
+
+@pytest.mark.django_db
+class TestBudgetValidation:
+    def test_amount_must_be_positive(self, user, expense_category, current_month, current_year):
+        budget = Budget(
+            user=user,
+            category=expense_category,
+            month=current_month,
+            year=current_year,
+            amount=Decimal("0.00"),
+        )
+
+        with pytest.raises(ValidationError) as exc:
+            budget.full_clean()
+
+        err = exc.value.message_dict["amount"]
+        assert any("mayor a cero" in msg.lower() or "0.01" in msg for msg in err)
+
+    def test_category_must_be_expense(self, user, income_category, current_month, current_year):
+        budget = Budget(
+            user=user,
+            category=income_category,
+            month=current_month,
+            year=current_year,
+            amount=Decimal("1000.00"),
+        )
+
+        with pytest.raises(ValidationError) as exc:
+            budget.full_clean()
+
+        err = exc.value.message_dict["category"]
+        assert any("solo" in msg.lower() and "gasto" in msg.lower() for msg in err)
+
+
+@pytest.mark.django_db
+class TestBudgetPeriod:
+    def test_month_name(self, budget):
+        # No atarse a idioma exacto, pero sí a que no esté vacío
+        assert isinstance(budget.month_name, str)
+        assert budget.month_name.strip() != ""
+
+    def test_period_display(self, budget):
+        assert str(budget.year) in budget.period_display
+        assert budget.month_name in budget.period_display
+
+
+@pytest.mark.django_db
+class TestBudgetFormatting:
+    def test_formatted_remaining_negative_shows_minus(
+        self, user, expense_category, budget_factory, expense_factory
+    ):
+        today = timezone.now().date()
+        budget = budget_factory(
+            user, expense_category, month=today.month, year=today.year, amount=Decimal("1000.00")
+        )
+
+        expense_factory(user, expense_category, amount=Decimal("1500.00"), date=today)
+
+        assert budget.remaining_amount < 0
+        assert budget.formatted_remaining.startswith("-$") or budget.formatted_remaining.startswith(
+            "-$ "
+        )
+
+
+@pytest.mark.django_db
+class TestBudgetStatusClass:
+    def test_status_class_ok(self, budget):
+        assert budget.status_class == "success"
+
+    def test_status_class_warning(self, user, expense_category, budget_factory, expense_factory):
+        today = timezone.now().date()
+        budget = budget_factory(
+            user,
+            expense_category,
+            month=today.month,
+            year=today.year,
+            amount=Decimal("10000.00"),
+            alert_threshold=80,
+        )
+        expense_factory(user, expense_category, amount=Decimal("8500.00"), date=today)
+        assert budget.status == "warning"
+        assert budget.status_class == "warning"
+
+    def test_status_class_over(self, user, expense_category, budget_factory, expense_factory):
+        today = timezone.now().date()
+        budget = budget_factory(
+            user, expense_category, month=today.month, year=today.year, amount=Decimal("10000.00")
+        )
+        expense_factory(user, expense_category, amount=Decimal("12000.00"), date=today)
+        assert budget.status == "over"
+        assert budget.status_class == "danger"
+
+
+@pytest.mark.django_db
+class TestBudgetClassmethods:
+    def test_get_user_budgets_no_filters(
+        self, user, other_user, expense_category, expense_category_factory, budget_factory
+    ):
+        b1 = budget_factory(user, expense_category, month=1, year=2026)
+        other_cat = expense_category_factory(other_user, name="Other")
+        b2 = budget_factory(other_user, other_cat, month=1, year=2026)
+
+        qs = Budget.get_user_budgets(user)
+        assert b1 in qs
+        assert b2 not in qs
+
+    def test_get_user_budgets_filter_year(self, user, expense_category, budget_factory):
+        b2026 = budget_factory(user, expense_category, month=1, year=2026)
+        b2025 = budget_factory(user, expense_category, month=12, year=2025)
+
+        qs = Budget.get_user_budgets(user, year=2026)
+        assert b2026 in qs
+        assert b2025 not in qs
+
+    def test_get_user_budgets_filter_month_year(self, user, expense_category, budget_factory):
+        b_jan = budget_factory(user, expense_category, month=1, year=2026)
+        b_feb = budget_factory(user, expense_category, month=2, year=2026)
+
+        qs = Budget.get_user_budgets(user, month=1, year=2026)
+        assert b_jan in qs
+        assert b_feb not in qs
+
+    def test_get_current_month_budgets(self, user, expense_category, budget_factory):
+        today = timezone.now().date()
+        b = budget_factory(user, expense_category, month=today.month, year=today.year)
+        qs = Budget.get_current_month_budgets(user)
+        assert b in qs
+
+
+@pytest.mark.django_db
+class TestBudgetMonthlySummary:
+    def test_get_monthly_summary(self, user, expense_category_factory, expense_factory):
+        today = timezone.now().date()
+        cat1 = expense_category_factory(user, name="C1")
+        cat2 = expense_category_factory(user, name="C2")
+
+        Budget.objects.create(
+            user=user,
+            category=cat1,
+            month=today.month,
+            year=today.year,
+            amount=Decimal("10000.00"),
+            alert_threshold=80,
+        )
+        Budget.objects.create(
+            user=user,
+            category=cat2,
+            month=today.month,
+            year=today.year,
+            amount=Decimal("5000.00"),
+            alert_threshold=80,
+        )
+
+        # b1 queda warning (85%)
+        expense_factory(user, cat1, amount=Decimal("8500.00"), date=today)
+        # b2 queda over (120%)
+        expense_factory(user, cat2, amount=Decimal("6000.00"), date=today)
+
+        summary = Budget.get_monthly_summary(user, month=today.month, year=today.year)
+
+        assert summary["total_budgeted"] == Decimal("15000.00")
+        assert summary["total_spent"] == Decimal("14500.00")
+        assert summary["total_remaining"] == Decimal("500.00")
+        assert summary["budget_count"] == 2
+        assert summary["warning_count"] == 1
+        assert summary["over_budget_count"] == 1
+        assert summary["overall_percentage"] == round(
+            (Decimal("14500.00") / Decimal("15000.00") * 100), 1
+        )
+
+    def test_get_monthly_summary_zero_budgeted_returns_zero_percentage(self, user):
+        summary = Budget.get_monthly_summary(user, month=1, year=2030)
+        assert summary["total_budgeted"] == 0
+        assert summary["overall_percentage"] == 0
+        assert summary["budget_count"] == 0
+
+
+@pytest.mark.django_db
+class TestBudgetSpentAnnotatedBranch:
+    def test_spent_amount_uses_annotated_value(self, user, expense_category, budget_factory):
+        today = timezone.now().date()
+        budget = budget_factory(
+            user, expense_category, month=today.month, year=today.year, amount=Decimal("10000.00")
+        )
+
+        # Simular annotación del queryset
+        budget._spent_annotated = Decimal("1234.00")
+
+        assert budget.spent_amount == Decimal("1234.00")
+
+    def test_spent_amount_annotated_none_returns_zero(self, user, expense_category, budget_factory):
+        today = timezone.now().date()
+        budget = budget_factory(
+            user, expense_category, month=today.month, year=today.year, amount=Decimal("10000.00")
+        )
+        budget._spent_annotated = None
+        assert budget.spent_amount == Decimal("0")
