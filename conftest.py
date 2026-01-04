@@ -168,11 +168,11 @@ def expense_category_factory(db):
 
 @pytest.fixture
 def income_category_factory(db):
-    """Factory para crear categorías de ingreso."""
+    """Factory para crear categorías de ingreso (unificada)."""
 
-    def _create_category(user=None, **kwargs):
+    def _create_category(user=None, name="Test Income Category", **kwargs):
         defaults = {
-            "name": "Categoría Ingreso Test",
+            "name": name,
             "type": CategoryType.INCOME,
             "icon": "bi-cash",
             "color": "#28A745",
@@ -254,22 +254,46 @@ def expense(user, expense_category, expense_factory):
 
 @pytest.fixture
 def income_factory(db):
-    """Factory para crear ingresos."""
+    """Factory para crear ingresos (unificada y retrocompatible)."""
+    from django.utils import timezone
 
-    def _create_income(user, category, **kwargs):
-        from apps.income.models import Income
+    from apps.income.models import Income
 
-        defaults = {
+    # Detectar si el modelo tiene field amount_ars
+    income_field_names = {f.name for f in Income._meta.get_fields()}
+
+    def _create_income(
+        user,
+        category,
+        amount=Decimal("1000.00"),
+        date=None,
+        **kwargs,
+    ):
+        if date is None:
+            date = timezone.now().date()
+
+        description = kwargs.pop("description", "Ingreso de prueba")
+        currency = kwargs.pop("currency", Currency.ARS)
+        exchange_rate = kwargs.pop("exchange_rate", Decimal("1.00"))
+
+        data = {
             "user": user,
             "category": category,
-            "date": timezone.now().date(),
-            "description": "Ingreso de prueba",
-            "amount": Decimal("1000.00"),
-            "currency": Currency.ARS,
-            "exchange_rate": Decimal("1.00"),
+            "description": description,
+            "amount": amount,
+            "currency": currency,
+            "exchange_rate": exchange_rate,
+            "date": date,
         }
-        defaults.update(kwargs)
-        return Income.objects.create(**defaults)
+
+        # Compatibilidad con el otro factory: setear amount_ars si existe
+        if "amount_ars" in income_field_names:
+            data["amount_ars"] = kwargs.pop("amount_ars", amount)
+
+        # Permitir override de cualquier otro campo existente
+        data.update(kwargs)
+
+        return Income.objects.create(**data)
 
     return _create_income
 

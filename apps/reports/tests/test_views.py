@@ -426,3 +426,143 @@ class TestExpenseDistribution:
         assert response.context["chart_data"][0] == 250.0
         assert response.context["chart_labels"][1] == "Transporte"
         assert response.context["chart_data"][1]
+
+
+@pytest.mark.django_db
+class TestDashboardQueryPerformance:
+    """Tests de performance para el dashboard."""
+
+    def test_dashboard_empty_query_count(
+        self, client, user, django_assert_max_num_queries, authenticated_client, url_helper
+    ):
+        """Verifica número de queries con dashboard vacío."""
+        client.force_login(user)
+
+        # Dashboard vacío debería usar pocas queries
+        # Baseline: ~8 queries (session, user, balance, budgets, savings, etc.)
+        with django_assert_max_num_queries(10):
+            authenticated_client.get(url_helper("dashboard"))
+
+    def test_dashboard_with_data_query_count(
+        self,
+        client,
+        user,
+        expense_category_factory,
+        income_category_factory,
+        expense_factory,
+        income_factory,
+        budget_factory,
+        django_assert_max_num_queries,
+        authenticated_client,
+        url_helper,
+    ):
+        """Verifica que queries no escalan con cantidad de datos (N+1 check)."""
+        client.force_login(user)
+
+        today = timezone.now().date()
+        from datetime import timedelta
+
+        # Crear dataset representativo
+        # 5 categorías de gasto
+        expense_cats = [expense_category_factory(user, name=f"ExpCat{i}") for i in range(5)]
+
+        # 3 categorías de ingreso
+        income_cats = [income_category_factory(user, name=f"IncCat{i}") for i in range(3)]
+
+        # 20 gastos distribuidos en categorías
+        for i in range(20):
+            expense_factory(
+                user,
+                expense_cats[i % 5],
+                amount=Decimal("100.00"),
+                date=today - timedelta(days=i % 30),
+            )
+
+        # 10 ingresos
+        for i in range(10):
+            income_factory(
+                user,
+                income_cats[i % 3],
+                amount=Decimal("500.00"),
+                date=today - timedelta(days=i % 30),
+            )
+
+        # 5 budgets
+        for cat in expense_cats:
+            budget_factory(
+                user,
+                category=cat,
+                amount=Decimal("1000.00"),
+            )
+
+        # Con datos, queries deberían mantenerse constantes (no N+1)
+        # Máximo 15 queries permitidas
+        with django_assert_max_num_queries(10):
+            response = authenticated_client.get(url_helper("dashboard"))
+
+        assert response.status_code == 200
+
+    def test_dashboard_large_dataset_no_n_plus_1(
+        self,
+        client,
+        user,
+        expense_category_factory,
+        income_category_factory,
+        expense_factory,
+        income_factory,
+        budget_factory,
+        django_assert_max_num_queries,
+        authenticated_client,
+        url_helper,
+    ):
+        """
+        Test con dataset grande para detectar N+1.
+        Si hay N+1, las queries escalarían linealmente.
+        """
+        client.force_login(user)
+
+        today = timezone.now().date()
+        from datetime import timedelta
+
+        # Dataset más grande
+        # 10 categorías de gasto
+        expense_cats = [expense_category_factory(user, name=f"BigExpCat{i}") for i in range(10)]
+
+        # 5 categorías de ingreso
+        income_cats = [income_category_factory(user, name=f"BigIncCat{i}") for i in range(5)]
+
+        # 50 gastos
+        for i in range(50):
+            expense_factory(
+                user,
+                expense_cats[i % 10],
+                amount=Decimal("50.00"),
+                date=today - timedelta(days=i % 60),
+            )
+
+        # 30 ingresos
+        for i in range(30):
+            income_factory(
+                user,
+                income_cats[i % 5],
+                amount=Decimal("200.00"),
+                date=today - timedelta(days=i % 60),
+            )
+
+        # 10 budgets
+        for cat in expense_cats:
+            budget_factory(
+                user,
+                cat,
+                month=today.month,
+                year=today.year,
+                amount=Decimal("500.00"),
+            )
+
+        # Aún con más datos, queries deben mantenerse ~igual
+        # Si hay N+1, esto fallaría (sería 50+ queries)
+        with django_assert_max_num_queries(10):
+            response = authenticated_client.get(url_helper("dashboard"))
+
+        assert response.status_code == 200
+        assert len(response.context["recent_transactions"]) == 8
