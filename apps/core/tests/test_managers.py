@@ -161,3 +161,47 @@ class TestSoftDeleteManagerIncome:
         ).aggregate(total=Sum("amount_ars"))["total"]
 
         assert total == Decimal("50000.00")
+
+
+@pytest.mark.django_db
+class TestSoftDeleteManagerMethods:
+    """Tests para métodos adicionales de SoftDeleteManager."""
+
+    def test_all_with_deleted_returns_all(self, user, expense_category, expense_factory):
+        """Verifica que all_with_deleted retorna activos y eliminados."""
+        active = expense_factory(user, expense_category, description="Activo")
+        deleted = expense_factory(user, expense_category, description="Eliminado")
+        deleted.soft_delete()
+
+        all_expenses = Expense.objects.all_with_deleted().filter(user=user)
+
+        assert active in all_expenses
+        assert deleted in all_expenses
+        assert all_expenses.count() == 2
+
+    def test_deleted_only_returns_soft_deleted(self, user, expense_category, expense_factory):
+        """Verifica que deleted_only retorna solo eliminados."""
+        active = expense_factory(user, expense_category, description="Activo")
+        deleted = expense_factory(user, expense_category, description="Eliminado")
+        deleted.soft_delete()
+
+        deleted_expenses = Expense.objects.deleted_only().filter(user=user)
+
+        assert active not in deleted_expenses
+        assert deleted in deleted_expenses
+        assert deleted_expenses.count() == 1
+
+    def test_deleted_only_empty_when_no_deleted(self, user, expense_category, expense_factory):
+        """Verifica que deleted_only retorna vacío si no hay eliminados."""
+        expense_factory(user, expense_category, description="Activo 1")
+        expense_factory(user, expense_category, description="Activo 2")
+
+        deleted_expenses = Expense.objects.deleted_only().filter(user=user)
+
+        assert deleted_expenses.count() == 0
+
+    def test_all_with_deleted_empty_database(self, user):
+        """Verifica all_with_deleted con base vacía."""
+        all_expenses = Expense.objects.all_with_deleted().filter(user=user)
+
+        assert all_expenses.count() == 0
