@@ -6,6 +6,7 @@ from unittest.mock import Mock, patch
 
 from apps.core.logging import (
     get_client_ip,
+    log_lockout,
     log_login_attempt,
     log_logout,
     log_password_change,
@@ -145,3 +146,121 @@ class TestLogFunctions:
         call_args = mock_logger.info.call_args[0][0]
         assert "EXPORT_DATA" in call_args
         assert "Details" not in call_args
+
+
+@patch("apps.core.logging.security_logger")
+def test_log_lockout(mock_logger):
+    """Verifica log de bloqueo por rate limiting."""
+    log_lockout("user@test.com", "192.168.1.50")
+
+    mock_logger.warning.assert_called_once()
+    call_args = mock_logger.warning.call_args[0][0]
+    assert "LOCKOUT" in call_args
+    assert "user@test.com" in call_args
+    assert "192.168.1.50" in call_args
+    assert "locked" in call_args.lower()
+
+
+class TestLogViewAccessDecorator:
+    """Tests para el decorador log_view_access."""
+
+    @patch("apps.core.logging.app_logger")
+    def test_logs_authenticated_user_access(self, mock_logger):
+        """Verifica que loggea acceso de usuario autenticado."""
+        from apps.core.logging import log_view_access
+
+        # Mock request con usuario autenticado
+        request = Mock()
+        request.user.is_authenticated = True
+        request.user.username = "testuser"
+        request.META = {"REMOTE_ADDR": "127.0.0.1"}
+
+        # Vista decorada
+        @log_view_access("test_view")
+        def my_view(request):
+            return "response"
+
+        result = my_view(request)
+
+        assert result == "response"
+        mock_logger.info.assert_called_once()
+        call_args = mock_logger.info.call_args[0][0]
+        assert "VIEW_ACCESS" in call_args
+        assert "test_view" in call_args
+        assert "testuser" in call_args
+        assert "127.0.0.1" in call_args
+
+    @patch("apps.core.logging.app_logger")
+    def test_logs_anonymous_user_access(self, mock_logger):
+        """Verifica que loggea acceso de usuario anónimo."""
+        from apps.core.logging import log_view_access
+
+        # Mock request con usuario anónimo
+        request = Mock()
+        request.user.is_authenticated = False
+        request.META = {"REMOTE_ADDR": "10.0.0.1"}
+
+        @log_view_access("public_view")
+        def my_view(request):
+            return "public response"
+
+        result = my_view(request)
+
+        assert result == "public response"
+        mock_logger.info.assert_called_once()
+        call_args = mock_logger.info.call_args[0][0]
+        assert "anonymous" in call_args
+        assert "public_view" in call_args
+
+    @patch("apps.core.logging.app_logger")
+    def test_decorator_preserves_function_metadata(self, mock_logger):
+        """Verifica que el decorador preserva metadata de la función."""
+        from apps.core.logging import log_view_access
+
+        @log_view_access("documented_view")
+        def my_documented_view(request):
+            """Esta es la documentación de la vista."""
+            return "doc response"
+
+        assert my_documented_view.__name__ == "my_documented_view"
+        assert "documentación" in my_documented_view.__doc__
+
+    @patch("apps.core.logging.app_logger")
+    def test_decorator_passes_args_and_kwargs(self, mock_logger):
+        """Verifica que el decorador pasa argumentos correctamente."""
+        from apps.core.logging import log_view_access
+
+        request = Mock()
+        request.user.is_authenticated = True
+        request.user.username = "testuser"
+        request.META = {"REMOTE_ADDR": "127.0.0.1"}
+
+        @log_view_access("view_with_args")
+        def my_view(request, item_id, action=None):
+            return f"item={item_id}, action={action}"
+
+        result = my_view(request, 42, action="edit")
+
+        assert result == "item=42, action=edit"
+
+    @patch("apps.core.logging.app_logger")
+    def test_decorator_with_x_forwarded_for(self, mock_logger):
+        """Verifica que el decorador usa X-Forwarded-For cuando está presente."""
+        from apps.core.logging import log_view_access
+
+        request = Mock()
+        request.user.is_authenticated = True
+        request.user.username = "proxyuser"
+        request.META = {
+            "HTTP_X_FORWARDED_FOR": "203.0.113.50, 70.41.3.18",
+            "REMOTE_ADDR": "127.0.0.1",
+        }
+
+        @log_view_access("proxied_view")
+        def my_view(request):
+            return "proxied"
+
+        my_view(request)
+
+        call_args = mock_logger.info.call_args[0][0]
+        assert "203.0.113.50" in call_args
