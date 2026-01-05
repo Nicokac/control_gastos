@@ -109,3 +109,13 @@ def get_months_choices():
         Lista de tuplas (month_number, month_name) para choices
     """
     return [(i, get_month_name(i)) for i in range(1, 13)]
+
+
+def get_month_date_range_exclusive(month: int, year: int):
+    """Retorna (inicio, fin_exclusivo) para queries: [inicio, fin_exclusivo)."""
+    start_date = date(year, month, 1)
+    if month == 12:
+        end_date = date(year + 1, 1, 1)
+    else:
+        end_date = date(year, month + 1, 1)
+    return start_date, end_date
