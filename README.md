@@ -32,10 +32,11 @@
 
 | Métrica | Valor |
 |---------|-------|
-| Tests | 556 |
-| Coverage | 95.29% |
+| Tests | 700+ |
+| Coverage | ≥80% (enforced) |
 | Python | 3.11+ |
 | Django | 5.2 |
+| CI Jobs | 5 |
 | Estado | 🟢 **Listo para Producción** |
 
 ---
@@ -225,8 +226,8 @@ EMAIL_HOST_USER=tu-email@gmail.com
 EMAIL_HOST_PASSWORD=tu-app-password
 DEFAULT_FROM_EMAIL=noreply@tudominio.com
 
-# Admins para notificaciones de errores
-ADMINS=Tu Nombre:tu-email@gmail.com
+# Admin para notificaciones
+ADMIN_EMAIL=admin@tudominio.com
 ```
 
 ### Referencia de Variables
@@ -340,6 +341,20 @@ El proyecto incluye las siguientes configuraciones de seguridad en `prod.py`:
 | `AXES_FAILURE_LIMIT` | 5 | Intentos de login |
 | `AXES_COOLOFF_TIME` | 2 horas | Tiempo de bloqueo |
 
+### Índices de Base de Datos
+
+El proyecto incluye índices compuestos optimizados para queries frecuentes:
+
+| Modelo | Índices |
+|--------|---------|
+| `Expense` | `(user, date)`, `(user, category)`, `(user, is_active, date)` |
+| `Income` | `(user, date)`, `(user, category)`, `(user, is_active, date)` |
+| `Saving` | `(user, status, is_active)` |
+| `SavingMovement` | `(saving, -date, -created_at)` |
+| `Category` | `(user, type)` |
+| `Budget` | `(user, month, year)` |
+
+
 ---
 
 ## Estructura del Proyecto
@@ -368,6 +383,8 @@ control_gastos/
 │       ├── base.py            # Configuración común
 │       ├── dev.py             # Desarrollo
 │       └── prod.py            # Producción
+│       └── email_backend.py   # Configuración de email centralizada
+
 ├── logs/                      # Archivos de log
 ├── scripts/
 │   └── check_security.py      # Verificación de seguridad
@@ -469,6 +486,8 @@ En cada push/PR se ejecutan:
 | `security` | pip-audit + safety | ~1min |
 | `django-checks` | System checks + migrations | ~1min |
 | `build` | Collectstatic + verify | ~1min |
+| `deploy` | Deploy a producción (placeholder) | ~30s |
+
 
 ---
 
