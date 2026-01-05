@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.views.generic import TemplateView
 
 from apps.budgets.models import Budget
-from apps.core.utils import get_month_name
+from apps.core.utils import get_month_date_range_exclusive, get_month_name
 from apps.expenses.models import Expense
 from apps.income.models import Income
 from apps.savings.models import Saving, SavingStatus
@@ -51,7 +51,9 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         Optimizado: 2 queries en lugar de 6.
         """
-        from django.db.models import Sum
+
+        # Rango mes actual
+        cur_start, cur_end = get_month_date_range_exclusive(month, year)
 
         # Calcular mes anterior
         if month == 1:
@@ -59,29 +61,31 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         else:
             prev_month, prev_year = month - 1, year
 
-        # Query 1: Gastos (mes actual + anterior en 1 sola query)
+        prev_start, prev_end = get_month_date_range_exclusive(prev_month, prev_year)
+
+        # Query 1: Gastos (mes actual + anterior)
         expense_data = (
             Expense.objects.filter(user=user, is_active=True)
             .filter(
-                Q(date__month=month, date__year=year)
-                | Q(date__month=prev_month, date__year=prev_year)
+                Q(date__gte=cur_start, date__lt=cur_end)
+                | Q(date__gte=prev_start, date__lt=prev_end)
             )
             .aggregate(
-                current=Sum("amount_ars", filter=Q(date__month=month, date__year=year)),
-                previous=Sum("amount_ars", filter=Q(date__month=prev_month, date__year=prev_year)),
+                current=Sum("amount_ars", filter=Q(date__gte=cur_start, date__lt=cur_end)),
+                previous=Sum("amount_ars", filter=Q(date__gte=prev_start, date__lt=prev_end)),
             )
         )
 
-        # Query 2: Ingresos (mes actual + anterior en 1 sola query)
+        # Query 2: Ingresos (mes actual + anterior)
         income_data = (
             Income.objects.filter(user=user, is_active=True)
             .filter(
-                Q(date__month=month, date__year=year)
-                | Q(date__month=prev_month, date__year=prev_year)
+                Q(date__gte=cur_start, date__lt=cur_end)
+                | Q(date__gte=prev_start, date__lt=prev_end)
             )
             .aggregate(
-                current=Sum("amount_ars", filter=Q(date__month=month, date__year=year)),
-                previous=Sum("amount_ars", filter=Q(date__month=prev_month, date__year=prev_year)),
+                current=Sum("amount_ars", filter=Q(date__gte=cur_start, date__lt=cur_end)),
+                previous=Sum("amount_ars", filter=Q(date__gte=prev_start, date__lt=prev_end)),
             )
         )
 
@@ -183,11 +187,12 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         # Metas completadas este mes
         today = timezone.now().date()
+        month_start, month_end = get_month_date_range_exclusive(today.month, today.year)
         completed_this_month = Saving.objects.filter(
             user=user,
             status=SavingStatus.COMPLETED,
-            updated_at__month=today.month,
-            updated_at__year=today.year,
+            updated_at__gte=month_start,
+            updated_at__lt=month_end,
         ).count()
 
         # Top 3 metas por progreso
@@ -262,8 +267,11 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
     def _get_expense_distribution(self, user, month, year):
         """Obtiene distribución de gastos por categoría para el gráfico."""
+        start_date, end_date = get_month_date_range_exclusive(month, year)
         distribution = (
-            Expense.objects.filter(user=user, date__month=month, date__year=year, is_active=True)
+            Expense.objects.filter(
+                user=user, date__gte=start_date, date__lt=end_date, is_active=True
+            )
             .values("category__name", "category__color", "category__icon")
             .annotate(total=Sum("amount_ars"))
             .order_by("-total")[:6]
