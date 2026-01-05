@@ -63,7 +63,7 @@ class Budget(TimestampMixin, SoftDeleteMixin, models.Model):
             )
         ]
         indexes = [
-            models.Index(fields=["user", "month", "year"]),
+            models.Index(fields=["user", "year", "month", "is_active"]),
             models.Index(fields=["user", "category"]),
         ]
 
