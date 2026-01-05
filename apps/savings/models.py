@@ -69,8 +69,7 @@ class Saving(TimestampMixin, SoftDeleteMixin, models.Model):
         verbose_name_plural = "Metas de Ahorro"
         ordering = ["-created_at"]
         indexes = [
-            models.Index(fields=["user", "status"]),
-            models.Index(fields=["user", "is_active"]),
+            models.Index(fields=["user", "status", "is_active"]),
         ]
 
     def __str__(self):
@@ -272,6 +271,9 @@ class SavingMovement(TimestampMixin, models.Model):
         verbose_name = "Movimiento de Ahorro"
         verbose_name_plural = "Movimientos de Ahorro"
         ordering = ["-date", "-created_at"]
+        indexes = [
+            models.Index(fields=["saving", "-date", "-created_at"]),
+        ]
 
     def __str__(self):
         symbol = "+" if self.type == MovementType.DEPOSIT else "-"
