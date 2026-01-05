@@ -1,4 +1,5 @@
 from .base import *
+from .email_backend import apply_email_settings
 
 # =============================================================================
 # DESARROLLO - DEBUG HABILITADO
@@ -20,7 +21,7 @@ MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
 INTERNAL_IPS = ["127.0.0.1"]
 
 # Email to console
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+apply_email_settings(globals(), default_backend="django.core.mail.backends.console.EmailBackend")
 
 
 # ============================================================================

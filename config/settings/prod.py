@@ -6,6 +6,7 @@ from django.core.exceptions import ImproperlyConfigured
 from decouple import config
 
 from .base import *
+from .email_backend import apply_email_settings
 
 # Validar longitud mínima de SECRET_KEY (50 caracteres recomendado)
 if len(SECRET_KEY) < 50:
@@ -118,7 +119,6 @@ SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin"
 SECURE_CROSS_ORIGIN_RESOURCE_POLICY = "same-origin"
 
 # Static files with WhiteNoise
-MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 
@@ -278,4 +278,11 @@ LOGGING["handlers"]["mail_admins"] = {
 LOGGING["loggers"]["django.request"]["handlers"].append("mail_admins")
 
 # Configurar ADMINS para recibir emails de errores
-# ADMINS = [('Tu Nombre', 'tu@email.com')]
+ADMIN_EMAIL = config("ADMIN_EMAIL", default="kachuknm@gmail.com")
+ADMINS = [("Admin", ADMIN_EMAIL)] if ADMIN_EMAIL else []
+
+# De quién salen los emails
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default=ADMIN_EMAIL or "noreply@localhost")
+SERVER_EMAIL = config("SERVER_EMAIL", default=DEFAULT_FROM_EMAIL)
+
+apply_email_settings(globals())

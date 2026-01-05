@@ -20,6 +20,9 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
+# def boom(request):
+#     raise Exception("Boom test 500")
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     # Apps
@@ -31,6 +34,7 @@ urlpatterns = [
     path("budgets/", include("apps.budgets.urls")),
     # Dashboard como página principal
     path("", include("apps.reports.urls")),
+    # path("boom/", boom),
 ]
 
 if settings.DEBUG:
