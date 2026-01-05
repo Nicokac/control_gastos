@@ -52,6 +52,10 @@ class Category(TimestampMixin, SoftDeleteMixin, models.Model):
                 fields=["name", "user", "type"], name="unique_category_per_user_and_type"
             )
         ]
+        indexes = [
+            models.Index(fields=["user", "type"]),
+            models.Index(fields=["is_system", "type"]),
+        ]
 
     def __str__(self):
         return f"{self.name} ({self.get_type_display()})"
