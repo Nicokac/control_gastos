@@ -42,7 +42,7 @@ class Income(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
         indexes = [
             models.Index(fields=["user", "date"]),
             models.Index(fields=["user", "category"]),
-            models.Index(fields=["date", "is_active"]),
+            models.Index(fields=["user", "is_active", "date"]),
         ]
 
     def __str__(self):
