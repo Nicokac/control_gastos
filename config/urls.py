@@ -18,14 +18,21 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.http import HttpResponse
 from django.urls import include, path
 
 # def boom(request):
 #     raise Exception("Boom test 500")
 
+
+def healthz(_request):
+    return HttpResponse("ok", content_type="text/plain")
+
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     # Apps
+    path("healthz/", healthz),
     path("users/", include("apps.users.urls")),
     path("categories/", include("apps.categories.urls")),
     path("expenses/", include("apps.expenses.urls")),
