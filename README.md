@@ -19,6 +19,7 @@
 - [Instalación](#instalación)
 - [Variables de Entorno](#variables-de-entorno)
 - [Testing](#testing)
+- [Estado de Calidad y Métricas Verificadas](#-estado-de-calidad-y-métricas-verificadas)
 - [Deploy a Producción](#deploy-a-producción)
 - [Estructura del Proyecto](#estructura-del-proyecto)
 - [Comandos Útiles](#comandos-útiles)
@@ -273,11 +274,48 @@ pytest -k "test_create_expense"
 pytest --cov=apps --cov-fail-under=80
 ```
 
-### Resultados actuales
+## 📊 Estado de Calidad y Métricas Verificadas
 
+> Esta sección documenta **métricas reales de calidad**, ejecutadas manualmente o por CI,  
+> y sirve como **fuente de verdad** para revisiones humanas y agentes de IA.
+
+### 🔍 Última Ejecución Verificada
+
+| Ítem | Valor |
+|-----|------|
+| Fecha | **2026-01-07** |
+| Entorno | Local (Windows) |
+| Python | 3.12.0 |
+| Django | 5.2.9 |
+| Settings | `config.settings.dev` |
+| Commit | *no fijado (ejecución local)* |
+
+Resultado:
+
+| Ítem | Valor |
+|-----|------|
+| ✅ |  703 tests pasados |
+| ⏭️ |  2 skipped |
+| ❌ |  0 fallos |
+| ⏱️ |  Duración total: 4m 34s |
+
+
+📈 Coverage
+```bash
+pytest --cov=apps --cov-report=term-missing
 ```
-705 passed, 2 skipped
-Coverage: 95.29%
+
+Resultado verificado:
+
+| Métrica | Valor |
+|-----|------|
+| Coverage total|	95.32%|
+|Coverage mínimo requerido|	80%|
+|Estado|	✅ Cumple|
+
+```bash
+python manage.py check --deploy --settings=config.settings.prod
+System check identified no issues (0 silenced).
 ```
 
 ---
