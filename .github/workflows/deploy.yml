@@ -1,0 +1,47 @@
+# =============================================================================
+# Deploy Pipeline - Control de Gastos
+# =============================================================================
+# Solo se ejecuta cuando se hace merge a main
+# =============================================================================
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # Permite ejecutar manualmente
+
+jobs:
+  deploy:
+    name: 🚀 Deploy
+    runs-on: ubuntu-latest
+    # Solo ejecutar si CI pasó
+    needs: []
+
+    # Solo en el branch main
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🚀 Deploy to Render
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
+            echo "❌ ERROR: RENDER_DEPLOY_HOOK secret no está configurado"
+            echo "Configurar en: Settings > Secrets > Actions > New repository secret"
+            exit 1
+          fi
+
+          echo "🚀 Disparando deploy en Render..."
+          response=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$RENDER_DEPLOY_HOOK")
+
+          if [ "$response" = "200" ] || [ "$response" = "201" ]; then
+            echo "✅ Deploy disparado exitosamente (HTTP $response)"
+            echo "Ver progreso en: https://dashboard.render.com"
+          else
+            echo "❌ Error al disparar deploy (HTTP $response)"
+            exit 1
+          fi
