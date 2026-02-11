@@ -345,18 +345,23 @@ def budget(user, expense_category, budget_factory):
 @pytest.fixture
 def saving_factory(db):
     """Factory para crear metas de ahorro."""
+    from apps.savings.models import Saving, SavingStatus
 
-    def _create_saving(user, **kwargs):
-        from apps.savings.models import Saving
-
-        defaults = {
-            "user": user,
-            "name": "Meta de prueba",
-            "target_amount": Decimal("10000.00"),
-            "current_amount": Decimal("0.00"),
-        }
-        defaults.update(kwargs)
-        return Saving.objects.create(**defaults)
+    def _create_saving(
+        user,
+        name="Test Saving",
+        target_amount=Decimal("100000.00"),
+        current_amount=Decimal("0.00"),
+        **kwargs,
+    ):
+        return Saving.objects.create(
+            user=user,
+            name=name,
+            target_amount=target_amount,
+            current_amount=current_amount,
+            status=kwargs.get("status", SavingStatus.ACTIVE),
+            **{k: v for k, v in kwargs.items() if k != "status"},
+        )
 
     return _create_saving
 

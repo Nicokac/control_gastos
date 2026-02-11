@@ -531,3 +531,281 @@ class TestExpenseClassMethods:
 
         assert len(result) == 1
         assert result[0]["total"] == Decimal("100.00")
+
+
+@pytest.mark.django_db
+class TestExpenseSavingSync:
+    """Tests para sincronización Expense-Saving."""
+
+    def test_new_expense_with_saving_creates_deposit(self, user, expense_category, saving_factory):
+        """Nuevo gasto con saving genera depósito automático."""
+        saving = saving_factory(user, current_amount=Decimal("0.00"))
+
+        expense = Expense.objects.create(
+            user=user,
+            category=expense_category,
+            description="Compra acciones",
+            amount=Decimal("10000.00"),
+            amount_ars=Decimal("10000.00"),
+            currency=Currency.ARS,
+            exchange_rate=Decimal("1.00"),
+            date=timezone.now().date(),
+            saving=saving,
+        )
+
+        # Verificar que el expense se creó correctamente
+        assert expense.pk is not None
+        assert expense.saving == saving
+
+        # Verificar que el ahorro recibió el depósito
+        saving.refresh_from_db()
+        assert saving.current_amount == Decimal("10000.00")
+
+        # Verificar que se creó el movimiento
+        assert saving.movements.count() == 1
+        movement = saving.movements.first()
+        assert movement.type == "DEPOSIT"
+        assert movement.amount == Decimal("10000.00")
+        assert "Desde gasto" in movement.description
+
+    def test_new_expense_without_saving_no_effect(self, user, expense_category, saving_factory):
+        """Nuevo gasto sin saving no afecta ningún ahorro."""
+        saving = saving_factory(user, current_amount=Decimal("5000.00"))
+
+        Expense.objects.create(
+            user=user,
+            category=expense_category,
+            description="Gasto normal",
+            amount=Decimal("1000.00"),
+            amount_ars=Decimal("1000.00"),
+            currency=Currency.ARS,
+            exchange_rate=Decimal("1.00"),
+            date=timezone.now().date(),
+            saving=None,
+        )
+
+        saving.refresh_from_db()
+        assert saving.current_amount == Decimal("5000.00")
+        assert saving.movements.count() == 0
+
+    def test_update_expense_amount_increases_saving(self, user, expense_category, saving_factory):
+        """Aumentar monto de expense con saving deposita la diferencia."""
+        saving = saving_factory(user, current_amount=Decimal("0.00"))
+
+        expense = Expense.objects.create(
+            user=user,
+            category=expense_category,
+            description="Inversión",
+            amount=Decimal("5000.00"),
+            amount_ars=Decimal("5000.00"),
+            currency=Currency.ARS,
+            exchange_rate=Decimal("1.00"),
+            date=timezone.now().date(),
+            saving=saving,
+        )
+
+        saving.refresh_from_db()
+        assert saving.current_amount == Decimal("5000.00")
+
+        # Aumentar monto
+        expense.amount = Decimal("8000.00")
+        expense.amount_ars = Decimal("8000.00")
+        expense.save()
+
+        saving.refresh_from_db()
+        assert saving.current_amount == Decimal("8000.00")
+
+        # Debe haber 2 movimientos: depósito inicial + ajuste
+        assert saving.movements.count() == 2
+
+    def test_update_expense_amount_decreases_saving(self, user, expense_category, saving_factory):
+        """Disminuir monto de expense con saving retira la diferencia."""
+        saving = saving_factory(user, current_amount=Decimal("0.00"))
+
+        expense = Expense.objects.create(
+            user=user,
+            category=expense_category,
+            description="Inversión",
+            amount=Decimal("10000.00"),
+            amount_ars=Decimal("10000.00"),
+            currency=Currency.ARS,
+            exchange_rate=Decimal("1.00"),
+            date=timezone.now().date(),
+            saving=saving,
+        )
+
+        saving.refresh_from_db()
+        assert saving.current_amount == Decimal("10000.00")
+
+        # Disminuir monto
+        expense.amount = Decimal("7000.00")
+        expense.amount_ars = Decimal("7000.00")
+        expense.save()
+
+        saving.refresh_from_db()
+        assert saving.current_amount == Decimal("7000.00")
+
+    def test_reassign_expense_to_different_saving(self, user, expense_category, saving_factory):
+        """Reasignar expense a otro saving: retira del anterior, deposita en nuevo."""
+        saving1 = saving_factory(user, name="Ahorro 1", current_amount=Decimal("0.00"))
+        saving2 = saving_factory(user, name="Ahorro 2", current_amount=Decimal("0.00"))
+
+        expense = Expense.objects.create(
+            user=user,
+            category=expense_category,
+            description="Inversión",
+            amount=Decimal("5000.00"),
+            amount_ars=Decimal("5000.00"),
+            currency=Currency.ARS,
+            exchange_rate=Decimal("1.00"),
+            date=timezone.now().date(),
+            saving=saving1,
+        )
+
+        saving1.refresh_from_db()
+        assert saving1.current_amount == Decimal("5000.00")
+        assert saving2.current_amount == Decimal("0.00")
+
+        # Reasignar a saving2
+        expense.saving = saving2
+        expense.save()
+
+        saving1.refresh_from_db()
+        saving2.refresh_from_db()
+
+        assert saving1.current_amount == Decimal("0.00")
+        assert saving2.current_amount == Decimal("5000.00")
+
+    def test_remove_saving_from_expense_reverts_deposit(
+        self, user, expense_category, saving_factory
+    ):
+        """Quitar saving de expense revierte el depósito."""
+        saving = saving_factory(user, current_amount=Decimal("0.00"))
+
+        expense = Expense.objects.create(
+            user=user,
+            category=expense_category,
+            description="Inversión",
+            amount=Decimal("5000.00"),
+            amount_ars=Decimal("5000.00"),
+            currency=Currency.ARS,
+            exchange_rate=Decimal("1.00"),
+            date=timezone.now().date(),
+            saving=saving,
+        )
+
+        saving.refresh_from_db()
+        assert saving.current_amount == Decimal("5000.00")
+
+        # Quitar saving
+        expense.saving = None
+        expense.save()
+
+        saving.refresh_from_db()
+        assert saving.current_amount == Decimal("0.00")
+
+    def test_soft_delete_expense_reverts_deposit(self, user, expense_category, saving_factory):
+        """Soft delete de expense con saving revierte el depósito."""
+        saving = saving_factory(user, current_amount=Decimal("0.00"))
+
+        expense = Expense.objects.create(
+            user=user,
+            category=expense_category,
+            description="Inversión",
+            amount=Decimal("8000.00"),
+            amount_ars=Decimal("8000.00"),
+            currency=Currency.ARS,
+            exchange_rate=Decimal("1.00"),
+            date=timezone.now().date(),
+            saving=saving,
+        )
+
+        saving.refresh_from_db()
+        assert saving.current_amount == Decimal("8000.00")
+
+        # Soft delete
+        expense.soft_delete()
+
+        saving.refresh_from_db()
+        assert saving.current_amount == Decimal("0.00")
+
+        # Verificar movimiento de retiro
+        withdrawal = saving.movements.filter(type="WITHDRAWAL").first()
+        assert withdrawal is not None
+        assert "eliminado" in withdrawal.description.lower()
+
+    def test_soft_delete_without_saving_no_error(self, user, expense_category):
+        """Soft delete de expense sin saving no genera error."""
+        expense = Expense.objects.create(
+            user=user,
+            category=expense_category,
+            description="Gasto normal",
+            amount=Decimal("1000.00"),
+            amount_ars=Decimal("1000.00"),
+            currency=Currency.ARS,
+            exchange_rate=Decimal("1.00"),
+            date=timezone.now().date(),
+            saving=None,
+        )
+
+        # No debe lanzar error
+        expense.soft_delete()
+        assert expense.is_active is False
+
+    def test_withdrawal_insufficient_funds_handled_gracefully(
+        self, user, expense_category, saving_factory
+    ):
+        """Si no hay saldo suficiente para revertir, no falla."""
+        saving = saving_factory(user, current_amount=Decimal("0.00"))
+
+        expense = Expense.objects.create(
+            user=user,
+            category=expense_category,
+            description="Inversión",
+            amount=Decimal("5000.00"),
+            amount_ars=Decimal("5000.00"),
+            currency=Currency.ARS,
+            exchange_rate=Decimal("1.00"),
+            date=timezone.now().date(),
+            saving=saving,
+        )
+
+        saving.refresh_from_db()
+        assert saving.current_amount == Decimal("5000.00")
+
+        # Simular que el saldo fue retirado manualmente
+        saving.current_amount = Decimal("0.00")
+        saving.save()
+
+        # Soft delete no debe fallar aunque no haya saldo
+        expense.soft_delete()
+        assert expense.is_active is False
+
+    def test_reassign_insufficient_funds_continues(self, user, expense_category, saving_factory):
+        """Reasignar con saldo insuficiente en origen: deposita en destino igual."""
+        saving1 = saving_factory(user, name="Ahorro 1", current_amount=Decimal("0.00"))
+        saving2 = saving_factory(user, name="Ahorro 2", current_amount=Decimal("0.00"))
+
+        expense = Expense.objects.create(
+            user=user,
+            category=expense_category,
+            description="Inversión",
+            amount=Decimal("5000.00"),
+            amount_ars=Decimal("5000.00"),
+            currency=Currency.ARS,
+            exchange_rate=Decimal("1.00"),
+            date=timezone.now().date(),
+            saving=saving1,
+        )
+
+        # Simular retiro manual del saving1
+        saving1.current_amount = Decimal("0.00")
+        saving1.save()
+
+        # Reasignar a saving2 (el retiro de saving1 fallará silenciosamente)
+        expense.saving = saving2
+        expense.save()
+
+        saving2.refresh_from_db()
+        # El depósito en saving2 debe realizarse aunque el retiro de saving1 falle
+        assert saving2.current_amount == Decimal("5000.00")

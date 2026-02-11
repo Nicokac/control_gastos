@@ -1,5 +1,6 @@
 """Modelo Expense para registro de gastos."""
 
+import logging
 from contextlib import suppress
 from decimal import Decimal
 
@@ -91,11 +92,17 @@ class Expense(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
 
     def _sync_saving(self, is_new, old_saving_id, old_amount):
         """Sincroniza el gasto con el ahorro vinculado."""
+        logger = logging.getLogger("apps.expenses")
+
         if is_new and self.saving:
             # Nuevo gasto → depositar
             self.saving.add_deposit(
                 amount=self.amount_ars, description=f"Desde gasto: {self.description}"
             )
+            logger.info(
+                f"Expense {self.pk}: depósito ${self.amount_ars} en Saving {self.saving_id}"
+            )
+
         elif not is_new:
             # Update: manejar cambios
             if old_saving_id == self.saving_id and self.saving and old_amount != self.amount_ars:
@@ -103,8 +110,14 @@ class Expense(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
                 diff = self.amount_ars - old_amount
                 if diff > 0:
                     self.saving.add_deposit(diff, f"Ajuste: {self.description}")
+                    logger.info(f"Expense {self.pk}: ajuste +${diff} en Saving {self.saving_id}")
                 elif diff < 0:
-                    self.saving.add_withdrawal(abs(diff), f"Ajuste: {self.description}")
+                    with suppress(ValueError):
+                        self.saving.add_withdrawal(abs(diff), f"Ajuste: {self.description}")
+                        logger.info(
+                            f"Expense {self.pk}: ajuste -${abs(diff)} en Saving {self.saving_id}"
+                        )
+
             elif old_saving_id != self.saving_id:
                 # Cambió el ahorro destino
                 if old_saving_id:
@@ -114,10 +127,15 @@ class Expense(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
                     if old_saving:
                         with suppress(ValueError):
                             old_saving.add_withdrawal(old_amount, f"Reasignado: {self.description}")
+                            logger.info(
+                                f"Expense {self.pk}: retiro ${old_amount} de Saving {old_saving_id}"
+                            )
 
                 if self.saving:
-                    # Agregar al nuevo ahorro
                     self.saving.add_deposit(self.amount_ars, f"Desde gasto: {self.description}")
+                    logger.info(
+                        f"Expense {self.pk}: depósito ${self.amount_ars} en Saving {self.saving_id}"
+                    )
 
     def clean(self):
         """Validaciones del modelo."""
@@ -141,11 +159,15 @@ class Expense(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
 
     def soft_delete(self):
         """Elimina el gasto y revierte el depósito si estaba vinculado."""
+        logger = logging.getLogger("apps.expenses")
+
         if self.saving and self.is_active:
             with suppress(ValueError):
                 self.saving.add_withdrawal(
                     amount=self.amount_ars, description=f"Gasto eliminado: {self.description}"
                 )
+                logger.info(f"Expense {self.pk}: retiro ${self.amount_ars} por soft_delete")
+
         super().soft_delete()
 
     @classmethod
