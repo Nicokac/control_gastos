@@ -283,7 +283,7 @@ pytest --cov=apps --cov-fail-under=80
 
 | Ítem | Valor |
 |-----|------|
-| Fecha | **2026-01-07** |
+| Fecha | **2026-02-10** |
 | Entorno | Local (Windows) |
 | Python | 3.12.0 |
 | Django | 5.2.9 |
@@ -294,10 +294,10 @@ Resultado:
 
 | Ítem | Valor |
 |-----|------|
-| ✅ |  703 tests pasados |
+| ✅ |  713 tests pasados |
 | ⏭️ |  2 skipped |
 | ❌ |  0 fallos |
-| ⏱️ |  Duración total: 4m 34s |
+| ⏱️ |  Duración total: 4m 49s |
 
 
 📈 Coverage
@@ -309,7 +309,7 @@ Resultado verificado:
 
 | Métrica | Valor |
 |-----|------|
-| Coverage total|	95.32%|
+| Coverage total|	95.20%|
 |Coverage mínimo requerido|	80%|
 |Estado|	✅ Cumple|
 
