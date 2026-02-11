@@ -2,6 +2,7 @@
 Modelo Budget para presupuestos mensuales.
 """
 
+import logging
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError
@@ -94,7 +95,8 @@ class Budget(TimestampMixin, SoftDeleteMixin, models.Model):
                         {"category": "Solo se pueden crear presupuestos para categorías de gasto."}
                     )
             except Category.DoesNotExist:
-                pass
+                logger = logging.getLogger("apps.budgets")
+                logger.warning(f"Budget.clean(): Category {self.category_id} no existe")
 
     @property
     def month_name(self):

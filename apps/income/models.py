@@ -2,6 +2,7 @@
 Modelo Income para registro de ingresos.
 """
 
+import logging
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError
@@ -70,7 +71,8 @@ class Income(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
                 if category.type != CategoryType.INCOME:
                     raise ValidationError({"category": "La categoría debe ser de tipo Ingreso."})
             except Category.DoesNotExist:
-                pass
+                logger = logging.getLogger("apps.income")
+                logger.warning(f"Income.clean(): Category {self.category_id} no existe")
 
     @classmethod
     def get_user_incomes(cls, user, month=None, year=None):

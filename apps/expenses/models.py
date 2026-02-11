@@ -155,7 +155,8 @@ class Expense(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
                 if category.type != CategoryType.EXPENSE:
                     raise ValidationError({"category": "La categoría debe ser de tipo Gasto."})
             except Category.DoesNotExist:
-                pass
+                logger = logging.getLogger("apps.expenses")
+                logger.warning(f"Expense.clean(): Category {self.category_id} no existe")
 
     def soft_delete(self):
         """Elimina el gasto y revierte el depósito si estaba vinculado."""
