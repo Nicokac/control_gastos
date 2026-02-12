@@ -322,47 +322,234 @@ System check identified no issues (0 silenced).
 
 ## Deploy a Producción
 
+### Plataforma Actual
+
+| Item | Valor |
+|------|-------|
+| **Hosting** | Render (Free tier) |
+| **URL** | `https://control-gastos-XXXX.onrender.com` |
+| **Base de datos** | PostgreSQL (Render) |
+| **CI/CD** | GitHub Actions → Render Deploy Hook |
+
+---
+
+### Variables de Entorno (Render)
+
+Configurar en **Render Dashboard → Environment**:
+
+| Variable | Requerida | Ejemplo | Notas |
+|----------|-----------|---------|-------|
+| `SECRET_KEY` | ✅ | `django-insecure-...` (50+ chars) | Generar con `python manage.py generate_secret_key` |
+| `DJANGO_SETTINGS_MODULE` | ✅ | `config.settings.prod` | |
+| `ALLOWED_HOSTS` | ✅ | `control-gastos-XXXX.onrender.com` | Sin `https://` |
+| `DB_NAME` | ✅ | `control_gastos_db` | Desde Render PostgreSQL |
+| `DB_USER` | ✅ | `control_gastos_user` | Desde Render PostgreSQL |
+| `DB_PASSWORD` | ✅ | `***` | Desde Render PostgreSQL |
+| `DB_HOST` | ✅ | `dpg-XXXX.render.com` | Desde Render PostgreSQL |
+| `DB_PORT` | No | `5432` | Default |
+| `ADMIN_EMAIL` | No | `admin@example.com` | Para alertas de errores |
+
+---
+
 ### Checklist Pre-Deploy
-
 ```bash
-# 1. Verificar seguridad
-python scripts/check_security.py
+# 1. Tests pasan
+pytest --cov=apps --cov-fail-under=80
 
-# 2. Verificar configuración de producción
+# 2. Lint limpio
+ruff check apps/
+
+# 3. Security checks
 python manage.py check --deploy --settings=config.settings.prod
 
-# 3. Ejecutar tests
-pytest --cov=apps --cov-fail-under=80
+# 4. Migraciones al día
+python manage.py makemigrations --check --dry-run
 ```
 
-### Pasos de Deploy
+---
 
+### Proceso de Deploy
+
+#### Deploy Automático (Recomendado)
+
+1. Push a `main` triggerea deploy automático via GitHub Actions
+2. El workflow ejecuta tests → si pasan → deploy hook a Render
 ```bash
-# 1. Configurar variables de entorno
-export SECRET_KEY='tu-clave-secreta-segura'
-export DJANGO_SETTINGS_MODULE='config.settings.prod'
-export ALLOWED_HOSTS='tudominio.com'
-export DB_NAME='control_gastos_prod'
-export DB_USER='postgres'
-export DB_PASSWORD='password-seguro'
+git checkout main
+git merge develop
+git push origin main
+# Deploy automático en ~5 minutos
+```
 
-# 2. Instalar dependencias
-pip install -r requirements/prod.txt
+#### Deploy Manual (Emergencia)
 
-# 3. Verificar seguridad
-python scripts/check_security.py
+1. Ir a **Render Dashboard → Manual Deploy**
+2. Seleccionar commit
+3. Click "Deploy"
 
-# 4. Aplicar migraciones
+---
+
+### Verificación Post-Deploy
+```bash
+# 1. Healthcheck
+curl https://control-gastos-XXXX.onrender.com/healthz/
+# Respuesta esperada: "ok"
+
+# 2. Verificar app carga
+curl -I https://control-gastos-XXXX.onrender.com/
+# Respuesta esperada: HTTP 200 o 302 (redirect a login)
+
+# 3. Revisar logs en Render Dashboard
+# Render → Service → Logs
+```
+
+---
+
+### Rollback
+
+#### Opción 1: Render Dashboard (Más rápido)
+
+1. Ir a **Render → Service → Events**
+2. Encontrar deploy anterior exitoso
+3. Click "Rollback to this deploy"
+
+#### Opción 2: Git Revert
+```bash
+# Identificar commit problemático
+git log --oneline -5
+
+# Revertir
+git revert
+git push origin main
+# Deploy automático del revert
+```
+
+#### Opción 3: Redeploy commit específico
+
+1. Render Dashboard → Manual Deploy
+2. Seleccionar commit anterior estable
+3. Deploy
+
+---
+
+### Troubleshooting
+
+#### ❌ Error: "Application failed to respond"
+
+**Causa probable:** Cold start de Render Free tier (spin down después de 15 min inactividad)
+
+**Solución:**
+- Esperar 30-60 segundos y reintentar
+- Configurar UptimeRobot para ping cada 5 min a `/healthz/`
+
+---
+
+#### ❌ Error: "DisallowedHost"
+
+**Causa:** `ALLOWED_HOSTS` no incluye el dominio
+
+**Solución:**
+```bash
+# En Render Environment, verificar:
+ALLOWED_HOSTS=control-gastos-XXXX.onrender.com
+# Sin https://, sin trailing slash
+```
+
+---
+
+#### ❌ Error: "OperationalError: could not connect to server"
+
+**Causa:** Credenciales de DB incorrectas o DB no accesible
+
+**Solución:**
+1. Verificar variables `DB_*` en Render
+2. Verificar que PostgreSQL esté running en Render
+3. Verificar que el host sea el **Internal Database URL** (no external)
+
+---
+
+#### ❌ Error: "Invalid HTTP_HOST header"
+
+**Causa:** Request desde dominio no permitido
+
+**Solución:**
+```bash
+# Agregar dominio a ALLOWED_HOSTS (separado por coma)
+ALLOWED_HOSTS=control-gastos-XXXX.onrender.com,www.tudominio.com
+```
+
+---
+
+#### ❌ Error: "CSRF verification failed"
+
+**Causa:** `CSRF_TRUSTED_ORIGINS` no configurado
+
+**Solución:**
+- Verificar que `ALLOWED_HOSTS` esté correcto
+- El código auto-genera `CSRF_TRUSTED_ORIGINS` desde `ALLOWED_HOSTS`
+
+---
+
+#### ❌ Migraciones pendientes
+
+**Síntoma:** Errores de tabla/columna no existe
+
+**Solución:**
+```bash
+# En Render Shell (o local con DB de prod)
+python manage.py migrate
+```
+
+---
+
+### Monitoreo
+
+| Servicio | URL | Propósito |
+|----------|-----|-----------|
+| **Healthcheck** | `/healthz/` | Verificar app running |
+| **UptimeRobot** | uptimerobot.com | Evitar cold starts |
+| **Render Logs** | Dashboard → Logs | Ver errores en tiempo real |
+| **GitHub Actions** | Actions tab | Estado de CI/CD |
+
+---
+
+### Backups
+
+#### PostgreSQL (Render)
+
+Render Free tier **no incluye backups automáticos**.
+
+**Backup manual:**
+```bash
+# Desde máquina local con acceso a DB externa
+pg_dump -h  -U  -d  -F c -f backup_$(date +%Y%m%d).dump
+```
+
+**Restaurar:**
+```bash
+pg_restore -h  -U  -d  -c backup_YYYYMMDD.dump
+```
+
+---
+
+### Comandos Útiles en Producción
+```bash
+# Render Shell (desde Dashboard → Shell)
+
+# Ver estado de migraciones
+python manage.py showmigrations
+
+# Aplicar migraciones
 python manage.py migrate
 
-# 5. Recolectar archivos estáticos
-python manage.py collectstatic --noinput
+# Crear superusuario
+python manage.py createsuperuser
 
-# 6. Verificar configuración
-python manage.py check --deploy
+# Ver estado de rate limiting
+python manage.py axes_status
 
-# 7. Iniciar servidor (ejemplo con Gunicorn)
-gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3
+# Limpiar intentos de login fallidos
+python manage.py axes_reset
 ```
 
 ### Configuración de Seguridad en Producción
