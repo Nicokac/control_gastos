@@ -41,3 +41,6 @@ coverage.xml
 logs/*.log
 logs/*.log.*
 !logs/.gitkeep
+
+# Backups de base de datos
+backups/
