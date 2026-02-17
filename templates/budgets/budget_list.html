@@ -58,16 +58,16 @@
         <div class="row text-center">
             <div class="col-md-3">
                 <p class="text-muted mb-1 small">Presupuestado</p>
-                <h4 class="text-primary mb-0">$ {{ summary.total_budgeted|currency }}</h4>
+                <h4 class="text-primary mb-0">{{ summary.total_budgeted|currency }}</h4>
             </div>
             <div class="col-md-3">
                 <p class="text-muted mb-1 small">Gastado</p>
-                <h4 class="text-danger mb-0">$ {{ summary.total_spent|currency }}</h4>
+                <h4 class="text-danger mb-0">{{ summary.total_spent|currency }}</h4>
             </div>
             <div class="col-md-3">
                 <p class="text-muted mb-1 small">Disponible</p>
                 <h4 class="{% if summary.total_remaining < 0 %}text-danger{% else %}text-success{% endif %} mb-0">
-                    {% if summary.total_remaining < 0 %}-{% endif %}$ {{ summary.total_remaining|currency }}
+                    {% if summary.total_remaining < 0 %}-{% endif %}{{ summary.total_remaining|currency }}
                 </h4>
             </div>
             <div class="col-md-3">

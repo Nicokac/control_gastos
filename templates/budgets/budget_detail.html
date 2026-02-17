@@ -99,24 +99,24 @@
                     <div class="row text-center">
                         <div class="col-md-4">
                             <small class="text-muted d-block">Año anterior</small>
-                            <h5>$ {{ year_comparison.last_year_spent|currency }}</h5>
+                            <h5>{{ year_comparison.last_year_spent|currency }}</h5>
                         </div>
                         <div class="col-md-4">
                             <small class="text-muted d-block">Este año</small>
-                            <h5>$ {{ year_comparison.current_spent|currency }}</h5>
+                            <h5>{{ year_comparison.current_spent|currency }}</h5>
                         </div>
                         <div class="col-md-4">
                             <small class="text-muted d-block">Diferencia</small>
                             {% if year_comparison.is_increase %}
                             <h5 class="text-danger">
                                 <i class="bi bi-arrow-up"></i>
-                                +$ {{ year_comparison.difference_abs|currency }}
+                                +{{ year_comparison.difference_abs|currency }}
                                 <small>(+{{ year_comparison.percentage_change }}%)</small>
                             </h5>
                             {% elif year_comparison.is_decrease %}
                             <h5 class="text-success">
                                 <i class="bi bi-arrow-down"></i>
-                                -$ {{ year_comparison.difference_abs|currency }}
+                                -{{ year_comparison.difference_abs|currency }}
                                 <small>({{ year_comparison.percentage_change }}%)</small>
                             </h5>
                             {% else %}

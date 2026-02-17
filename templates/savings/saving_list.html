@@ -19,15 +19,15 @@
         <div class="row text-center">
             <div class="col-md-3">
                 <p class="text-muted mb-1 small">Objetivo Total</p>
-                <h4 class="text-info mb-0">$ {{ summary.total_target|currency }}</h4>
+                <h4 class="text-info mb-0">{{ summary.total_target|currency }}</h4>
             </div>
             <div class="col-md-3">
                 <p class="text-muted mb-1 small">Ahorrado</p>
-                <h4 class="text-success mb-0">$ {{ summary.total_current|currency }}</h4>
+                <h4 class="text-success mb-0">{{ summary.total_current|currency }}</h4>
             </div>
             <div class="col-md-3">
                 <p class="text-muted mb-1 small">Restante</p>
-                <h4 class="text-warning mb-0">$ {{ summary.total_remaining|currency }}</h4>
+                <h4 class="text-warning mb-0">{{ summary.total_remaining|currency }}</h4>
             </div>
             <div class="col-md-3">
                 <p class="text-muted mb-1 small">Progreso Global</p>
