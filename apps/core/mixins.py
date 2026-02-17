@@ -91,14 +91,13 @@ class CurrencyMixin(models.Model):
 
     def _calculate_amount_ars(self):
         """
-        Calcula el monto en ARS según la moneda.
-        Si es ARS, amount_ars = amount.
-        Si es USD, amount_ars = amount * exchange_rate.
+        Calcula el monto en ARS.
+
+        Fórmula unificada: amount * exchange_rate
+        - ARS: exchange_rate = 1.0 → amount_ars = amount
+        - USD: exchange_rate = cotización → amount_ars = amount * cotización
         """
-        if self.currency == Currency.ARS:
-            self.amount_ars = self.amount
-        else:
-            self.amount_ars = self.amount * self.exchange_rate
+        self.amount_ars = (self.amount * self.exchange_rate).quantize(Decimal("0.01"))
 
     @property
     def formatted_amount(self):
