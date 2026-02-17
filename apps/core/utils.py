@@ -60,7 +60,9 @@ def format_currency(amount: Decimal, currency: str = "ARS") -> str:
         String formateado (ej: "$ 1.234,56" o "US$ 100.00")
     """
     symbol = "$" if currency == "ARS" else "US$"
-    return f"{symbol} {amount:,.2f}"
+    formatted = f"{abs(amount):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    sign = "-" if amount < 0 else ""
+    return f"{sign}{symbol} {formatted}"
 
 
 def get_month_name(month: int) -> str:

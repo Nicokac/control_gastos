@@ -124,10 +124,12 @@ class TestFormatCurrency:
     """Tests para format_currency()."""
 
     def test_format_ars_default(self):
-        """Verifica formato ARS por defecto."""
         result = format_currency(Decimal("1500.50"))
-        assert "$" in result
-        assert "1" in result  # Contiene el número
+        assert result == "$ 1.500,50"
+
+    def test_format_large_number(self):
+        result = format_currency(Decimal("996253.11"))
+        assert result == "$ 996.253,11"
 
     def test_format_ars_explicit(self):
         """Verifica formato ARS explícito."""

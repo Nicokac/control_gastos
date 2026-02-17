@@ -108,9 +108,11 @@ class Saving(TimestampMixin, SoftDeleteMixin, models.Model):
 
     @property
     def formatted_target(self):
-        """Retorna el monto objetivo formateado."""
         symbol = "US$" if self.currency == Currency.USD else "$"
-        return f"{symbol} {self.target_amount:,.2f}"
+        formatted = (
+            f"{self.target_amount:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        )
+        return f"{symbol} {formatted}"
 
     @property
     def formatted_current(self):
@@ -281,9 +283,9 @@ class SavingMovement(TimestampMixin, models.Model):
 
     @property
     def formatted_amount(self):
-        """Retorna el monto formateado con signo."""
-        symbol = "+" if self.type == MovementType.DEPOSIT else "-"
-        return f"{symbol} ${self.amount:,.2f}"
+        sign = "+" if self.type == MovementType.DEPOSIT else "-"
+        formatted = f"{self.amount:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        return f"{sign} $ {formatted}"
 
     @property
     def is_deposit(self):

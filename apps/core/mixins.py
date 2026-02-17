@@ -101,14 +101,14 @@ class CurrencyMixin(models.Model):
 
     @property
     def formatted_amount(self):
-        """Retorna el monto formateado con símbolo de moneda."""
         symbol = "$" if self.currency == Currency.ARS else "US$"
-        return f"{symbol} {self.amount:,.2f}"
+        formatted = f"{self.amount:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        return f"{symbol} {formatted}"
 
     @property
     def formatted_amount_ars(self):
-        """Retorna el monto en ARS formateado."""
-        return f"$ {self.amount_ars:,.2f}"
+        formatted = f"{self.amount_ars:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        return f"$ {formatted}"
 
 
 class UserOwnedMixin(models.Model):

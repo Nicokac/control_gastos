@@ -177,21 +177,23 @@ class Budget(TimestampMixin, SoftDeleteMixin, models.Model):
 
     @property
     def formatted_amount(self):
-        """Retorna el monto presupuestado formateado."""
-        return f"$ {self.amount:,.2f}"
+        formatted = f"{self.amount:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        return f"$ {formatted}"
 
     @property
     def formatted_spent(self):
-        """Retorna el monto gastado formateado."""
-        return f"$ {self.spent_amount:,.2f}"
+        formatted = (
+            f"{self.spent_amount:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        )
+        return f"$ {formatted}"
 
     @property
     def formatted_remaining(self):
-        """Retorna el monto restante formateado."""
         remaining = self.remaining_amount
+        formatted = f"{abs(remaining):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
         if remaining < 0:
-            return f"-$ {abs(remaining):,.2f}"
-        return f"$ {remaining:,.2f}"
+            return f"-$ {formatted}"
+        return f"$ {formatted}"
 
     @classmethod
     def get_user_budgets(cls, user, month=None, year=None):
