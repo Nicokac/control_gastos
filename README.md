@@ -517,18 +517,42 @@ python manage.py migrate
 
 #### PostgreSQL (Render)
 
-Render Free tier **no incluye backups automáticos**.
+Render Free tier **no incluye backups automáticos** ni permite conexiones externas a la base de datos.
 
-**Backup manual:**
-```bash
-# Desde máquina local con acceso a DB externa
-pg_dump -h  -U  -d  -F c -f backup_$(date +%Y%m%d).dump
+#### Scripts disponibles (para uso futuro)
+
+Se crearon scripts de backup/restore en PowerShell que estarán listos cuando se habilite acceso externo (Render paid u otro hosting):
+
+| Script | Descripción |
+|--------|-------------|
+| `scripts/backup_db.ps1` | Exporta DB con pg_dump, rotación de 7 días |
+| `scripts/restore_db.ps1` | Restaura desde archivo .dump con confirmación |
+
+**Uso (requiere acceso externo a PostgreSQL):**
+```powershell
+# Configurar variables de entorno
+$env:DB_HOST = "tu-host.render.com"
+$env:DB_NAME = "tu_db_name"
+$env:DB_USER = "tu_usuario"
+$env:DB_PASSWORD = "tu_password"
+$env:DB_PORT = "5432"
+
+# Ejecutar backup
+.\scripts\backup_db.ps1
+
+# Restaurar (si es necesario)
+.\scripts\restore_db.ps1 .\backups\backup_2026-02-17_10-00-00.dump
 ```
 
-**Restaurar:**
-```bash
-pg_restore -h  -U  -d  -c backup_YYYYMMDD.dump
-```
+#### Limitaciones Render Free
+
+| Feature | Free | Paid |
+|---------|------|------|
+| Backups automáticos | ❌ | ✅ |
+| Conexión externa (pg_dump local) | ❌ | ✅ |
+| Shell acceso | ❌ | ✅ |
+
+Para habilitar backups, considerar upgrade a Render paid ($7/mes) o migrar a hosting con acceso externo.
 
 ---
 
