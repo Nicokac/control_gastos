@@ -1,5 +1,7 @@
 """Vistas para gestión de gastos."""
 
+import logging
+
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Sum
@@ -11,6 +13,8 @@ from apps.categories.models import Category
 
 from .forms import ExpenseFilterForm, ExpenseForm
 from .models import Expense
+
+logger = logging.getLogger("apps.expenses")
 
 
 # Create your views here.
@@ -45,8 +49,8 @@ class ExpenseListView(LoginRequiredMixin, ListView):
             if category:
                 category = int(category)
                 queryset = queryset.filter(category_id=category)
-        except (ValueError, TypeError):
-            pass
+        except (ValueError, TypeError) as e:
+            logger.debug(f"ExpenseListView: filtro inválido ignorado - {e}")
 
         return queryset
 

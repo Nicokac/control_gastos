@@ -2,6 +2,8 @@
 Vistas para gestión de presupuestos.
 """
 
+import logging
+
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
@@ -10,6 +12,8 @@ from django.views.generic import CreateView, DeleteView, DetailView, FormView, L
 
 from .forms import BudgetFilterForm, BudgetForm, CopyBudgetsForm
 from .models import Budget
+
+logger = logging.getLogger("apps.budgets")
 
 
 class BudgetListView(LoginRequiredMixin, ListView):
@@ -57,8 +61,8 @@ class BudgetListView(LoginRequiredMixin, ListView):
             try:
                 category_id = int(category)
                 queryset = queryset.filter(category_id=category_id)
-            except (ValueError, TypeError):
-                pass
+            except (ValueError, TypeError) as e:
+                logger.debug(f"BudgetListView: filtro inválido ignorado - {e}")
 
         return queryset
 
