@@ -4,11 +4,9 @@
  * Funcionalidades:
  * - Toggle de campos opcionales
  * - Toggle de exchange rate según moneda
+ * - Validación de formulario
+ * - Limpieza de errores visuales
  */
-
-document.addEventListener('DOMContentLoaded', function() {
-    initExchangeRateToggle();
-});
 
 /**
  * Toggle del campo exchange rate según la moneda seleccionada
@@ -52,7 +50,7 @@ function initExchangeRateToggle() {
 /**
  * Validación del formulario antes de enviar
  */
-document.addEventListener('DOMContentLoaded', function() {
+function initFormValidation() {
     const form = document.getElementById('expenseForm');
 
     if (!form) return;
@@ -122,12 +120,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-});
+}
 
 /**
  * Limpiar validación visual al cambiar valores
  */
-document.addEventListener('DOMContentLoaded', function() {
+function initClearValidation() {
     // Limpiar error de monto al escribir
     const amount = document.getElementById('id_amount');
     if (amount) {
@@ -162,4 +160,13 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.remove('is-invalid');
         });
     }
+}
+
+/**
+ * Inicialización única al cargar el DOM
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    initExchangeRateToggle();
+    initFormValidation();
+    initClearValidation();
 });

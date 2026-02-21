@@ -5,6 +5,7 @@ Vistas para gestión de ingresos.
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Sum
+from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
@@ -156,7 +157,6 @@ class IncomeDeleteView(LoginRequiredMixin, DeleteView):
         self.object = self.get_object()
         self.object.soft_delete()
         messages.success(self.request, "Ingreso eliminado correctamente.")
-        from django.http import HttpResponseRedirect
 
         return HttpResponseRedirect(self.success_url)
 
