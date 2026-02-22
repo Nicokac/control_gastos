@@ -7,6 +7,7 @@ from django.utils import timezone
 
 from apps.categories.models import Category
 from apps.core.constants import CategoryType
+from apps.core.forms import BaseFilterForm
 from apps.core.utils import get_months_choices, get_years_choices
 
 from .models import Budget
@@ -159,36 +160,11 @@ class BudgetForm(forms.ModelForm):
         return instance
 
 
-class BudgetFilterForm(forms.Form):
+class BudgetFilterForm(BaseFilterForm):
     """Formulario para filtrar presupuestos."""
 
-    month = forms.ChoiceField(
-        choices=[],
-        required=False,
-        widget=forms.Select(attrs={"class": "form-select form-select-sm"}),
-    )
-    year = forms.ChoiceField(
-        choices=[],
-        required=False,
-        widget=forms.Select(attrs={"class": "form-select form-select-sm"}),
-    )
-    category = forms.ModelChoiceField(
-        queryset=Category.objects.none(),
-        required=False,
-        widget=forms.Select(attrs={"class": "form-select form-select-sm"}),
-    )
-
-    def __init__(self, *args, user=None, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # Generar choices de meses
-        self.fields["month"].choices = [("", "Todos los meses")] + get_months_choices()
-        self.fields["year"].choices = [("", "Todos los años")] + get_years_choices()
-
-        # Categorías del usuario (tipo EXPENSE)
-        if user:
-            self.fields["category"].queryset = Category.get_expense_categories(user)
-            self.fields["category"].empty_label = "Todas las categorías"
+    def get_category_queryset(self, user):
+        return Category.get_expense_categories(user)
 
 
 class CopyBudgetsForm(forms.Form):

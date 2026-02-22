@@ -9,6 +9,7 @@ from django.utils import timezone
 
 from apps.categories.models import Category
 from apps.core.constants import Currency
+from apps.core.forms import BaseFilterForm
 
 from .models import Income
 
@@ -157,35 +158,8 @@ class IncomeForm(forms.ModelForm):
         return instance
 
 
-class IncomeFilterForm(forms.Form):
+class IncomeFilterForm(BaseFilterForm):
     """Formulario para filtrar ingresos."""
 
-    month = forms.ChoiceField(
-        choices=[],
-        required=False,
-        widget=forms.Select(attrs={"class": "form-select form-select-sm"}),
-    )
-    year = forms.ChoiceField(
-        choices=[],
-        required=False,
-        widget=forms.Select(attrs={"class": "form-select form-select-sm"}),
-    )
-    category = forms.ModelChoiceField(
-        queryset=Category.objects.none(),
-        required=False,
-        widget=forms.Select(attrs={"class": "form-select form-select-sm"}),
-    )
-
-    def __init__(self, *args, user=None, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # Generar choices de meses
-        from apps.core.utils import get_months_choices, get_years_choices
-
-        self.fields["month"].choices = [("", "Todos los meses")] + get_months_choices()
-        self.fields["year"].choices = [("", "Todos los años")] + get_years_choices()
-
-        # Categorías del usuario (tipo INCOME)
-        if user:
-            self.fields["category"].queryset = Category.get_income_categories(user)
-            self.fields["category"].empty_label = "Todas las categorías"
+    def get_category_queryset(self, user):
+        return Category.get_income_categories(user)
