@@ -185,5 +185,10 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/income_form.js' %}"></script>
+<script src="{% static 'js/transaction_form.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        initTransactionForm('incomeForm');
+    });
+</script>
 {% endblock %}

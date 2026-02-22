@@ -1,12 +1,22 @@
 /**
- * Control de Gastos - Expense Form JavaScript
+ * Control de Gastos - Transaction Form JavaScript
  *
- * Funcionalidades:
- * - Toggle de campos opcionales
- * - Toggle de exchange rate según moneda
- * - Validación de formulario
- * - Limpieza de errores visuales
+ * Lógica compartida para formularios de gastos e ingresos.
+ *
+ * Uso:
+ *   initTransactionForm("expenseForm")
+ *   initTransactionForm("incomeForm")
  */
+
+/**
+ * Inicializa todas las funcionalidades del formulario de transacción.
+ * @param {string} formId - ID del formulario ("expenseForm" o "incomeForm")
+ */
+function initTransactionForm(formId) {
+    initExchangeRateToggle();
+    initFormValidation(formId);
+    initClearValidation();
+}
 
 /**
  * Toggle del campo exchange rate según la moneda seleccionada
@@ -49,9 +59,10 @@ function initExchangeRateToggle() {
 
 /**
  * Validación del formulario antes de enviar
+ * @param {string} formId - ID del formulario
  */
-function initFormValidation() {
-    const form = document.getElementById('expenseForm');
+function initFormValidation(formId) {
+    const form = document.getElementById(formId);
 
     if (!form) return;
 
@@ -161,12 +172,3 @@ function initClearValidation() {
         });
     }
 }
-
-/**
- * Inicialización única al cargar el DOM
- */
-document.addEventListener('DOMContentLoaded', function() {
-    initExchangeRateToggle();
-    initFormValidation();
-    initClearValidation();
-});
