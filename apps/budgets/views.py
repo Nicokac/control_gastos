@@ -8,7 +8,15 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DeleteView, DetailView, FormView, ListView, UpdateView
+from django.views.generic import FormView
+
+from apps.core.views import (
+    UserOwnedCreateView,
+    UserOwnedDeleteView,
+    UserOwnedDetailView,
+    UserOwnedListView,
+    UserOwnedUpdateView,
+)
 
 from .forms import BudgetFilterForm, BudgetForm, CopyBudgetsForm
 from .models import Budget
@@ -16,13 +24,13 @@ from .models import Budget
 logger = logging.getLogger("apps.budgets")
 
 
-class BudgetListView(LoginRequiredMixin, ListView):
+class BudgetListView(UserOwnedListView):
     """Lista de presupuestos del usuario con filtros."""
 
     model = Budget
     template_name = "budgets/budget_list.html"
     context_object_name = "budgets"
-    paginate_by = 12  # 12 presupuestos por página
+    paginate_by = 12  # Override del default 20
 
     def get_queryset(self):
         """Filtra presupuestos del usuario actual con spent pre-calculado."""
@@ -49,7 +57,8 @@ class BudgetListView(LoginRequiredMixin, ListView):
                 year = int(year)
                 if not (2020 <= year <= 2100):
                     year = None
-        except (ValueError, TypeError):
+        except (ValueError, TypeError) as e:
+            logger.debug(f"BudgetListView: filtro inválido ignorado - {e}")
             month = None
             year = None
 
@@ -62,7 +71,7 @@ class BudgetListView(LoginRequiredMixin, ListView):
                 category_id = int(category)
                 queryset = queryset.filter(category_id=category_id)
             except (ValueError, TypeError) as e:
-                logger.debug(f"BudgetListView: filtro inválido ignorado - {e}")
+                logger.debug(f"BudgetListView: filtro categoría inválido - {e}")
 
         return queryset
 
@@ -125,7 +134,7 @@ class BudgetListView(LoginRequiredMixin, ListView):
         return context
 
 
-class BudgetCreateView(LoginRequiredMixin, CreateView):
+class BudgetCreateView(UserOwnedCreateView):
     """Crear nuevo presupuesto."""
 
     model = Budget
@@ -133,25 +142,8 @@ class BudgetCreateView(LoginRequiredMixin, CreateView):
     template_name = "budgets/budget_form.html"
     success_url = reverse_lazy("budgets:list")
 
-    def get_form_kwargs(self):
-        """Pasa el usuario al formulario."""
-        kwargs = super().get_form_kwargs()
-        kwargs["user"] = self.request.user
-        return kwargs
-
-    def get_context_data(self, **kwargs):
-        """Agrega datos al contexto."""
-        context = super().get_context_data(**kwargs)
-        context["is_edit"] = False
-        return context
-
-    def form_valid(self, form):
-        """Guarda y muestra mensaje de éxito."""
-        response = super().form_valid(form)
-        messages.success(
-            self.request, f"Presupuesto para {self.object.category.name} creado correctamente."
-        )
-        return response
+    def get_success_message(self):
+        return f"Presupuesto para {self.object.category.name} creado correctamente."
 
     def form_invalid(self, form):
         """Muestra errores."""
@@ -159,7 +151,7 @@ class BudgetCreateView(LoginRequiredMixin, CreateView):
         return super().form_invalid(form)
 
 
-class BudgetUpdateView(LoginRequiredMixin, UpdateView):
+class BudgetUpdateView(UserOwnedUpdateView):
     """Editar presupuesto existente."""
 
     model = Budget
@@ -167,49 +159,22 @@ class BudgetUpdateView(LoginRequiredMixin, UpdateView):
     template_name = "budgets/budget_form.html"
     success_url = reverse_lazy("budgets:list")
 
-    def get_queryset(self):
-        """Solo permite editar presupuestos propios."""
-        return Budget.objects.filter(user=self.request.user)
-
-    def get_form_kwargs(self):
-        """Pasa el usuario al formulario."""
-        kwargs = super().get_form_kwargs()
-        kwargs["user"] = self.request.user
-        return kwargs
-
-    def get_context_data(self, **kwargs):
-        """Agrega datos al contexto."""
-        context = super().get_context_data(**kwargs)
-        context["is_edit"] = True
-        return context
-
-    def form_valid(self, form):
-        """Guarda y muestra mensaje de éxito."""
-        response = super().form_valid(form)
-        messages.success(self.request, "Presupuesto actualizado correctamente.")
-        return response
+    def get_success_message(self):
+        return f"Presupuesto para {self.object.category.name} actualizado correctamente."
 
 
-class BudgetDeleteView(LoginRequiredMixin, DeleteView):
-    """Eliminar presupuesto (soft delete)."""
+class BudgetDeleteView(UserOwnedDeleteView):
+    """Eliminar presupuesto."""
 
     model = Budget
     template_name = "budgets/budget_confirm_delete.html"
     success_url = reverse_lazy("budgets:list")
 
-    def get_queryset(self):
-        """Solo permite eliminar presupuestos propios."""
-        return Budget.objects.filter(user=self.request.user)
-
-    def form_valid(self, form):
-        """Realiza soft delete."""
-        self.object = self.get_object()
-        self.object.soft_delete()
-        messages.success(self.request, "Presupuesto eliminado correctamente.")
-        return HttpResponseRedirect(self.success_url)
+    def get_success_message(self, obj):
+        return f"Presupuesto para '{obj.category.name}' eliminado correctamente."
 
 
-class BudgetDetailView(LoginRequiredMixin, DetailView):
+class BudgetDetailView(UserOwnedDetailView):
     """Ver detalle de un presupuesto."""
 
     model = Budget
@@ -217,8 +182,8 @@ class BudgetDetailView(LoginRequiredMixin, DetailView):
     context_object_name = "budget"
 
     def get_queryset(self):
-        """Solo permite ver presupuestos propios."""
-        return Budget.objects.filter(user=self.request.user).select_related("category")
+        """Usa método optimizado con spent pre-calculado."""
+        return Budget.get_with_spent(user=self.request.user)
 
     def get_context_data(self, **kwargs):
         """Agrega gastos del período y comparación año anterior."""
@@ -311,7 +276,6 @@ class CopyBudgetsView(LoginRequiredMixin, FormView):
         # Copiar presupuestos
         copied_count = 0
         skipped_count = 0
-        copied_categories = []
         skipped_categories = []
 
         for budget in source_budgets:
@@ -332,7 +296,6 @@ class CopyBudgetsView(LoginRequiredMixin, FormView):
                     notes=f"Copiado de {source_period}",
                 )
                 copied_count += 1
-                copied_categories.append(budget.category.name)
             else:
                 skipped_count += 1
                 skipped_categories.append(budget.category.name)
@@ -341,18 +304,18 @@ class CopyBudgetsView(LoginRequiredMixin, FormView):
         if copied_count > 0 and skipped_count == 0:
             messages.success(
                 self.request,
-                f"✅ Se copiaron {copied_count} presupuesto(s) de {source_period} a {target_period}.",
+                f"Se copiaron {copied_count} presupuesto(s) de {source_period} a {target_period}.",
             )
         elif copied_count > 0 and skipped_count > 0:
             messages.success(
                 self.request,
-                f"✅ Se copiaron {copied_count} presupuesto(s) a {target_period}. "
+                f"Se copiaron {copied_count} presupuesto(s) a {target_period}. "
                 f"{skipped_count} ya existían y se omitieron ({', '.join(skipped_categories)}).",
             )
         else:
             messages.info(
                 self.request,
-                f"ℹ️ Todos los presupuestos de {source_period} ya existen en {target_period}.",
+                f"Todos los presupuestos de {source_period} ya existen en {target_period}.",
             )
 
         # Redirigir al período destino

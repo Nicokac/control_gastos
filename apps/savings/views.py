@@ -7,17 +7,23 @@ from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
-from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
-from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 from django.views.generic.edit import FormView
+
+from apps.core.views import (
+    UserOwnedCreateView,
+    UserOwnedDeleteView,
+    UserOwnedDetailView,
+    UserOwnedListView,
+    UserOwnedUpdateView,
+)
 
 from .forms import SavingFilterForm, SavingForm, SavingMovementForm
 from .models import Saving, SavingStatus
 
 
-class SavingListView(LoginRequiredMixin, ListView):
+class SavingListView(UserOwnedListView):
     """Lista de metas de ahorro del usuario."""
 
     model = Saving
@@ -26,7 +32,7 @@ class SavingListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         """Filtra metas del usuario actual con validación de parámetros."""
-        queryset = Saving.objects.filter(user=self.request.user)
+        queryset = super().get_queryset()
 
         # Aplicar filtro de estado con validación
         status = self.request.GET.get("status")
@@ -85,7 +91,7 @@ class SavingListView(LoginRequiredMixin, ListView):
         return context
 
 
-class SavingCreateView(LoginRequiredMixin, CreateView):
+class SavingCreateView(UserOwnedCreateView):
     """Crear nueva meta de ahorro."""
 
     model = Saving
@@ -93,26 +99,11 @@ class SavingCreateView(LoginRequiredMixin, CreateView):
     template_name = "savings/saving_form.html"
     success_url = reverse_lazy("savings:list")
 
-    def get_form_kwargs(self):
-        """Pasa el usuario al formulario."""
-        kwargs = super().get_form_kwargs()
-        kwargs["user"] = self.request.user
-        return kwargs
-
-    def get_context_data(self, **kwargs):
-        """Agrega datos al contexto."""
-        context = super().get_context_data(**kwargs)
-        context["is_edit"] = False
-        return context
-
-    def form_valid(self, form):
-        """Guarda y muestra mensaje de éxito."""
-        response = super().form_valid(form)
-        messages.success(self.request, f'Meta de ahorro "{self.object.name}" creada correctamente.')
-        return response
+    def get_success_message(self):
+        return f'Meta de ahorro "{self.object.name}" creada correctamente.'
 
 
-class SavingUpdateView(LoginRequiredMixin, UpdateView):
+class SavingUpdateView(UserOwnedUpdateView):
     """Editar meta de ahorro existente."""
 
     model = Saving
@@ -120,65 +111,33 @@ class SavingUpdateView(LoginRequiredMixin, UpdateView):
     template_name = "savings/saving_form.html"
     success_url = reverse_lazy("savings:list")
 
-    def get_queryset(self):
-        """Solo permite editar metas propias."""
-        return Saving.objects.filter(user=self.request.user)
-
-    def get_form_kwargs(self):
-        """Pasa el usuario al formulario."""
-        kwargs = super().get_form_kwargs()
-        kwargs["user"] = self.request.user
-        return kwargs
-
-    def get_context_data(self, **kwargs):
-        """Agrega datos al contexto."""
-        context = super().get_context_data(**kwargs)
-        context["is_edit"] = True
-        return context
-
-    def form_valid(self, form):
-        """Guarda y muestra mensaje de éxito."""
-        response = super().form_valid(form)
-        messages.success(self.request, "Meta de ahorro actualizada correctamente.")
-        return response
+    def get_success_message(self):
+        return f'Meta de ahorro "{self.object.name}" actualizada correctamente.'
 
 
-class SavingDeleteView(LoginRequiredMixin, DeleteView):
-    """Eliminar meta de ahorro (soft delete)."""
+class SavingDeleteView(UserOwnedDeleteView):
+    """Eliminar meta de ahorro."""
 
     model = Saving
     template_name = "savings/saving_confirm_delete.html"
     success_url = reverse_lazy("savings:list")
 
-    def get_queryset(self):
-        """Solo permite eliminar metas propias."""
-        return Saving.objects.filter(user=self.request.user)
-
-    def form_valid(self, form):
-        """Realiza soft delete."""
-        self.object = self.get_object()
-        self.object.soft_delete()
-        messages.success(self.request, "Meta de ahorro eliminada correctamente.")
-        return HttpResponseRedirect(self.success_url)
+    def get_success_message(self, obj):
+        return f'Meta de ahorro "{obj.name}" eliminada correctamente.'
 
 
-class SavingDetailView(LoginRequiredMixin, DetailView):
+class SavingDetailView(UserOwnedDetailView):
     """Ver detalle de una meta de ahorro."""
 
     model = Saving
     template_name = "savings/saving_detail.html"
     context_object_name = "saving"
 
-    def get_queryset(self):
-        """Solo permite ver metas propias."""
-        return Saving.objects.filter(user=self.request.user)
-
     def get_context_data(self, **kwargs):
         """Agrega movimientos paginados al contexto."""
         context = super().get_context_data(**kwargs)
 
         # Paginar movimientos
-
         movements_list = self.object.movements.all().order_by("-date", "-created_at")
         paginator = Paginator(movements_list, 10)  # 10 movimientos por página
 
@@ -191,7 +150,7 @@ class SavingDetailView(LoginRequiredMixin, DetailView):
         except EmptyPage:
             movements = paginator.page(paginator.num_pages)
 
-        context["movements"] = movements  # 🔧 F841
+        context["movements"] = movements
 
         return context
 

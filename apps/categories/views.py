@@ -8,6 +8,8 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
+from apps.core.views import UserFormKwargsMixin
+
 from .forms import CategoryForm
 from .models import Category
 
@@ -34,19 +36,13 @@ class CategoryListView(LoginRequiredMixin, ListView):
         return context
 
 
-class CategoryCreateView(LoginRequiredMixin, CreateView):
+class CategoryCreateView(LoginRequiredMixin, UserFormKwargsMixin, CreateView):
     """Crear nueva categoría."""
 
     model = Category
     form_class = CategoryForm
     template_name = "categories/category_form.html"
     success_url = reverse_lazy("categories:list")
-
-    def get_form_kwargs(self):
-        """Pasa el usuario al formulario."""
-        kwargs = super().get_form_kwargs()
-        kwargs["user"] = self.request.user
-        return kwargs
 
     def get_form(self, form_class=None):
         """Asigna el usuario a la instancia antes de validar."""
@@ -55,6 +51,12 @@ class CategoryCreateView(LoginRequiredMixin, CreateView):
             form.instance.user = self.request.user
         return form
 
+    def get_context_data(self, **kwargs):
+        """Agrega datos al contexto."""
+        context = super().get_context_data(**kwargs)
+        context["is_edit"] = False
+        return context
+
     def form_valid(self, form):
         """Guarda y muestra mensaje de éxito."""
         response = super().form_valid(form)
@@ -62,7 +64,7 @@ class CategoryCreateView(LoginRequiredMixin, CreateView):
         return response
 
 
-class CategoryUpdateView(LoginRequiredMixin, UpdateView):
+class CategoryUpdateView(LoginRequiredMixin, UserFormKwargsMixin, UpdateView):
     """Editar categoría existente."""
 
     model = Category
@@ -74,11 +76,11 @@ class CategoryUpdateView(LoginRequiredMixin, UpdateView):
         """Solo permite editar categorías propias (no del sistema)."""
         return Category.objects.filter(user=self.request.user, is_system=False)
 
-    def get_form_kwargs(self):
-        """Pasa el usuario al formulario."""
-        kwargs = super().get_form_kwargs()
-        kwargs["user"] = self.request.user
-        return kwargs
+    def get_context_data(self, **kwargs):
+        """Agrega datos al contexto."""
+        context = super().get_context_data(**kwargs)
+        context["is_edit"] = True
+        return context
 
     def form_valid(self, form):
         """Guarda y muestra mensaje de éxito."""
@@ -88,7 +90,7 @@ class CategoryUpdateView(LoginRequiredMixin, UpdateView):
 
 
 class CategoryDeleteView(LoginRequiredMixin, DeleteView):
-    """Eliminar categoría (soft delete)."""
+    """Eliminar categoría."""
 
     model = Category
     template_name = "categories/category_confirm_delete.html"
@@ -98,9 +100,10 @@ class CategoryDeleteView(LoginRequiredMixin, DeleteView):
         """Solo permite eliminar categorías propias (no del sistema)."""
         return Category.objects.filter(user=self.request.user, is_system=False)
 
-    def delete(self, request, *args, **kwargs):
-        """Override para usar soft delete."""
+    def form_valid(self, form):
+        """Elimina la categoría."""
         self.object = self.get_object()
-        self.object.soft_delete()
-        messages.success(request, "Categoría eliminada correctamente.")
-        return HttpResponseRedirect(self.success_url)
+        success_url = self.get_success_url()
+        self.object.delete()
+        messages.success(self.request, f"Categoría '{self.object.name}' eliminada correctamente.")
+        return HttpResponseRedirect(success_url)
