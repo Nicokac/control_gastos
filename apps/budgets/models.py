@@ -11,16 +11,15 @@ from django.db import models
 from django.db.models import Sum
 
 from apps.core.constants import CategoryType
-from apps.core.mixins import SoftDeleteMixin, TimestampMixin
+from apps.core.mixins import TimestampMixin
 
 
-class Budget(TimestampMixin, SoftDeleteMixin, models.Model):
+class Budget(TimestampMixin, models.Model):
     """
     Presupuesto mensual por categoría.
 
     Hereda de:
     - TimestampMixin: created_at, updated_at
-    - SoftDeleteMixin: is_active, deleted_at, soft_delete()
     """
 
     user = models.ForeignKey(
@@ -64,7 +63,7 @@ class Budget(TimestampMixin, SoftDeleteMixin, models.Model):
             )
         ]
         indexes = [
-            models.Index(fields=["user", "year", "month", "is_active"]),
+            models.Index(fields=["user", "year", "month"]),
             models.Index(fields=["user", "category"]),
         ]
 
@@ -130,7 +129,6 @@ class Budget(TimestampMixin, SoftDeleteMixin, models.Model):
             category=self.category,
             date__month=self.month,
             date__year=self.year,
-            is_active=True,
         ).aggregate(total=Sum("amount_ars"))
 
         return result["total"] or Decimal("0")
@@ -288,9 +286,9 @@ class Budget(TimestampMixin, SoftDeleteMixin, models.Model):
 
         # Obtener presupuestos del mes anterior (1 query)
         source_budgets = list(
-            cls.objects.filter(
-                user=user, month=source_month, year=source_year, is_active=True
-            ).select_related("category")
+            cls.objects.filter(user=user, month=source_month, year=source_year).select_related(
+                "category"
+            )
         )
 
         if not source_budgets:
@@ -351,7 +349,6 @@ class Budget(TimestampMixin, SoftDeleteMixin, models.Model):
                 category=OuterRef("category"),
                 date__month=OuterRef("month"),
                 date__year=OuterRef("year"),
-                is_active=True,
             )
             .values("category")
             .annotate(total=Sum("amount_ars"))

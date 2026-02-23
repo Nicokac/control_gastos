@@ -54,7 +54,7 @@ class SavingListView(UserOwnedListView):
         context["filter_form"] = SavingFilterForm(data=self.request.GET or None)
 
         # Obtener metas activas del usuario
-        user_savings = Saving.objects.filter(user=self.request.user, is_active=True)
+        user_savings = Saving.objects.filter(user=self.request.user)
         active_savings = user_savings.filter(status=SavingStatus.ACTIVE)
 
         # Contadores

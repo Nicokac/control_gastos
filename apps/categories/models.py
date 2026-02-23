@@ -4,11 +4,11 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 from apps.core.constants import CategoryType
-from apps.core.mixins import SoftDeleteMixin, TimestampMixin
+from apps.core.mixins import TimestampMixin
 
 
 # Create your models here.
-class Category(TimestampMixin, SoftDeleteMixin, models.Model):
+class Category(TimestampMixin, models.Model):
     """
     Categoría para clasificar gastos e ingresos.
 

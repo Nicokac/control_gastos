@@ -8,17 +8,16 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 from apps.core.constants import ExpenseType, PaymentMethod
-from apps.core.mixins import CurrencyMixin, SoftDeleteMixin, TimestampMixin
+from apps.core.mixins import CurrencyMixin, TimestampMixin
 
 
 # Create your models here.
-class Expense(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
+class Expense(TimestampMixin, CurrencyMixin, models.Model):
     """
     Registro de gastos del usuario.
 
     Hereda de:
-    - TimestamMixin: created_at, updated_at
-    - SoftDeleteMixin: is_activa, deleted_at, soft_delete()
+    - TimestampMixin: created_at, updated_at
     - CurrencyMixin: amount, currency, exchange_rate, amount_ars
     """
 
@@ -64,7 +63,6 @@ class Expense(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
         indexes = [
             models.Index(fields=["user", "date"]),
             models.Index(fields=["user", "category"]),
-            models.Index(fields=["user", "is_active", "date"]),
         ]
 
     def __str__(self):
@@ -158,18 +156,18 @@ class Expense(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
                 logger = logging.getLogger("apps.expenses")
                 logger.warning(f"Expense.clean(): Category {self.category_id} no existe")
 
-    def soft_delete(self):
+    def delete(self, *args, **kwargs):
         """Elimina el gasto y revierte el depósito si estaba vinculado."""
         logger = logging.getLogger("apps.expenses")
 
-        if self.saving and self.is_active:
+        if self.saving:
             with suppress(ValueError):
                 self.saving.add_withdrawal(
                     amount=self.amount_ars, description=f"Gasto eliminado: {self.description}"
                 )
-                logger.info(f"Expense {self.pk}: retiro ${self.amount_ars} por soft_delete")
+                logger.info(f"Expense {self.pk}: retiro ${self.amount_ars} por delete")
 
-        super().soft_delete()
+        super().delete(*args, **kwargs)
 
     @classmethod
     def get_user_expenses(cls, user, month=None, year=None):
@@ -211,9 +209,9 @@ class Expense(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
         """
         from django.db.models import Sum
 
-        result = cls.objects.filter(
-            user=user, date__month=month, date__year=year, is_active=True
-        ).aggregate(total=Sum("amount_ars"))
+        result = cls.objects.filter(user=user, date__month=month, date__year=year).aggregate(
+            total=Sum("amount_ars")
+        )
 
         return result["total"] or Decimal("0")
 
@@ -233,7 +231,7 @@ class Expense(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
         from django.db.models import Sum
 
         return (
-            cls.objects.filter(user=user, date__month=month, date__year=year, is_active=True)
+            cls.objects.filter(user=user, date__month=month, date__year=year)
             .values("category__id", "category__name", "category__icon", "category__color")
             .annotate(total=Sum("amount_ars"))
             .order_by("-total")

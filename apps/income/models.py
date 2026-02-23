@@ -9,17 +9,16 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 from apps.core.constants import CategoryType
-from apps.core.mixins import CurrencyMixin, SoftDeleteMixin, TimestampMixin
+from apps.core.mixins import CurrencyMixin, TimestampMixin
 
 
 # Create your models here.
-class Income(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
+class Income(TimestampMixin, CurrencyMixin, models.Model):
     """
     Registro de ingresos del usuario.
 
     Hereda de:
-    - TimestamMixin: created_at, updated_at
-    - SoftDeleteMixin: is_active, deleted_at, soft_delte()
+    - TimestampMixin: created_at, updated_at
     - CurrencyMixin: amount, currency, exchange_rate, amount_ars
     """
 
@@ -43,7 +42,6 @@ class Income(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
         indexes = [
             models.Index(fields=["user", "date"]),
             models.Index(fields=["user", "category"]),
-            models.Index(fields=["user", "is_active", "date"]),
         ]
 
     def __str__(self):
@@ -110,9 +108,9 @@ class Income(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
         """
         from django.db.models import Sum
 
-        result = cls.objects.filter(
-            user=user, date__month=month, date__year=year, is_active=True
-        ).aggregate(total=Sum("amount_ars"))
+        result = cls.objects.filter(user=user, date__month=month, date__year=year).aggregate(
+            total=Sum("amount_ars")
+        )
 
         return result["total"] or Decimal("0")
 
@@ -132,7 +130,7 @@ class Income(TimestampMixin, SoftDeleteMixin, CurrencyMixin, models.Model):
         from django.db.models import Sum
 
         return (
-            cls.objects.filter(user=user, date__month=month, date__year=year, is_active=True)
+            cls.objects.filter(user=user, date__month=month, date__year=year)
             .values(
                 "category__id",
                 "category__name",

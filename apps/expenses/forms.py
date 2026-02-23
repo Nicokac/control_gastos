@@ -109,9 +109,7 @@ class ExpenseForm(forms.ModelForm):
 
             # Configurar campo de ahorro (solo activos del usuario)
             self.fields["saving"] = forms.ModelChoiceField(
-                queryset=Saving.objects.filter(
-                    user=user, status=SavingStatus.ACTIVE, is_active=True
-                ),
+                queryset=Saving.objects.filter(user=user, status=SavingStatus.ACTIVE),
                 required=False,
                 empty_label="-- No vincular a ahorro --",
                 widget=forms.Select(

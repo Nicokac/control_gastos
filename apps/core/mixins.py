@@ -5,10 +5,8 @@ Mixin reutilizables para modelos Django.
 from decimal import Decimal
 
 from django.db import models
-from django.utils import timezone
 
 from .constants import DEFAULT_EXCHANGE_RATE, Currency
-from .managers import SoftDeleteManager
 
 
 class TimestampMixin(models.Model):
@@ -21,40 +19,6 @@ class TimestampMixin(models.Model):
 
     class Meta:
         abstract = True
-
-
-class SoftDeleteMixin(models.Model):
-    """
-    Mixin para eliminación lógica (soft delete).
-    Los registros no se eliminan físicamente, se marcan como inactivos.
-    """
-
-    is_active = models.BooleanField(default=True, verbose_name="Activo")
-    deleted_at = models.DateTimeField(null=True, blank=True, verbose_name="Fecha de eliminación")
-
-    # Managers
-    # Primero el manager "normal" y luego el custom, para satisfacer DJ012
-    all_objects = models.Manager()
-    objects = SoftDeleteManager()
-
-    class Meta:
-        abstract = True
-
-    def soft_delete(self):
-        """Marca el registro como eliminado."""
-        self.is_active = False
-        self.deleted_at = timezone.now()
-        self.save(update_fields=["is_active", "deleted_at"])
-
-    def restore(self):
-        """Restaura un registro eliminado."""
-        self.is_active = True
-        self.deleted_at = None
-        self.save(update_fields=["is_active", "deleted_at"])
-
-    def hard_delete(self):
-        """Elimina el registro permanentemente."""
-        super().delete()
 
 
 class CurrencyMixin(models.Model):

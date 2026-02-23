@@ -125,7 +125,7 @@ class BudgetForm(forms.ModelForm):
                 return cleaned_data
 
             existing = Budget.objects.filter(
-                user=self.user, category=category, month=month, year=year, is_active=True
+                user=self.user, category=category, month=month, year=year
             )
 
             # Excluir el presupuesto actual si estamos editando

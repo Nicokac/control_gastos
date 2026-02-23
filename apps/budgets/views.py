@@ -199,7 +199,6 @@ class BudgetDetailView(UserOwnedDetailView):
             category=budget.category,
             date__month=budget.month,
             date__year=budget.year,
-            is_active=True,
         ).order_by("-date")[:10]
 
         # Comparación con año anterior
@@ -209,7 +208,6 @@ class BudgetDetailView(UserOwnedDetailView):
                 category=budget.category,
                 month=budget.month,
                 year=budget.year - 1,
-                is_active=True,
             )
             context["last_year_budget"] = last_year_budget
 
@@ -266,7 +264,7 @@ class CopyBudgetsView(LoginRequiredMixin, FormView):
 
         # Verificar que existan presupuestos en el mes origen
         source_budgets = Budget.objects.filter(
-            user=self.request.user, month=source_month, year=source_year, is_active=True
+            user=self.request.user, month=source_month, year=source_year
         )
 
         if not source_budgets.exists():

@@ -10,7 +10,7 @@ from django.db import models
 from django.db.models import F
 
 from apps.core.constants import Currency
-from apps.core.mixins import SoftDeleteMixin, TimestampMixin
+from apps.core.mixins import TimestampMixin
 
 
 class SavingStatus(models.TextChoices):
@@ -28,13 +28,12 @@ class MovementType(models.TextChoices):
     WITHDRAWAL = "WITHDRAWAL", "Retiro"
 
 
-class Saving(TimestampMixin, SoftDeleteMixin, models.Model):
+class Saving(TimestampMixin, models.Model):
     """
     Meta de ahorro del usuario.
 
     Hereda de:
     - TimestampMixin: created_at, updated_at
-    - SoftDeleteMixin: is_active, deleted_at, soft_delete()
     """
 
     user = models.ForeignKey(
@@ -69,7 +68,7 @@ class Saving(TimestampMixin, SoftDeleteMixin, models.Model):
         verbose_name_plural = "Metas de Ahorro"
         ordering = ["-created_at"]
         indexes = [
-            models.Index(fields=["user", "status", "is_active"]),
+            models.Index(fields=["user", "status"]),
         ]
 
     def __str__(self):
@@ -244,9 +243,9 @@ class Saving(TimestampMixin, SoftDeleteMixin, models.Model):
         """
         from django.db.models import Sum
 
-        result = cls.objects.filter(
-            user=user, status=SavingStatus.ACTIVE, is_active=True
-        ).aggregate(total=Sum("current_amount"))
+        result = cls.objects.filter(user=user, status=SavingStatus.ACTIVE).aggregate(
+            total=Sum("current_amount")
+        )
 
         return result["total"] or Decimal("0")
 

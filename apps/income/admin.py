@@ -15,14 +15,12 @@ class IncomeAdmin(admin.ModelAdmin):
         "category",
         "is_recurring",
         "user",
-        "is_active",
     )
     list_filter = (
         "date",
         "category",
         "is_recurring",
         "currency",
-        "is_active",
     )
     search_fields = (
         "description",
@@ -43,7 +41,6 @@ class IncomeAdmin(admin.ModelAdmin):
                 "fields": ("is_recurring",),
             },
         ),
-        ("Estado", {"fields": ("is_active", "deleted_at"), "classes": ("collapse",)}),
         ("Auditoría", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
     )
 

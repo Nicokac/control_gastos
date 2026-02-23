@@ -65,7 +65,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         # Query 1: Gastos (mes actual + anterior)
         expense_data = (
-            Expense.objects.filter(user=user, is_active=True)
+            Expense.objects.filter(user=user)
             .filter(
                 Q(date__gte=cur_start, date__lt=cur_end)
                 | Q(date__gte=prev_start, date__lt=prev_end)
@@ -78,7 +78,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         # Query 2: Ingresos (mes actual + anterior)
         income_data = (
-            Income.objects.filter(user=user, is_active=True)
+            Income.objects.filter(user=user)
             .filter(
                 Q(date__gte=cur_start, date__lt=cur_end)
                 | Q(date__gte=prev_start, date__lt=prev_end)
@@ -172,9 +172,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
     def _get_savings_data(self, user):
         """Obtiene datos de metas de ahorro activas."""
-        active_savings = list(
-            Saving.objects.filter(user=user, status=SavingStatus.ACTIVE, is_active=True)
-        )
+        active_savings = list(Saving.objects.filter(user=user, status=SavingStatus.ACTIVE))
 
         # Totales
         total_target = sum(s.target_amount for s in active_savings)
@@ -216,13 +214,13 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         """
         # Obtener últimos 8 de cada tipo para garantizar cobertura
         recent_expenses = list(
-            Expense.objects.filter(user=user, is_active=True)
+            Expense.objects.filter(user=user)
             .select_related("category")
             .order_by("-date", "-created_at")[:8]
         )
 
         recent_incomes = list(
-            Income.objects.filter(user=user, is_active=True)
+            Income.objects.filter(user=user)
             .select_related("category")
             .order_by("-date", "-created_at")[:8]
         )
@@ -269,9 +267,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         """Obtiene distribución de gastos por categoría para el gráfico."""
         start_date, end_date = get_month_date_range_exclusive(month, year)
         distribution = (
-            Expense.objects.filter(
-                user=user, date__gte=start_date, date__lt=end_date, is_active=True
-            )
+            Expense.objects.filter(user=user, date__gte=start_date, date__lt=end_date)
             .values("category__name", "category__color", "category__icon")
             .annotate(total=Sum("amount_ars"))
             .order_by("-total")[:6]

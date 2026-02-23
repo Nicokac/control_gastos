@@ -42,12 +42,10 @@ class SavingAdmin(admin.ModelAdmin):
         "progress_percentage",
         "status",
         "target_date",
-        "is_active",
     )
     list_filter = (
         "status",
         "currency",
-        "is_active",
         "target_date",
     )
     search_fields = (
@@ -67,7 +65,6 @@ class SavingAdmin(admin.ModelAdmin):
             {"fields": ("target_amount", "current_amount", "currency", "progress_percentage")},
         ),
         ("Configuración", {"fields": ("target_date", "status", "icon", "color")}),
-        ("Estado", {"fields": ("is_active", "deleted_at"), "classes": ("collapse",)}),
         ("Auditoría", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
     )
 

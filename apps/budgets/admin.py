@@ -18,14 +18,12 @@ class BudgetAdmin(admin.ModelAdmin):
         "spent_percentage_display",
         "status_display",
         "user",
-        "is_active",
     )
     list_filter = (
         "year",
         "month",
         "category",
         "user",
-        "is_active",
     )
     search_fields = (
         "category__name",
@@ -54,7 +52,6 @@ class BudgetAdmin(admin.ModelAdmin):
                 "classes": ("collapse",),
             },
         ),
-        ("Estado", {"fields": ("is_active", "deleted_at"), "classes": ("collapse",)}),
         ("Auditoría", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
     )
 

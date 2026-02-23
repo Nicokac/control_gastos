@@ -17,7 +17,6 @@ class ExpenseAdmin(admin.ModelAdmin):
         "category",
         "payment_method",
         "user",
-        "is_active",
     )
     list_filter = (
         "date",
@@ -25,7 +24,6 @@ class ExpenseAdmin(admin.ModelAdmin):
         "payment_method",
         "expense_type",
         "currency",
-        "is_active",
     )
     search_fields = (
         "description",
@@ -44,7 +42,6 @@ class ExpenseAdmin(admin.ModelAdmin):
             "Detalles Opcionales",
             {"fields": ("payment_method", "expense_type"), "classes": ("collapse",)},
         ),
-        ("Estado", {"fields": ("is_active", "deleted_at"), "classes": ("collapse",)}),
         ("Auditoría", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
     )
 
