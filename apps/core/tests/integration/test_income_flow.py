@@ -124,8 +124,6 @@ class TestIncomeBalanceCalculation:
             authenticated_client.post(create_url, data)
 
         # Verificar suma total
-        total = Income.objects.filter(user=user, is_active=True).aggregate(
-            total=models.Sum("amount_ars")
-        )["total"]
+        total = Income.objects.filter(user=user).aggregate(total=models.Sum("amount_ars"))["total"]
 
         assert total == Decimal("175000.00")
