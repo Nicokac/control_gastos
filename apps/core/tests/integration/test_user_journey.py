@@ -142,9 +142,8 @@ class TestNewUserJourney:
         response = authenticated_client.post(delete_url)
         assert response.status_code == 302
 
-        # Verificar soft delete
-        expense_2.refresh_from_db()
-        assert not expense_2.is_active  # 🔧 E712
+        # Verificar eliminación
+        assert not Expense.objects.filter(pk=expense_2.pk).exists()
 
         # Presupuesto debería actualizarse
         budget.refresh_from_db()
@@ -208,7 +207,7 @@ class TestNewUserJourney:
         # ============================================
         # PASO 3: Verificar totales
         # ============================================
-        incomes = Income.objects.filter(user=user, is_active=True)
+        incomes = Income.objects.filter(user=user)
         assert incomes.count() == 2
 
         # Total en ARS

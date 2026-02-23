@@ -1,6 +1,7 @@
 import logging
 
 from django.db.models import Sum
+from django.utils import timezone
 
 from apps.categories.models import Category
 from apps.core.views import (
@@ -45,7 +46,12 @@ class IncomeListView(UserOwnedListView):
                 pass
 
         if category:
-            qs = qs.filter(category_id=category)
+            try:
+                category = int(category)
+                if category > 0:
+                    qs = qs.filter(category_id=category)
+            except ValueError:
+                pass
 
         return qs.order_by("-date", "-created_at")
 
@@ -54,6 +60,10 @@ class IncomeListView(UserOwnedListView):
         context["filter_form"] = IncomeFilterForm(self.request.GET, user=self.request.user)
         total = self.get_queryset().aggregate(total=Sum("amount_ars"))["total"] or 0
         context["total_amount"] = total
+
+        today = timezone.now().date()
+        context["current_month"] = today.month
+        context["current_year"] = today.year
         return context
 
 

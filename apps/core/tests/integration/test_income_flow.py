@@ -79,8 +79,7 @@ class TestIncomeCreationFlow:
         response = authenticated_client.post(delete_url)
         assert response.status_code == 302
 
-        income.refresh_from_db()
-        assert not income.is_active
+        assert not Income.objects.filter(pk=income.pk).exists()
 
     def test_income_with_usd_currency_flow(self, authenticated_client, user, income_category):
         """Verifica flujo de ingreso en USD."""

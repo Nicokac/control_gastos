@@ -131,9 +131,8 @@ class TestIncomeCreateView:
         response = authenticated_client.post(url, data, follow=True)
 
         assert response.status_code == 200  # vuelve al form
-        # messages framework
-        msgs = [m.message for m in response.context["messages"]]
-        assert any("Corregí los errores" in m for m in msgs)
+        assert "form" in response.context
+        assert "amount" in response.context["form"].errors
 
     def test_create_income_success_adds_success_message(
         self, authenticated_client, user, income_category

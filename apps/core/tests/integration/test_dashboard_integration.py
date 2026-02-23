@@ -273,8 +273,8 @@ class TestDashboardAfterOperations:
         response = authenticated_client.get(url)
         assert response.status_code == 200
 
-        # Eliminar gasto (soft delete)
-        expense.soft_delete()
+        # Eliminar gasto
+        expense.delete()
 
         # Verificar dashboard sin gasto
         response = authenticated_client.get(url)

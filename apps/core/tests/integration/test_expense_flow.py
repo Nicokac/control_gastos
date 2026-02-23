@@ -73,13 +73,12 @@ class TestExpenseCreationFlow:
         assert expense.description == "Gasto Editado"
         assert expense.amount == Decimal("1500.00")
 
-        # 3. ELIMINAR (soft delete)
+        # 3. ELIMINAR
         delete_url = reverse("expenses:delete", kwargs={"pk": expense.pk})
         response = authenticated_client.post(delete_url)
         assert response.status_code == 302
 
-        expense.refresh_from_db()
-        assert not expense.is_active  # 🔧 E712
+        assert not Expense.objects.filter(pk=expense.pk).exists()
 
         # 4. Verificar que no aparece en lista
         list_url = reverse("expenses:list")

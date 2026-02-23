@@ -305,8 +305,7 @@ class TestSavingDeleteView:
 
         assert response.status_code == 302
 
-        saving.refresh_from_db()
-        assert not saving.is_active
+        assert not Saving.objects.filter(pk=saving.pk).exists()
 
 
 @pytest.mark.django_db

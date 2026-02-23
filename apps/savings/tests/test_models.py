@@ -77,11 +77,11 @@ class TestSavingModel:
 
         assert saving.remaining_amount == Decimal("7000.00")
 
-    def test_saving_soft_delete(self, saving):
-        """Verifica soft delete."""
-        saving.soft_delete()
+    def test_saving_delete(self, saving):
+        """Verifica hard delete."""
+        saving.delete()
 
-        assert saving.is_active is False
+        assert not Saving.objects.filter(pk=saving.pk).exists()
 
     def test_saving_timestamps(self, saving):
         """Verifica timestamps."""
@@ -423,8 +423,8 @@ class TestSavingClassmethods:
         s3.status = SavingStatus.COMPLETED
         s3.save(update_fields=["status"])
 
-        # soft-deleted no cuenta
-        s2.soft_delete()
+        # eliminado no cuenta
+        s2.delete()
 
         total = Saving.get_total_saved(user)
         assert total == Decimal("100.00")

@@ -200,16 +200,9 @@ class TestCategoryDeleteView:
 
         assert response.status_code == 302
 
-        # Verificar si es soft delete o hard delete
         from apps.categories.models import Category
 
-        # Intentar con all_objects (soft delete)
-        try:
-            cat = Category.all_objects.get(pk=pk)
-            assert not cat.is_active  # 🔧 E712 Soft delete
-        except Category.DoesNotExist:
-            # Hard delete - verificar que no existe
-            assert not Category.objects.filter(pk=pk).exists()
+        assert not Category.objects.filter(pk=pk).exists()
 
     def test_cannot_delete_other_user_category(
         self, authenticated_client, other_user, expense_category_factory

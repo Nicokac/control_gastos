@@ -104,7 +104,7 @@ class TestUserDataIsolation:
         # Verificar que no se eliminó
         other_expense.refresh_from_db()
         # 🔧 E712: evitar comparación con True
-        assert other_expense.is_active
+        assert Expense.objects.filter(pk=other_expense.pk).exists()
 
     def test_user_cannot_access_other_user_saving_movements(
         self, authenticated_client, user, other_user, saving_factory
