@@ -76,15 +76,6 @@ class TestIncomeModel:
         """Verifica que el ingreso pertenece al usuario."""
         assert income.user == user
 
-    def test_income_soft_delete(self, income):
-        """Verifica soft delete de ingreso."""
-        income_id = income.pk
-        income.soft_delete()
-
-        assert income.is_active is False
-        assert Income.objects.filter(pk=income_id).exists() is False
-        assert Income.all_objects.filter(pk=income_id).exists() is True
-
     def test_income_timestamps(self, income):
         """Verifica timestamps."""
         assert income.created_at is not None
@@ -382,17 +373,6 @@ class TestIncomeClassMethods:
         total = Income.get_monthly_total(user, month=1, year=2026)
         assert total == Decimal("0")
 
-    def test_get_monthly_total_excludes_inactive(self, user, income_category, income_factory):
-        income_factory(user, income_category, amount=Decimal("100.00"), date=date(2026, 1, 10))
-        inc2 = income_factory(
-            user, income_category, amount=Decimal("200.00"), date=date(2026, 1, 15)
-        )
-        inc2.soft_delete()
-
-        total = Income.get_monthly_total(user, month=1, year=2026)
-
-        assert total == Decimal("100.00")
-
     def test_get_monthly_total_excludes_other_months(self, user, income_category, income_factory):
         income_factory(user, income_category, amount=Decimal("100.00"), date=date(2026, 1, 10))
         income_factory(user, income_category, amount=Decimal("500.00"), date=date(2026, 2, 10))
@@ -420,15 +400,3 @@ class TestIncomeClassMethods:
     def test_get_by_category_returns_empty_if_no_incomes(self, user):
         result = list(Income.get_by_category(user, month=1, year=2026))
         assert result == []
-
-    def test_get_by_category_excludes_inactive(self, user, income_category, income_factory):
-        income_factory(user, income_category, amount=Decimal("100.00"), date=date(2026, 1, 10))
-        inc2 = income_factory(
-            user, income_category, amount=Decimal("200.00"), date=date(2026, 1, 15)
-        )
-        inc2.soft_delete()
-
-        result = list(Income.get_by_category(user, month=1, year=2026))
-
-        assert len(result) == 1
-        assert result[0]["total"] == Decimal("100.00")

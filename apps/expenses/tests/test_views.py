@@ -240,14 +240,13 @@ class TestExpenseDeleteView:
 
     def test_delete_expense_success(self, authenticated_client, expense):
         """Verifica eliminación exitosa de gasto."""
-        url = reverse("expenses:delete", kwargs={"pk": expense.pk})
+        expense_pk = expense.pk
+        url = reverse("expenses:delete", kwargs={"pk": expense_pk})
 
         response = authenticated_client.post(url)
 
         assert response.status_code == 302
-
-        expense.refresh_from_db()
-        assert not expense.is_active  # 🔧 E712
+        assert not Expense.objects.filter(pk=expense_pk).exists()
 
     def test_cannot_delete_other_user_expense(
         self, authenticated_client, other_user, expense_category_factory, expense_factory

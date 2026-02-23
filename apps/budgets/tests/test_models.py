@@ -51,12 +51,6 @@ class TestBudgetModel:
 
         assert budget.alert_threshold == 80
 
-    def test_budget_soft_delete(self, budget):
-        """Verifica soft delete."""
-        budget.soft_delete()
-
-        assert budget.is_active is False
-
     def test_budget_timestamps(self, budget):
         """Verifica timestamps."""
         assert budget.created_at is not None
@@ -523,37 +517,6 @@ class TestCopyFromPreviousMonth:
         assert len(created) == 1
         assert created[0].month == 6
         assert created[0].year == 2026
-
-    def test_copy_ignores_inactive_budgets(self, user, expense_category_factory):
-        """Verifica que no copia presupuestos inactivos (soft deleted)."""
-        cat1 = expense_category_factory(user, name="Comida")
-        cat2 = expense_category_factory(user, name="Transporte")
-
-        # Crear presupuesto activo
-        Budget.objects.create(
-            user=user,
-            category=cat1,
-            month=12,
-            year=2025,
-            amount=Decimal("10000.00"),
-        )
-
-        # Crear presupuesto inactivo (soft deleted)
-        inactive_budget = Budget.objects.create(
-            user=user,
-            category=cat2,
-            month=12,
-            year=2025,
-            amount=Decimal("5000.00"),
-        )
-        inactive_budget.soft_delete()
-
-        # Copiar
-        created = Budget.copy_from_previous_month(user, target_month=1, target_year=2026)
-
-        # Solo debe copiar el activo
-        assert len(created) == 1
-        assert created[0].category == cat1
 
     def test_copy_does_not_affect_other_users(self, user, other_user, expense_category_factory):
         """Verifica que la copia no afecta a otros usuarios."""

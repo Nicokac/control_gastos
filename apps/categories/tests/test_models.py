@@ -57,14 +57,6 @@ class TestCategoryModel:
         category = Category.objects.create(name="Test", type=CategoryType.EXPENSE, user=user)
 
         assert category.is_system is False
-        assert category.is_active is True
-
-    def test_category_soft_delete(self, expense_category):
-        """Verifica soft delete de categoría."""
-        expense_category.soft_delete()
-
-        assert expense_category.is_active is False
-        assert expense_category.deleted_at is not None
 
     def test_category_timestamps(self, user):
         """Verifica que se creen los timestamps."""

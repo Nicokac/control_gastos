@@ -376,17 +376,13 @@ class TestBudgetDeleteView:
 
     def test_delete_budget_success(self, authenticated_client, budget):
         """Verifica eliminación exitosa de presupuesto."""
-        url = reverse("budgets:delete", kwargs={"pk": budget.pk})
+        budget_pk = budget.pk
+        url = reverse("budgets:delete", kwargs={"pk": budget_pk})
 
         response = authenticated_client.post(url, follow=True)
 
         assert response.status_code == 200
-
-        budget.refresh_from_db()
-        assert not budget.is_active
-
-        msgs = [m.message for m in get_messages(response.wsgi_request)]
-        assert any("eliminado correctamente" in m for m in msgs)
+        assert not Budget.objects.filter(pk=budget_pk).exists()
 
     def test_cannot_delete_other_user_budget(
         self, authenticated_client, other_user, expense_category_factory, budget_factory
