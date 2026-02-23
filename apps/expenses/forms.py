@@ -10,7 +10,6 @@ from django.utils import timezone
 from apps.categories.models import Category
 from apps.core.constants import Currency, ExpenseType, PaymentMethod
 from apps.core.forms import BaseFilterForm
-from apps.savings.models import Saving, SavingStatus
 
 from .models import Expense
 
@@ -36,7 +35,6 @@ class ExpenseForm(forms.ModelForm):
             "description",
             "payment_method",
             "expense_type",
-            "saving",
         ]
         widgets = {
             "amount": forms.NumberInput(
@@ -105,18 +103,6 @@ class ExpenseForm(forms.ModelForm):
                 ),
                 empty_label=None,
                 required=True,
-            )
-
-            # Configurar campo de ahorro (solo activos del usuario)
-            self.fields["saving"] = forms.ModelChoiceField(
-                queryset=Saving.objects.filter(user=user, status=SavingStatus.ACTIVE),
-                required=False,
-                empty_label="-- No vincular a ahorro --",
-                widget=forms.Select(
-                    attrs={
-                        "class": "form-select",
-                    }
-                ),
             )
 
         # Fecha default = hoy
