@@ -95,7 +95,7 @@ class BudgetForm(forms.ModelForm):
     def clean_alert_threshold(self):
         """Valida que el umbral esté entre 1 y 100."""
         threshold = self.cleaned_data.get("alert_threshold")
-        # 🔧 SIM102: combinar if anidados en una sola condición
+
         if threshold is not None and not 1 <= threshold <= 100:
             raise forms.ValidationError("El umbral debe estar entre 1 y 100.")
         return threshold
@@ -109,7 +109,7 @@ class BudgetForm(forms.ModelForm):
         year = cleaned_data.get("year")
 
         # Validar que la categoría sea de tipo EXPENSE
-        # 🔧 SIM102: combinar if anidados
+
         if category and category.type != CategoryType.EXPENSE:
             raise forms.ValidationError(
                 {"category": "Solo se pueden crear presupuestos para categorías de gasto."}

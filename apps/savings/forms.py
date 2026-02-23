@@ -175,7 +175,7 @@ class SavingMovementForm(forms.ModelForm):
 
         return amount
 
-    def clean(self):  # 🔧 E SIM102
+    def clean(self):
         """Validaciones adicionales."""
         cleaned_data = super().clean()
 
