@@ -364,6 +364,27 @@ class TestExpenseCategoryValidation:
         expense.save()
         assert expense.pk is not None
 
+    def test_clean_does_not_call_category_objects_get(self, user, expense_category, monkeypatch):
+        """Verifica que clean() no ejecuta lookup extra por Category.objects.get()."""
+        from apps.categories.models import Category
+
+        def _forbidden_get(*args, **kwargs):
+            raise AssertionError("Category.objects.get() no debe usarse en Expense.clean()")
+
+        monkeypatch.setattr(Category.objects, "get", _forbidden_get)
+
+        expense = Expense(
+            user=user,
+            category=expense_category,
+            description="Sin query extra",
+            amount=Decimal("100.00"),
+            currency=Currency.ARS,
+            exchange_rate=Decimal("1.00"),
+            date=timezone.now().date(),
+        )
+
+        expense.full_clean()
+
 
 @pytest.mark.django_db
 class TestExpenseClassMethods:

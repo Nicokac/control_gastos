@@ -1,9 +1,8 @@
 """Modelo Expense para registro de gastos."""
 
-import logging
 from decimal import Decimal
 
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import models
 
 from apps.core.constants import ExpenseType, PaymentMethod
@@ -82,16 +81,14 @@ class Expense(TimestampMixin, CurrencyMixin, models.Model):
 
         # Validar que la categoría sea de tipo EXPENSE (seguridad para admin/shell)
         if self.category_id:
-            from apps.categories.models import Category
             from apps.core.constants import CategoryType
 
             try:
-                category = Category.objects.get(pk=self.category_id)
-                if category.type != CategoryType.EXPENSE:
+                if self.category.type != CategoryType.EXPENSE:
                     raise ValidationError({"category": "La categoría debe ser de tipo Gasto."})
-            except Category.DoesNotExist:
-                logger = logging.getLogger("apps.expenses")
-                logger.warning(f"Expense.clean(): Category {self.category_id} no existe")
+            except ObjectDoesNotExist:
+                # Si category_id apunta a un registro inexistente, dejamos que la FK/DB lo resuelva.
+                pass
 
     def delete(self, *args, **kwargs):
         """Elimina el gasto."""
