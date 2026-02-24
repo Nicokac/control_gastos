@@ -85,33 +85,29 @@
                             {% endif %}
                         </div>
 
-                        <!-- CATEGORÍA (botones visuales) -->
+                        <!-- CATEGORÍA -->
                         <div class="mb-4">
-                            <label class="form-label">Categoría</label>
-                            {% if form.category.errors %}
-                            <div class="text-danger small mb-2">{{ form.category.errors.0 }}</div>
-                            {% endif %}
-                            <div class="category-grid">
+                            <label class="form-label" for="id_category">Categoría</label>
+                            <select name="category"
+                                    id="id_category"
+                                    class="form-select {% if form.category.errors %}is-invalid{% endif %}"
+                                    required>
+                                <option value="">-- Seleccionar categoría --</option>
                                 {% for category in categories %}
-                                <label class="category-btn">
-                                    <input type="radio"
-                                           name="category"
-                                           value="{{ category.id }}"
-                                           {% if form.category.value|stringformat:"s" == category.id|stringformat:"s" %}checked{% endif %}
-                                           required>
-                                    <div class="btn btn-outline-secondary">
-                                        <i class="{{ category.icon|default:'bi-tag' }}"
-                                           style="color: {{ category.color|default:'#6c757d' }}"></i>
-                                        <small>{{ category.name }}</small>
-                                    </div>
-                                </label>
+                                <option value="{{ category.id }}"
+                                        {% if form.category.value|stringformat:"s" == category.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ category.name }}
+                                </option>
                                 {% endfor %}
-                            </div>
+                            </select>
+                            {% if form.category.errors %}
+                            <div class="invalid-feedback d-block">{{ form.category.errors.0 }}</div>
+                            {% endif %}
                         </div>
 
-                        <!-- FECHA y DESCRIPCIÓN -->
-                        <div class="row mb-4">
-                            <div class="col-md-4">
+                        <!-- QUICK ADD (mínimo visible) -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
                                 <label class="form-label">Fecha</label>
                                 <input type="date"
                                        name="date"
@@ -123,32 +119,31 @@
                                 <div class="invalid-feedback">{{ form.date.errors.0 }}</div>
                                 {% endif %}
                             </div>
-                            <div class="col-md-8">
-                                <label class="form-label">Descripción</label>
-                                <input type="text"
-                                       name="description"
-                                       id="id_description"
-                                       class="form-control {% if form.description.errors %}is-invalid{% endif %}"
-                                       placeholder="Ej: Supermercado Coto, Nafta YPF..."
-                                       value="{{ form.description.value|default:'' }}"
-                                       required>
-                                {% if form.description.errors %}
-                                <div class="invalid-feedback">{{ form.description.errors.0 }}</div>
-                                {% endif %}
-                            </div>
                         </div>
 
-                        <!-- CAMPOS OPCIONALES (colapsados por defecto) -->
+                        <!-- OPCIONES AVANZADAS (colapsadas por defecto) -->
                         <div class="mb-4">
                             <a class="text-decoration-none small"
                                data-bs-toggle="collapse"
-                               href="#optionalFields"
+                               href="#advancedFields"
                                role="button">
-                                <i class="bi bi-chevron-down me-1"></i>Más opciones
+                                <i class="bi bi-chevron-down me-1"></i>Opciones avanzadas
                             </a>
                             <div class="collapse {% if form.payment_method.value or form.expense_type.value %}show{% endif %}"
-                                 id="optionalFields">
+                                 id="advancedFields">
                                 <div class="row mt-3 pt-3 border-top">
+                                    <div class="col-12 mb-3">
+                                        <label class="form-label text-muted">Descripción (opcional)</label>
+                                        <input type="text"
+                                               name="description"
+                                               id="id_description"
+                                               class="form-control {% if form.description.errors %}is-invalid{% endif %}"
+                                               placeholder="Ej: Supermercado Coto, Nafta YPF..."
+                                               value="{{ form.description.value|default:'' }}">
+                                        {% if form.description.errors %}
+                                        <div class="invalid-feedback">{{ form.description.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label text-muted">Método de pago</label>
                                         <select name="payment_method" class="form-select">

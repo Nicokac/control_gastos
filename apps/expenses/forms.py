@@ -96,14 +96,17 @@ class ExpenseForm(CurrencyFormMixin, forms.ModelForm):
         if user:
             self.fields["category"] = forms.ModelChoiceField(
                 queryset=Category.get_expense_categories(user),
-                widget=forms.RadioSelect(
+                widget=forms.Select(
                     attrs={
-                        "class": "category-radio",
+                        "class": "form-select",
                     }
                 ),
-                empty_label=None,
+                empty_label="-- Seleccionar categoría --",
                 required=True,
             )
+
+        # Quick Add: descripción opcional con fallback seguro
+        self.fields["description"].required = False
 
         # Fecha default = hoy
         if not self.instance.pk:
@@ -145,6 +148,11 @@ class ExpenseForm(CurrencyFormMixin, forms.ModelForm):
                 raise forms.ValidationError({"category": "La categoría debe ser de tipo Gasto."})
 
         return cleaned_data
+
+    def clean_description(self):
+        """Permite quick-add sin descripción explícita."""
+        description = (self.cleaned_data.get("description") or "").strip()
+        return description or "Sin descripción"
 
     def save(self, commit=True):
         """Guarda el gasto asignando el usuario."""

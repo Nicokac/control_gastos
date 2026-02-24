@@ -131,8 +131,8 @@ class TestExpenseCreateView:
         url = reverse("expenses:create")
         data = {
             "category": expense_category.pk,
-            "description": "",  # Descripción vacía
-            "amount": "100.00",
+            "description": "",
+            "amount": "",  # Monto inválido
             "currency": Currency.ARS,
             "date": timezone.now().date().isoformat(),
         }

@@ -59,11 +59,11 @@ class TestExpenseForm:
             user=user,
         )
 
-        assert not form.is_valid()
-        assert "category" in form.errors
+        assert form.is_valid(), form.errors
+        assert form.cleaned_data["description"] == "Sin descripción"
 
-    def test_description_required(self, user, expense_category):
-        """Verifica que la descripción sea requerida."""
+    def test_description_is_optional_with_fallback(self, user, expense_category):
+        """Verifica quick-add: descripción opcional con fallback."""
         form = ExpenseForm(
             data={
                 "category": expense_category.pk,

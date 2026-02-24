@@ -68,7 +68,9 @@ function initFormValidation(formId) {
 
     form.addEventListener('submit', function(e) {
         const amount = document.getElementById('id_amount');
-        const category = document.querySelector('input[name="category"]:checked');
+        const categoryRadio = document.querySelector('input[name="category"]:checked');
+        const categorySelect = document.getElementById('id_category');
+        const categoryValue = categorySelect ? categorySelect.value : (categoryRadio ? categoryRadio.value : '');
         const description = document.getElementById('id_description');
 
         let isValid = true;
@@ -84,21 +86,25 @@ function initFormValidation(formId) {
         }
 
         // Validar categoría
-        if (!category) {
+        if (!categoryValue) {
             const categoryGrid = document.querySelector('.category-grid');
-            if (categoryGrid) {
+            if (categorySelect) {
+                categorySelect.classList.add('is-invalid');
+            } else if (categoryGrid) {
                 categoryGrid.classList.add('border', 'border-danger', 'rounded', 'p-2');
             }
             isValid = false;
-            firstError = firstError || categoryGrid;
+            firstError = firstError || categorySelect || categoryGrid;
+        } else if (categorySelect) {
+            categorySelect.classList.remove('is-invalid');
         }
 
-        // Validar descripción
-        if (!description.value.trim()) {
+        // Validar descripción solo si está requerida en el formulario
+        if (description && description.required && !description.value.trim()) {
             description.classList.add('is-invalid');
             isValid = false;
             firstError = firstError || description;
-        } else {
+        } else if (description) {
             description.classList.remove('is-invalid');
         }
 
@@ -163,6 +169,13 @@ function initClearValidation() {
             }
         });
     });
+
+    const categorySelect = document.getElementById('id_category');
+    if (categorySelect) {
+        categorySelect.addEventListener('change', function() {
+            this.classList.remove('is-invalid');
+        });
+    }
 
     // Limpiar error de exchange rate al escribir
     const exchangeRate = document.getElementById('id_exchange_rate');
