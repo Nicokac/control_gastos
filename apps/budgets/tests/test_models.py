@@ -257,6 +257,30 @@ class TestBudgetQuerySet:
         assert budgets.count() == 1
         assert budgets.first().spent_amount == Decimal("3000.00")
 
+    def test_get_with_spent_supports_year_only(self, user, expense_category, budget_factory):
+        """Verifica filtro abierto por año (month=None)."""
+        b1 = budget_factory(user, expense_category, month=1, year=2026, amount=Decimal("1000.00"))
+        b2 = budget_factory(user, expense_category, month=2, year=2026, amount=Decimal("1200.00"))
+        b_other = budget_factory(
+            user, expense_category, month=1, year=2025, amount=Decimal("900.00")
+        )
+
+        budgets = list(Budget.get_with_spent(user, month=None, year=2026))
+
+        assert b1 in budgets
+        assert b2 in budgets
+        assert b_other not in budgets
+
+    def test_get_with_spent_supports_open_period(self, user, expense_category, budget_factory):
+        """Verifica filtro completamente abierto (month=None, year=None)."""
+        b1 = budget_factory(user, expense_category, month=1, year=2026, amount=Decimal("1000.00"))
+        b2 = budget_factory(user, expense_category, month=2, year=2025, amount=Decimal("1200.00"))
+
+        budgets = list(Budget.get_with_spent(user, month=None, year=None))
+
+        assert b1 in budgets
+        assert b2 in budgets
+
 
 @pytest.mark.django_db
 class TestBudgetConstraints:

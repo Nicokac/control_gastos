@@ -32,39 +32,44 @@ class BudgetListView(UserOwnedListView):
     context_object_name = "budgets"
     paginate_by = 12
 
-    def get_queryset(self):
-        """Filtra presupuestos del usuario actual con spent pre-calculado."""
-        month = self.request.GET.get("month")
-        year = self.request.GET.get("year")
-        category = self.request.GET.get("category")
+    def _get_period_filters(self):
+        """Normaliza month/year desde query params respetando empty choices del filtro."""
+        month_raw = self.request.GET.get("month")
+        year_raw = self.request.GET.get("year")
 
-        # Default: mes actual SOLO si no hay parámetros en la URL
-        if "month" not in self.request.GET and "year" not in self.request.GET:
+        has_period_params = "month" in self.request.GET or "year" in self.request.GET
+
+        # Sin parámetros de período en URL: default al mes actual
+        if not has_period_params:
             from django.utils import timezone
 
             today = timezone.now().date()
-            month = today.month
-            year = today.year
+            return today.month, today.year
 
-        # Validar / normalizar parámetros ("" -> None)
+        month = None
+        year = None
+
         try:
-            if month:
-                month = int(month)
+            if month_raw not in (None, ""):
+                month = int(month_raw)
                 if not (1 <= month <= 12):
                     month = None
-            else:
-                month = None
 
-            if year:
-                year = int(year)
+            if year_raw not in (None, ""):
+                year = int(year_raw)
                 if not (2020 <= year <= 2100):
                     year = None
-            else:
-                year = None
         except (ValueError, TypeError) as e:
-            logger.debug(f"BudgetListView: filtro inválido ignorado - {e}")
+            logger.debug(f"BudgetListView: filtro de período inválido ignorado - {e}")
             month = None
             year = None
+
+            return month, year
+
+    def get_queryset(self):
+        """Filtra presupuestos del usuario actual con spent pre-calculado."""
+        month, year = self._get_period_filters()
+        category = self.request.GET.get("category")
 
         queryset = Budget.get_with_spent(user=self.request.user, month=month, year=year)
 
@@ -85,23 +90,7 @@ class BudgetListView(UserOwnedListView):
             user=self.request.user,
         )
 
-        month = self.request.GET.get("month")
-        year = self.request.GET.get("year")
-
-        # Default solo si no hay parámetros
-        if "month" not in self.request.GET and "year" not in self.request.GET:
-            from django.utils import timezone
-
-            today = timezone.now().date()
-            month = today.month
-            year = today.year
-        else:
-            try:
-                month = int(month) if month else None
-                year = int(year) if year else None
-            except (ValueError, TypeError):
-                month = None
-                year = None
+        month, year = self._get_period_filters()
 
         context["current_month"] = month
         context["current_year"] = year
@@ -126,9 +115,9 @@ class BudgetListView(UserOwnedListView):
 
         if month and year:
             context["period_name"] = f"{get_month_name(month)} {year}"
-        elif year and not month:
+        elif year:
             context["period_name"] = f"Año {year}"
-        elif month and not year:
+        elif month:
             context["period_name"] = f"{get_month_name(month)} (todos los años)"
         else:
             context["period_name"] = "Todos los meses / Todos los años"

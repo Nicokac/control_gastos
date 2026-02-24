@@ -357,11 +357,13 @@ class Budget(TimestampMixin, models.Model):
 
         queryset = cls.objects.filter(user=user).select_related("category")
 
-        # Filtrar por período si se especifica
-        if month and year:
+        # Filtrar por período si se especifica (admite filtros abiertos)
+        if month is not None and year is not None:
             queryset = queryset.filter(month=month, year=year)
-        elif year:
+        elif year is not None:
             queryset = queryset.filter(year=year)
+        elif month is not None:
+            queryset = queryset.filter(month=month)
 
         # Anotar con spent
         queryset = queryset.annotate(

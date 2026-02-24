@@ -130,6 +130,54 @@ class TestBudgetListView:
         resp_bad = authenticated_client.get(url, {"category": "not-an-int"})
         assert resp_bad.status_code == 200
 
+    def test_empty_month_year_params_return_all_periods(
+        self, authenticated_client, user, expense_category, budget_factory
+    ):
+        """Verifica que month=&year= no fuerce defaults y muestre todos los períodos."""
+        b_2026 = budget_factory(
+            user, expense_category, month=1, year=2026, amount=Decimal("100.00")
+        )
+        b_2025 = budget_factory(
+            user, expense_category, month=12, year=2025, amount=Decimal("200.00")
+        )
+
+        url = reverse("budgets:list")
+        response = authenticated_client.get(url, {"month": "", "year": ""})
+
+        assert response.status_code == 200
+        budgets = list(response.context["budgets"])
+        assert b_2026 in budgets
+        assert b_2025 in budgets
+        assert response.context["current_month"] is None
+        assert response.context["current_year"] is None
+        assert response.context["period_name"] == "Todos los meses / Todos los años"
+
+    def test_year_only_filter_returns_entire_year(
+        self, authenticated_client, user, expense_category, budget_factory
+    ):
+        """Verifica /budgets/?year=YYYY sin forzar mes."""
+        b_match_1 = budget_factory(
+            user, expense_category, month=1, year=2026, amount=Decimal("100.00")
+        )
+        b_match_2 = budget_factory(
+            user, expense_category, month=8, year=2026, amount=Decimal("300.00")
+        )
+        b_other = budget_factory(
+            user, expense_category, month=1, year=2025, amount=Decimal("500.00")
+        )
+
+        url = reverse("budgets:list")
+        response = authenticated_client.get(url, {"year": "2026"})
+
+        assert response.status_code == 200
+        budgets = list(response.context["budgets"])
+        assert b_match_1 in budgets
+        assert b_match_2 in budgets
+        assert b_other not in budgets
+        assert response.context["current_month"] is None
+        assert response.context["current_year"] == 2026
+        assert response.context["period_name"] == "Año 2026"
+
     def test_context_includes_summary_and_period_name(self, rf, user, monkeypatch):
         """
         Cubre get_context_data:
