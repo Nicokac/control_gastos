@@ -8,13 +8,12 @@ from django import forms
 from django.utils import timezone
 
 from apps.categories.models import Category
-from apps.core.constants import Currency
-from apps.core.forms import BaseFilterForm
+from apps.core.forms import BaseFilterForm, CurrencyFormMixin
 
 from .models import Income
 
 
-class IncomeForm(forms.ModelForm):
+class IncomeForm(CurrencyFormMixin, forms.ModelForm):
     """Formulario optimizado para registro de ingresos."""
 
     class Meta:
@@ -108,33 +107,6 @@ class IncomeForm(forms.ModelForm):
         # Hacer campos opcionales explícitamente no requeridos
         self.fields["is_recurring"].required = False
         self.fields["exchange_rate"].required = False
-
-    def clean_amount(self):
-        """Valida que el monto sea positivo."""
-        amount = self.cleaned_data.get("amount")
-        if amount is not None and amount <= 0:
-            raise forms.ValidationError("El monto debe ser mayor a cero.")
-        return amount
-
-    def clean_exchange_rate(self):
-        """Valida y setea exchange_rate según la moneda."""
-        exchange_rate = self.cleaned_data.get("exchange_rate")
-        currency = self.cleaned_data.get("currency")
-
-        # Si es ARS, exchange_rate siempre es 1
-        if currency == Currency.ARS:
-            return Decimal("1.0000")
-
-        # Si es USD, validar exchange_rate
-        if currency == Currency.USD:
-            # El campo puede venir vacío si estaba disabled
-            if not exchange_rate:
-                raise forms.ValidationError("Ingresá la cotización del dólar.")
-            if exchange_rate <= 0:
-                raise forms.ValidationError("La cotización debe ser mayor a cero.")
-            return exchange_rate
-
-        return Decimal("1.0000")
 
     def clean(self):
         """Validaciones adicionales."""

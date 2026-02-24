@@ -30,42 +30,44 @@ class BudgetListView(UserOwnedListView):
     model = Budget
     template_name = "budgets/budget_list.html"
     context_object_name = "budgets"
-    paginate_by = 12  # Override del default 20
+    paginate_by = 12
 
     def get_queryset(self):
         """Filtra presupuestos del usuario actual con spent pre-calculado."""
-        # Determinar período
         month = self.request.GET.get("month")
         year = self.request.GET.get("year")
         category = self.request.GET.get("category")
 
-        # Valores por defecto: mes actual
-        if not month and not year:
+        # Default: mes actual SOLO si no hay parámetros en la URL
+        if "month" not in self.request.GET and "year" not in self.request.GET:
             from django.utils import timezone
 
             today = timezone.now().date()
             month = today.month
             year = today.year
 
-        # Validar parámetros
+        # Validar / normalizar parámetros ("" -> None)
         try:
             if month:
                 month = int(month)
                 if not (1 <= month <= 12):
                     month = None
+            else:
+                month = None
+
             if year:
                 year = int(year)
                 if not (2020 <= year <= 2100):
                     year = None
+            else:
+                year = None
         except (ValueError, TypeError) as e:
             logger.debug(f"BudgetListView: filtro inválido ignorado - {e}")
             month = None
             year = None
 
-        # Usar método optimizado que evita N+1
         queryset = Budget.get_with_spent(user=self.request.user, month=month, year=year)
 
-        # Filtro adicional por categoría
         if category:
             try:
                 category_id = int(category)
@@ -76,19 +78,18 @@ class BudgetListView(UserOwnedListView):
         return queryset
 
     def get_context_data(self, **kwargs):
-        """Agrega datos adicionales al contexto."""
         context = super().get_context_data(**kwargs)
 
-        # Formulario de filtros
         context["filter_form"] = BudgetFilterForm(
-            data=self.request.GET or None, user=self.request.user
+            data=self.request.GET or None,
+            user=self.request.user,
         )
 
-        # Determinar período actual
         month = self.request.GET.get("month")
         year = self.request.GET.get("year")
 
-        if not month or not year:
+        # Default solo si no hay parámetros
+        if "month" not in self.request.GET and "year" not in self.request.GET:
             from django.utils import timezone
 
             today = timezone.now().date()
@@ -96,21 +97,16 @@ class BudgetListView(UserOwnedListView):
             year = today.year
         else:
             try:
-                month = int(month)
-                year = int(year)
+                month = int(month) if month else None
+                year = int(year) if year else None
             except (ValueError, TypeError):
-                from django.utils import timezone
-
-                today = timezone.now().date()
-                month = today.month
-                year = today.year
+                month = None
+                year = None
 
         context["current_month"] = month
         context["current_year"] = year
 
-        # Calcular resumen usando los presupuestos ya cargados (con _spent_annotated)
         budgets = list(context["budgets"])
-
         total_budgeted = sum(b.amount for b in budgets)
         total_spent = sum(b.spent_amount for b in budgets)
 
@@ -126,10 +122,16 @@ class BudgetListView(UserOwnedListView):
             "warning_count": sum(1 for b in budgets if b.is_near_limit),
         }
 
-        # Nombre del mes
         from apps.core.utils import get_month_name
 
-        context["period_name"] = f"{get_month_name(month)} {year}"
+        if month and year:
+            context["period_name"] = f"{get_month_name(month)} {year}"
+        elif year and not month:
+            context["period_name"] = f"Año {year}"
+        elif month and not year:
+            context["period_name"] = f"{get_month_name(month)} (todos los años)"
+        else:
+            context["period_name"] = "Todos los meses / Todos los años"
 
         return context
 

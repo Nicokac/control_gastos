@@ -2,14 +2,12 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from apps.core.constants import Currency
+
 
 # Create your models here.
 class User(AbstractUser):
     """Custom user model with finance preferences."""
-
-    class Currency(models.TextChoices):
-        ARS = "ARS", "Peso Argentino"
-        USD = "USD", "Dólar Estadounidense"
 
     email = models.EmailField(unique=True)
     default_currency = models.CharField(
