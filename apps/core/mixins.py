@@ -73,18 +73,3 @@ class CurrencyMixin(models.Model):
     def formatted_amount_ars(self):
         formatted = f"{self.amount_ars:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
         return f"$ {formatted}"
-
-
-class UserOwnedMixin(models.Model):
-    """
-    Mixin para modelos que pertenecen a un usuario.
-    Requiere que el modelo User esté definido.
-    """
-
-    # Se define como string para evitar imports circulares
-    user = models.ForeignKey(
-        "users.User", on_delete=models.CASCADE, related_name="%(class)ss", verbose_name="Usuario"
-    )
-
-    class Meta:
-        abstract = True

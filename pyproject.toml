@@ -53,7 +53,6 @@ omit = [
   "conftest.py",
   "*/conftest.py",
   "apps/core/export.py",
-  "apps/core/views.py",
 ]
 parallel = false
 

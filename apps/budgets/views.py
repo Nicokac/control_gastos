@@ -64,7 +64,7 @@ class BudgetListView(UserOwnedListView):
             month = None
             year = None
 
-            return month, year
+        return month, year
 
     def get_queryset(self):
         """Filtra presupuestos del usuario actual con spent pre-calculado."""
