@@ -2,10 +2,9 @@
 Modelo Budget para presupuestos mensuales.
 """
 
-import logging
 from decimal import Decimal
 
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Sum
@@ -85,17 +84,13 @@ class Budget(TimestampMixin, models.Model):
 
         # Validar que la categoría sea de tipo EXPENSE
         if self.category_id:
-            from apps.categories.models import Category
-
             try:
-                category = Category.objects.get(pk=self.category_id)
-                if category.type != CategoryType.EXPENSE:
+                if self.category.type != CategoryType.EXPENSE:
                     raise ValidationError(
                         {"category": "Solo se pueden crear presupuestos para categorías de gasto."}
                     )
-            except Category.DoesNotExist:
-                logger = logging.getLogger("apps.budgets")
-                logger.warning(f"Budget.clean(): Category {self.category_id} no existe")
+            except ObjectDoesNotExist:
+                pass  # FK inválida se maneja en validación estándar
 
     @property
     def month_name(self):
@@ -244,7 +239,7 @@ class Budget(TimestampMixin, models.Model):
         Returns:
             Dict con totales
         """
-        budgets = cls.get_user_budgets(user, month=month, year=year)
+        budgets = cls.get_with_spent(user, month=month, year=year)
 
         total_budgeted = sum(b.amount for b in budgets)
         total_spent = sum(b.spent_amount for b in budgets)

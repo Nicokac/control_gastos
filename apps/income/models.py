@@ -2,10 +2,9 @@
 Modelo Income para registro de ingresos.
 """
 
-import logging
 from decimal import Decimal
 
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import models
 
 from apps.core.constants import CategoryType
@@ -60,17 +59,12 @@ class Income(TimestampMixin, CurrencyMixin, models.Model):
         if self.amount is not None and self.amount <= 0:
             raise ValidationError({"amount": "El monto debe ser mayor a cero."})
 
-        # Validar que la categoría sea de tipo INCOME (seguridad para admin/shell)
         if self.category_id:
-            from apps.categories.models import Category
-
             try:
-                category = Category.objects.get(pk=self.category_id)
-                if category.type != CategoryType.INCOME:
+                if self.category.type != CategoryType.INCOME:
                     raise ValidationError({"category": "La categoría debe ser de tipo Ingreso."})
-            except Category.DoesNotExist:
-                logger = logging.getLogger("apps.income")
-                logger.warning(f"Income.clean(): Category {self.category_id} no existe")
+            except ObjectDoesNotExist:
+                pass  # FK inválida se maneja en validación estándar
 
     @classmethod
     def get_user_incomes(cls, user, month=None, year=None):
