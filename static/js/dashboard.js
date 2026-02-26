@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const colorsNode = document.getElementById('chart-colors-data');
 
         if (!labelsNode || !valuesNode || !colorsNode) {
-            console.warn('No se encontraron los datos del gráfico');
             return;
         }
 
@@ -19,7 +18,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const colors = JSON.parse(colorsNode.textContent);
 
         if (!labels.length || !data.length) {
-            console.warn('Datos del gráfico vacíos');
             return;
         }
 
@@ -57,6 +55,6 @@ document.addEventListener('DOMContentLoaded', function () {
             },
         });
     } catch (error) {
-        console.error('Error parseando datos del gráfico', error);
+        // Silenciar errores de parsing en producción
     }
 });

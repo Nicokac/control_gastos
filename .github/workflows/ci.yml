@@ -139,6 +139,10 @@ jobs:
           pip install safety pip-audit
 
       - name: 🔒 Check for security vulnerabilities (pip-audit)
+        # PYSEC-2024-48: Jinja2 DoS via recursive template rendering
+        # Ignorado porque: Los templates Django son controlados por desarrolladores,
+        # no por usuarios. No hay riesgo de templates maliciosos en este contexto.
+        # Ref: https://github.com/advisories/GHSA-h75v-3vvj-5mfj
         run: pip-audit -r requirements/base.txt --ignore-vuln PYSEC-2024-48
         continue-on-error: true
 
