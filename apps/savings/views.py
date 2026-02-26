@@ -53,20 +53,23 @@ class SavingListView(UserOwnedListView):
         # Formulario de filtros
         context["filter_form"] = SavingFilterForm(data=self.request.GET or None)
 
-        # Obtener metas activas del usuario
-        user_savings = Saving.objects.filter(user=self.request.user)
-        active_savings = user_savings.filter(status=SavingStatus.ACTIVE)
+        # Query única: counts + sums con conditional aggregation
+        from django.db.models import Count, Q, Sum
 
-        # Contadores
-        context["active_count"] = active_savings.count()
-        context["completed_count"] = user_savings.filter(status=SavingStatus.COMPLETED).count()
-
-        # Resumen global de metas activas
-        from django.db.models import Sum
-
-        totals = active_savings.aggregate(
-            total_target=Sum("target_amount"), total_current=Sum("current_amount")
+        aggregates = Saving.objects.filter(user=self.request.user).aggregate(
+            active_count=Count("pk", filter=Q(status=SavingStatus.ACTIVE)),
+            completed_count=Count("pk", filter=Q(status=SavingStatus.COMPLETED)),
+            total_target=Sum("target_amount", filter=Q(status=SavingStatus.ACTIVE)),
+            total_current=Sum("current_amount", filter=Q(status=SavingStatus.ACTIVE)),
         )
+
+        context["active_count"] = aggregates["active_count"]
+        context["completed_count"] = aggregates["completed_count"]
+
+        totals = {
+            "total_target": aggregates["total_target"],
+            "total_current": aggregates["total_current"],
+        }
 
         total_target = totals["total_target"] or Decimal("0")
         total_current = totals["total_current"] or Decimal("0")

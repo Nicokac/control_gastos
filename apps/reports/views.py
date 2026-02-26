@@ -5,7 +5,7 @@ Vistas para dashboard y reportes.
 from decimal import Decimal
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q, Sum
+from django.db.models import Count, Q, Sum
 from django.utils import timezone
 from django.views.generic import TemplateView
 
@@ -172,36 +172,51 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
     def _get_savings_data(self, user):
         """Obtiene datos de metas de ahorro activas."""
-        active_savings = list(Saving.objects.filter(user=user, status=SavingStatus.ACTIVE))
+        today = timezone.now().date()
+        month_start, month_end = get_month_date_range_exclusive(today.month, today.year)
 
-        # Totales
-        total_target = sum(s.target_amount for s in active_savings)
-        total_current = sum(s.current_amount for s in active_savings)
+        # Query 1: Aggregates (totales + count completed) en una sola query
+        aggregates = Saving.objects.filter(user=user).aggregate(
+            total_target=Sum(
+                "target_amount", filter=Q(status=SavingStatus.ACTIVE), default=Decimal("0")
+            ),
+            total_current=Sum(
+                "current_amount", filter=Q(status=SavingStatus.ACTIVE), default=Decimal("0")
+            ),
+            active_count=Count("pk", filter=Q(status=SavingStatus.ACTIVE)),
+            completed_this_month=Count(
+                "pk",
+                filter=Q(
+                    status=SavingStatus.COMPLETED,
+                    updated_at__gte=month_start,
+                    updated_at__lt=month_end,
+                ),
+            ),
+        )
+
+        total_target = aggregates["total_target"]
+        total_current = aggregates["total_current"]
 
         if total_target > 0:
             overall_progress = round((total_current / total_target) * 100, 1)
         else:
             overall_progress = 0
 
-        # Metas completadas este mes
-        today = timezone.now().date()
-        month_start, month_end = get_month_date_range_exclusive(today.month, today.year)
-        completed_this_month = Saving.objects.filter(
-            user=user,
-            status=SavingStatus.COMPLETED,
-            updated_at__gte=month_start,
-            updated_at__lt=month_end,
-        ).count()
-
-        # Top 3 metas por progreso
-        top_savings = sorted(active_savings, key=lambda x: x.progress_percentage, reverse=True)[:3]
+        # Query 2: Top 3 metas activas por progreso (necesita objetos)
+        top_savings = list(
+            Saving.objects.filter(user=user, status=SavingStatus.ACTIVE).order_by(
+                "-current_amount"
+            )[:3]
+        )
+        # Ordenar por progress_percentage en Python (campo calculado)
+        top_savings.sort(key=lambda x: x.progress_percentage, reverse=True)
 
         return {
-            "savings_count": len(active_savings),
+            "savings_count": aggregates["active_count"],
             "savings_total_target": total_target,
             "savings_total_current": total_current,
             "savings_progress": overall_progress,
-            "savings_completed_month": completed_this_month,
+            "savings_completed_month": aggregates["completed_this_month"],
             "top_savings": top_savings,
         }
 
