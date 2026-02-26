@@ -28,7 +28,7 @@ def export_to_csv(
         HttpResponse con el archivo CSV
     """
     response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = f'attachment; filanem="{filename}.csv"'
+    response["Content-Disposition"] = f'attachment; filename="{filename}.csv"'
     response.write("\ufeff")  # BOM para Excel
 
     if not data:
