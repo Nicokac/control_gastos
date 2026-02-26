@@ -286,3 +286,35 @@ DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default=ADMIN_EMAIL or "norepl
 SERVER_EMAIL = config("SERVER_EMAIL", default=DEFAULT_FROM_EMAIL)
 
 apply_email_settings(globals())
+
+# =============================================================================
+# SENTRY - Error Tracking
+# =============================================================================
+SENTRY_DSN = config("SENTRY_DSN", default="")
+
+if SENTRY_DSN:
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+    from sentry_sdk.integrations.logging import LoggingIntegration
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[
+            DjangoIntegration(
+                transaction_style="url",
+                middleware_spans=False,
+            ),
+            LoggingIntegration(
+                level=None,  # Captura logs de nivel INFO+
+                event_level="ERROR",  # Solo ERROR+ se envían como eventos
+            ),
+        ],
+        # Enviar 10% de transacciones para performance (opcional, 0 para desactivar)
+        traces_sample_rate=0.0,
+        # Asociar errores con releases
+        release=config("RENDER_GIT_COMMIT", default="unknown"),
+        # Entorno
+        environment="production",
+        # No enviar PII por defecto
+        send_default_pii=False,
+    )
