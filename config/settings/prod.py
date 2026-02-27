@@ -11,18 +11,15 @@ from .email_backend import apply_email_settings
 # Validar longitud mínima de SECRET_KEY (50 caracteres recomendado)
 if len(SECRET_KEY) < 50:
     raise ImproperlyConfigured(
-        "\n"
-        "=" * 60 + "\n"
-        "❌ ERROR: SECRET_KEY es demasiado corta\n"
-        "=" * 60 + "\n"
+        "\n" + "=" * 60 + "\n"
+        "❌ ERROR: SECRET_KEY es demasiado corta\n" + "=" * 60 + "\n"
         f"\n"
         f"Longitud actual: {len(SECRET_KEY)} caracteres\n"
         f"Longitud mínima: 50 caracteres\n"
         "\n"
         "Generar clave segura con:\n"
         '  python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"\n'
-        "\n"
-        "=" * 60
+        "\n" + "=" * 60
     )
 
 # Validar que no contenga valores inseguros conocidos
@@ -40,17 +37,14 @@ INSECURE_KEYS = [
 for insecure in INSECURE_KEYS:
     if insecure in SECRET_KEY.lower():
         raise ImproperlyConfigured(
-            "\n"
-            "=" * 60 + "\n"
-            "❌ ERROR: SECRET_KEY contiene valor inseguro\n"
-            "=" * 60 + "\n"
+            "\n" + "=" * 60 + "\n"
+            "❌ ERROR: SECRET_KEY contiene valor inseguro\n" + "=" * 60 + "\n"
             f"\n"
             f"Se detectó '{insecure}' en SECRET_KEY\n"
             "\n"
             "Generar clave segura con:\n"
             '  python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"\n'
-            "\n"
-            "=" * 60
+            "\n" + "=" * 60
         )
 
 if config("CI_DEPLOY_CHECK", default=False, cast=bool):

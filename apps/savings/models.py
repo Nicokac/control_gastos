@@ -6,7 +6,7 @@ from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
-from django.db import models
+from django.db import models, transaction
 from django.db.models import F
 
 from apps.core.constants import Currency
@@ -177,7 +177,7 @@ class Saving(TimestampMixin, models.Model):
         """
         Agrega un retiro de la meta de ahorro.
 
-        Usa F() expressions para evitar race conditions.
+        Usa select_for_update + transaction.atomic para evitar race conditions.
 
         Args:
             amount: Monto a retirar
@@ -192,19 +192,20 @@ class Saving(TimestampMixin, models.Model):
         if amount <= 0:
             raise ValueError("El monto debe ser mayor a cero.")
 
-        # Refrescar para tener el valor más actualizado
-        self.refresh_from_db()
+        with transaction.atomic():
+            # Bloquear el registro para evitar race conditions (SELECT FOR UPDATE)
+            locked_saving = Saving.objects.select_for_update().get(pk=self.pk)
 
-        if amount > self.current_amount:
-            raise ValueError("No hay suficiente saldo para este retiro.")
+            if amount > locked_saving.current_amount:
+                raise ValueError("No hay suficiente saldo para este retiro.")
 
-        # Crear el movimiento
-        movement = SavingMovement.objects.create(
-            saving=self, type=MovementType.WITHDRAWAL, amount=amount, description=description
-        )
+            # Crear el movimiento
+            movement = SavingMovement.objects.create(
+                saving=self, type=MovementType.WITHDRAWAL, amount=amount, description=description
+            )
 
-        # Actualizar current_amount usando F() para evitar race conditions
-        Saving.objects.filter(pk=self.pk).update(current_amount=F("current_amount") - amount)
+            # Actualizar current_amount usando F() para operación atómica
+            Saving.objects.filter(pk=self.pk).update(current_amount=F("current_amount") - amount)
 
         # Refrescar la instancia para obtener el valor actualizado
         self.refresh_from_db()

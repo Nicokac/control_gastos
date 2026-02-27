@@ -2,6 +2,7 @@
 Vistas para dashboard y reportes.
 """
 
+from datetime import datetime, time
 from decimal import Decimal
 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -173,7 +174,11 @@ class DashboardView(LoginRequiredMixin, TemplateView):
     def _get_savings_data(self, user):
         """Obtiene datos de metas de ahorro activas."""
         today = timezone.now().date()
-        month_start, month_end = get_month_date_range_exclusive(today.month, today.year)
+        month_start_date, month_end_date = get_month_date_range_exclusive(today.month, today.year)
+
+        # Convertir a datetime aware para filtrar DateTimeField (updated_at)
+        month_start = timezone.make_aware(datetime.combine(month_start_date, time.min))
+        month_end = timezone.make_aware(datetime.combine(month_end_date, time.min))
 
         # Query 1: Aggregates (totales + count completed) en una sola query
         aggregates = Saving.objects.filter(user=user).aggregate(

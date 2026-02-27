@@ -32,10 +32,8 @@ SECRET_KEY = config("SECRET_KEY", default=None)
 # Validación: Si no hay SECRET_KEY, mostrar error claro
 if SECRET_KEY is None:
     raise ValueError(
-        "\n"
-        "=" * 60 + "\n"
-        "❌ ERROR: SECRET_KEY no está configurada\n"
-        "=" * 60 + "\n"
+        "\n" + "=" * 60 + "\n"
+        "❌ ERROR: SECRET_KEY no está configurada\n" + "=" * 60 + "\n"
         "\n"
         "Opciones:\n"
         "1. Crear archivo .env con: SECRET_KEY=tu-clave-secreta\n"
@@ -43,8 +41,7 @@ if SECRET_KEY is None:
         "\n"
         "Generar clave segura con:\n"
         '  python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"\n'
-        "\n"
-        "=" * 60
+        "\n" + "=" * 60
     )
 
 # SECURITY WARNING: don't run with debug turned on in production!

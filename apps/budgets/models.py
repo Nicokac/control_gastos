@@ -300,17 +300,18 @@ class Budget(TimestampMixin, models.Model):
         budgets_to_create = []
         for budget in source_budgets:
             if budget.category_id not in existing_category_ids:
-                budgets_to_create.append(
-                    cls(
-                        user=user,
-                        category=budget.category,
-                        month=target_month,
-                        year=target_year,
-                        amount=budget.amount,
-                        alert_threshold=budget.alert_threshold,
-                        notes=f"Copiado de {budget.period_display}",
-                    )
+                new_budget = cls(
+                    user=user,
+                    category=budget.category,
+                    month=target_month,
+                    year=target_year,
+                    amount=budget.amount,
+                    alert_threshold=budget.alert_threshold,
+                    notes=f"Copiado de {budget.period_display}",
                 )
+                # Validar antes de agregar (bulk_create no llama full_clean)
+                new_budget.full_clean()
+                budgets_to_create.append(new_budget)
 
         # Crear todos de una vez (1 query)
         if budgets_to_create:
