@@ -1,42 +1,52 @@
 # =============================================================================
 # Deploy Pipeline - Control de Gastos
 # =============================================================================
-# Solo se ejecuta cuando se hace merge a main
+# Se ejecuta automáticamente cuando CI pasa en main, o manualmente
 # =============================================================================
 
 name: Deploy
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
     branches: [main]
-  workflow_dispatch:  # Permite ejecutar manualmente
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
 
 jobs:
   deploy:
-    name: 🚀 Deploy
+    name: 🚀 Deploy to Render
     runs-on: ubuntu-latest
-    # Solo ejecutar si CI pasó
-    needs: []
-
-    # Solo en el branch main
-    if: github.ref == 'refs/heads/main'
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
 
     steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-
-      - name: 🚀 Deploy to production
+      - name: Trigger Render deploy hook
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
         run: |
-          echo "🚀 Deploy step placeholder"
-          echo "Configurar según tu hosting (Railway, Render, etc.)"
+          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
+            echo "❌ Missing required secret: RENDER_DEPLOY_HOOK"
+            exit 1
+          fi
+          echo "🚀 Triggering Render deployment..."
+          curl --fail --show-error --silent --location --request POST "$RENDER_DEPLOY_HOOK"
+          echo "✅ Deploy hook accepted by Render"
 
-      # Ejemplo para Railway:
-      # - name: Deploy to Railway
-      #   uses: bervProject/railway-deploy@main
-      #   with:
-      #     railway_token: ${{ secrets.RAILWAY_TOKEN }}
-      #     service: control-gastos
-
-      # Ejemplo para Render:
-      # - name: Deploy to Render
-      #   run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
+      - name: Healthcheck (optional)
+        env:
+          APP_BASE_URL: ${{ secrets.APP_BASE_URL }}
+        run: |
+          if [ -z "$APP_BASE_URL" ]; then
+            echo "ℹ️ APP_BASE_URL not set. Skipping healthcheck."
+            exit 0
+          fi
+          HEALTH_URL="${APP_BASE_URL%/}/healthz/"
+          echo "🔎 Checking $HEALTH_URL"
+          curl --fail --show-error --silent --location --retry 6 --retry-delay 10 "$HEALTH_URL"
+          echo "✅ Healthcheck passed"

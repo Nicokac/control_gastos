@@ -50,7 +50,17 @@ class Category(TimestampMixin, models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["name", "user", "type"], name="unique_category_per_user_and_type"
-            )
+            ),
+            # Categorías del sistema no pueden tener usuario
+            models.CheckConstraint(
+                check=~models.Q(is_system=True, user__isnull=False),
+                name="system_category_no_user",
+            ),
+            # Categorías de usuario deben tener usuario
+            models.CheckConstraint(
+                check=~models.Q(is_system=False, user__isnull=True),
+                name="user_category_requires_user",
+            ),
         ]
         indexes = [
             models.Index(fields=["user", "type"]),
