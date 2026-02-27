@@ -16,6 +16,7 @@
 - [Descripción](#descripción)
 - [Características Principales](#características-principales)
 - [Stack Tecnológico](#stack-tecnológico)
+- [Arquitectura](#arquitectura)
 - [Instalación](#instalación)
 - [Variables de Entorno](#variables-de-entorno)
 - [Testing](#testing)
@@ -33,7 +34,7 @@
 
 | Métrica | Valor |
 |---------|-------|
-| Tests | 700+ |
+| Tests | 670+ |
 | Coverage | ≥80% (enforced) |
 | Python | 3.11+ |
 | Django | 5.2 |
@@ -112,6 +113,20 @@
 | **Testing** | pytest + pytest-cov |
 | **Pre-commit** | pre-commit hooks |
 | **Rate Limiting** | django-axes |
+| **Error Tracking** | Sentry |
+| **Debug** | django-debug-toolbar (dev) |
+
+---
+
+### Arquitectura
+
+| Componente | Implementación |
+|------------|----------------|
+| **CRUD Views** | Mixins unificados en `core/views.py` |
+| **Form Validation** | `CurrencyFormMixin` + `BaseFilterForm` |
+| **DB Constraints** | `CheckConstraint` para integridad |
+| **Query Optimization** | Conditional aggregation, `select_related` |
+| **Error Handling** | Sentry + logging estructurado |
 
 ---
 
@@ -283,7 +298,7 @@ pytest --cov=apps --cov-fail-under=80
 
 | Ítem | Valor |
 |-----|------|
-| Fecha | **2026-02-10** |
+| Fecha | **2026-02-27** |
 | Entorno | Local (Windows) |
 | Python | 3.12.0 |
 | Django | 5.2.9 |
@@ -348,6 +363,7 @@ Configurar en **Render Dashboard → Environment**:
 | `DB_HOST` | ✅ | `dpg-XXXX.render.com` | Desde Render PostgreSQL |
 | `DB_PORT` | No | `5432` | Default |
 | `ADMIN_EMAIL` | No | `admin@example.com` | Para alertas de errores |
+| `SENTRY_DSN` | No | `https://...@sentry.io/...` | Error tracking en producción |
 
 ---
 
@@ -507,6 +523,7 @@ python manage.py migrate
 | Servicio | URL | Propósito |
 |----------|-----|-----------|
 | **Healthcheck** | `/healthz/` | Verificar app running |
+| **Sentry** | sentry.io | Error tracking y alertas |
 | **UptimeRobot** | uptimerobot.com | Evitar cold starts |
 | **Render Logs** | Dashboard → Logs | Ver errores en tiempo real |
 | **GitHub Actions** | Actions tab | Estado de CI/CD |
@@ -596,12 +613,20 @@ El proyecto incluye índices compuestos optimizados para queries frecuentes:
 
 | Modelo | Índices |
 |--------|---------|
-| `Expense` | `(user, date)`, `(user, category)`, `(user, is_active, date)` |
-| `Income` | `(user, date)`, `(user, category)`, `(user, is_active, date)` |
-| `Saving` | `(user, status, is_active)` |
+| `Expense` | `(user, date)`, `(user, category)` |
+| `Income` | `(user, date)`, `(user, category)` |
+| `Saving` | `(user, status)` |
 | `SavingMovement` | `(saving, -date, -created_at)` |
-| `Category` | `(user, type)` |
-| `Budget` | `(user, month, year)` |
+| `Category` | `(user, type)`, `(is_system, type)` |
+| `Budget` | `(user, year, month)`, `(user, category)` |
+
+### Constraints de Base de Datos
+
+| Modelo | Constraint | Descripción |
+|--------|------------|-------------|
+| `Category` | `system_category_no_user` | Categorías sistema sin usuario |
+| `Category` | `user_category_requires_user` | Categorías usuario requieren usuario |
+| `Budget` | `unique_budget_per_category_month` | Un presupuesto por categoría/mes/usuario |
 
 
 ---
@@ -735,7 +760,7 @@ En cada push/PR se ejecutan:
 | `security` | pip-audit + safety | ~1min |
 | `django-checks` | System checks + migrations | ~1min |
 | `build` | Collectstatic + verify | ~1min |
-| `deploy` | Deploy a producción (placeholder) | ~30s |
+| `deploy` | Deploy automático a Render | ~2min |
 
 
 ---
@@ -781,6 +806,7 @@ ci: add GitHub Actions pipeline
 
 ### Próximas Features
 
+- [x] Error tracking con Sentry
 - [ ] Exportación a Excel/PDF
 - [ ] Filtros avanzados por rango de fechas
 - [ ] Gráficos de evolución mensual
