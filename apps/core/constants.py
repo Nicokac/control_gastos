@@ -36,13 +36,6 @@ class CategoryType(models.TextChoices):
     INCOME = "INCOME", "Ingreso"
 
 
-class BudgetType(models.TextChoices):
-    """Tipos de presupuesto."""
-
-    GLOBAL = "GLOBAL", "Global Mensual"
-    BY_CATEGORY = "BY_CATEGORY", "Por Categoría"
-
-
 # Categorías del sistema (seed data)
 SYSTEM_CATEGORIES = {
     "EXPENSE": [

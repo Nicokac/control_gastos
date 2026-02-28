@@ -102,11 +102,6 @@ else:
         }
     }
 
-# Security
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
 
 # Cross-Origin Opener Policy - Aísla el contexto de navegación
 SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin"

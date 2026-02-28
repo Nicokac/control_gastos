@@ -90,10 +90,6 @@ class Expense(TimestampMixin, CurrencyMixin, models.Model):
                 # Si category_id apunta a un registro inexistente, dejamos que la FK/DB lo resuelva.
                 pass
 
-    def delete(self, *args, **kwargs):
-        """Elimina el gasto."""
-        super().delete(*args, **kwargs)
-
     @classmethod
     def get_user_expenses(cls, user, month=None, year=None):
         """

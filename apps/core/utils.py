@@ -14,26 +14,6 @@ def get_current_month_year():
     return today.month, today.year
 
 
-def get_month_date_range(month: int, year: int):
-    """Retorna el rango de fechas para un mes específico
-
-    Args:
-        month (int): Número del mes (1-12)
-        year (int): Año
-
-    Returns:
-        Tupla (fecha_inicio, fecha_fin)
-    """
-
-    from calendar import monthrange
-
-    start_date = date(year, month, 1)
-    _, last_day = monthrange(year, month)
-    end_date = date(year, month, last_day)
-
-    return start_date, end_date
-
-
 def calculate_percentage(partial: Decimal, total: Decimal) -> Decimal:
     """Calcula el porcentaje de un valor parciual sobre un total
 

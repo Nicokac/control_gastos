@@ -7,7 +7,6 @@ from apps.core.constants import (
     DEFAULT_CURRENCY,
     DEFAULT_EXCHANGE_RATE,
     SYSTEM_CATEGORIES,
-    BudgetType,
     CategoryType,
     Currency,
     ExpenseType,
@@ -141,31 +140,6 @@ class TestExpenseType:
     def test_expense_types_are_different(self):
         """Verifica que los tipos sean diferentes."""
         assert ExpenseType.FIXED != ExpenseType.VARIABLE
-
-
-class TestBudgetType:
-    """Tests para la clase BudgetType."""
-
-    def test_budget_type_choices_exist(self):
-        """Verifica que existan las opciones de tipo de presupuesto."""
-        choices = BudgetType.choices
-        assert len(choices) == 2
-
-    def test_global_exists(self):
-        """Verifica que exista tipo global."""
-        assert BudgetType.GLOBAL == "GLOBAL"
-
-    def test_by_category_exists(self):
-        """Verifica que exista tipo por categoría."""
-        assert BudgetType.BY_CATEGORY == "BY_CATEGORY"
-
-    def test_global_label(self):
-        """Verifica la etiqueta de global."""
-        assert BudgetType.GLOBAL.label == "Global Mensual"
-
-    def test_by_category_label(self):
-        """Verifica la etiqueta de por categoría."""
-        assert BudgetType.BY_CATEGORY.label == "Por Categoría"
 
 
 class TestDefaultValues:

@@ -2,7 +2,6 @@
 Tests para las funciones de utilidad.
 """
 
-from datetime import date
 from decimal import Decimal
 
 from django.utils import timezone
@@ -11,7 +10,6 @@ from apps.core.utils import (
     calculate_percentage,
     format_currency,
     get_current_month_year,
-    get_month_date_range,
     get_month_name,
     get_months_choices,
     get_years_choices,
@@ -43,40 +41,6 @@ class TestGetCurrentMonthYear:
         """Verifica que el año sea razonable."""
         _, year = get_current_month_year()
         assert 2020 <= year <= 2100
-
-
-class TestGetMonthDateRange:
-    """Tests para get_month_date_range()."""
-
-    def test_january_range(self):
-        """Verifica el rango de enero."""
-        start, end = get_month_date_range(1, 2025)
-        assert start == date(2025, 1, 1)
-        assert end == date(2025, 1, 31)
-
-    def test_february_non_leap_year(self):
-        """Verifica febrero en año no bisiesto."""
-        start, end = get_month_date_range(2, 2025)
-        assert start == date(2025, 2, 1)
-        assert end == date(2025, 2, 28)
-
-    def test_february_leap_year(self):
-        """Verifica febrero en año bisiesto."""
-        start, end = get_month_date_range(2, 2024)
-        assert start == date(2024, 2, 1)
-        assert end == date(2024, 2, 29)
-
-    def test_december_range(self):
-        """Verifica el rango de diciembre."""
-        start, end = get_month_date_range(12, 2025)
-        assert start == date(2025, 12, 1)
-        assert end == date(2025, 12, 31)
-
-    def test_april_30_days(self):
-        """Verifica un mes de 30 días."""
-        start, end = get_month_date_range(4, 2025)
-        assert start == date(2025, 4, 1)
-        assert end == date(2025, 4, 30)
 
 
 class TestCalculatePercentage:
