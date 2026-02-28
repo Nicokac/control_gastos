@@ -1,6 +1,7 @@
 import logging
 
 from django.db.models import Sum
+from django.urls import reverse_lazy
 
 from apps.categories.models import Category
 from apps.core.views import (
@@ -63,7 +64,7 @@ class ExpenseCreateView(UserOwnedCreateView):
     model = Expense
     form_class = ExpenseForm
     template_name = "expenses/expense_form.html"
-    success_url = "/expenses/"
+    success_url = reverse_lazy("expenses:list")
 
     def get_success_message(self):
         obj = self.object
@@ -79,7 +80,7 @@ class ExpenseUpdateView(UserOwnedUpdateView):
     model = Expense
     form_class = ExpenseForm
     template_name = "expenses/expense_form.html"
-    success_url = "/expenses/"
+    success_url = reverse_lazy("expenses:list")
 
     def get_success_message(self):
         obj = self.object
@@ -94,7 +95,7 @@ class ExpenseUpdateView(UserOwnedUpdateView):
 class ExpenseDeleteView(UserOwnedDeleteView):
     model = Expense
     template_name = "expenses/expense_confirm_delete.html"
-    success_url = "/expenses/"
+    success_url = reverse_lazy("expenses:list")
 
     def get_success_message(self, obj):
         return f"Gasto '{obj.description}' eliminado correctamente."

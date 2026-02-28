@@ -1,6 +1,7 @@
 import logging
 
 from django.db.models import Sum
+from django.urls import reverse_lazy
 from django.utils import timezone
 
 from apps.categories.models import Category
@@ -71,7 +72,7 @@ class IncomeCreateView(UserOwnedCreateView):
     model = Income
     form_class = IncomeForm
     template_name = "income/income_form.html"
-    success_url = "/income/"
+    success_url = reverse_lazy("income:list")
 
     def get_success_message(self):
         obj = self.object
@@ -87,7 +88,7 @@ class IncomeUpdateView(UserOwnedUpdateView):
     model = Income
     form_class = IncomeForm
     template_name = "income/income_form.html"
-    success_url = "/income/"
+    success_url = reverse_lazy("income:list")
 
     def get_success_message(self):
         obj = self.object
@@ -102,7 +103,7 @@ class IncomeUpdateView(UserOwnedUpdateView):
 class IncomeDeleteView(UserOwnedDeleteView):
     model = Income
     template_name = "income/income_confirm_delete.html"
-    success_url = "/income/"
+    success_url = reverse_lazy("income:list")
 
     def get_success_message(self, obj):
         return f"Ingreso '{obj.description}' eliminado correctamente."

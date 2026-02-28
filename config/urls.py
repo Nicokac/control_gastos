@@ -26,7 +26,14 @@ from django.urls import include, path
 
 
 def healthz(_request):
-    return HttpResponse("ok", content_type="text/plain")
+    """Health check endpoint que verifica conexión a DB."""
+    from django.db import connection
+
+    try:
+        connection.ensure_connection()
+        return HttpResponse("ok", content_type="text/plain")
+    except Exception as e:
+        return HttpResponse(f"error: {e}", content_type="text/plain", status=503)
 
 
 urlpatterns = [

@@ -99,6 +99,7 @@ else:
             "PASSWORD": config("DB_PASSWORD"),
             "HOST": config("DB_HOST", default="localhost"),
             "PORT": config("DB_PORT", default="5432"),
+            "CONN_MAX_AGE": 60,  # Reutilizar conexiones por 60 segundos
         }
     }
 
@@ -254,7 +255,25 @@ AXES_NEVER_LOCKOUT_GET = True
 # =============================================================================
 
 # Sobrescribir configuración de logging para producción
-LOGGING["handlers"]["console"]["level"] = "WARNING"  # Menos verbose en consola
+LOGGING["handlers"]["console"]["level"] = "INFO"  # Logs a stdout para Render
+
+# Render Free tiene filesystem efímero - redirigir file handlers a console
+# Los logs de archivo se perderían en cada deploy
+LOGGING["handlers"]["file"] = {
+    "level": "INFO",
+    "class": "logging.StreamHandler",
+    "formatter": "verbose",
+}
+LOGGING["handlers"]["error_file"] = {
+    "level": "ERROR",
+    "class": "logging.StreamHandler",
+    "formatter": "verbose",
+}
+LOGGING["handlers"]["security_file"] = {
+    "level": "INFO",
+    "class": "logging.StreamHandler",
+    "formatter": "security",
+}
 
 # Agregar handler para logs críticos (opcional: enviar por email)
 LOGGING["handlers"]["mail_admins"] = {
