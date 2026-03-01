@@ -24,7 +24,6 @@ class IncomeForm(CurrencyFormMixin, forms.ModelForm):
             "category",
             "date",
             "description",
-            "is_recurring",
             "exchange_rate",
         ]
         widgets = {
@@ -53,11 +52,6 @@ class IncomeForm(CurrencyFormMixin, forms.ModelForm):
                 attrs={
                     "class": "form-control",
                     "placeholder": "Ej: Sueldo, Freelance, Alquiler...",
-                }
-            ),
-            "is_recurring": forms.CheckboxInput(
-                attrs={
-                    "class": "form-check-input",
                 }
             ),
             "exchange_rate": forms.NumberInput(
@@ -105,7 +99,6 @@ class IncomeForm(CurrencyFormMixin, forms.ModelForm):
             self.fields["exchange_rate"].initial = Decimal("1.0000")
 
         # Hacer campos opcionales explícitamente no requeridos
-        self.fields["is_recurring"].required = False
         self.fields["exchange_rate"].required = False
 
     def clean(self):

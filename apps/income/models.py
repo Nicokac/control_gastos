@@ -32,7 +32,6 @@ class Income(TimestampMixin, CurrencyMixin, models.Model):
         verbose_name="Categoría",
     )
     description = models.CharField(max_length=255, verbose_name="Descripción")
-    is_recurring = models.BooleanField(default=False, verbose_name="Es recurrente")
 
     class Meta:
         verbose_name = "Ingreso"

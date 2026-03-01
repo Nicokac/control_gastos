@@ -74,11 +74,6 @@
                         <a href="{% url 'income:detail' income.pk %}" class="text-decoration-none">
                             {{ income.description }}
                         </a>
-                        {% if income.is_recurring %}
-                        <span class="badge bg-info ms-1" title="Recurrente">
-                            <i class="bi bi-arrow-repeat"></i>
-                        </span>
-                        {% endif %}
                     </td>
                     <td>
                         <span class="badge" style="background-color: {{ income.category.color|default:'#6c757d' }}">

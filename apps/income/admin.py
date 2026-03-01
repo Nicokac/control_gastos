@@ -13,13 +13,11 @@ class IncomeAdmin(admin.ModelAdmin):
         "description",
         "formatted_amount",
         "category",
-        "is_recurring",
         "user",
     )
     list_filter = (
         "date",
         "category",
-        "is_recurring",
         "currency",
     )
     search_fields = (
@@ -35,12 +33,6 @@ class IncomeAdmin(admin.ModelAdmin):
     fieldsets = (
         ("Información Principal", {"fields": ("user", "date", "category", "description")}),
         ("Monto", {"fields": ("amount", "currency", "exchange_rate", "amount_ars")}),
-        (
-            "Detalles",
-            {
-                "fields": ("is_recurring",),
-            },
-        ),
         ("Auditoría", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
     )
 
