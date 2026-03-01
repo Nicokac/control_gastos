@@ -14,7 +14,7 @@ from apps.budgets.models import Budget
 from apps.core.utils import get_month_date_range_exclusive, get_month_name
 from apps.expenses.models import Expense
 from apps.income.models import Income
-from apps.savings.models import Saving, SavingStatus
+from apps.savings.models import MovementType, Saving, SavingMovement, SavingStatus
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -96,8 +96,17 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         income_total = income_data["current"] or Decimal("0")
         prev_income_total = income_data["previous"] or Decimal("0")
 
-        # Balance
-        balance = income_total - expense_total
+        # Query 3: Depósitos a ahorro del mes actual
+        savings_deposits_data = SavingMovement.objects.filter(
+            saving__user=user,
+            type=MovementType.DEPOSIT,
+            date__gte=cur_start,
+            date__lt=cur_end,
+        ).aggregate(total=Sum("amount"))
+        savings_deposits_total = savings_deposits_data["total"] or Decimal("0")
+
+        # Balance (ingresos - gastos - ahorro)
+        balance = income_total - expense_total - savings_deposits_total
 
         # Porcentaje de gastos vs ingresos
         if income_total > 0:
@@ -124,6 +133,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         return {
             "income_total": income_total,
             "expense_total": expense_total,
+            "savings_deposits_total": savings_deposits_total,
             "balance": balance,
             "balance_is_positive": balance >= 0,
             "expense_percentage": expense_percentage,
