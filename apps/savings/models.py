@@ -276,6 +276,12 @@ class SavingMovement(TimestampMixin, models.Model):
         indexes = [
             models.Index(fields=["saving", "-date", "-created_at"]),
         ]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(amount__gt=0),
+                name="saving_movement_amount_positive",
+            )
+        ]
 
     def __str__(self):
         symbol = "+" if self.type == MovementType.DEPOSIT else "-"
