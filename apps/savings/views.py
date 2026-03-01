@@ -11,6 +11,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.views.generic.edit import FormView
 
+from apps.core.utils import format_currency
 from apps.core.views import (
     UserOwnedCreateView,
     UserOwnedDeleteView,
@@ -178,12 +179,13 @@ class QuickDepositView(LoginRequiredMixin, FormView):
         movement = form.save()
         messages.success(
             self.request,
-            f"Depósito de ${movement.amount:,.2f} registrado en {self.get_saving().name}.",
+            f"Depósito de {format_currency(movement.amount)} registrado en {self.get_saving().name}.",
         )
         return redirect("savings:list")
 
     def form_invalid(self, form):
-        messages.error(self.request, "Monto inválido.")
+        errors = "; ".join(f"{', '.join(errs)}" for errs in form.errors.values())
+        messages.error(self.request, f"Error en depósito: {errors}")
         return redirect("savings:list")
 
 
@@ -217,11 +219,13 @@ class SavingMovementCreateView(LoginRequiredMixin, FormView):
 
         if movement.is_deposit:
             messages.success(
-                self.request, f"Depósito de ${movement.amount:,.2f} registrado correctamente."
+                self.request,
+                f"Depósito de {format_currency(movement.amount)} registrado correctamente.",
             )
         else:
             messages.success(
-                self.request, f"Retiro de ${movement.amount:,.2f} registrado correctamente."
+                self.request,
+                f"Retiro de {format_currency(movement.amount)} registrado correctamente.",
             )
 
         return redirect("savings:detail", pk=self.get_saving().pk)

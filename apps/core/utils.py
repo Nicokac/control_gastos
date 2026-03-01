@@ -15,7 +15,7 @@ def get_current_month_year():
 
 
 def calculate_percentage(partial: Decimal, total: Decimal) -> Decimal:
-    """Calcula el porcentaje de un valor parciual sobre un total
+    """Calcula el porcentaje de un valor parcial sobre un total
 
     Args:
         partial (Decimal): Valor parcial
@@ -30,7 +30,7 @@ def calculate_percentage(partial: Decimal, total: Decimal) -> Decimal:
 
 
 def format_currency(amount: Decimal, currency: str = "ARS") -> str:
-    """Formatea un monto cohn el símbolo de moneda correspondiente.
+    """Formatea un monto con el símbolo de moneda correspondiente.
 
     Args:
         amount (Decimal): Monto a formatear

@@ -184,10 +184,7 @@ CSP_SCRIPT_SRC = (
     "https://cdnjs.cloudflare.com",
 )
 
-# Estilos: mismo origen + CDNs + unsafe-inline (requerido)
-# NOTA: unsafe-inline es necesario para atributos style="" dinámicos en templates
-# (colores de categorías, barras de progreso con % variable, etc.)
-# Migrar a CSS custom properties requeriría refactorización significativa
+# Estilos: mismo origen + CDNs (sin unsafe-inline — colores migrados a data-* + JS)
 CSP_STYLE_SRC = (
     "'self'",
     "https://cdn.jsdelivr.net",

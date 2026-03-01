@@ -217,14 +217,12 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         else:
             overall_progress = 0
 
-        # Query 2: Top 3 metas activas por progreso (necesita objetos)
-        top_savings = list(
-            Saving.objects.filter(user=user, status=SavingStatus.ACTIVE).order_by(
-                "-current_amount"
-            )[:3]
-        )
-        # Ordenar por progress_percentage en Python (campo calculado)
-        top_savings.sort(key=lambda x: x.progress_percentage, reverse=True)
+        # Query 2: Top 3 metas activas por progreso (campo calculado, sort en Python)
+        top_savings = sorted(
+            Saving.objects.filter(user=user, status=SavingStatus.ACTIVE),
+            key=lambda x: x.progress_percentage,
+            reverse=True,
+        )[:3]
 
         return {
             "savings_count": aggregates["active_count"],
