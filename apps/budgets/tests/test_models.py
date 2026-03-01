@@ -703,54 +703,6 @@ class TestBudgetClassmethods:
 
 
 @pytest.mark.django_db
-class TestBudgetMonthlySummary:
-    def test_get_monthly_summary(self, user, expense_category_factory, expense_factory):
-        today = timezone.now().date()
-        cat1 = expense_category_factory(user, name="C1")
-        cat2 = expense_category_factory(user, name="C2")
-
-        Budget.objects.create(
-            user=user,
-            category=cat1,
-            month=today.month,
-            year=today.year,
-            amount=Decimal("10000.00"),
-            alert_threshold=80,
-        )
-        Budget.objects.create(
-            user=user,
-            category=cat2,
-            month=today.month,
-            year=today.year,
-            amount=Decimal("5000.00"),
-            alert_threshold=80,
-        )
-
-        # b1 queda warning (85%)
-        expense_factory(user, cat1, amount=Decimal("8500.00"), date=today)
-        # b2 queda over (120%)
-        expense_factory(user, cat2, amount=Decimal("6000.00"), date=today)
-
-        summary = Budget.get_monthly_summary(user, month=today.month, year=today.year)
-
-        assert summary["total_budgeted"] == Decimal("15000.00")
-        assert summary["total_spent"] == Decimal("14500.00")
-        assert summary["total_remaining"] == Decimal("500.00")
-        assert summary["budget_count"] == 2
-        assert summary["warning_count"] == 1
-        assert summary["over_budget_count"] == 1
-        assert summary["overall_percentage"] == round(
-            (Decimal("14500.00") / Decimal("15000.00") * 100), 1
-        )
-
-    def test_get_monthly_summary_zero_budgeted_returns_zero_percentage(self, user):
-        summary = Budget.get_monthly_summary(user, month=1, year=2030)
-        assert summary["total_budgeted"] == 0
-        assert summary["overall_percentage"] == 0
-        assert summary["budget_count"] == 0
-
-
-@pytest.mark.django_db
 class TestBudgetSpentAnnotatedBranch:
     def test_spent_amount_uses_annotated_value(self, user, expense_category, budget_factory):
         today = timezone.now().date()

@@ -227,36 +227,6 @@ class Budget(TimestampMixin, models.Model):
         return cls.get_user_budgets(user, month=today.month, year=today.year)
 
     @classmethod
-    def get_monthly_summary(cls, user, month, year):
-        """
-        Obtiene un resumen de presupuestos del mes.
-
-        Args:
-            user: Usuario
-            month: Mes (1-12)
-            year: Año
-
-        Returns:
-            Dict con totales
-        """
-        budgets = cls.get_with_spent(user, month=month, year=year)
-
-        total_budgeted = sum(b.amount for b in budgets)
-        total_spent = sum(b.spent_amount for b in budgets)
-
-        return {
-            "total_budgeted": total_budgeted,
-            "total_spent": total_spent,
-            "total_remaining": total_budgeted - total_spent,
-            "overall_percentage": round((total_spent / total_budgeted * 100), 1)
-            if total_budgeted > 0
-            else 0,
-            "budget_count": budgets.count(),
-            "over_budget_count": sum(1 for b in budgets if b.is_over_budget),
-            "warning_count": sum(1 for b in budgets if b.is_near_limit),
-        }
-
-    @classmethod
     def copy_from_previous_month(cls, user, target_month, target_year):
         """
         Copia los presupuestos del mes anterior al mes objetivo.
