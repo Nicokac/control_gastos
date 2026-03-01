@@ -295,20 +295,19 @@ class TestExpenseValidations:
 
         assert expense.pk is not None
 
-    def test_description_required(self, user, expense_category):
-        """Verifica que descripción sea requerida."""
+    def test_description_optional(self, user, expense_category):
+        """Verifica que descripción vacía es permitida."""
         expense = Expense(
             user=user,
             category=expense_category,
-            description="",  # Vacío
+            description="",  # Vacío - ahora permitido
             amount=Decimal("100.00"),
             currency=Currency.ARS,
             exchange_rate=Decimal("1.00"),
             date=timezone.now().date(),
         )
-
-        with pytest.raises(ValidationError):
-            expense.full_clean()
+        # No debe lanzar ValidationError
+        expense.full_clean()
 
     def test_category_required(self, user):
         """Verifica que categoría sea requerida."""

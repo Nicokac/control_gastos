@@ -150,9 +150,9 @@ class ExpenseForm(CurrencyFormMixin, forms.ModelForm):
         return cleaned_data
 
     def clean_description(self):
-        """Permite quick-add sin descripción explícita."""
+        """Limpia el campo descripción."""
         description = (self.cleaned_data.get("description") or "").strip()
-        return description or "Sin descripción"
+        return description
 
     def save(self, commit=True):
         """Guarda el gasto asignando el usuario."""

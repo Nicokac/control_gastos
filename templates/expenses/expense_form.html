@@ -85,25 +85,29 @@
                             {% endif %}
                         </div>
 
-                        <!-- CATEGORÍA -->
-                        <div class="mb-4">
-                            <label class="form-label" for="id_category">Categoría</label>
-                            <select name="category"
-                                    id="id_category"
-                                    class="form-select {% if form.category.errors %}is-invalid{% endif %}"
-                                    required>
-                                <option value="">-- Seleccionar categoría --</option>
-                                {% for category in categories %}
-                                <option value="{{ category.id }}"
-                                        {% if form.category.value|stringformat:"s" == category.id|stringformat:"s" %}selected{% endif %}>
-                                    {{ category.name }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                            {% if form.category.errors %}
-                            <div class="invalid-feedback d-block">{{ form.category.errors.0 }}</div>
-                            {% endif %}
-                        </div>
+                        <!-- CATEGORÍA (botones visuales) -->
+                          <div class="mb-4">
+                              <label class="form-label">Categoría</label>
+                              {% if form.category.errors %}
+                              <div class="text-danger small mb-2">{{ form.category.errors.0 }}</div>
+                              {% endif %}
+                              <div class="category-grid">
+                                  {% for category in categories %}
+                                  <label class="category-btn">
+                                      <input type="radio"
+                                             name="category"
+                                             value="{{ category.id }}"
+                                             {% if form.category.value|stringformat:"s" == category.id|stringformat:"s" %}checked{% endif %}
+                                             required>
+                                      <div class="btn btn-outline-secondary">
+                                          <i class="{{ category.icon|default:'bi-tag' }}"
+                                             style="color: {{ category.color|default:'#6c757d' }}"></i>
+                                          <small>{{ category.name }}</small>
+                                      </div>
+                                  </label>
+                                  {% endfor %}
+                              </div>
+                          </div>
 
                         <!-- QUICK ADD (mínimo visible) -->
                         <div class="row mb-3">

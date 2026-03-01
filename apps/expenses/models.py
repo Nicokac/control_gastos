@@ -29,7 +29,7 @@ class Expense(TimestampMixin, CurrencyMixin, models.Model):
         related_name="expenses",
         verbose_name="Categoría",
     )
-    description = models.CharField(max_length=255, verbose_name="Descripción")
+    description = models.CharField(max_length=255, blank=True, verbose_name="Descripción")
     payment_method = models.CharField(
         max_length=10,
         choices=PaymentMethod.choices,

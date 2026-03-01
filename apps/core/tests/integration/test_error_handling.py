@@ -103,14 +103,14 @@ class TestExpenseErrorHandling:
         assert response.status_code == 200
         assert not Expense.objects.filter(description="Gasto USD sin TC").exists()
 
-    def test_expense_with_empty_description_uses_fallback(
+    def test_expense_with_empty_description_allowed(
         self, authenticated_client, user, expense_category
     ):
-        """Verifica que descripción vacía use fallback 'Sin descripción'."""
+        """Verifica que descripción vacía es permitida."""
         create_url = reverse("expenses:create")
         data = {
             "category": expense_category.pk,
-            "description": "",  # Vacío - usa fallback
+            "description": "",  # Vacío - ahora permitido
             "amount": "1000.00",
             "currency": Currency.ARS,
             "date": date.today().isoformat(),
@@ -120,11 +120,11 @@ class TestExpenseErrorHandling:
         # Debe redirigir (creación exitosa)
         assert response.status_code == 302
 
-        # Verificar que se creó con fallback
+        # Verificar que se creó con descripción vacía
         from apps.expenses.models import Expense
 
         expense = Expense.objects.get(user=user, amount=1000)
-        assert expense.description == "Sin descripción"
+        assert expense.description == ""
 
 
 @pytest.mark.slow

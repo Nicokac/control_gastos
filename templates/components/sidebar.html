@@ -1,9 +1,7 @@
 {% if user.is_authenticated %}
 <nav class="sidebar d-none d-md-block" aria-label="Sidebar">
   <div class="pt-3">
-
     <ul class="nav flex-column">
-
       <!-- Sección: Principal -->
       <li class="nav-item">
         <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
@@ -17,7 +15,6 @@
       <li class="mt-3">
         <small class="sidebar-label d-block px-3 text-uppercase">TRANSACCIONES</small>
       </li>
-
       <li class="nav-item">
         <a href="{% url 'expenses:list' %}"
            class="nav-link {% if 'expenses' in request.path %}active{% endif %}">
@@ -25,7 +22,6 @@
           <span>Gastos</span>
         </a>
       </li>
-
       <li class="nav-item">
         <a href="{% url 'income:list' %}"
            class="nav-link {% if 'income' in request.path %}active{% endif %}">
@@ -34,19 +30,10 @@
         </a>
       </li>
 
-      <li class="nav-item">
-        <a href="{% url 'savings:list' %}"
-           class="nav-link {% if 'savings' in request.path %}active{% endif %}">
-          <i class="bi bi-piggy-bank text-info me-2" aria-hidden="true"></i>
-          <span>Ahorro</span>
-        </a>
-      </li>
-
       <!-- Sección: Planificación -->
       <li class="mt-3">
         <small class="sidebar-label d-block px-3 text-uppercase">PLANIFICACIÓN</small>
       </li>
-
       <li class="nav-item">
         <a href="{% url 'budgets:list' %}"
            class="nav-link {% if 'budgets' in request.path %}active{% endif %}">
@@ -54,7 +41,13 @@
           <span>Presupuestos</span>
         </a>
       </li>
-
+      <li class="nav-item">
+        <a href="{% url 'savings:list' %}"
+           class="nav-link {% if 'savings' in request.path %}active{% endif %}">
+          <i class="bi bi-piggy-bank text-info me-2" aria-hidden="true"></i>
+          <span>Ahorro</span>
+        </a>
+      </li>
       <li class="nav-item">
         <a href="{% url 'categories:list' %}"
            class="nav-link {% if 'categories' in request.path %}active{% endif %}">
@@ -67,7 +60,6 @@
       <li class="mt-3">
         <small class="sidebar-label d-block px-3 text-uppercase">CUENTA</small>
       </li>
-
       <li class="nav-item">
         <a href="{% url 'users:profile' %}"
            class="nav-link {% if 'profile' in request.path %}active{% endif %}">
@@ -75,7 +67,6 @@
           <span>Configuración</span>
         </a>
       </li>
-
     </ul>
   </div>
 </nav>

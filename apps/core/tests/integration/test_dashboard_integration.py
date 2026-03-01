@@ -7,6 +7,7 @@ from datetime import date
 from decimal import Decimal
 
 from django.urls import NoReverseMatch, reverse
+from django.utils import timezone
 
 import pytest
 
@@ -79,7 +80,7 @@ class TestDashboardDataIntegration:
         if url is None:
             pytest.skip("Dashboard URL not configured")
 
-        today = date.today()
+        today = timezone.now().date()
 
         # Crear gasto
         Expense.objects.create(
@@ -106,7 +107,7 @@ class TestDashboardDataIntegration:
         if url is None:
             pytest.skip("Dashboard URL not configured")
 
-        today = date.today()
+        today = timezone.now().date()
 
         # Crear ingreso
         Income.objects.create(
@@ -219,7 +220,7 @@ class TestDashboardAfterOperations:
         if url is None:
             pytest.skip("Dashboard URL not configured")
 
-        today = date.today()
+        today = timezone.now().date()
 
         # Crear gasto
         expense = Expense.objects.create(

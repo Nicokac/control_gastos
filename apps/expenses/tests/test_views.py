@@ -485,9 +485,10 @@ class TestExpenseListViewOrdering:
     ):
         """Verifica ordenamiento secundario cuando fechas son iguales."""
         import time
-        from datetime import date
 
-        today = date.today()
+        from django.utils import timezone
+
+        today = timezone.now().date()
 
         # Crear gastos en el mismo día
         expense_factory(user, expense_category, date=today, description="Gasto A")
@@ -495,10 +496,8 @@ class TestExpenseListViewOrdering:
         expense_factory(user, expense_category, date=today, description="Gasto B")
 
         url = reverse("expenses:list")
-        response = authenticated_client.get(url)
-
+        response = authenticated_client.get(url, {"month": today.month, "year": today.year})
         assert response.status_code == 200
-        # Ambos deberían aparecer
         content = response.content.decode()
         assert "Gasto A" in content
         assert "Gasto B" in content

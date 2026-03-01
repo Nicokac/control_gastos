@@ -2,6 +2,7 @@ import logging
 
 from django.db.models import Sum
 from django.urls import reverse_lazy
+from django.utils import timezone
 
 from apps.categories.models import Category
 from apps.core.views import (
@@ -25,24 +26,37 @@ class ExpenseListView(UserOwnedListView):
 
     def get_queryset(self):
         qs = super().get_queryset().select_related("category", "saving")
+
         # Aplicar filtros de mes/año/categoría
-        month = self.request.GET.get("month")
-        year = self.request.GET.get("year")
+        # Si no hay parámetros GET, usar mes/año actual como default
+        has_filters = any(
+            key in self.request.GET for key in ["month", "year", "category", "date_from", "date_to"]
+        )
+
+        if has_filters:
+            month = self.request.GET.get("month")
+            year = self.request.GET.get("year")
+        else:
+            # Default: mes y año actual
+            today = timezone.now().date()
+            month = str(today.month)
+            year = str(today.year)
+
         category = self.request.GET.get("category")
 
         if month:
             try:
-                month = int(month)
-                if 1 <= month <= 12:
-                    qs = qs.filter(date__month=month)
+                month_int = int(month)
+                if 1 <= month_int <= 12:
+                    qs = qs.filter(date__month=month_int)
             except ValueError:
                 pass
 
         if year:
             try:
-                year = int(year)
-                if 1900 <= year <= 2100:
-                    qs = qs.filter(date__year=year)
+                year_int = int(year)
+                if 1900 <= year_int <= 2100:
+                    qs = qs.filter(date__year=year_int)
             except ValueError:
                 pass
 
@@ -53,10 +67,24 @@ class ExpenseListView(UserOwnedListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["filter_form"] = ExpenseFilterForm(self.request.GET, user=self.request.user)
+
+        # Si no hay filtros en GET, usar defaults para el formulario
+        has_filters = any(
+            key in self.request.GET for key in ["month", "year", "category", "date_from", "date_to"]
+        )
+
+        if has_filters:
+            form_data = self.request.GET
+        else:
+            today = timezone.now().date()
+            form_data = {"month": today.month, "year": today.year}
+
+        context["filter_form"] = ExpenseFilterForm(form_data, user=self.request.user)
+
         # Calcular total del queryset filtrado
         total = self.get_queryset().aggregate(total=Sum("amount_ars"))["total"] or 0
         context["total_amount"] = total
+
         return context
 
 
