@@ -94,16 +94,6 @@
                             <div class="text-danger small mt-1">{{ form.amount.errors.0 }}</div>
                             {% endif %}
                         </div>
-
-                        <!-- Descripción -->
-                        <div class="mb-4">
-                            <label class="form-label">Descripción <small class="text-muted">(opcional)</small></label>
-                            <input type="text"
-                                   name="description"
-                                   class="form-control"
-                                   placeholder="Ej: Depósito mensual, Retiro para emergencia..."
-                                   value="{{ form.description.value|default:'' }}">
-                        </div>
                     </div>
                 </div>
 

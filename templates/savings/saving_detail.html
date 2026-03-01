@@ -113,7 +113,7 @@
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
                                 <i class="bi {% if movement.is_deposit %}bi-arrow-down-circle text-success{% else %}bi-arrow-up-circle text-danger{% endif %} me-2"></i>
-                                <span>{{ movement.description|default:movement.get_type_display }}</span>
+                                <span>{{ movement.get_type_display }}</span>
                                 <br>
                                 <small class="text-muted">{{ movement.date|date:"d M Y" }}</small>
                             </div>

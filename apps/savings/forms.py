@@ -139,7 +139,7 @@ class SavingMovementForm(forms.ModelForm):
 
     class Meta:
         model = SavingMovement
-        fields = ["type", "amount", "description"]
+        fields = ["type", "amount"]
         widgets = {
             "type": forms.RadioSelect(attrs={"class": "movement-type-radio"}),
             "amount": forms.NumberInput(
@@ -149,12 +149,6 @@ class SavingMovementForm(forms.ModelForm):
                     "step": "0.01",
                     "min": "0.01",
                     "autofocus": True,
-                }
-            ),
-            "description": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "Descripción opcional...",
                 }
             ),
         }
@@ -199,12 +193,11 @@ class SavingMovementForm(forms.ModelForm):
         """Guarda el movimiento y actualiza la meta."""
         movement_type = self.cleaned_data.get("type")
         amount = self.cleaned_data.get("amount")
-        description = self.cleaned_data.get("description", "")
 
         if movement_type == MovementType.DEPOSIT:
-            return self.saving.add_deposit(amount, description)
+            return self.saving.add_deposit(amount)
         else:
-            return self.saving.add_withdrawal(amount, description)
+            return self.saving.add_withdrawal(amount)
 
 
 class SavingFilterForm(forms.Form):
