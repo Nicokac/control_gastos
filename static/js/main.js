@@ -207,7 +207,7 @@ function initQuickDepositModal() {
 }
 
 /**
- * Apply dynamic colors from data-color attributes
+ * Apply dynamic colors from data-color attributes (anti-FOUC)
  */
 function initDynamicColors() {
     // Simple color: data-color + optional data-color-prop
@@ -215,6 +215,7 @@ function initDynamicColors() {
         const color = el.getAttribute('data-color');
         const prop = el.getAttribute('data-color-prop') || 'color';
         if (color) el.style[prop] = color;
+        el.style.visibility = 'visible';
     });
 
     // Color with hex opacity suffix: data-color-bg + data-color-opacity
@@ -222,17 +223,20 @@ function initDynamicColors() {
         const color = el.getAttribute('data-color-bg');
         const suffix = el.getAttribute('data-color-opacity') || '';
         if (color) el.style.backgroundColor = color + suffix;
+        el.style.visibility = 'visible';
     });
 
     // Progress bar width: data-width
     document.querySelectorAll('[data-width]').forEach(el => {
         const width = el.getAttribute('data-width');
         if (width) el.style.width = width + '%';
+        el.style.visibility = 'visible';
     });
 
     // Progress bar width + color combined
     document.querySelectorAll('[data-progress-color]').forEach(el => {
         const color = el.getAttribute('data-progress-color');
         if (color) el.style.backgroundColor = color;
+        el.style.visibility = 'visible';
     });
 }

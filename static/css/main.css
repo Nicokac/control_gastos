@@ -425,6 +425,13 @@ form#incomeForm .category-btn:hover .btn {
 /* ============================================
    CSP-safe utility classes (replaces inline styles)
    ============================================ */
+/* Anti-FOUC: elementos con colores/anchos dinámicos arrancan invisibles */
+[data-color],
+[data-color-bg],
+[data-width],
+[data-progress-color] {
+    visibility: hidden;
+}
 .progress-bar-thin { height: 8px; }
 .col-actions { width: 120px; }
 .currency-select { max-width: 100px; }
