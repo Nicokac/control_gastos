@@ -9,9 +9,9 @@
         <i class="bi bi-wallet2 text-primary me-2"></i>Presupuestos
     </h1>
     <div class="btn-group">
-        <a href="{% url 'budgets:copy' %}" class="btn btn-outline-secondary">
+        <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#copyBudgetsModal">
             <i class="bi bi-copy me-1"></i>Copiar del mes anterior
-        </a>
+        </button>
         <a href="{% url 'budgets:create' %}" class="btn btn-primary">
             <i class="bi bi-plus-lg me-1"></i>Nuevo Presupuesto
         </a>
@@ -173,9 +173,9 @@
                     <a href="{% url 'budgets:create' %}" class="btn btn-primary">
                         <i class="bi bi-plus-lg me-1"></i>Crear presupuesto
                     </a>
-                    <a href="{% url 'budgets:copy' %}" class="btn btn-outline-secondary">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#copyBudgetsModal">
                         <i class="bi bi-copy me-1"></i>Copiar del mes anterior
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -185,4 +185,47 @@
 
 <!-- Paginación -->
 {% include 'components/pagination.html' %}
+
+<!-- Modal Copiar Presupuestos -->
+<div class="modal fade" id="copyBudgetsModal" tabindex="-1" aria-labelledby="copyBudgetsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="copyBudgetsModalLabel">
+                    <i class="bi bi-copy text-primary me-2"></i>Copiar Presupuestos
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <form method="post" action="{% url 'budgets:copy' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Se copiarán todos los presupuestos del <strong>mes anterior</strong> al período que selecciones. Las categorías que ya tengan presupuesto en el período destino serán omitidas.
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Mes destino</label>
+                            {{ copy_form.target_month }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Año destino</label>
+                            {{ copy_form.target_year }}
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        <i class="bi bi-arrow-right me-1"></i>
+                        Los presupuestos se copiarán del mes inmediatamente anterior al seleccionado.
+                    </small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-copy me-2"></i>Copiar Presupuestos
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}

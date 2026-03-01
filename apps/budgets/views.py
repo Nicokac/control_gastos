@@ -122,6 +122,7 @@ class BudgetListView(UserOwnedListView):
         else:
             context["period_name"] = "Todos los meses / Todos los años"
 
+        context["copy_form"] = CopyBudgetsForm()
         return context
 
 
