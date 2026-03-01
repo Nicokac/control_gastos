@@ -125,35 +125,9 @@
                     </ul>
 
                     <!-- Paginación de movimientos -->
-                    {% if movements.has_other_pages %}
-                    <div class="card-footer">
-                        <nav>
-                            <ul class="pagination pagination-sm justify-content-center mb-0">
-                                {% if movements.has_previous %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ movements.previous_page_number }}">
-                                        <i class="bi bi-chevron-left"></i>
-                                    </a>
-                                </li>
-                                {% endif %}
-
-                                <li class="page-item disabled">
-                                    <span class="page-link">
-                                        {{ movements.number }} / {{ movements.paginator.num_pages }}
-                                    </span>
-                                </li>
-
-                                {% if movements.has_next %}
-                                <li class="page-item">
-                                    <a class="page-link" href="?page={{ movements.next_page_number }}">
-                                        <i class="bi bi-chevron-right"></i>
-                                    </a>
-                                </li>
-                                {% endif %}
-                            </ul>
-                        </nav>
-                    </div>
-                    {% endif %}
+                    {% with page_obj=movements %}
+                    {% include "components/pagination.html" %}
+                    {% endwith %}
                     {% else %}
                     <div class="text-center py-4">
                         <i class="bi bi-inbox display-6 text-muted"></i>
