@@ -17,10 +17,10 @@
             </div>
 
             <!-- Info de la meta -->
-            <div class="card mb-4" style="background-color: {{ saving.color }}10;">
+            <div class="card mb-4" data-color-bg="{{ saving.color }}" data-color-opacity="10">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
-                        <i class="{{ saving.icon }} fs-3 me-3" style="color: {{ saving.color }};"></i>
+                        <i class="{{ saving.icon }} fs-3 me-3" data-color="{{ saving.color }}"></i>
                         <div class="flex-grow-1">
                             <h6 class="mb-0">{{ saving.name }}</h6>
                             <small class="text-muted">
@@ -28,7 +28,7 @@
                             </small>
                         </div>
                         <div class="text-end">
-                            <span class="h5 mb-0" style="color: {{ saving.color }};">
+                            <span class="h5 mb-0" data-color="{{ saving.color }}">
                                 {{ saving.progress_percentage }}%
                             </span>
                         </div>

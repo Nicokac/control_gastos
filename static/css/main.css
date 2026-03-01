@@ -421,3 +421,18 @@ form#incomeForm .category-btn:hover .btn {
     border-color: #333;
     transform: scale(1.1);
 }
+
+/* ============================================
+   CSP-safe utility classes (replaces inline styles)
+   ============================================ */
+.progress-bar-thin { height: 8px; }
+.col-actions { width: 120px; }
+.currency-select { max-width: 100px; }
+.input-group-amount { max-width: 150px; }
+.toast-container-fixed { z-index: 1100; }
+.progress-bar-medium { height: 10px; }
+.progress-bar-large { height: 20px; }
+.progress-bar-small { height: 6px; }
+.input-group-wide { max-width: 250px; }
+.chart-container { height: 200px; }
+.legend-dot { width: 12px; height: 12px; display: inline-block; border-radius: 50%; }

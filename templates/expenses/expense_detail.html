@@ -47,7 +47,7 @@
 
                         <dt class="col-sm-4 text-muted">Categoría</dt>
                         <dd class="col-sm-8">
-                            <span class="badge" style="background-color: {{ expense.category.color|default:'#6c757d' }}">
+                            <span class="badge" data-color="{{ expense.category.color|default:'#6c757d' }}" data-color-prop="backgroundColor">
                                 {% if expense.category.icon %}
                                 <i class="{{ expense.category.icon }} me-1"></i>
                                 {% endif %}

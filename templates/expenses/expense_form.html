@@ -53,7 +53,7 @@
                                            autocomplete="off"
                                            autofocus
                                            required>
-                                    <select name="currency" id="id_currency" class="form-select" style="max-width: 100px;">
+                                    <select name="currency" id="id_currency" class="form-select currency-select">
                                         <option value="ARS" {% if form.currency.value == 'ARS' %}selected{% endif %}>ARS</option>
                                         <option value="USD" {% if form.currency.value == 'USD' %}selected{% endif %}>USD</option>
                                     </select>
@@ -67,7 +67,7 @@
                         <!-- Exchange rate (solo visible si USD) -->
                         <div class="mb-4 {% if form.currency.value != 'USD' %}d-none{% endif %}" id="exchangeRateField">
                             <label class="form-label">Cotización del dólar</label>
-                            <div class="input-group" style="max-width: 250px;">
+                            <div class="input-group input-group-wide">
                                 <span class="input-group-text">1 USD =</span>
                                 <input type="number"
                                        name="exchange_rate"
@@ -101,7 +101,7 @@
                                              required>
                                       <div class="btn btn-outline-secondary">
                                           <i class="{{ category.icon|default:'bi-tag' }}"
-                                             style="color: {{ category.color|default:'#6c757d' }}"></i>
+                                             data-color="{{ category.color|default:'#6c757d' }}"></i>
                                           <small>{{ category.name }}</small>
                                       </div>
                                   </label>
@@ -190,9 +190,4 @@
 
 {% block extra_js %}
 <script src="{% static 'js/transaction_form.js' %}"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        initTransactionForm('expenseForm');
-    });
-</script>
 {% endblock %}

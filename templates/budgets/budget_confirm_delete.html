@@ -18,7 +18,7 @@
                     <div class="bg-light p-3 rounded mb-4">
                         <div class="d-flex align-items-center">
                             {% if object.category.icon %}
-                            <i class="{{ object.category.icon }} fs-3 me-3" style="color: {{ object.category.color }};"></i>
+                            <i class="{{ object.category.icon }} fs-3 me-3" data-color="{{ object.category.color }}"></i>
                             {% endif %}
                             <div>
                                 <strong>{{ object.category.name }}</strong>

@@ -18,7 +18,7 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
                         {% if budget.category.icon %}
-                        <i class="{{ budget.category.icon }} fs-4 me-2" style="color: {{ budget.category.color }};"></i>
+                        <i class="{{ budget.category.icon }} fs-4 me-2" data-color="{{ budget.category.color }}"></i>
                         {% endif %}
                         <div>
                             <h4 class="mb-0">{{ budget.category.name }}</h4>
@@ -55,10 +55,10 @@
                             {{ budget.spent_percentage }}%
                         </div>
 
-                        <div class="progress mb-3" style="height: 20px;">
+                        <div class="progress mb-3 progress-bar-large">
                             <div class="progress-bar bg-{{ budget.status_class }}"
                                  role="progressbar"
-                                 style="width: {% if budget.spent_percentage > 100 %}100{% else %}{{ budget.spent_percentage }}{% endif %}%;">
+                                 data-width="{% if budget.spent_percentage > 100 %}100{% else %}{{ budget.spent_percentage }}{% endif %}">
                             </div>
                         </div>
 

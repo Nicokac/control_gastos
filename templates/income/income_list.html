@@ -61,7 +61,7 @@
                     <th>Descripción</th>
                     <th>Categoría</th>
                     <th class="text-end">Monto</th>
-                    <th class="text-center" style="width: 120px;">Acciones</th>
+                    <th class="text-center col-actions">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -76,7 +76,7 @@
                         </a>
                     </td>
                     <td>
-                        <span class="badge" style="background-color: {{ income.category.color|default:'#6c757d' }}">
+                        <span class="badge" data-color="{{ income.category.color|default:'#6c757d' }}" data-color-prop="backgroundColor">
                             {% if income.category.icon %}
                             <i class="{{ income.category.icon }} me-1"></i>
                             {% endif %}

@@ -34,10 +34,10 @@
                 <h4 class="text-info mb-0">{{ summary.overall_progress|floatformat:1 }}%</h4>
             </div>
         </div>
-        <div class="progress mt-3" style="height: 8px;">
+        <div class="progress mt-3 progress-bar-thin">
             <div class="progress-bar bg-info"
                  role="progressbar"
-                 style="width: {{ summary.overall_progress }}%;"
+                 data-width="{{ summary.overall_progress }}"
                  aria-valuenow="{{ summary.overall_progress }}"
                  aria-valuemin="0"
                  aria-valuemax="100">
@@ -94,9 +94,9 @@
     <div class="col-md-6 col-lg-4">
         <div class="card h-100 {% if saving.is_completed %}border-success{% elif saving.is_overdue %}border-warning{% endif %}">
             <div class="card-header d-flex justify-content-between align-items-center"
-                 style="background-color: {{ saving.color }}20;">
+                 data-color-bg="{{ saving.color }}" data-color-opacity="20">
                 <div class="d-flex align-items-center">
-                    <i class="{{ saving.icon }} fs-4 me-2" style="color: {{ saving.color }};"></i>
+                    <i class="{{ saving.icon }} fs-4 me-2" data-color="{{ saving.color }}"></i>
                     <h6 class="mb-0">{{ saving.name }}</h6>
                 </div>
                 {% if saving.is_completed %}
@@ -116,10 +116,10 @@
                         <small class="text-muted">Progreso</small>
                         <small class="fw-bold">{{ saving.progress_percentage }}%</small>
                     </div>
-                    <div class="progress" style="height: 10px;">
+                    <div class="progress progress-bar-medium">
                         <div class="progress-bar"
                              role="progressbar"
-                             style="width: {{ saving.progress_percentage }}%; background-color: {{ saving.color }};"
+                             data-width="{{ saving.progress_percentage }}" data-progress-color="{{ saving.color }}"
                              aria-valuenow="{{ saving.progress_percentage }}"
                              aria-valuemin="0"
                              aria-valuemax="100">
@@ -231,14 +231,4 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-const quickDepositModal = document.getElementById('quickDepositModal');
-quickDepositModal.addEventListener('show.bs.modal', function(event) {
-    const button = event.relatedTarget;
-    const url = button.getAttribute('data-url');
-    const name = button.getAttribute('data-name');
-    document.getElementById('quickDepositForm').action = url;
-    document.getElementById('quickDepositSavingName').textContent = name;
-});
-</script>
 {% endblock %}

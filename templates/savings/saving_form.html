@@ -73,7 +73,7 @@
                                            min="0.01"
                                            value="{{ form.target_amount.value|default:'' }}"
                                            required>
-                                    <select name="currency" class="form-select" style="max-width: 100px;">
+                                    <select name="currency" class="form-select currency-select">
                                         <option value="ARS" {% if form.currency.value == 'ARS' %}selected{% endif %}>ARS</option>
                                         <option value="USD" {% if form.currency.value == 'USD' %}selected{% endif %}>USD</option>
                                     </select>
@@ -122,7 +122,7 @@
                                            name="color"
                                            value="{{ value }}"
                                            {% if form.color.value == value %}checked{% endif %}>
-                                    <div class="color-btn" style="background-color: {{ value }};" title="{{ label }}"></div>
+                                    <div class="color-btn" data-color-bg="{{ value }}" title="{{ label }}"></div>
                                 </label>
                                 {% endfor %}
                             </div>

@@ -17,6 +17,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize toasts from session messages
     initSessionToasts();
+
+    // Initialize transaction forms
+    initTransactionForms();
+
+    // Initialize quick deposit modal
+    initQuickDepositModal();
+
+    // Apply dynamic colors
+    initDynamicColors();
 });
 
 /**
@@ -169,3 +178,61 @@ function showToast(message, type = 'success') {
 
 // Make showToast globally available
 window.showToast = showToast;
+
+/**
+ * Initialize transaction forms by detecting form ID in DOM
+ */
+function initTransactionForms() {
+    if (document.getElementById('expenseForm')) {
+        initTransactionForm('expenseForm');
+    }
+    if (document.getElementById('incomeForm')) {
+        initTransactionForm('incomeForm');
+    }
+}
+
+/**
+ * Initialize quick deposit modal
+ */
+function initQuickDepositModal() {
+    const modal = document.getElementById('quickDepositModal');
+    if (!modal) return;
+    modal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        const url = button.getAttribute('data-url');
+        const name = button.getAttribute('data-name');
+        document.getElementById('quickDepositForm').action = url;
+        document.getElementById('quickDepositSavingName').textContent = name;
+    });
+}
+
+/**
+ * Apply dynamic colors from data-color attributes
+ */
+function initDynamicColors() {
+    // Simple color: data-color + optional data-color-prop
+    document.querySelectorAll('[data-color]').forEach(el => {
+        const color = el.getAttribute('data-color');
+        const prop = el.getAttribute('data-color-prop') || 'color';
+        if (color) el.style[prop] = color;
+    });
+
+    // Color with hex opacity suffix: data-color-bg + data-color-opacity
+    document.querySelectorAll('[data-color-bg]').forEach(el => {
+        const color = el.getAttribute('data-color-bg');
+        const suffix = el.getAttribute('data-color-opacity') || '';
+        if (color) el.style.backgroundColor = color + suffix;
+    });
+
+    // Progress bar width: data-width
+    document.querySelectorAll('[data-width]').forEach(el => {
+        const width = el.getAttribute('data-width');
+        if (width) el.style.width = width + '%';
+    });
+
+    // Progress bar width + color combined
+    document.querySelectorAll('[data-progress-color]').forEach(el => {
+        const color = el.getAttribute('data-progress-color');
+        if (color) el.style.backgroundColor = color;
+    });
+}

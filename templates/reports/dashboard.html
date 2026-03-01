@@ -235,9 +235,9 @@
                     </div>
                 </div>
 
-                <div class="progress mb-3" style="height: 8px;">
+                <div class="progress mb-3 progress-bar-thin">
                     <div class="progress-bar {% if budget_percentage > 100 %}bg-danger{% elif budget_percentage >= 80 %}bg-warning{% else %}bg-success{% endif %}"
-                         style="width: {% if budget_percentage > 100 %}100{% else %}{{ budget_percentage }}{% endif %}%;">
+                         data-width="{% if budget_percentage > 100 %}100{% else %}{{ budget_percentage }}{% endif %}">
                     </div>
                 </div>
 
@@ -269,7 +269,7 @@
                     <a href="{% url 'budgets:detail' budget.pk %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center">
                             {% if budget.category.icon %}
-                            <i class="{{ budget.category.icon }} me-2" style="color: {{ budget.category.color }};"></i>
+                            <i class="{{ budget.category.icon }} me-2" data-color="{{ budget.category.color }}"></i>
                             {% endif %}
                             <span>{{ budget.category.name }}</span>
                         </div>
@@ -303,7 +303,7 @@
                 {% if expense_distribution and chart_data %}
                 <div class="row">
                     <div class="col-md-6">
-                        <div style="height: 200px;">
+                        <div class="chart-container">
                             <canvas
                                 id="expenseChart"
                                 data-labels='{{ chart_labels|escapejs }}'
@@ -317,7 +317,7 @@
                             {% for item in expense_distribution %}
                             <li class="d-flex justify-content-between align-items-center mb-2">
                                 <div class="d-flex align-items-center">
-                                    <span class="rounded-circle me-2" style="width: 12px; height: 12px; background-color: {{ item.category__color|default:'#6c757d' }}; display: inline-block;"></span>
+                                    <span class="rounded-circle me-2 legend-dot" data-color="{{ item.category__color|default:'#6c757d' }}" data-color-prop="backgroundColor"></span>
                                     <span>{{ item.category__name }}</span>
                                 </div>
                                 <strong>{{ item.total|currency }}</strong>
@@ -357,8 +357,8 @@
                 <div class="text-center mb-3">
                     <div class="display-6 text-info">{{ savings_progress|floatformat:0 }}%</div>
                     <small class="text-muted">Progreso global</small>
-                    <div class="progress mt-2" style="height: 6px;">
-                        <div class="progress-bar bg-info" style="width: {{ savings_progress }}%;"></div>
+                    <div class="progress mt-2 progress-bar-small">
+                        <div class="progress-bar bg-info" data-width="{{ savings_progress }}"></div>
                     </div>
                 </div>
 
@@ -385,13 +385,13 @@
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-center mb-1">
                         <small>
-                            <i class="{{ saving.icon }}" style="color: {{ saving.color }};"></i>
+                            <i class="{{ saving.icon }}" data-color="{{ saving.color }}"></i>
                             {{ saving.name }}
                         </small>
                         <small class="fw-bold">{{ saving.progress_percentage }}%</small>
                     </div>
-                    <div class="progress" style="height: 6px;">
-                        <div class="progress-bar" style="width: {{ saving.progress_percentage }}%; background-color: {{ saving.color }};"></div>
+                    <div class="progress progress-bar-small">
+                        <div class="progress-bar" data-width="{{ saving.progress_percentage }}" data-progress-color="{{ saving.color }}"></div>
                     </div>
                 </div>
                 {% endfor %}

@@ -15,9 +15,9 @@
 
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center"
-                     style="background-color: {{ saving.color }}20;">
+                     data-color-bg="{{ saving.color }}" data-color-opacity="20">
                     <div class="d-flex align-items-center">
-                        <i class="{{ saving.icon }} fs-3 me-3" style="color: {{ saving.color }};"></i>
+                        <i class="{{ saving.icon }} fs-3 me-3" data-color="{{ saving.color }}"></i>
                         <div>
                             <h4 class="mb-0">{{ saving.name }}</h4>
                             {% if saving.description %}
@@ -47,14 +47,14 @@
                         </span>
                         {% endif %}
 
-                        <div class="display-4 mb-2" style="color: {{ saving.color }};">
+                        <div class="display-4 mb-2" data-color="{{ saving.color }}">
                             {{ saving.progress_percentage }}%
                         </div>
 
-                        <div class="progress mb-3" style="height: 20px;">
+                        <div class="progress mb-3 progress-bar-large">
                             <div class="progress-bar"
                                  role="progressbar"
-                                 style="width: {{ saving.progress_percentage }}%; background-color: {{ saving.color }};">
+                                 data-width="{{ saving.progress_percentage }}" data-progress-color="{{ saving.color }}">
                             </div>
                         </div>
 

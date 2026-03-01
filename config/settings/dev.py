@@ -37,7 +37,6 @@ CSP_DEFAULT_SRC = ("'self'",)
 # - CDN de jsDelivr (Bootstrap, Bootstrap Icons)
 CSP_STYLE_SRC = (
     "'self'",
-    "'unsafe-inline'",
     "https://cdn.jsdelivr.net",
 )
 

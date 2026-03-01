@@ -190,7 +190,6 @@ CSP_SCRIPT_SRC = (
 # Migrar a CSS custom properties requeriría refactorización significativa
 CSP_STYLE_SRC = (
     "'self'",
-    "'unsafe-inline'",
     "https://cdn.jsdelivr.net",
     "https://fonts.googleapis.com",
 )
