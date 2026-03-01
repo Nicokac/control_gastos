@@ -15,4 +15,5 @@ urlpatterns = [
     path("<int:pk>/edit/", views.SavingUpdateView.as_view(), name="update"),
     path("<int:pk>/delete/", views.SavingDeleteView.as_view(), name="delete"),
     path("<int:pk>/movement/", views.SavingMovementCreateView.as_view(), name="add_movement"),
+    path("<int:pk>/quick-deposit/", views.QuickDepositView.as_view(), name="quick_deposit"),
 ]

@@ -158,6 +158,35 @@ class SavingDetailView(UserOwnedDetailView):
         return context
 
 
+class QuickDepositView(LoginRequiredMixin, FormView):
+    """Depósito rápido desde la lista de ahorros."""
+
+    form_class = SavingMovementForm
+    template_name = "savings/saving_list.html"
+
+    def get_saving(self):
+        if not hasattr(self, "_saving"):
+            self._saving = get_object_or_404(Saving, pk=self.kwargs["pk"], user=self.request.user)
+        return self._saving
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["saving"] = self.get_saving()
+        return kwargs
+
+    def form_valid(self, form):
+        movement = form.save()
+        messages.success(
+            self.request,
+            f"Depósito de ${movement.amount:,.2f} registrado en {self.get_saving().name}.",
+        )
+        return redirect("savings:list")
+
+    def form_invalid(self, form):
+        messages.error(self.request, "Monto inválido.")
+        return redirect("savings:list")
+
+
 class SavingMovementCreateView(LoginRequiredMixin, FormView):
     """Agregar movimiento a una meta de ahorro."""
 

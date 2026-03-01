@@ -371,3 +371,43 @@ class TestSavingMovementView:
         # Debería mostrar error
         assert response.status_code == 200
         assert "form" in response.context
+
+
+@pytest.mark.django_db
+class TestQuickDepositView:
+    """Tests para la vista de depósito rápido."""
+
+    def test_login_required(self, client, saving):
+        """Verifica que requiera autenticación."""
+        url = reverse("savings:quick_deposit", kwargs={"pk": saving.pk})
+        response = client.post(url, {"type": "DEPOSIT", "amount": "1000.00"})
+        assert response.status_code == 302
+        assert "login" in response.url
+
+    def test_quick_deposit_success(self, authenticated_client, saving):
+        """Verifica depósito rápido exitoso."""
+        url = reverse("savings:quick_deposit", kwargs={"pk": saving.pk})
+        data = {"type": "DEPOSIT", "amount": "3000.00"}
+        response = authenticated_client.post(url, data)
+        assert response.status_code == 302
+        assert response.url == reverse("savings:list")
+        saving.refresh_from_db()
+        assert saving.current_amount == Decimal("3000.00")
+
+    def test_quick_deposit_invalid_amount(self, authenticated_client, saving):
+        """Verifica que monto inválido redirija a list."""
+        url = reverse("savings:quick_deposit", kwargs={"pk": saving.pk})
+        data = {"type": "DEPOSIT", "amount": "-100.00"}
+        response = authenticated_client.post(url, data)
+        assert response.status_code == 302
+        assert response.url == reverse("savings:list")
+
+    def test_cannot_deposit_other_user_saving(
+        self, authenticated_client, other_user, saving_factory
+    ):
+        """Verifica que no pueda depositar en metas de otros usuarios."""
+        other_saving = saving_factory(other_user, name="Otra")
+        url = reverse("savings:quick_deposit", kwargs={"pk": other_saving.pk})
+        data = {"type": "DEPOSIT", "amount": "1000.00"}
+        response = authenticated_client.post(url, data)
+        assert response.status_code in [403, 404]

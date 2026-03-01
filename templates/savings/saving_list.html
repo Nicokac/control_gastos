@@ -155,9 +155,15 @@
                     </a>
                     <div class="btn-group btn-group-sm">
                         {% if saving.status == 'ACTIVE' %}
-                        <a href="{% url 'savings:add_movement' saving.pk %}" class="btn btn-info" title="Agregar movimiento">
+                        <button type="button"
+                                class="btn btn-info"
+                                title="Depósito rápido"
+                                data-bs-toggle="modal"
+                                data-bs-target="#quickDepositModal"
+                                data-url="{% url 'savings:quick_deposit' saving.pk %}"
+                                data-name="{{ saving.name }}">
                             <i class="bi bi-plus-lg"></i>
-                        </a>
+                        </button>
                         {% endif %}
                         <a href="{% url 'savings:update' saving.pk %}" class="btn btn-outline-secondary" title="Editar">
                             <i class="bi bi-pencil"></i>
@@ -184,4 +190,55 @@
     </div>
     {% endfor %}
 </div>
+
+<!-- Modal Quick Deposit -->
+<div class="modal fade" id="quickDepositModal" tabindex="-1" aria-labelledby="quickDepositModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="quickDepositModalLabel">
+                    <i class="bi bi-piggy-bank text-info me-2"></i>Depósito rápido
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <form id="quickDepositForm" method="post" action="">
+                {% csrf_token %}
+                <input type="hidden" name="type" value="DEPOSIT">
+                <div class="modal-body">
+                    <p class="text-muted small mb-3" id="quickDepositSavingName"></p>
+                    <div class="mb-3">
+                        <label class="form-label">Monto</label>
+                        <input type="number"
+                               name="amount"
+                               class="form-control form-control-lg text-end"
+                               placeholder="0.00"
+                               step="0.01"
+                               min="0.01"
+                               required
+                               autofocus>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-info">
+                        <i class="bi bi-plus-lg me-1"></i>Depositar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const quickDepositModal = document.getElementById('quickDepositModal');
+quickDepositModal.addEventListener('show.bs.modal', function(event) {
+    const button = event.relatedTarget;
+    const url = button.getAttribute('data-url');
+    const name = button.getAttribute('data-name');
+    document.getElementById('quickDepositForm').action = url;
+    document.getElementById('quickDepositSavingName').textContent = name;
+});
+</script>
 {% endblock %}
