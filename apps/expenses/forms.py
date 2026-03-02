@@ -168,5 +168,23 @@ class ExpenseForm(CurrencyFormMixin, forms.ModelForm):
 class ExpenseFilterForm(BaseFilterForm):
     """Formulario para filtrar gastos."""
 
+    payment_method = forms.ChoiceField(
+        choices=[],
+        required=False,
+        widget=forms.Select(attrs={"class": "form-select form-select-sm"}),
+    )
+    expense_type = forms.ChoiceField(
+        choices=[],
+        required=False,
+        widget=forms.Select(attrs={"class": "form-select form-select-sm"}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["payment_method"].choices = [("", "Todos los métodos")] + list(
+            PaymentMethod.choices
+        )
+        self.fields["expense_type"].choices = [("", "Todos los tipos")] + list(ExpenseType.choices)
+
     def get_category_queryset(self, user):
         return Category.get_expense_categories(user)

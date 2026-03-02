@@ -30,7 +30,16 @@ class ExpenseListView(UserOwnedListView):
         # Aplicar filtros de mes/año/categoría
         # Si no hay parámetros GET, usar mes/año actual como default
         has_filters = any(
-            key in self.request.GET for key in ["month", "year", "category", "date_from", "date_to"]
+            key in self.request.GET
+            for key in [
+                "month",
+                "year",
+                "category",
+                "date_from",
+                "date_to",
+                "payment_method",
+                "expense_type",
+            ]
         )
 
         if has_filters:
@@ -43,6 +52,8 @@ class ExpenseListView(UserOwnedListView):
             year = str(today.year)
 
         category = self.request.GET.get("category")
+        payment_method = self.request.GET.get("payment_method")
+        expense_type = self.request.GET.get("expense_type")
 
         if month:
             try:
@@ -63,6 +74,12 @@ class ExpenseListView(UserOwnedListView):
         if category:
             qs = qs.filter(category_id=category)
 
+        if payment_method:
+            qs = qs.filter(payment_method=payment_method)
+
+        if expense_type:
+            qs = qs.filter(expense_type=expense_type)
+
         return qs.order_by("-date", "-created_at")
 
     def get_context_data(self, **kwargs):
@@ -70,7 +87,16 @@ class ExpenseListView(UserOwnedListView):
 
         # Si no hay filtros en GET, usar defaults para el formulario
         has_filters = any(
-            key in self.request.GET for key in ["month", "year", "category", "date_from", "date_to"]
+            key in self.request.GET
+            for key in [
+                "month",
+                "year",
+                "category",
+                "date_from",
+                "date_to",
+                "payment_method",
+                "expense_type",
+            ]
         )
 
         if has_filters:

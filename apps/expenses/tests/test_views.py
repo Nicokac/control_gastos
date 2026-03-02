@@ -336,6 +336,38 @@ class TestExpenseListViewFilters:
         assert "Almuerzo" in content
         assert "Subte" not in content
 
+    def test_filter_by_payment_method(
+        self, authenticated_client, user, expense_category, expense_factory
+    ):
+        """Verifica filtro por método de pago."""
+        expense_factory(user, expense_category, description="Pago Efectivo", payment_method="CASH")
+        expense_factory(user, expense_category, description="Pago Débito", payment_method="DEBIT")
+
+        url = reverse("expenses:list")
+        response = authenticated_client.get(url, {"payment_method": "CASH"})
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "Pago Efectivo" in content
+        assert "Pago Débito" not in content
+
+    def test_filter_by_expense_type(
+        self, authenticated_client, user, expense_category, expense_factory
+    ):
+        """Verifica filtro por tipo de gasto."""
+        expense_factory(user, expense_category, description="Gasto Fijo", expense_type="FIXED")
+        expense_factory(
+            user, expense_category, description="Gasto Variable", expense_type="VARIABLE"
+        )
+
+        url = reverse("expenses:list")
+        response = authenticated_client.get(url, {"expense_type": "FIXED"})
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "Gasto Fijo" in content
+        assert "Gasto Variable" not in content
+
     def test_filter_by_date_range(
         self, authenticated_client, user, expense_category, expense_factory
     ):
