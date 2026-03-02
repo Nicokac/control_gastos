@@ -201,8 +201,23 @@ function initQuickDepositModal() {
         const button = event.relatedTarget;
         const url = button.getAttribute('data-url');
         const name = button.getAttribute('data-name');
+        const current = parseFloat(button.getAttribute('data-current') || 0);
+        const target = parseFloat(button.getAttribute('data-target') || 0);
+        const progress = parseFloat(button.getAttribute('data-progress') || 0);
+
         document.getElementById('quickDepositForm').action = url;
         document.getElementById('quickDepositSavingName').textContent = name;
+
+        const currentEl = document.getElementById('quickDepositCurrent');
+        const progressEl = document.getElementById('quickDepositProgress');
+        const barEl = document.getElementById('quickDepositProgressBar');
+
+        if (currentEl) currentEl.textContent = `$ ${current.toLocaleString('es-AR', {minimumFractionDigits: 2})} / $ ${target.toLocaleString('es-AR', {minimumFractionDigits: 2})}`;
+        if (progressEl) progressEl.textContent = `${progress}%`;
+        if (barEl) {
+            barEl.style.width = Math.min(progress, 100) + '%';
+            barEl.style.visibility = 'visible';
+        }
     });
 }
 

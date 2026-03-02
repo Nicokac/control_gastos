@@ -161,7 +161,10 @@
                                 data-bs-toggle="modal"
                                 data-bs-target="#quickDepositModal"
                                 data-url="{% url 'savings:quick_deposit' saving.pk %}"
-                                data-name="{{ saving.name }}">
+                                data-name="{{ saving.name }}"
+                                data-current="{{ saving.current_amount }}"
+                                data-target="{{ saving.target_amount }}"
+                                data-progress="{{ saving.progress_percentage }}">
                             <i class="bi bi-plus-lg"></i>
                         </button>
                         {% endif %}
@@ -205,7 +208,16 @@
                 {% csrf_token %}
                 <input type="hidden" name="type" value="DEPOSIT">
                 <div class="modal-body">
-                    <p class="text-muted small mb-3" id="quickDepositSavingName"></p>
+                    <p class="text-muted small mb-1" id="quickDepositSavingName"></p>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small text-muted mb-1">
+                            <span id="quickDepositCurrent"></span>
+                            <span id="quickDepositProgress"></span>
+                        </div>
+                        <div class="progress progress-bar-thin mb-3">
+                            <div class="progress-bar bg-info" id="quickDepositProgressBar"></div>
+                        </div>
+                    </div>
                     <div class="mb-3">
                         <label class="form-label">Monto</label>
                         <input type="number"
