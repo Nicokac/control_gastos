@@ -53,9 +53,50 @@
 
 <!-- Resumen -->
 <div class="card mb-4 border-danger">
-    <div class="card-body d-flex justify-content-between align-items-center">
-        <span class="text-muted">Total del período:</span>
-        <span class="h4 mb-0 text-danger">{{ total|currency }}</span>
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="text-muted">Total del período:</span>
+            <div class="d-flex align-items-center gap-3">
+                {% if expense_type_summary or payment_method_summary %}
+                <a class="text-decoration-none small text-muted"
+                   data-bs-toggle="collapse"
+                   href="#expenseSummaryDetail"
+                   role="button">
+                    <i class="bi bi-chevron-down me-1"></i>Ver resumen
+                </a>
+                {% endif %}
+                <span class="h4 mb-0 text-danger">{{ total|currency }}</span>
+            </div>
+        </div>
+        {% if expense_type_summary or payment_method_summary %}
+        <div class="collapse" id="expenseSummaryDetail">
+            <hr class="my-3">
+            <div class="row g-3">
+                {% if expense_type_summary %}
+                <div class="col-md-6">
+                    <p class="small text-muted mb-2">Por tipo de gasto</p>
+                    {% for item in expense_type_summary %}
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span>{{ item.label }}</span>
+                        <span class="text-danger">{{ item.subtotal|currency }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% if payment_method_summary %}
+                <div class="col-md-6">
+                    <p class="small text-muted mb-2">Por método de pago</p>
+                    {% for item in payment_method_summary %}
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span>{{ item.label }}</span>
+                        <span class="text-danger">{{ item.subtotal|currency }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 

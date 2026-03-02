@@ -5,6 +5,7 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 
 from apps.categories.models import Category
+from apps.core.constants import ExpenseType, PaymentMethod
 from apps.core.views import (
     UserOwnedCreateView,
     UserOwnedDeleteView,
@@ -108,8 +109,37 @@ class ExpenseListView(UserOwnedListView):
         context["filter_form"] = ExpenseFilterForm(form_data, user=self.request.user)
 
         # Calcular total del queryset filtrado
-        total = self.get_queryset().aggregate(total=Sum("amount_ars"))["total"] or 0
+        qs = self.get_queryset()
+        total = qs.aggregate(total=Sum("amount_ars"))["total"] or 0
         context["total_amount"] = total
+
+        # Resumen por tipo de gasto
+        expense_type_labels = dict(ExpenseType.choices)
+        expense_type_summary = [
+            {
+                "label": expense_type_labels.get(row["expense_type"], row["expense_type"]),
+                "subtotal": row["subtotal"],
+            }
+            for row in qs.exclude(expense_type="")
+            .values("expense_type")
+            .annotate(subtotal=Sum("amount_ars"))
+            .order_by("expense_type")
+        ]
+        context["expense_type_summary"] = expense_type_summary
+
+        # Resumen por método de pago
+        payment_method_labels = dict(PaymentMethod.choices)
+        payment_method_summary = [
+            {
+                "label": payment_method_labels.get(row["payment_method"], row["payment_method"]),
+                "subtotal": row["subtotal"],
+            }
+            for row in qs.exclude(payment_method="")
+            .values("payment_method")
+            .annotate(subtotal=Sum("amount_ars"))
+            .order_by("payment_method")
+        ]
+        context["payment_method_summary"] = payment_method_summary
 
         return context
 
