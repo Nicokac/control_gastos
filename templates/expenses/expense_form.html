@@ -125,6 +125,20 @@
                             </div>
                         </div>
 
+                        <!-- DESCRIPCIÓN (visible, opcional) -->
+                        <div class="mb-4">
+                            <label class="form-label">Descripción <span class="text-muted small">(opcional)</span></label>
+                            <input type="text"
+                                   name="description"
+                                   id="id_description"
+                                   class="form-control {% if form.description.errors %}is-invalid{% endif %}"
+                                   placeholder="Ej: Supermercado Coto, Nafta YPF..."
+                                   value="{{ form.description.value|default:'' }}">
+                            {% if form.description.errors %}
+                            <div class="invalid-feedback">{{ form.description.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
                         <!-- OPCIONES AVANZADAS (colapsadas por defecto) -->
                         <div class="mb-4">
                             <a class="text-decoration-none small"
@@ -136,28 +150,6 @@
                             <div class="collapse {% if form.payment_method.value or form.expense_type.value %}show{% endif %}"
                                  id="advancedFields">
                                 <div class="row mt-3 pt-3 border-top">
-                                    <div class="col-12 mb-3">
-                                        <label class="form-label text-muted">Descripción (opcional)</label>
-                                        <input type="text"
-                                               name="description"
-                                               id="id_description"
-                                               class="form-control {% if form.description.errors %}is-invalid{% endif %}"
-                                               placeholder="Ej: Supermercado Coto, Nafta YPF..."
-                                               value="{{ form.description.value|default:'' }}">
-                                        {% if form.description.errors %}
-                                        <div class="invalid-feedback">{{ form.description.errors.0 }}</div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label text-muted">Método de pago</label>
-                                        <select name="payment_method" class="form-select">
-                                            <option value="">-- Opcional --</option>
-                                            <option value="CASH" {% if form.payment_method.value == 'CASH' %}selected{% endif %}>Efectivo</option>
-                                            <option value="DEBIT" {% if form.payment_method.value == 'DEBIT' %}selected{% endif %}>Tarjeta de Débito</option>
-                                            <option value="CREDIT" {% if form.payment_method.value == 'CREDIT' %}selected{% endif %}>Tarjeta de Crédito</option>
-                                            <option value="TRANSFER" {% if form.payment_method.value == 'TRANSFER' %}selected{% endif %}>Transferencia</option>
-                                        </select>
-                                    </div>
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label text-muted">Tipo de gasto</label>
                                         <select name="expense_type" class="form-select">
