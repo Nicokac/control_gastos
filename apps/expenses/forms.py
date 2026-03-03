@@ -10,6 +10,7 @@ from django.utils import timezone
 from apps.categories.models import Category
 from apps.core.constants import ExpenseType, PaymentMethod
 from apps.core.forms import BaseFilterForm, CurrencyFormMixin
+from apps.savings.models import Saving, SavingStatus
 
 from .models import Expense
 
@@ -125,6 +126,23 @@ class ExpenseForm(CurrencyFormMixin, forms.ModelForm):
         self.fields["expense_type"].required = False
         self.fields["exchange_rate"].required = False
 
+        # Savings activas del usuario como destino opcional
+        if user:
+            self.fields["saving"] = forms.ModelChoiceField(
+                queryset=Saving.objects.filter(user=user, status=SavingStatus.ACTIVE),
+                required=False,
+                empty_label="-- Sin destino de ahorro --",
+                widget=forms.Select(attrs={"class": "form-select"}),
+                label="Destino de ahorro",
+            )
+        else:
+            self.fields["saving"] = forms.ModelChoiceField(
+                queryset=Saving.objects.none(),
+                required=False,
+                widget=forms.Select(attrs={"class": "form-select"}),
+                label="Destino de ahorro",
+            )
+
         # Agregar opción vacía a selects opcionales
         self.fields["payment_method"].choices = [("", "-- Opcional --")] + list(
             PaymentMethod.choices
@@ -155,12 +173,21 @@ class ExpenseForm(CurrencyFormMixin, forms.ModelForm):
         return description
 
     def save(self, commit=True):
-        """Guarda el gasto asignando el usuario."""
+        """Guarda el gasto asignando el usuario y aplica depósito a meta si corresponde."""
+        from django.db import transaction
+
         instance = super().save(commit=False)
         instance.user = self.user
 
         if commit:
-            instance.save()
+            with transaction.atomic():
+                instance.save()
+                saving = self.cleaned_data.get("saving")
+                if saving:
+                    saving.add_deposit(
+                        amount=instance.amount_ars,
+                        description=f"Gasto vinculado: {instance.description or 'Sin descripción'}",
+                    )
 
         return instance
 

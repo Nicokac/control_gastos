@@ -109,6 +109,16 @@
                               </div>
                           </div>
 
+                        <!-- DESTINO DE AHORRO (opcional, visible) -->
+                        <div class="mb-4">
+                            <label class="form-label">Destino de ahorro <span class="text-muted small">(opcional)</span></label>
+                            {{ form.saving }}
+                            {% if form.saving.errors %}
+                            <div class="text-danger small mt-1">{{ form.saving.errors.0 }}</div>
+                            {% endif %}
+                            <div class="form-text">Si seleccionás una meta, el monto se depositará automáticamente.</div>
+                        </div>
+
                         <!-- QUICK ADD (mínimo visible) -->
                         <div class="row mb-3">
                             <div class="col-md-6">

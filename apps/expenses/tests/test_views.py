@@ -175,6 +175,80 @@ class TestExpenseCreateView:
 
 
 @pytest.mark.django_db
+class TestExpenseCreateWithSaving:
+    """Tests para vinculación de gasto con meta de ahorro."""
+
+    def test_create_expense_with_saving_deposits(
+        self, authenticated_client, user, expense_category, saving_factory
+    ):
+        """Verifica que crear gasto con saving dispare depósito en la meta."""
+        from apps.savings.models import SavingMovement
+
+        saving = saving_factory(user, target_amount=Decimal("10000.00"))
+        initial_amount = saving.current_amount
+
+        url = reverse("expenses:create")
+        data = {
+            "category": expense_category.pk,
+            "description": "Gasto con ahorro",
+            "amount": "1000.00",
+            "currency": "ARS",
+            "date": timezone.now().date().isoformat(),
+            "saving": saving.pk,
+        }
+        response = authenticated_client.post(url, data)
+
+        assert response.status_code == 302
+        saving.refresh_from_db()
+        assert saving.current_amount == initial_amount + Decimal("1000.00")
+        assert SavingMovement.objects.filter(saving=saving).exists()
+
+    def test_create_expense_without_saving_no_movement(
+        self, authenticated_client, user, expense_category, saving_factory
+    ):
+        """Verifica que sin saving no se crea movimiento."""
+        from apps.savings.models import SavingMovement
+
+        saving = saving_factory(user)
+
+        url = reverse("expenses:create")
+        data = {
+            "category": expense_category.pk,
+            "description": "Gasto sin ahorro",
+            "amount": "500.00",
+            "currency": "ARS",
+            "date": timezone.now().date().isoformat(),
+        }
+        authenticated_client.post(url, data)
+
+        assert SavingMovement.objects.filter(saving=saving).count() == 0
+
+    def test_cannot_link_other_user_saving(
+        self, authenticated_client, user, other_user, expense_category, saving_factory
+    ):
+        """Verifica que no se pueda vincular saving de otro usuario."""
+        other_saving = saving_factory(other_user)
+
+        url = reverse("expenses:create")
+        data = {
+            "category": expense_category.pk,
+            "description": "Gasto ajeno",
+            "amount": "500.00",
+            "currency": "ARS",
+            "date": timezone.now().date().isoformat(),
+            "saving": other_saving.pk,
+        }
+        response = authenticated_client.post(url, data)
+
+        # El form rechaza el saving ajeno (no está en queryset del usuario) → form inválido
+        assert response.status_code == 200
+        assert "form" in response.context
+        from apps.expenses.models import Expense
+
+        assert not Expense.objects.filter(description="Gasto ajeno", user=user).exists()
+
+
+@pytest.mark.django_db
 class TestExpenseUpdateView:
     """Tests para la vista de edición de gastos."""
 
