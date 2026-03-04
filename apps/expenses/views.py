@@ -1,11 +1,9 @@
 import logging
 
-from django.db.models import Sum
 from django.urls import reverse_lazy
 from django.utils import timezone
 
 from apps.categories.models import Category
-from apps.core.constants import ExpenseType, PaymentMethod
 from apps.core.views import (
     UserOwnedCreateView,
     UserOwnedDeleteView,
@@ -14,7 +12,7 @@ from apps.core.views import (
     UserOwnedUpdateView,
 )
 
-from .forms import ExpenseFilterForm, ExpenseForm
+from .forms import ExpenseForm
 from .models import Expense
 
 logger = logging.getLogger(__name__)
@@ -26,6 +24,9 @@ class ExpenseListView(UserOwnedListView):
     context_object_name = "expenses"
 
     def get_queryset(self):
+        if hasattr(self, "_cached_queryset"):
+            return self._cached_queryset
+
         qs = super().get_queryset().select_related("category", "saving")
 
         # Aplicar filtros de mes/año/categoría
@@ -81,67 +82,10 @@ class ExpenseListView(UserOwnedListView):
         if expense_type:
             qs = qs.filter(expense_type=expense_type)
 
-        return qs.order_by("-date", "-created_at")
+        qs = qs.order_by("-date", "-created_at")
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-
-        # Si no hay filtros en GET, usar defaults para el formulario
-        has_filters = any(
-            key in self.request.GET
-            for key in [
-                "month",
-                "year",
-                "category",
-                "date_from",
-                "date_to",
-                "payment_method",
-                "expense_type",
-            ]
-        )
-
-        if has_filters:
-            form_data = self.request.GET
-        else:
-            today = timezone.now().date()
-            form_data = {"month": today.month, "year": today.year}
-
-        context["filter_form"] = ExpenseFilterForm(form_data, user=self.request.user)
-
-        # Calcular total del queryset filtrado
-        qs = self.get_queryset()
-        total = qs.aggregate(total=Sum("amount_ars"))["total"] or 0
-        context["total_amount"] = total
-
-        # Resumen por tipo de gasto
-        expense_type_labels = dict(ExpenseType.choices)
-        expense_type_summary = [
-            {
-                "label": expense_type_labels.get(row["expense_type"], row["expense_type"]),
-                "subtotal": row["subtotal"],
-            }
-            for row in qs.exclude(expense_type="")
-            .values("expense_type")
-            .annotate(subtotal=Sum("amount_ars"))
-            .order_by("expense_type")
-        ]
-        context["expense_type_summary"] = expense_type_summary
-
-        # Resumen por método de pago
-        payment_method_labels = dict(PaymentMethod.choices)
-        payment_method_summary = [
-            {
-                "label": payment_method_labels.get(row["payment_method"], row["payment_method"]),
-                "subtotal": row["subtotal"],
-            }
-            for row in qs.exclude(payment_method="")
-            .values("payment_method")
-            .annotate(subtotal=Sum("amount_ars"))
-            .order_by("payment_method")
-        ]
-        context["payment_method_summary"] = payment_method_summary
-
-        return context
+        self._cached_queryset = qs
+        return qs
 
 
 class ExpenseCreateView(UserOwnedCreateView):

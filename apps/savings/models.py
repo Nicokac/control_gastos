@@ -70,6 +70,16 @@ class Saving(TimestampMixin, models.Model):
         indexes = [
             models.Index(fields=["user", "status"]),
         ]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(target_amount__gt=0),
+                name="saving_target_amount_positive",
+            ),
+            models.CheckConstraint(
+                check=models.Q(current_amount__gte=0),
+                name="saving_current_amount_non_negative",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.name} - {self.progress_percentage}%"

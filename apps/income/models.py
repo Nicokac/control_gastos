@@ -41,6 +41,12 @@ class Income(TimestampMixin, CurrencyMixin, models.Model):
             models.Index(fields=["user", "date"]),
             models.Index(fields=["user", "category"]),
         ]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(amount__gt=0),
+                name="income_amount_positive",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.description} - {self.formatted_amount} ({self.date})"
