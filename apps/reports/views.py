@@ -217,12 +217,19 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         else:
             overall_progress = 0
 
-        # Query 2: Top 3 metas activas por progreso (campo calculado, sort en Python)
-        top_savings = sorted(
-            Saving.objects.filter(user=user, status=SavingStatus.ACTIVE),
-            key=lambda x: x.progress_percentage,
-            reverse=True,
-        )[:3]
+        from django.db.models import DecimalField, ExpressionWrapper, F
+
+        # Query 2: Top 3 metas activas por progreso (ordenado en DB)
+        progress_expr = ExpressionWrapper(
+            (F("current_amount") * 100) / F("target_amount"),
+            output_field=DecimalField(max_digits=7, decimal_places=2),
+        )
+
+        top_savings = list(
+            Saving.objects.filter(user=user, status=SavingStatus.ACTIVE)
+            .annotate(progress_db=progress_expr)
+            .order_by("-progress_db", "-updated_at")[:3]
+        )
 
         return {
             "savings_count": aggregates["active_count"],
