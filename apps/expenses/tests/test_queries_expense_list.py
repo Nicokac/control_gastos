@@ -1,31 +1,32 @@
 from decimal import Decimal
 
+from django.test import RequestFactory
 from django.urls import reverse
 from django.utils import timezone
 
 import pytest
 
+from apps.expenses.views import ExpenseListView
+
 
 @pytest.mark.django_db
-class TestExpenseListQueries:
-    def test_expense_list_query_count_is_stable(
-        self,
-        client,
-        django_assert_num_queries,
-        user,
-        expense_category_factory,
-        expense_factory,
-    ):
-        # Arrange
-        client.force_login(user)
+def test_expense_list_query_count_is_stable_requestfactory(
+    django_assert_num_queries,
+    user,
+    expense_category_factory,
+    expense_factory,
+):
+    # Arrange
+    cat = expense_category_factory(user, name="Cat 1")
+    expense_factory(user, cat, amount=Decimal("10.00"), date=timezone.now().date())
 
-        cat = expense_category_factory(user, name="Cat 1")
-        expense_factory(user, cat, amount=Decimal("10.00"), date=timezone.now().date())
+    rf = RequestFactory()
+    request = rf.get(reverse("expenses:list"))
+    request.user = user
 
-        url = reverse("expenses:list")
+    # Act + Assert
+    with django_assert_num_queries(2):
+        response = ExpenseListView.as_view()(request)
+        response.render()  # fuerza template + queryset
 
-        # Act + Assert
-        with django_assert_num_queries(4):
-            resp = client.get(url)
-
-        assert resp.status_code == 200
+    assert response.status_code == 200
