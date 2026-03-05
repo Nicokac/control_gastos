@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from django.test import RequestFactory
 from django.urls import reverse
 from django.utils import timezone
 
@@ -75,3 +76,20 @@ class TestDashboardQueries:
         if len(top) >= 2:
             progresses = [s.progress_percentage for s in top]
             assert progresses == sorted(progresses, reverse=True)
+
+    @pytest.mark.django_db
+    def test_dashboard_query_count_is_stable(self, django_assert_max_num_queries, user):
+        """
+        Baseline: el dashboard debe mantenerse estable en cantidad de queries.
+        Usamos RequestFactory para NO contar session/auth middleware.
+        """
+        rf = RequestFactory()
+        request = rf.get("/reports/dashboard/")
+        request.user = user
+
+        from apps.reports.views import DashboardView
+
+        with django_assert_max_num_queries(9):
+            response = DashboardView.as_view()(request)
+
+        assert response.status_code == 200
