@@ -330,3 +330,15 @@ LOGGING = {
         },
     },
 }
+
+# =============================================================================
+# CACHE
+# =============================================================================
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "control-gastos-cache",
+        "TIMEOUT": 300,  # 5 minutos por defecto
+    }
+}
