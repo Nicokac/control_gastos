@@ -7,6 +7,7 @@ from django.db import models
 
 from apps.core.constants import ExpenseType, PaymentMethod
 from apps.core.mixins import CurrencyMixin, TimestampMixin
+from apps.core.utils import get_month_date_range_exclusive
 
 
 # Create your models here.
@@ -113,7 +114,8 @@ class Expense(TimestampMixin, CurrencyMixin, models.Model):
         queryset = cls.objects.filter(user=user)
 
         if month and year:
-            queryset = queryset.filter(date__month=month, date__year=year)
+            start, end = get_month_date_range_exclusive(month, year)
+            queryset = queryset.filter(date__gte=start, date__lt=end)
         elif year:
             queryset = queryset.filter(date__year=year)
 
@@ -136,7 +138,9 @@ class Expense(TimestampMixin, CurrencyMixin, models.Model):
         """
         from django.db.models import Sum
 
-        result = cls.objects.filter(user=user, date__month=month, date__year=year).aggregate(
+        start, end = get_month_date_range_exclusive(month, year)
+
+        result = cls.objects.filter(user=user, date__gte=start, date__lt=end).aggregate(
             total=Sum("amount_ars")
         )
 
@@ -157,8 +161,10 @@ class Expense(TimestampMixin, CurrencyMixin, models.Model):
         """
         from django.db.models import Sum
 
+        start, end = get_month_date_range_exclusive(month, year)
+
         return (
-            cls.objects.filter(user=user, date__month=month, date__year=year)
+            cls.objects.filter(user=user, date__gte=start, date__lt=end)
             .values("category__id", "category__name", "category__icon", "category__color")
             .annotate(total=Sum("amount_ars"))
             .order_by("-total")
