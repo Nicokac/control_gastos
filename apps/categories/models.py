@@ -53,12 +53,11 @@ class Category(TimestampMixin, models.Model):
             ),
             # Categorías del sistema no pueden tener usuario
             models.CheckConstraint(
-                check=~models.Q(is_system=True, user__isnull=False),
+                condition=~models.Q(is_system=True, user__isnull=False),
                 name="system_category_no_user",
             ),
-            # Categorías de usuario deben tener usuario
             models.CheckConstraint(
-                check=~models.Q(is_system=False, user__isnull=True),
+                condition=~models.Q(is_system=False, user__isnull=True),
                 name="user_category_requires_user",
             ),
         ]

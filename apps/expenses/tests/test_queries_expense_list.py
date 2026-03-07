@@ -25,7 +25,14 @@ def test_expense_list_query_count_is_stable_requestfactory(
     request.user = user
 
     # Act + Assert
-    with django_assert_num_queries(2):
+    # Baseline actual:
+    # 1) count paginación
+    # 2) total del período
+    # 3) resumen por tipo
+    # 4) resumen por método de pago
+    # 5) categorías del filter_form
+    # 6) listado paginado
+    with django_assert_num_queries(6):
         response = ExpenseListView.as_view()(request)
         response.render()  # fuerza template + queryset
 

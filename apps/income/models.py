@@ -43,7 +43,7 @@ class Income(TimestampMixin, CurrencyMixin, models.Model):
         ]
         constraints = [
             models.CheckConstraint(
-                check=models.Q(amount__gt=0),
+                condition=models.Q(amount__gt=0),
                 name="income_amount_positive",
             ),
         ]

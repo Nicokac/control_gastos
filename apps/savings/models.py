@@ -72,11 +72,11 @@ class Saving(TimestampMixin, models.Model):
         ]
         constraints = [
             models.CheckConstraint(
-                check=models.Q(target_amount__gt=0),
+                condition=models.Q(target_amount__gt=0),
                 name="saving_target_amount_positive",
             ),
             models.CheckConstraint(
-                check=models.Q(current_amount__gte=0),
+                condition=models.Q(current_amount__gte=0),
                 name="saving_current_amount_non_negative",
             ),
         ]
@@ -288,7 +288,7 @@ class SavingMovement(TimestampMixin, models.Model):
         ]
         constraints = [
             models.CheckConstraint(
-                check=models.Q(amount__gt=0),
+                condition=models.Q(amount__gt=0),
                 name="saving_movement_amount_positive",
             )
         ]

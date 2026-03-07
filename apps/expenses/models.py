@@ -65,7 +65,7 @@ class Expense(TimestampMixin, CurrencyMixin, models.Model):
         ]
         constraints = [
             models.CheckConstraint(
-                check=models.Q(amount__gt=0),
+                condition=models.Q(amount__gt=0),
                 name="expense_amount_positive",
             ),
         ]

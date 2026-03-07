@@ -69,6 +69,74 @@ class TestExpenseListView:
         assert response.status_code == 200
         assert "Filtrado" in response.content.decode()
 
+    def test_list_shows_total_period_summary(
+        self, authenticated_client, user, expense_category, expense_factory
+    ):
+        """Verifica que el resumen muestre el total del período."""
+        expense_factory(
+            user,
+            expense_category,
+            description="Gasto Resumen",
+            amount=Decimal("1500.00"),
+            date=timezone.now().date(),
+        )
+
+        url = reverse("expenses:list")
+        response = authenticated_client.get(url)
+
+        assert response.status_code == 200
+        assert response.context["total"] == Decimal("1500.00")
+
+    def test_list_builds_expense_type_and_payment_method_summary(
+        self, authenticated_client, user, expense_category, expense_factory
+    ):
+        """Verifica que construya resúmenes por tipo y método de pago."""
+        expense_factory(
+            user,
+            expense_category,
+            description="Gasto Fijo Efectivo",
+            amount=Decimal("1000.00"),
+            date=timezone.now().date(),
+            expense_type="FIXED",
+            payment_method="CASH",
+        )
+
+        url = reverse("expenses:list")
+        response = authenticated_client.get(url)
+
+        assert response.status_code == 200
+
+        expense_type_summary = response.context["expense_type_summary"]
+        payment_method_summary = response.context["payment_method_summary"]
+
+        assert len(expense_type_summary) == 1
+        assert expense_type_summary[0]["subtotal"] == Decimal("1000.00")
+
+        assert len(payment_method_summary) == 1
+        assert payment_method_summary[0]["subtotal"] == Decimal("1000.00")
+
+    def test_list_renders_advanced_filters_controls(
+        self, authenticated_client, user, expense_category, expense_factory
+    ):
+        """Verifica que el listado renderice los controles de filtros avanzados."""
+        expense_factory(
+            user,
+            expense_category,
+            description="Gasto UX",
+            amount=Decimal("500.00"),
+            date=timezone.now().date(),
+        )
+
+        url = reverse("expenses:list")
+        response = authenticated_client.get(url)
+
+        assert response.status_code == 200
+        content = response.content.decode()
+
+        assert "M\u00e9todo de pago" in content or "Método de pago" in content
+        assert "Tipo" in content
+        assert "filter_form" in response.context
+
 
 @pytest.mark.django_db
 class TestExpenseCreateView:
@@ -172,6 +240,27 @@ class TestExpenseCreateView:
 
         assert expense_category.pk in category_pks
         assert other_cat.pk not in category_pks
+
+    def test_create_form_renders_core_and_advanced_fields(self, authenticated_client):
+        """Verifica que el formulario muestre campos core y el bloque de avanzados."""
+        url = reverse("expenses:create")
+        response = authenticated_client.get(url)
+
+        assert response.status_code == 200
+        content = response.content.decode()
+
+        # Campos core visibles
+        assert "Monto" in content
+        assert "Categor" in content  # evita problemas de encoding
+        assert "Fecha" in content
+        assert "Descripci" in content
+
+        # Bloque de avanzados visible como trigger
+        assert "Opciones avanzadas" in content
+
+        # Campos avanzados renderizados en template
+        assert "M\u00e9todo de pago" in content or "Método de pago" in content
+        assert "Tipo de gasto" in content
 
 
 @pytest.mark.django_db

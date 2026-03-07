@@ -1,9 +1,11 @@
 import logging
 
+from django.db.models import Sum
 from django.urls import reverse_lazy
 from django.utils import timezone
 
 from apps.categories.models import Category
+from apps.core.constants import ExpenseType, PaymentMethod
 from apps.core.utils import get_month_date_range_exclusive
 from apps.core.views import (
     UserOwnedCreateView,
@@ -13,7 +15,7 @@ from apps.core.views import (
     UserOwnedUpdateView,
 )
 
-from .forms import ExpenseForm
+from .forms import ExpenseFilterForm, ExpenseForm
 from .models import Expense
 
 logger = logging.getLogger(__name__)
@@ -85,6 +87,61 @@ class ExpenseListView(UserOwnedListView):
         qs = qs.order_by("-date", "-created_at")
         self._cached_queryset = qs
         return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        has_filters = any(
+            key in self.request.GET
+            for key in [
+                "month",
+                "year",
+                "category",
+                "date_from",
+                "date_to",
+                "payment_method",
+                "expense_type",
+            ]
+        )
+
+        if has_filters:
+            form_data = self.request.GET
+        else:
+            today = timezone.now().date()
+            form_data = {"month": today.month, "year": today.year}
+
+        context["filter_form"] = ExpenseFilterForm(form_data, user=self.request.user)
+
+        qs = getattr(self, "_cached_queryset", self.object_list)
+
+        total = qs.aggregate(total=Sum("amount_ars"))["total"] or 0
+        context["total"] = total
+
+        expense_type_labels = dict(ExpenseType.choices)
+        context["expense_type_summary"] = [
+            {
+                "label": expense_type_labels.get(row["expense_type"], row["expense_type"]),
+                "subtotal": row["subtotal"],
+            }
+            for row in qs.exclude(expense_type="")
+            .values("expense_type")
+            .annotate(subtotal=Sum("amount_ars"))
+            .order_by("expense_type")
+        ]
+
+        payment_method_labels = dict(PaymentMethod.choices)
+        context["payment_method_summary"] = [
+            {
+                "label": payment_method_labels.get(row["payment_method"], row["payment_method"]),
+                "subtotal": row["subtotal"],
+            }
+            for row in qs.exclude(payment_method="")
+            .values("payment_method")
+            .annotate(subtotal=Sum("amount_ars"))
+            .order_by("payment_method")
+        ]
+
+        return context
 
 
 class ExpenseCreateView(UserOwnedCreateView):
