@@ -101,6 +101,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "axes.middleware.AxesMiddleware",
+    "apps.core.middleware.RequestTimingMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -320,6 +321,11 @@ LOGGING = {
         "apps": {
             "handlers": ["console", "file"],
             "level": "DEBUG",
+            "propagate": False,
+        },
+        "apps.performance": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
             "propagate": False,
         },
         # Logger de seguridad personalizado
