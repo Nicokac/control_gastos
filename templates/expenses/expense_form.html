@@ -152,27 +152,44 @@
                         <!-- OPCIONES AVANZADAS (colapsadas por defecto) -->
                         <div class="mb-4">
                             <a class="text-decoration-none small"
-                               data-bs-toggle="collapse"
-                               href="#advancedFields"
-                               role="button">
+                            data-bs-toggle="collapse"
+                            href="#advancedFields"
+                            role="button">
                                 <i class="bi bi-chevron-down me-1"></i>Opciones avanzadas
                             </a>
                             <div class="collapse {% if form.payment_method.value or form.expense_type.value %}show{% endif %}"
-                                 id="advancedFields">
+                                id="advancedFields">
                                 <div class="row mt-3 pt-3 border-top">
                                     <div class="col-md-6 mb-3">
-                                        <label class="form-label text-muted">Tipo de gasto</label>
-                                        <select name="expense_type" class="form-select">
-                                            <option value="">-- Opcional --</option>
-                                            <option value="FIXED" {% if form.expense_type.value == 'FIXED' %}selected{% endif %}>Fijo</option>
-                                            <option value="VARIABLE" {% if form.expense_type.value == 'VARIABLE' %}selected{% endif %}>Variable</option>
+                                        <label class="form-label text-muted">Método de pago</label>
+                                        <select name="payment_method" class="form-select {% if form.payment_method.errors %}is-invalid{% endif %}">
+                                            {% for value, label in form.payment_method.field.choices %}
+                                            <option value="{{ value }}" {% if form.payment_method.value == value %}selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                            {% endfor %}
                                         </select>
+                                        {% if form.payment_method.errors %}
+                                        <div class="invalid-feedback">{{ form.payment_method.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label text-muted">Tipo de gasto</label>
+                                        <select name="expense_type" class="form-select {% if form.expense_type.errors %}is-invalid{% endif %}">
+                                            {% for value, label in form.expense_type.field.choices %}
+                                            <option value="{{ value }}" {% if form.expense_type.value == value %}selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                        {% if form.expense_type.errors %}
+                                        <div class="invalid-feedback">{{ form.expense_type.errors.0 }}</div>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
                 <!-- BOTÓN SUBMIT -->
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
