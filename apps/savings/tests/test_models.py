@@ -387,50 +387,6 @@ class TestSavingDepositWithdrawalValidation:
 
 
 @pytest.mark.django_db
-class TestSavingClassmethods:
-    def test_get_user_savings_without_status(self, user, saving_factory):
-        s1 = saving_factory(user, name="A")
-        s2 = saving_factory(user, name="B")
-        qs = Saving.get_user_savings(user)
-        assert s1 in qs
-        assert s2 in qs
-
-    def test_get_user_savings_with_status_filter(self, user, saving_factory):
-        active = saving_factory(user, name="Activa")
-        completed = saving_factory(
-            user,
-            name="Completada",
-            target_amount=Decimal("100.00"),
-            current_amount=Decimal("100.00"),
-        )
-        completed.status = SavingStatus.COMPLETED
-        completed.save(update_fields=["status"])
-
-        qs = Saving.get_user_savings(user, status=SavingStatus.COMPLETED)
-        assert completed in qs
-        assert active not in qs
-
-    def test_get_total_saved_only_active_and_is_active(self, user, saving_factory):
-        saving_factory(user, current_amount=Decimal("100.00"))
-        s2 = saving_factory(user, current_amount=Decimal("50.00"))
-
-        # completed no cuenta
-        s3 = saving_factory(
-            user,
-            target_amount=Decimal("10.00"),
-            current_amount=Decimal("10.00"),
-        )
-        s3.status = SavingStatus.COMPLETED
-        s3.save(update_fields=["status"])
-
-        # eliminado no cuenta
-        s2.delete()
-
-        total = Saving.get_total_saved(user)
-        assert total == Decimal("100.00")
-
-
-@pytest.mark.django_db
 class TestSavingMovementProperties:
     def test_formatted_amount_deposit(self, saving):
         movement = SavingMovement.objects.create(

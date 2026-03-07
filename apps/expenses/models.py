@@ -98,30 +98,6 @@ class Expense(TimestampMixin, CurrencyMixin, models.Model):
                 pass
 
     @classmethod
-    def get_user_expenses(cls, user, month=None, year=None):
-        """
-        Obtiene los gastos de un usuario, opcionalmente filtrados por mes/año.
-
-        Args:
-            :param cls: Cls
-            :param user: Usuario
-            :param month: Mes (1-12)
-            :param year: Año
-
-        Returns:
-            QuerySet de gastos
-        """
-        queryset = cls.objects.filter(user=user)
-
-        if month and year:
-            start, end = get_month_date_range_exclusive(month, year)
-            queryset = queryset.filter(date__gte=start, date__lt=end)
-        elif year:
-            queryset = queryset.filter(date__year=year)
-
-        return queryset.select_related("category")
-
-    @classmethod
     def get_monthly_total(cls, user, month, year, currency="ARS"):
         """
         Calcula el total de gastos de un mes.

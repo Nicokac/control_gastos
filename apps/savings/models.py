@@ -232,44 +232,6 @@ class Saving(TimestampMixin, models.Model):
 
         return movement
 
-    @classmethod
-    def get_user_savings(cls, user, status=None):
-        """
-        Obtiene las metas de ahorro de un usuario.
-
-        Args:
-            user: Usuario
-            status: Estado opcional para filtrar
-
-        Returns:
-            QuerySet de metas de ahorro
-        """
-        queryset = cls.objects.filter(user=user)
-
-        if status:
-            queryset = queryset.filter(status=status)
-
-        return queryset
-
-    @classmethod
-    def get_total_saved(cls, user):
-        """
-        Calcula el total ahorrado por un usuario (solo metas activas).
-
-        Args:
-            user: Usuario
-
-        Returns:
-            Decimal con el total
-        """
-        from django.db.models import Sum
-
-        result = cls.objects.filter(user=user, status=SavingStatus.ACTIVE).aggregate(
-            total=Sum("current_amount")
-        )
-
-        return result["total"] or Decimal("0")
-
 
 class SavingMovement(TimestampMixin, models.Model):
     """
