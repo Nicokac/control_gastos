@@ -322,3 +322,8 @@ if SENTRY_DSN:
         # No enviar PII por defecto
         send_default_pii=False,
     )
+
+# =============================================================================
+# MIDDLEWARE DE PERFORMANCE — solo en producción
+# =============================================================================
+MIDDLEWARE.append("apps.core.middleware.RequestTimingMiddleware")
