@@ -115,7 +115,7 @@
                                 <i class="bi {% if movement.is_deposit %}bi-arrow-down-circle text-success{% else %}bi-arrow-up-circle text-danger{% endif %} me-2"></i>
                                 <span>{{ movement.get_type_display }}</span>
                                 <br>
-                                <small class="text-muted">{{ movement.date|date:"d M Y" }}</small>
+                                <small class="text-muted">{{ movement.date|date:"d M Y" }}{% if movement.description %} — {{ movement.description }}{% endif %}</small>
                             </div>
                             <span class="{% if movement.is_deposit %}text-success{% else %}text-danger{% endif %} fw-bold">
                                 {{ movement.formatted_amount }}
