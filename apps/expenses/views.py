@@ -27,9 +27,6 @@ class ExpenseListView(UserOwnedListView):
     context_object_name = "expenses"
 
     def get_queryset(self):
-        if hasattr(self, "_cached_queryset"):
-            return self._cached_queryset
-
         qs = super().get_queryset().select_related("category", "saving")
 
         has_filters = any(
@@ -85,7 +82,6 @@ class ExpenseListView(UserOwnedListView):
             qs = qs.filter(expense_type=expense_type)
 
         qs = qs.order_by("-date", "-created_at")
-        self._cached_queryset = qs
         return qs
 
     def get_context_data(self, **kwargs):
@@ -112,7 +108,7 @@ class ExpenseListView(UserOwnedListView):
 
         context["filter_form"] = ExpenseFilterForm(form_data, user=self.request.user)
 
-        qs = getattr(self, "_cached_queryset", self.object_list)
+        qs = self.object_list
 
         total = qs.aggregate(total=Sum("amount_ars"))["total"] or 0
         context["total"] = total
