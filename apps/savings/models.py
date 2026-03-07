@@ -153,7 +153,8 @@ class Saving(TimestampMixin, models.Model):
         """
         Agrega un depósito a la meta de ahorro.
 
-        Usa F() expressions para evitar race conditions.
+        Usa select_for_update + transaction.atomic para evitar race conditions
+        en la verificación de compleción.
 
         Args:
             amount: Monto a depositar
@@ -165,21 +166,30 @@ class Saving(TimestampMixin, models.Model):
         if amount <= 0:
             raise ValueError("El monto debe ser mayor a cero.")
 
-        # Crear el movimiento
-        movement = SavingMovement.objects.create(
-            saving=self, type=MovementType.DEPOSIT, amount=amount, description=description
-        )
+        with transaction.atomic():
+            # Bloquear el registro para evitar race conditions en la verificación de compleción
+            saving = Saving.objects.select_for_update().get(pk=self.pk)
 
-        # Actualizar current_amount usando F() para evitar race conditions
-        Saving.objects.filter(pk=self.pk).update(current_amount=F("current_amount") + amount)
+            # Crear el movimiento
+            movement = SavingMovement.objects.create(
+                saving=saving, type=MovementType.DEPOSIT, amount=amount, description=description
+            )
+            # Actualizar current_amount usando F() para evitar race conditions
+            Saving.objects.filter(pk=self.pk).update(current_amount=F("current_amount") + amount)
+            # Refrescar la instancia para obtener el valor actualizado
+            saving.refresh_from_db()
 
-        # Refrescar la instancia para obtener el valor actualizado
-        self.refresh_from_db()
+            # Verificar si se completó la meta
+            if (
+                saving.current_amount >= saving.target_amount
+                and saving.status == SavingStatus.ACTIVE
+            ):
+                saving.status = SavingStatus.COMPLETED
+                saving.save(update_fields=["status"])
 
-        # Verificar si se completó la meta
-        if self.current_amount >= self.target_amount and self.status == SavingStatus.ACTIVE:
-            self.status = SavingStatus.COMPLETED
-            self.save(update_fields=["status"])
+            # Sincronizar self con los valores actualizados
+            self.current_amount = saving.current_amount
+            self.status = saving.status
 
         return movement
 
