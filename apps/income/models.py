@@ -9,6 +9,7 @@ from django.db import models
 
 from apps.core.constants import CategoryType
 from apps.core.mixins import CurrencyMixin, TimestampMixin
+from apps.core.utils import get_month_date_range_exclusive
 
 
 # Create your models here.
@@ -84,12 +85,11 @@ class Income(TimestampMixin, CurrencyMixin, models.Model):
             QuerySet de ingresos
         """
         queryset = cls.objects.filter(user=user)
-
         if month and year:
-            queryset = queryset.filter(date__month=month, date__year=year)
+            start, end = get_month_date_range_exclusive(int(month), int(year))
+            queryset = queryset.filter(date__gte=start, date__lt=end)
         elif year:
             queryset = queryset.filter(date__year=year)
-
         return queryset.select_related("category")
 
     @classmethod
@@ -107,10 +107,10 @@ class Income(TimestampMixin, CurrencyMixin, models.Model):
         """
         from django.db.models import Sum
 
-        result = cls.objects.filter(user=user, date__month=month, date__year=year).aggregate(
+        start, end = get_month_date_range_exclusive(month, year)
+        result = cls.objects.filter(user=user, date__gte=start, date__lt=end).aggregate(
             total=Sum("amount_ars")
         )
-
         return result["total"] or Decimal("0")
 
     @classmethod
@@ -128,8 +128,9 @@ class Income(TimestampMixin, CurrencyMixin, models.Model):
         """
         from django.db.models import Sum
 
+        start, end = get_month_date_range_exclusive(month, year)
         return (
-            cls.objects.filter(user=user, date__month=month, date__year=year)
+            cls.objects.filter(user=user, date__gte=start, date__lt=end)
             .values(
                 "category__id",
                 "category__name",
