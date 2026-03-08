@@ -2,7 +2,7 @@
 
 ![CI](https://github.com/Nicokac/control_gastos/actions/workflows/ci.yml/badge.svg)
 ![Coverage](https://img.shields.io/badge/coverage-95%25-green)
-![Python](https://img.shields.io/badge/python-3.11-blue)
+![Python](https://img.shields.io/badge/python-3.12-blue)
 ![Django](https://img.shields.io/badge/django-5.2-green)
 ![License](https://img.shields.io/badge/license-private-lightgrey)
 
@@ -34,9 +34,9 @@
 
 | Métrica | Valor |
 |---------|-------|
-| Tests | 670+ |
-| Coverage | ≥80% (enforced) |
-| Python | 3.11+ |
+| Tests | 678 |
+| Coverage | 94.53% (enforced ≥80%) |
+| Python | 3.12+ |
 | Django | 5.2 |
 | CI Jobs | 5 |
 | Estado | 🟢 **Listo para Producción** |
@@ -84,6 +84,18 @@
 - Registrar depósitos y retiros
 - Seguimiento de progreso porcentual
 - Auto-completado cuando se alcanza el objetivo
+
+### 💸 Vinculación Gasto → Ahorro
+- Al registrar un gasto, podés seleccionar una meta de ahorro como destino
+- El monto se deposita automáticamente en la meta al guardar el gasto
+- El mensaje de confirmación informa el depósito realizado
+- El historial de movimientos muestra el origen del depósito
+
+### 🔍 Filtros Avanzados de Gastos
+- Filtrar por método de pago (efectivo, débito, crédito, transferencia)
+- Filtrar por tipo de gasto (fijo / variable)
+- Resumen colapsable con subtotales por tipo y método de pago
+
 
 ### 🏷️ Categorías
 - Categorías de sistema predefinidas
@@ -298,21 +310,21 @@ pytest --cov=apps --cov-fail-under=80
 
 | Ítem | Valor |
 |-----|------|
-| Fecha | **2026-02-27** |
+| Fecha | **2026-03-08** |
 | Entorno | Local (Windows) |
 | Python | 3.12.0 |
 | Django | 5.2.9 |
 | Settings | `config.settings.dev` |
-| Commit | *no fijado (ejecución local)* |
+| Commit | develop HEAD |
 
 Resultado:
 
 | Ítem | Valor |
 |-----|------|
-| ✅ |  713 tests pasados |
-| ⏭️ |  2 skipped |
-| ❌ |  0 fallos |
-| ⏱️ |  Duración total: 4m 49s |
+| ✅ | 678 tests pasados |
+| ⏭️ | 2 skipped |
+| ❌ | 0 fallos |
+| ⏱️ | Duración total: ~4m 27s |
 
 
 📈 Coverage
@@ -324,9 +336,9 @@ Resultado verificado:
 
 | Métrica | Valor |
 |-----|------|
-| Coverage total|	95.20%|
-|Coverage mínimo requerido|	80%|
-|Estado|	✅ Cumple|
+| Coverage total | 94.53% |
+| Coverage mínimo requerido | 80% |
+| Estado | ✅ Cumple |
 
 ```bash
 python manage.py check --deploy --settings=config.settings.prod
@@ -605,7 +617,7 @@ El proyecto incluye las siguientes configuraciones de seguridad en `prod.py`:
 | `CSRF_COOKIE_SECURE` | True | CSRF solo por HTTPS |
 | `X_FRAME_OPTIONS` | DENY | Previene clickjacking |
 | `AXES_FAILURE_LIMIT` | 5 | Intentos de login |
-| `AXES_COOLOFF_TIME` | 2 horas | Tiempo de bloqueo |
+| `AXES_COOLOFF_TIME` | 1 hora | Tiempo de bloqueo |
 
 ### Índices de Base de Datos
 
@@ -697,6 +709,15 @@ python manage.py shell
 # Verificar proyecto
 python manage.py check
 python manage.py check --deploy --settings=config.settings.prod
+
+# Cargar categorías del sistema (necesario tras flush)
+python manage.py seed_categories
+
+# Reset completo de DB de desarrollo
+python manage.py flush --no-input
+python manage.py seed_categories
+python manage.py createsuperuser
+
 ```
 
 ### Seguridad
@@ -807,8 +828,12 @@ ci: add GitHub Actions pipeline
 ### Próximas Features
 
 - [x] Error tracking con Sentry
+- [x] Filtros avanzados por método de pago y tipo de gasto
+- [x] Vinculación directa gasto → meta de ahorro
+- [x] Picker visual de íconos en formularios
+- [x] Rate limiting con página de bloqueo (account_locked)
+- [x] Middleware de performance (RequestTimingMiddleware)
 - [ ] Exportación a Excel/PDF
-- [ ] Filtros avanzados por rango de fechas
 - [ ] Gráficos de evolución mensual
 - [ ] Transacciones recurrentes
 - [ ] PWA (Progressive Web App)
