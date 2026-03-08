@@ -11,6 +11,7 @@ from django.db.models import F
 
 from apps.core.constants import Currency
 from apps.core.mixins import TimestampMixin
+from apps.core.utils import format_currency
 
 
 class SavingStatus(models.TextChoices):
@@ -117,23 +118,17 @@ class Saving(TimestampMixin, models.Model):
 
     @property
     def formatted_target(self):
-        symbol = "US$" if self.currency == Currency.USD else "$"
-        formatted = (
-            f"{self.target_amount:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-        )
-        return f"{symbol} {formatted}"
+        return format_currency(self.target_amount, self.currency)
 
     @property
     def formatted_current(self):
         """Retorna el monto actual formateado."""
-        symbol = "US$" if self.currency == Currency.USD else "$"
-        return f"{symbol} {self.current_amount:,.2f}"
+        return format_currency(self.current_amount, self.currency)
 
     @property
     def formatted_remaining(self):
         """Retorna el monto restante formateado."""
-        symbol = "US$" if self.currency == Currency.USD else "$"
-        return f"{symbol} {self.remaining_amount:,.2f}"
+        return format_currency(self.remaining_amount, self.currency)
 
     @property
     def is_completed(self):
