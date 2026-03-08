@@ -146,7 +146,7 @@
 
 ### Requisitos Previos
 
-- Python 3.11 o superior
+- Python 3.12 o superior
 - pip
 - Git
 
@@ -315,7 +315,7 @@ pytest --cov=apps --cov-fail-under=80
 | Python | 3.12.0 |
 | Django | 5.2.9 |
 | Settings | `config.settings.dev` |
-| Commit | develop HEAD |
+| Commit | develop @ fb632aa |
 
 Resultado:
 
@@ -324,7 +324,7 @@ Resultado:
 | ✅ | 678 tests pasados |
 | ⏭️ | 2 skipped |
 | ❌ | 0 fallos |
-| ⏱️ | Duración total: ~4m 27s |
+| ⏱️ | Duración total: ~4m 26s |
 
 
 📈 Coverage
@@ -670,7 +670,9 @@ control_gastos/
 │       ├── dev.py             # Desarrollo
 │       └── prod.py            # Producción
 │       └── email_backend.py   # Configuración de email centralizada
-
+├── docs/
+│   ├── testing.md             # Guía de testing
+│   └── DECISIONS.md           # Decisiones de diseño y arquitectura documentadas
 ├── logs/                      # Archivos de log
 ├── scripts/
 │   └── check_security.py      # Verificación de seguridad
@@ -769,6 +771,10 @@ Antes de cada commit se ejecutan automáticamente:
 - ✅ Ruff-format
 - ✅ detect-secrets
 - ✅ Validaciones de whitespace, conflictos, tamaños
+
+### Decisiones de Diseño
+
+Las decisiones técnicas y de producto tomadas conscientemente están documentadas en [`docs/DECISIONS.md`](docs/DECISIONS.md). El objetivo es evitar que futuras auditorías las marquen como issues pendientes.
 
 ### GitHub Actions (CI)
 
