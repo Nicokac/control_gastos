@@ -6,6 +6,21 @@ from django import forms
 
 from .models import Category
 
+CATEGORY_ICONS = [
+    ("bi-cart", "Compras"),
+    ("bi-heart-pulse", "Salud"),
+    ("bi-lightning", "Servicios"),
+    ("bi-bag", "Ropa"),
+    ("bi-controller", "Entretenimiento"),
+    ("bi-book", "Educación"),
+    ("bi-briefcase", "Trabajo"),
+    ("bi-phone", "Tecnología"),
+    ("bi-music-note", "Música"),
+    ("bi-bicycle", "Deporte"),
+    ("bi-cup-hot", "Café/Resto"),
+    ("bi-tag", "General"),
+]
+
 
 class CategoryForm(forms.ModelForm):
     """Formulario para crear/editar categorías de usuario."""
@@ -18,8 +33,8 @@ class CategoryForm(forms.ModelForm):
                 attrs={"class": "form-control", "placeholder": "Nombre de la categoría"}
             ),
             "type": forms.Select(attrs={"class": "form-select"}),
-            "icon": forms.TextInput(
-                attrs={"class": "form-control", "placeholder": "bi-cart (opcional)"}
+            "icon": forms.RadioSelect(
+                attrs={"class": "icon-radio"},
             ),
             "color": forms.TextInput(
                 attrs={"class": "form-control", "type": "color", "value": "#6c757d"}
@@ -29,12 +44,13 @@ class CategoryForm(forms.ModelForm):
     def __init__(self, *args, user=None, **kwargs):
         """
         Inicializa el formulario con el usuario.
-
         Args:
             user: Usuario que crea la categoría
         """
         self.user = user
         super().__init__(*args, **kwargs)
+        self.fields["icon"].choices = [("", "Sin ícono")] + CATEGORY_ICONS
+        self.fields["icon"].required = False
 
     def clean(self):
         cleaned = super().clean()
