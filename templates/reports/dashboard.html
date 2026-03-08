@@ -427,7 +427,7 @@
                                     {% endif %}
                                 </div>
                                 <div>
-                                    <a href="{% if tx.type == 'expense' %}{% url 'expenses:detail' tx.pk %}{% else %}{% url 'income:detail' tx.pk %}{% endif %}"
+                                    <a href="{% if tx.type == 'expense' %}{% url 'expenses:update' tx.pk %}{% else %}{% url 'income:update' tx.pk %}{% endif %}"
                                        class="text-decoration-none text-dark">
                                         {{ tx.description|truncatechars:25 }}
                                     </a>
