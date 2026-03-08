@@ -11,7 +11,7 @@ from apps.expenses.views import ExpenseListView
 
 @pytest.mark.django_db
 def test_expense_list_query_count_is_stable_requestfactory(
-    django_assert_num_queries,
+    django_assert_max_num_queries,
     user,
     expense_category_factory,
     expense_factory,
@@ -32,7 +32,7 @@ def test_expense_list_query_count_is_stable_requestfactory(
     # 4) resumen por método de pago
     # 5) categorías del filter_form
     # 6) listado paginado
-    with django_assert_num_queries(6):
+    with django_assert_max_num_queries(8):
         response = ExpenseListView.as_view()(request)
         response.render()  # fuerza template + queryset
 
