@@ -116,3 +116,26 @@ complejidad sin beneficio real en el contexto actual.
 En teoría un atacante podría usar `/healthz/` para amplificar carga sobre la DB.
 En la práctica, el Free tier de Render limita el tráfico entrante antes de llegar
 a Django.
+
+## D-006 — CategoryListView no extiende UserOwnedListView
+
+**Issue relacionada:** RE-003  
+**Fecha:** 2026-03-08  
+**Estado:** ✅ Decisión tomada
+
+### Contexto
+La auditoría sugirió que `CategoryListView` debería extender `UserOwnedListView`
+del core para consistencia. `UserOwnedListView` aplica `UserOwnedQuerysetMixin`
+que filtra automáticamente por `user=request.user`.
+
+### Decisión
+Mantener `CategoryListView` con `LoginRequiredMixin` + `ListView` directamente.
+
+### Justificación
+- `CategoryListView.get_queryset()` incluye categorías del sistema (sin usuario)
+  además de las del usuario — `UserOwnedQuerysetMixin` sobreescribiría este comportamiento.
+- `CategoryUpdateView` y `CategoryDeleteView` tienen su propio `get_queryset()`
+  que filtra por `user` y `is_system=False` — lógica específica que no encaja
+  en el mixin base.
+- Forzar la herencia introduciría complejidad (override de get_queryset en subclase)
+  sin beneficio real de DRY.
