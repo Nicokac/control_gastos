@@ -139,3 +139,48 @@ class TestPasswordChangeLogging:
             assert mock_log.called
             call_args = mock_log.call_args
             assert "test@example.com" in call_args[1]["username"]
+
+
+@pytest.mark.django_db
+class TestAxesLockout:
+    """Tests de bloqueo por intentos fallidos (django-axes)."""
+
+    def test_lockout_after_repeated_failures(self, client, settings):
+        """Verifica que después de AXES_FAILURE_LIMIT intentos fallidos se devuelve 429."""
+        from axes.models import AccessAttempt
+
+        settings.AXES_FAILURE_LIMIT = 2
+        AccessAttempt.objects.all().delete()
+
+        login_url = reverse("users:login")
+        credentials = {
+            "username": "noexiste@example.com",
+            "password": "WrongPass123!",  # pragma: allowlist secret
+        }
+
+        # Primer intento — falla pero no bloquea
+        response = client.post(login_url, credentials)
+        assert response.status_code == 200
+
+        # Segundo intento — alcanza el límite → lockout
+        response = client.post(login_url, credentials)
+        assert response.status_code == 429
+
+    def test_lockout_renders_account_locked_template(self, client, settings):
+        """Verifica que el lockout renderiza account_locked.html."""
+        from axes.models import AccessAttempt
+
+        settings.AXES_FAILURE_LIMIT = 2
+        AccessAttempt.objects.all().delete()
+
+        login_url = reverse("users:login")
+        credentials = {
+            "username": "noexiste@example.com",
+            "password": "WrongPass123!",  # pragma: allowlist secret
+        }
+
+        client.post(login_url, credentials)
+        response = client.post(login_url, credentials)
+
+        assert response.status_code == 429
+        assert "users/account_locked.html" in [t.name for t in response.templates]
