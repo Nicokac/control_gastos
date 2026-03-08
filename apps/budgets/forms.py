@@ -83,7 +83,7 @@ class BudgetForm(forms.ModelForm):
             today = timezone.now().date()
             self.fields["month"].initial = today.month
             self.fields["year"].initial = today.year
-            self.fields["alert_threshold"].initial = 80
+            self.fields["alert_threshold"].initial = user.alert_threshold
 
     def clean_amount(self):
         """Valida que el monto sea positivo."""

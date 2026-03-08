@@ -60,7 +60,7 @@ Mantenerlos visibles en el formulario principal.
 
 **Issue relacionada:** EX-004  
 **Fecha:** 2026-03-08  
-**Estado:** ⏳ Pendiente implementación (Fase 17 — tarea 17-10)
+**Estado:** ✅ Implementado (Fase 17 — tarea 17-10)
 
 ### Contexto
 `alert_threshold` existe tanto en `User.profile` (global) como en cada `Budget`
@@ -71,9 +71,10 @@ El `alert_threshold` del `User` es el valor global por defecto. El de cada `Budg
 es un override por presupuesto. Si `Budget.alert_threshold` está en su valor default,
 se usa el del `User`.
 
-### Pendiente
-Verificar que la lógica de negocio en `Budget` implemente correctamente esta jerarquía
-y documentarlo en el código.
+### Implementación
+`BudgetForm.__init__()` usa `user.alert_threshold` como valor inicial del campo,
+permitiendo al usuario sobreescribirlo por presupuesto. El `Budget.alert_threshold`
+almacena el valor efectivo para ese presupuesto específico.
 
 ---
 
