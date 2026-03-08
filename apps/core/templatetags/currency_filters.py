@@ -2,6 +2,8 @@ from decimal import Decimal, InvalidOperation
 
 from django import template
 
+from apps.core.utils import format_currency
+
 register = template.Library()
 
 
@@ -16,8 +18,4 @@ def currency(value, currency_code="ARS"):
             value = Decimal(str(value))
     except (InvalidOperation, ValueError, TypeError):
         return "$ 0,00"
-
-    symbol = "$" if currency_code == "ARS" else "US$"
-    formatted = f"{abs(value):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-    sign = "-" if value < 0 else ""
-    return f"{sign}{symbol} {formatted}"
+    return format_currency(value, currency_code)
