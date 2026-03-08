@@ -21,9 +21,6 @@ from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import include, path
 
-# def boom(request):
-#     raise Exception("Boom test 500")
-
 
 def healthz(_request):
     """Health check endpoint que verifica conexión a DB."""
@@ -52,7 +49,6 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
 
     try:

@@ -90,3 +90,28 @@ Sin rate limiting, podría usarse para amplificar carga sobre la DB.
 ### Pendiente
 Evaluar si Render Free o el proxy ya aplica rate limiting externo antes de llegar
 a Django. Si no, agregar throttling simple con `django-axes` o un decorator propio.
+
+## D-005 — healthz devuelve 503 cuando la DB no está disponible
+
+**Issue relacionada:** H-003, H-007  
+**Fecha:** 2026-03-08  
+**Estado:** ✅ Decisión tomada
+
+### Contexto
+Se detectaron 11 errores 503 en `logs/error.log` para `/healthz/` el 2026-03-07.
+La auditoría los marcó como problema a investigar.
+
+### Conclusión
+El comportamiento es correcto. Los 503 ocurren cuando la DB no está disponible
+(cold start de Render Free, o durante `flush` de DB en desarrollo). El endpoint
+captura la excepción y retorna 503 con el mensaje de error — exactamente lo esperado.
+
+### Decisión
+No se agrega rate limiting a `/healthz/`. El endpoint es liviano (1 query),
+Render Free aplica rate limiting externo, y agregar throttling añadiría
+complejidad sin beneficio real en el contexto actual.
+
+### Riesgo aceptado
+En teoría un atacante podría usar `/healthz/` para amplificar carga sobre la DB.
+En la práctica, el Free tier de Render limita el tráfico entrante antes de llegar
+a Django.
