@@ -21,7 +21,7 @@ class Expense(TimestampMixin, CurrencyMixin, models.Model):
     """
 
     user = models.ForeignKey(
-        "users.User", on_delete=models.CASCADE, related_name="expense", verbose_name="Usuario"
+        "users.User", on_delete=models.CASCADE, related_name="expenses", verbose_name="Usuario"
     )
     date = models.DateField(verbose_name="Fecha")
     category = models.ForeignKey(
