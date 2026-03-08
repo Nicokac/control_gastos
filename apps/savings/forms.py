@@ -13,26 +13,16 @@ SAVING_ICONS = [
     ("bi-house", "Casa"),
     ("bi-car-front", "Auto"),
     ("bi-airplane", "Viaje"),
-    ("bi-laptop", "Tecnología"),
-    ("bi-mortarboard", "Educación"),
-    ("bi-heart-pulse", "Salud"),
-    ("bi-gift", "Regalo"),
-    ("bi-tools", "Reparaciones"),
     ("bi-shield-check", "Emergencias"),
-    ("bi-graph-up-arrow", "Inversión"),
     ("bi-cash-stack", "General"),
 ]
 
 # Colores disponibles
 SAVING_COLORS = [
-    ("#17a2b8", "Cyan"),
     ("#28a745", "Verde"),
     ("#007bff", "Azul"),
-    ("#6f42c1", "Púrpura"),
-    ("#fd7e14", "Naranja"),
     ("#dc3545", "Rojo"),
-    ("#ffc107", "Amarillo"),
-    ("#20c997", "Teal"),
+    ("#fd7e14", "Naranja"),
 ]
 
 
