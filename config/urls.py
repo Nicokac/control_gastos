@@ -42,7 +42,6 @@ urlpatterns = [
     path("expenses/", include("apps.expenses.urls")),
     path("income/", include("apps.income.urls")),
     path("savings/", include("apps.savings.urls")),
-    path("budgets/", include("apps.budgets.urls")),
     # Dashboard como página principal
     path("", include("apps.reports.urls")),
     # path("boom/", boom),

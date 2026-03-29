@@ -69,7 +69,6 @@ INSTALLED_APPS = [
     "apps.expenses",
     "apps.income",
     "apps.savings",
-    "apps.budgets",
     "apps.reports",
     "apps.core",
     "apps.categories",
