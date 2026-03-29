@@ -139,3 +139,35 @@ Mantener `CategoryListView` con `LoginRequiredMixin` + `ListView` directamente.
   en el mixin base.
 - Forzar la herencia introduciría complejidad (override de get_queryset en subclase)
   sin beneficio real de DRY.
+
+---
+
+## D-007 â€” EliminaciÃ³n completa del mÃ³dulo de Presupuestos
+
+**Issue relacionada:** PRD-REMOVE-BUDGETS  
+**Fecha:** 2026-03-29  
+**Estado:** â³ Aprobado para ejecuciÃ³n
+
+### Contexto
+El producto hoy incluye un mÃ³dulo completo de presupuestos mensuales por categorÃ­a
+(`apps.budgets`) con integraciÃ³n en dashboard, navegaciÃ³n lateral, perfil de usuario
+y suite de tests. Se decidiÃ³ remover la funcionalidad por completo.
+
+### DecisiÃ³n
+Eliminar el bloque de Presupuestos de manera total, incluyendo:
+- app Django `apps.budgets`
+- rutas, vistas, formularios, admin y templates del mÃ³dulo
+- integraciÃ³n en dashboard y navegaciÃ³n
+- referencias de perfil ligadas a alertas de presupuesto
+- fixtures, tests, documentaciÃ³n y roadmap asociados
+
+### JustificaciÃ³n
+- El mÃ³dulo no es estructural para el registro de gastos, ingresos, ahorro o categorÃ­as.
+- No existen otros modelos que dependan de `Budget` mediante claves forÃ¡neas entrantes.
+- El mayor acoplamiento es de UI, reportes y tests, lo que permite una remociÃ³n controlada
+  sin rediseÃ±ar el dominio principal.
+
+### EjecuciÃ³n
+El plan operativo detallado, con orden de trabajo y archivos alcanzados, queda documentado en:
+
+`docs/REMOVE_BUDGETS_PLAN.md`

@@ -139,7 +139,7 @@ class ProfileForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ["first_name", "last_name", "email", "default_currency", "alert_threshold"]
+        fields = ["first_name", "last_name", "email", "default_currency"]
         widgets = {
             "first_name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Nombre"}),
             "last_name": forms.TextInput(
@@ -147,19 +147,12 @@ class ProfileForm(forms.ModelForm):
             ),
             "email": forms.EmailInput(attrs={"class": "form-control", "placeholder": "Email"}),
             "default_currency": forms.Select(attrs={"class": "form-select"}),
-            "alert_threshold": forms.NumberInput(
-                attrs={"class": "form-control", "min": 1, "max": 100}
-            ),
         }
         labels = {
             "first_name": "Nombre",
             "last_name": "Apellido",
             "email": "Email",
             "default_currency": "Moneda principal",
-            "alert_threshold": "Umbral de alerta (%)",
-        }
-        help_texts = {
-            "alert_threshold": "Te avisaremos cuando alcances este porcentaje del presupuesto.",
         }
 
     def clean_email(self):
@@ -170,11 +163,3 @@ class ProfileForm(forms.ModelForm):
         if User.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).exists():
             raise forms.ValidationError("Este mail ya está en uso por otra cuenta.")
         return email
-
-    def clean_alert_threshold(self):
-        value = self.cleaned_data.get("alert_threshold")
-        if value is None:
-            return value
-        if not (1 <= value <= 100):
-            raise forms.ValidationError("El umbral debe estar entre 1 y 100.")
-        return value

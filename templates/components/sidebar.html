@@ -35,13 +35,6 @@
         <small class="sidebar-label d-block px-3 text-uppercase">PLANIFICACIÓN</small>
       </li>
       <li class="nav-item">
-        <a href="{% url 'budgets:list' %}"
-           class="nav-link {% if 'budgets' in request.path %}active{% endif %}">
-          <i class="bi bi-clipboard-data text-warning me-2" aria-hidden="true"></i>
-          <span>Presupuestos</span>
-        </a>
-      </li>
-      <li class="nav-item">
         <a href="{% url 'savings:list' %}"
            class="nav-link {% if 'savings' in request.path %}active{% endif %}">
           <i class="bi bi-piggy-bank text-info me-2" aria-hidden="true"></i>

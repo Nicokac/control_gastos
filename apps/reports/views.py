@@ -10,7 +10,6 @@ from django.db.models import Count, Q, Sum
 from django.utils import timezone
 from django.views.generic import TemplateView
 
-from apps.budgets.models import Budget
 from apps.core.utils import get_month_date_range_exclusive, get_month_name
 from apps.expenses.models import Expense
 from apps.income.models import Income
@@ -39,7 +38,6 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         # Obtener datos de cada módulo
         context.update(self._get_balance_data(user, current_month, current_year))
-        context.update(self._get_budget_data(user, current_month, current_year))
         context.update(self._get_savings_data(user))
         context.update(self._get_recent_transactions(user))
         context.update(self._get_expense_distribution(user, current_month, current_year))
@@ -140,45 +138,6 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             "expense_variation": expense_variation,
             "income_variation": income_variation,
             "prev_month_name": get_month_name(prev_month),
-        }
-
-    def _get_budget_data(self, user, month, year):
-        """Obtiene datos de presupuestos del mes."""
-        budgets = Budget.get_with_spent(user, month=month, year=year)
-
-        # Contadores
-        budget_list = list(budgets)
-        total_budgets = len(budget_list)
-        over_budget = sum(1 for b in budget_list if b.is_over_budget)
-        near_limit = sum(1 for b in budget_list if b.is_near_limit)
-        on_track = total_budgets - over_budget - near_limit
-
-        # Totales
-        total_budgeted = sum(b.amount for b in budget_list)
-        total_spent = sum(b.spent_amount for b in budget_list)
-
-        if total_budgeted > 0:
-            overall_percentage = round((total_spent / total_budgeted) * 100, 1)
-        else:
-            overall_percentage = 0
-
-        # Top 3 presupuestos más gastados (que no estén en 0)
-        top_budgets = sorted(
-            [b for b in budget_list if b.spent_amount > 0],
-            key=lambda x: x.spent_percentage,
-            reverse=True,
-        )[:3]
-
-        return {
-            "budgets": budget_list,
-            "budget_count": total_budgets,
-            "budgets_over": over_budget,
-            "budgets_warning": near_limit,
-            "budgets_ok": on_track,
-            "budget_total": total_budgeted,
-            "budget_spent": total_spent,
-            "budget_percentage": overall_percentage,
-            "top_budgets": top_budgets,
         }
 
     def _get_savings_data(self, user):

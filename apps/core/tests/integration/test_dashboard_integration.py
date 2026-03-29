@@ -29,29 +29,17 @@ def get_dashboard_url():
 
 def assert_amount_in_content(content: str, amount: int | str) -> None:
     """
-    Verifica que un monto esté presente en el HTML, tolerando distintos formatos:
-    - 5000
-    - 5.000 / 5,000
-    - 5000.00 / 5000,00
-    - 5.000,00 / 5,000.00, etc.
+    Verifica que un monto esté presente en el HTML, tolerando distintos formatos.
     """
     amount_str = str(amount)
 
-    candidates: set[str] = set()
+    candidates: set[str] = {amount_str, f"{amount_str}.00", f"{amount_str},00"}
 
-    # Sin separador
-    candidates.add(amount_str)
-    candidates.add(f"{amount_str}.00")
-    candidates.add(f"{amount_str},00")
-
-    # Con separador de miles (si aplica)
     if len(amount_str) > 3:
         thousands = amount_str[:-3]
         last3 = amount_str[-3:]
-
         dot = f"{thousands}.{last3}"
         comma = f"{thousands},{last3}"
-
         candidates.update(
             {
                 dot,
@@ -82,7 +70,6 @@ class TestDashboardDataIntegration:
 
         today = timezone.now().date()
 
-        # Crear gasto
         Expense.objects.create(
             user=user,
             category=expense_category,
@@ -93,12 +80,10 @@ class TestDashboardDataIntegration:
             date=today,
         )
 
-        # Verificar dashboard
         response = authenticated_client.get(url)
         assert response.status_code == 200
 
         content = response.content.decode()
-        # El gasto debería reflejarse de alguna forma
         assert_amount_in_content(content, 5000)
 
     def test_dashboard_reflects_new_income(self, authenticated_client, user, income_category):
@@ -109,7 +94,6 @@ class TestDashboardDataIntegration:
 
         today = timezone.now().date()
 
-        # Crear ingreso
         Income.objects.create(
             user=user,
             category=income_category,
@@ -120,90 +104,21 @@ class TestDashboardDataIntegration:
             date=today,
         )
 
-        # Verificar dashboard
         response = authenticated_client.get(url)
         assert response.status_code == 200
 
         content = response.content.decode()
         assert_amount_in_content(content, 100000)
 
-    def test_dashboard_shows_budget_warning(
-        self, authenticated_client, user, expense_category, budget_factory
-    ):
-        """Verifica que dashboard muestre alerta de presupuesto."""
+    def test_dashboard_does_not_render_budget_section(self, authenticated_client):
+        """Verifica que el dashboard no renderice el bloque de presupuestos."""
         url = get_dashboard_url()
         if url is None:
             pytest.skip("Dashboard URL not configured")
 
-        today = date.today()
-
-        # Crear presupuesto
-        budget_factory(
-            user,
-            expense_category,
-            month=today.month,
-            year=today.year,
-            amount=Decimal("10000.00"),
-            alert_threshold=80,
-        )
-
-        # Crear gasto que exceda umbral (85%)
-        Expense.objects.create(
-            user=user,
-            category=expense_category,
-            description="Gasto grande",
-            amount=Decimal("8500.00"),
-            currency=Currency.ARS,
-            exchange_rate=Decimal("1"),
-            date=today,
-        )
-
-        # Verificar dashboard
         response = authenticated_client.get(url)
         assert response.status_code == 200
-
-        # Debería mostrar algún indicador de alerta
-        content = response.content.decode().lower()
-        assert (
-            "warning" in content
-            or "alerta" in content
-            or "excedido" in content
-            or "cerca" in content
-            or "85" in content
-        )  # 🔧 F841
-
-        # Al menos debería cargar sin error
-        assert response.status_code == 200
-
-    def test_dashboard_shows_budget_exceeded(
-        self, authenticated_client, user, expense_category, budget_factory
-    ):
-        """Verifica que dashboard muestre presupuesto excedido."""
-        url = get_dashboard_url()
-        if url is None:
-            pytest.skip("Dashboard URL not configured")
-
-        today = date.today()
-
-        # Crear presupuesto
-        budget_factory(  # 🔧 F841
-            user, expense_category, month=today.month, year=today.year, amount=Decimal("10000.00")
-        )
-
-        # Crear gasto que exceda presupuesto
-        Expense.objects.create(
-            user=user,
-            category=expense_category,
-            description="Gasto excesivo",
-            amount=Decimal("15000.00"),
-            currency=Currency.ARS,
-            exchange_rate=Decimal("1"),
-            date=today,
-        )
-
-        # Verificar dashboard
-        response = authenticated_client.get(url)
-        assert response.status_code == 200
+        assert "Presupuestos de" not in response.content.decode()
 
 
 @pytest.mark.slow
@@ -222,7 +137,6 @@ class TestDashboardAfterOperations:
 
         today = timezone.now().date()
 
-        # Crear gasto
         expense = Expense.objects.create(
             user=user,
             category=expense_category,
@@ -233,20 +147,15 @@ class TestDashboardAfterOperations:
             date=today,
         )
 
-        # Verificar dashboard inicial
         response = authenticated_client.get(url)
         assert response.status_code == 200
 
-        # Editar gasto
         expense.amount = Decimal("10000.00")
         expense.save()
 
-        # Verificar dashboard actualizado
         response = authenticated_client.get(url)
         assert response.status_code == 200
         content = response.content.decode()
-
-        # El nuevo monto debería reflejarse
         assert_amount_in_content(content, 10000)
 
     def test_dashboard_updates_after_expense_delete(
@@ -259,7 +168,6 @@ class TestDashboardAfterOperations:
 
         today = date.today()
 
-        # Crear gasto
         expense = Expense.objects.create(
             user=user,
             category=expense_category,
@@ -270,20 +178,15 @@ class TestDashboardAfterOperations:
             date=today,
         )
 
-        # Verificar dashboard con gasto
         response = authenticated_client.get(url)
         assert response.status_code == 200
 
-        # Eliminar gasto
         expense.delete()
 
-        # Verificar dashboard sin gasto
         response = authenticated_client.get(url)
         assert response.status_code == 200
 
-        # El monto eliminado no debería aparecer
-        content = response.content.decode()  # 🔧 F841
-        # 50000 no debería estar (o debería ser 0 si era el único)
+        content = response.content.decode()
         assert "50000" not in content and "50.000" not in content
 
 
@@ -308,7 +211,6 @@ class TestDashboardMultiUserIsolation:
 
         today = date.today()
 
-        # Crear datos del otro usuario
         other_expense_cat = expense_category_factory(other_user, name="Otra Cat Expense")
         other_income_cat = income_category_factory(other_user, name="Otra Cat Income")
 
@@ -332,7 +234,6 @@ class TestDashboardMultiUserIsolation:
             date=today,
         )
 
-        # Verificar dashboard del usuario actual
         response = authenticated_client.get(url)
         assert response.status_code == 200
 

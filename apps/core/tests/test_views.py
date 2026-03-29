@@ -43,23 +43,18 @@ class TestDashboardView:
         response = authenticated_client.get(url)
         assert response.status_code == 200
 
-    def test_dashboard_has_context_data(
-        self, authenticated_client, expense, income
-    ):  # 🔧 E722, F841
+    def test_dashboard_has_context_data(self, authenticated_client, expense, income):  # noqa: ARG002
         """Verifica que el dashboard tenga datos en contexto."""
         try:
             url = reverse("dashboard")
-        except NoReverseMatch:  # 🔧 E722
+        except NoReverseMatch:
             url = reverse("reports:dashboard")
 
         response = authenticated_client.get(url)
 
         assert response.status_code == 200
-
-        # Verificar que exista algún contexto de datos
         context = response.context
 
-        # Al menos uno de estos debería existir según la implementación
         possible_keys = [
             "total_income",
             "income_total",
@@ -69,17 +64,14 @@ class TestDashboardView:
             "gastos",
             "balance",
             "saldo",
-            "budgets",
-            "presupuestos",
             "savings",
             "ahorros",
         ]
 
         has_data = any(key in context for key in possible_keys)
-        # Si no tiene ninguno, al menos debería renderizar sin error
-        assert has_data or response.status_code == 200  # 🔧 F841
+        assert has_data or response.status_code == 200
 
-    def test_dashboard_shows_current_month_data(  # 🔧 E722
+    def test_dashboard_shows_current_month_data(
         self,
         authenticated_client,
         user,
@@ -91,7 +83,6 @@ class TestDashboardView:
         """Verifica que muestre datos del mes actual."""
         today = timezone.now().date()
 
-        # Crear transacciones del mes actual
         expense_factory(
             user,
             expense_category,
@@ -109,30 +100,27 @@ class TestDashboardView:
 
         try:
             url = reverse("dashboard")
-        except NoReverseMatch:  # 🔧 E722
+        except NoReverseMatch:
             url = reverse("reports:dashboard")
 
         response = authenticated_client.get(url)
 
         assert response.status_code == 200
         content = response.content.decode()
-
-        # Debería mostrar alguna referencia a los montos o descripciones
-        # Ajustar según implementación real
         assert "1000" in content or "1.000" in content or "Gasto" in content
 
-    def test_dashboard_excludes_other_user_data(  # 🔧 E722
+    def test_dashboard_excludes_other_user_data(
         self, authenticated_client, user, other_user, expense_category_factory, expense_factory
-    ):
+    ):  # noqa: ARG002
         """Verifica que no muestre datos de otros usuarios."""
         other_cat = expense_category_factory(other_user, name="Otra")
-        expense_factory(  # 🔧 F841
+        expense_factory(
             other_user, other_cat, description="Gasto Otro Usuario", amount=Decimal("99999.00")
         )
 
         try:
             url = reverse("dashboard")
-        except NoReverseMatch:  # 🔧 E722
+        except NoReverseMatch:
             url = reverse("reports:dashboard")
 
         response = authenticated_client.get(url)
@@ -143,31 +131,18 @@ class TestDashboardView:
         assert "Gasto Otro Usuario" not in content
         assert "99999" not in content
 
-    def test_dashboard_shows_budget_status(  # 🔧 E722
-        self, authenticated_client, user, expense_category, budget_factory, expense_factory
-    ):
-        """Verifica que muestre estado de presupuestos."""
-        today = timezone.now().date()
-
-        # Crear presupuesto
-        budget_factory(
-            user, expense_category, month=today.month, year=today.year, amount=Decimal("10000.00")
-        )
-
-        # Crear gasto que exceda el presupuesto
-        expense_factory(user, expense_category, amount=Decimal("12000.00"), date=today)
-
-        try:
-            url = reverse("dashboard")
-        except NoReverseMatch:  # 🔧 E722
-            url = reverse("reports:dashboard")
+    def test_dashboard_does_not_show_budgets_section(self, authenticated_client):
+        """Verifica que el dashboard ya no muestre el bloque de presupuestos."""
+        url = self.get_dashboard_url()
+        if url is None:
+            pytest.skip("Dashboard URL not configured")
 
         response = authenticated_client.get(url)
 
         assert response.status_code == 200
-        # El dashboard debería mostrar alguna indicación del presupuesto
+        assert "Presupuestos de" not in response.content.decode()
 
-    def test_dashboard_shows_summary(self, authenticated_client, expense, income):
+    def test_dashboard_shows_summary(self, authenticated_client, expense, income):  # noqa: ARG002
         """Verifica que el dashboard muestre resumen."""
         url = self.get_dashboard_url()
         if url is None:
@@ -176,18 +151,16 @@ class TestDashboardView:
         response = authenticated_client.get(url)
         assert response.status_code == 200
 
-    def test_dashboard_only_user_data(  # 🔧 F841
+    def test_dashboard_only_user_data(
         self, authenticated_client, user, other_user, expense_category_factory, expense_factory
-    ):
+    ):  # noqa: ARG002
         """Verifica que solo muestre datos del usuario actual."""
         url = self.get_dashboard_url()
         if url is None:
             pytest.skip("Dashboard URL not configured")
 
         other_cat = expense_category_factory(other_user, name="Otra")
-        expense_factory(
-            other_user, other_cat, description="Otro Gasto"
-        )  # crear dato de otro usuario
+        expense_factory(other_user, other_cat, description="Otro Gasto")
 
         response = authenticated_client.get(url)
         assert response.status_code == 200
@@ -223,16 +196,13 @@ class TestHomeView:
         response = authenticated_client.get(url)
         assert response.status_code in [200, 302]
 
-    def test_home_accessible(self, client):  # 🔧 E722
+    def test_home_accessible(self, client):
         """Verifica que home sea accesible."""
         try:
             url = reverse("home")
             response = client.get(url)
-
-            # Puede ser 200 (landing), 302 (redirect to login/dashboard)
             assert response.status_code in [200, 302]
-        except NoReverseMatch:  # 🔧 E722
-            # Si no existe 'home', es válido
+        except NoReverseMatch:
             pass
 
     def test_home_shows_landing_for_anonymous(self, client):
@@ -244,13 +214,11 @@ class TestHomeView:
         response = client.get(url)
         assert response.status_code in [200, 302]
 
-    def test_authenticated_user_redirected(self, authenticated_client):  # 🔧 E722
+    def test_authenticated_user_redirected(self, authenticated_client):
         """Verifica comportamiento de usuario autenticado."""
         try:
             url = reverse("home")
             response = authenticated_client.get(url)
-
-            # Puede mostrar home o redirigir a dashboard
             assert response.status_code in [200, 302]
-        except NoReverseMatch:  # 🔧 E722
+        except NoReverseMatch:
             pass

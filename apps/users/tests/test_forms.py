@@ -186,7 +186,6 @@ class TestProfileForm:
                 "last_name": "K",
                 "email": "nico_new@test.com",
                 "default_currency": getattr(active_user, "default_currency", "ARS"),
-                "alert_threshold": 80,
             },
         )
         assert form.is_valid(), form.errors
@@ -208,7 +207,6 @@ class TestProfileForm:
                 "last_name": active_user.last_name,
                 "email": other.email.upper(),  # mismo email de otro user
                 "default_currency": getattr(active_user, "default_currency", "ARS"),
-                "alert_threshold": 80,
             },
         )
 
@@ -216,17 +214,6 @@ class TestProfileForm:
         assert "email" in form.errors
         assert "Este mail ya está en uso por otra cuenta." in form.errors["email"][0]
 
-    @pytest.mark.parametrize("bad_value", [0, 101, -5])
-    def test_profile_alert_threshold_out_of_range_invalid(self, active_user, bad_value):
-        form = ProfileForm(
-            instance=active_user,
-            data={
-                "first_name": active_user.first_name,
-                "last_name": active_user.last_name,
-                "email": active_user.email,
-                "default_currency": getattr(active_user, "default_currency", "ARS"),
-                "alert_threshold": bad_value,
-            },
-        )
-        assert not form.is_valid()
-        assert "alert_threshold" in form.errors
+    def test_profile_form_does_not_expose_alert_threshold(self, active_user):
+        form = ProfileForm(instance=active_user)
+        assert "alert_threshold" not in form.fields
