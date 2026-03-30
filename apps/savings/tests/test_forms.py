@@ -93,6 +93,22 @@ class TestSavingForm:
 
         assert form.is_valid(), form.errors
 
+    def test_form_uses_default_icon_and_color_when_missing(self):
+        """Verifica que icono y color no bloqueen la creación si faltan."""
+        form = SavingForm(
+            data={
+                "name": "Vacaciones",
+                "target_amount": "50000.00",
+                "currency": "ARS",
+                "target_date": "",
+                "description": "",
+            }
+        )
+
+        assert form.is_valid(), form.errors
+        assert form.cleaned_data["icon"] == "bi-piggy-bank"
+        assert form.cleaned_data["color"] == "#28a745"
+
     def test_past_target_date_invalid(self, yesterday):
         """Verifica que fecha objetivo pasada sea inválida."""
         form = SavingForm(

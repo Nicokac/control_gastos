@@ -33,6 +33,18 @@
                 </div>
                 {% endif %}
 
+                {% if form.errors %}
+                <div class="alert alert-warning">
+                    <p class="mb-1 fw-semibold">No pudimos guardar la meta.</p>
+                    <p class="mb-0 small">Completá nombre y monto objetivo. La descripción y la fecha son opcionales; si no elegís ícono o color usamos valores por defecto.</p>
+                </div>
+                {% else %}
+                <div class="alert alert-light border mb-4">
+                    <p class="mb-1 fw-semibold">Antes de crearla</p>
+                    <p class="mb-0 small">Solo nombre y monto objetivo son obligatorios. La descripción y la fecha son opcionales; si no elegís ícono o color usamos valores por defecto.</p>
+                </div>
+                {% endif %}
+
                 <div class="card mb-4">
                     <div class="card-body">
                         <!-- Nombre -->
@@ -110,6 +122,12 @@
                                 </label>
                                 {% endfor %}
                             </div>
+                            {% if form.icon.help_text %}
+                            <div class="form-text">{{ form.icon.help_text }}</div>
+                            {% endif %}
+                            {% if form.icon.errors %}
+                            <div class="text-danger small mt-1">{{ form.icon.errors.0 }}</div>
+                            {% endif %}
                         </div>
 
                         <!-- Color -->
@@ -126,6 +144,12 @@
                                 </label>
                                 {% endfor %}
                             </div>
+                            {% if form.color.help_text %}
+                            <div class="form-text">{{ form.color.help_text }}</div>
+                            {% endif %}
+                            {% if form.color.errors %}
+                            <div class="text-danger small mt-1">{{ form.color.errors.0 }}</div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

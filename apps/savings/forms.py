@@ -25,6 +25,9 @@ SAVING_COLORS = [
     ("#fd7e14", "Naranja"),
 ]
 
+DEFAULT_SAVING_ICON = SAVING_ICONS[0][0]
+DEFAULT_SAVING_COLOR = SAVING_COLORS[0][0]
+
 
 class SavingForm(forms.ModelForm):
     """Formulario para crear/editar metas de ahorro."""
@@ -32,13 +35,15 @@ class SavingForm(forms.ModelForm):
     icon = forms.ChoiceField(
         choices=SAVING_ICONS,
         widget=forms.RadioSelect(attrs={"class": "icon-radio"}),
-        initial="bi-piggy-bank",
+        initial=DEFAULT_SAVING_ICON,
+        required=False,
     )
 
     color = forms.ChoiceField(
         choices=SAVING_COLORS,
         widget=forms.RadioSelect(attrs={"class": "color-radio"}),
-        initial="#17a2b8",
+        initial=DEFAULT_SAVING_COLOR,
+        required=False,
     )
 
     class Meta:
@@ -96,6 +101,11 @@ class SavingForm(forms.ModelForm):
         if user and not self.instance.pk:
             self.fields["currency"].initial = user.default_currency
 
+        self.fields["description"].required = False
+        self.fields["target_date"].required = False
+        self.fields["icon"].help_text = "Opcional. Si no elegís uno, usamos el ícono por defecto."
+        self.fields["color"].help_text = "Opcional. Si no elegís uno, usamos el color por defecto."
+
     def clean_target_amount(self):
         """Valida que el monto objetivo sea positivo."""
         target_amount = self.cleaned_data.get("target_amount")
@@ -109,6 +119,18 @@ class SavingForm(forms.ModelForm):
         if target_date and target_date < timezone.now().date():
             raise forms.ValidationError("La fecha objetivo debe ser futura.")
         return target_date
+
+    def clean(self):
+        """Completa valores opcionales para evitar bloqueos innecesarios en el alta."""
+        cleaned_data = super().clean()
+
+        if not cleaned_data.get("icon"):
+            cleaned_data["icon"] = DEFAULT_SAVING_ICON
+
+        if not cleaned_data.get("color"):
+            cleaned_data["color"] = DEFAULT_SAVING_COLOR
+
+        return cleaned_data
 
     def save(self, commit=True):
         """Guarda la meta asignando el usuario."""

@@ -232,6 +232,42 @@ class TestSavingCreateView:
         assert response.status_code == 302
         assert Saving.objects.filter(name="Nueva Meta", user=user).exists()
 
+    def test_create_saving_success_with_minimal_required_fields(self, authenticated_client, user):
+        """Verifica que la vista cree la meta con defaults si faltan icono/color."""
+        url = reverse("savings:create")
+        data = {
+            "name": "Meta Minima",
+            "target_amount": "100000.00",
+            "currency": "ARS",
+            "description": "",
+            "target_date": "",
+        }
+
+        response = authenticated_client.post(url, data, follow=True)
+
+        assert response.status_code == 200
+        assert Saving.objects.filter(name="Meta Minima", user=user).exists()
+
+        saving = Saving.objects.get(name="Meta Minima", user=user)
+        assert saving.icon == "bi-piggy-bank"
+        assert saving.color == "#28a745"
+
+    def test_create_saving_invalid_shows_helpful_error_message(self, authenticated_client):
+        """Verifica UX de error cuando faltan campos requeridos."""
+        url = reverse("savings:create")
+        data = {
+            "name": "",
+            "target_amount": "",
+            "currency": "ARS",
+        }
+
+        response = authenticated_client.post(url, data, follow=True)
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "No pudimos guardar la meta." in content
+        assert "Solo nombre y monto objetivo son obligatorios." in content
+
     def test_saving_assigned_to_current_user(self, authenticated_client, user):
         """Verifica que la meta se asigne al usuario actual."""
         temp_form = SavingForm()

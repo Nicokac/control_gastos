@@ -62,7 +62,7 @@ class Saving(TimestampMixin, models.Model):
         verbose_name="Estado",
     )
     icon = models.CharField(max_length=50, default="bi-piggy-bank", verbose_name="Ícono")
-    color = models.CharField(max_length=7, default="#17a2b8", verbose_name="Color")
+    color = models.CharField(max_length=7, default="#28a745", verbose_name="Color")
 
     class Meta:
         verbose_name = "Meta de Ahorro"

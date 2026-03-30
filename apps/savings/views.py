@@ -106,6 +106,13 @@ class SavingCreateView(UserOwnedCreateView):
     def get_success_message(self):
         return f'Meta de ahorro "{self.object.name}" creada correctamente.'
 
+    def form_invalid(self, form):
+        messages.error(
+            self.request,
+            "No pudimos guardar la meta. Revisá los campos marcados. Solo nombre y monto objetivo son obligatorios.",
+        )
+        return super().form_invalid(form)
+
 
 class SavingUpdateView(UserOwnedUpdateView):
     """Editar meta de ahorro existente."""
@@ -117,6 +124,13 @@ class SavingUpdateView(UserOwnedUpdateView):
 
     def get_success_message(self):
         return f'Meta de ahorro "{self.object.name}" actualizada correctamente.'
+
+    def form_invalid(self, form):
+        messages.error(
+            self.request,
+            "No pudimos guardar la meta. Revisá los campos marcados.",
+        )
+        return super().form_invalid(form)
 
 
 class SavingDeleteView(UserOwnedDeleteView):
