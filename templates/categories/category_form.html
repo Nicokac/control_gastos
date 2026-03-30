@@ -19,6 +19,26 @@
                 <form method="post" novalidate>
                     {% csrf_token %}
 
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                        <p class="mb-0">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {% if form.errors %}
+                    <div class="alert alert-warning">
+                        <p class="mb-1 fw-semibold">No pudimos guardar la categoría.</p>
+                        <p class="mb-0 small">Completá nombre y tipo. Ícono y color son opcionales.</p>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-light border mb-4">
+                        <p class="mb-1 fw-semibold">Antes de crearla</p>
+                        <p class="mb-0 small">Nombre y tipo son obligatorios. Ícono y color son opcionales.</p>
+                    </div>
+                    {% endif %}
+
                     <!-- Nombre -->
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Nombre <span class="text-danger">*</span></label>

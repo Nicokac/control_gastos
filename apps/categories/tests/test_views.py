@@ -103,6 +103,7 @@ class TestCategoryCreateView:
         assert response.status_code == 200
         assert "form" in response.context
         assert response.context["form"].errors
+        assert "No pudimos guardar la categoría." in response.content.decode()
 
     def test_category_assigned_to_current_user(self, authenticated_client, user):
         """Verifica que la categoría se asigne al usuario actual."""

@@ -34,6 +34,18 @@
                 </div>
                 {% endif %}
 
+                {% if form.errors %}
+                <div class="alert alert-warning">
+                    <p class="mb-1 fw-semibold">No pudimos guardar el gasto.</p>
+                    <p class="mb-0 small">Completá monto, categoría y fecha. La descripción, el destino de ahorro y las opciones avanzadas son opcionales.</p>
+                </div>
+                {% else %}
+                <div class="alert alert-light border mb-4">
+                    <p class="mb-1 fw-semibold">Antes de registrarlo</p>
+                    <p class="mb-0 small">Monto, categoría y fecha son obligatorios. La descripción, el destino de ahorro y las opciones avanzadas son opcionales.</p>
+                </div>
+                {% endif %}
+
                 <div class="card mb-4">
                     <div class="card-body">
                         <!-- MONTO (campo principal, grande) -->

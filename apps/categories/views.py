@@ -63,6 +63,13 @@ class CategoryCreateView(LoginRequiredMixin, UserFormKwargsMixin, CreateView):
         messages.success(self.request, "Categoría creada correctamente.")
         return response
 
+    def form_invalid(self, form):
+        messages.error(
+            self.request,
+            "No pudimos guardar la categoría. Revisá los campos marcados. Nombre y tipo son obligatorios.",
+        )
+        return super().form_invalid(form)
+
 
 class CategoryUpdateView(LoginRequiredMixin, UserFormKwargsMixin, UpdateView):
     """Editar categoría existente."""
@@ -87,6 +94,13 @@ class CategoryUpdateView(LoginRequiredMixin, UserFormKwargsMixin, UpdateView):
         response = super().form_valid(form)
         messages.success(self.request, "Categoría actualizada correctamente.")
         return response
+
+    def form_invalid(self, form):
+        messages.error(
+            self.request,
+            "No pudimos guardar la categoría. Revisá los campos marcados.",
+        )
+        return super().form_invalid(form)
 
 
 class CategoryDeleteView(LoginRequiredMixin, DeleteView):

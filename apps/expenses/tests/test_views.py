@@ -209,6 +209,7 @@ class TestExpenseCreateView:
 
         assert response.status_code == 200
         assert response.context["form"].errors
+        assert "No pudimos guardar el gasto." in response.content.decode()
 
     def test_expense_assigned_to_current_user(self, authenticated_client, user, expense_category):
         """Verifica que el gasto se asigne al usuario actual."""

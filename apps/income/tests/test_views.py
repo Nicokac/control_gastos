@@ -133,6 +133,7 @@ class TestIncomeCreateView:
         assert response.status_code == 200  # vuelve al form
         assert "form" in response.context
         assert "amount" in response.context["form"].errors
+        assert "No pudimos guardar el ingreso." in response.content.decode()
 
     def test_create_income_success_adds_success_message(
         self, authenticated_client, user, income_category
