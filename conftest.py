@@ -305,39 +305,6 @@ def income(user, income_category, income_factory):
 
 
 # =============================================================================
-# BUDGET FACTORY
-# =============================================================================
-
-
-@pytest.fixture
-def budget_factory(db):
-    """Factory para crear presupuestos."""
-
-    def _create_budget(user, category, **kwargs):
-        from apps.budgets.models import Budget
-
-        today = timezone.now().date()
-        defaults = {
-            "user": user,
-            "category": category,
-            "month": today.month,
-            "year": today.year,
-            "amount": Decimal("5000.00"),
-            "alert_threshold": 80,
-        }
-        defaults.update(kwargs)
-        return Budget.objects.create(**defaults)
-
-    return _create_budget
-
-
-@pytest.fixture
-def budget(user, expense_category, budget_factory):
-    """Crea un presupuesto de prueba."""
-    return budget_factory(user, expense_category)
-
-
-# =============================================================================
 # SAVING FACTORY
 # =============================================================================
 

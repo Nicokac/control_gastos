@@ -451,7 +451,6 @@ class TestDashboardQueryPerformance:
         income_category_factory,
         expense_factory,
         income_factory,
-        budget_factory,
         django_assert_max_num_queries,
         authenticated_client,
         url_helper,
@@ -487,14 +486,6 @@ class TestDashboardQueryPerformance:
                 date=today - timedelta(days=i % 30),
             )
 
-        # 5 budgets
-        for cat in expense_cats:
-            budget_factory(
-                user,
-                category=cat,
-                amount=Decimal("1000.00"),
-            )
-
         # Con datos, queries deberían mantenerse constantes (no N+1)
         # Máximo 15 queries permitidas
         with django_assert_max_num_queries(11):
@@ -510,7 +501,6 @@ class TestDashboardQueryPerformance:
         income_category_factory,
         expense_factory,
         income_factory,
-        budget_factory,
         django_assert_max_num_queries,
         authenticated_client,
         url_helper,
@@ -547,16 +537,6 @@ class TestDashboardQueryPerformance:
                 income_cats[i % 5],
                 amount=Decimal("200.00"),
                 date=today - timedelta(days=i % 60),
-            )
-
-        # 10 budgets
-        for cat in expense_cats:
-            budget_factory(
-                user,
-                cat,
-                month=today.month,
-                year=today.year,
-                amount=Decimal("500.00"),
             )
 
         # Aún con más datos, queries deben mantenerse ~igual

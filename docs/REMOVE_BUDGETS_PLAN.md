@@ -1,7 +1,7 @@
 # Plan de RemociÃ³n Completa: Presupuestos
 
 **Fecha:** 2026-03-29  
-**Estado:** Plan aprobado, implementaciÃ³n pendiente  
+**Estado:** En ejecucion  
 **Rama de trabajo:** `feature/remove-budgets`
 
 ## Objetivo
@@ -70,6 +70,8 @@ Resultado esperado:
 - la UI no expone Presupuestos
 - el dashboard no importa ni renderiza datos de `Budget`
 
+**Estado actual:** completada
+
 ### Fase 2 - RemociÃ³n del backend del mÃ³dulo
 
 Objetivo: eliminar el mÃ³dulo `budgets` del proyecto.
@@ -93,6 +95,8 @@ Tareas:
 Resultado esperado:
 - el proyecto no contiene cÃ³digo ejecutable de Presupuestos
 
+**Estado actual:** completada a nivel runtime y codigo fuente
+
 ### Fase 3 - Base de datos y migraciones
 
 Objetivo: cerrar la remociÃ³n a nivel persistencia.
@@ -114,6 +118,8 @@ DecisiÃ³n recomendada:
 
 Resultado esperado:
 - la base de datos no mantiene estructura ni datos de presupuestos
+
+**Estado actual:** implementada en codigo; resta validacion al aplicar migraciones
 
 ### Fase 4 - Tests y fixtures
 
@@ -140,6 +146,8 @@ Tareas:
 Resultado esperado:
 - la suite deja de asumir la existencia del mÃ³dulo
 
+**Estado actual:** avanzada; resta validacion de suite
+
 ### Fase 5 - DocumentaciÃ³n y cierre
 
 Objetivo: alinear el repositorio con el producto real.
@@ -156,6 +164,41 @@ Tareas:
 
 Resultado esperado:
 - no quedan referencias engaÃ±osas a una funcionalidad inexistente
+
+**Estado actual:** en curso
+
+## Estado de avance al 2026-03-29
+
+Completado:
+- eliminacion del bloque visual en dashboard y sidebar
+- remocion de `alert_threshold` del perfil
+- remocion de imports y contexto de `Budget` en reportes
+- salida de `apps.budgets` de `INSTALLED_APPS`
+- salida de la ruta global `budgets/`
+- eliminacion del codigo fuente y templates del modulo
+- limpieza de fixtures y tests integrados al modulo
+
+Pendiente:
+- validar la migracion transicional que elimina la tabla `Budget`
+- validar la suite completa en un entorno donde el logging no bloquee la ejecucion
+- cerrar la limpieza documental total
+
+## Estrategia recomendada para base de datos
+
+Dado que la app `apps.budgets` ya fue retirada del runtime, la eliminacion de la tabla no
+debe resolverse recreando dependencias activas sobre el modulo. La recomendacion es:
+
+1. crear una migracion transicional en una app activa del proyecto
+2. ejecutar `RunSQL` para eliminar la tabla de presupuestos de forma controlada
+3. documentar explicitamente el impacto para entornos existentes antes de aplicar en produccion
+
+Estado actual:
+- se agrego la migracion `apps/expenses/migrations/0011_drop_budget_table.py`
+- usa `DROP TABLE IF EXISTS budgets_budget` para no fallar en instalaciones limpias
+- queda pendiente validar su aplicacion en entorno real
+
+Si se requiere mantener trazabilidad historica de migraciones, conviene resolver esa fase en
+un PR separado para aislar el cambio destructivo de persistencia del resto de la remocion funcional.
 
 ## Orden Exacto Recomendado de ImplementaciÃ³n
 

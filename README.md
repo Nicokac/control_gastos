@@ -51,7 +51,6 @@
 - Conversión automática a ARS usando tipo de cambio configurable
 - Categorizar transacciones con categorías predefinidas y personalizadas
 - Crear metas de ahorro con seguimiento de depósitos y retiros
-- Establecer presupuestos mensuales por categoría con alertas visuales
 - Visualizar dashboard con resumen financiero y gráficos de distribución
 - Comparar gastos e ingresos con el mes anterior
 
@@ -68,16 +67,9 @@
 ### 📊 Dashboard Interactivo
 - Resumen de balance mensual (ingresos vs gastos)
 - Comparación porcentual con mes anterior
-- Estado de presupuestos con alertas visuales
 - Progreso de metas de ahorro
 - Gráfico de distribución de gastos por categoría
 - Últimas transacciones
-
-### 🎯 Presupuestos
-- Presupuestos mensuales por categoría de gasto
-- Umbral de alerta configurable (default 80%)
-- Estados: OK, Alerta, Excedido
-- Función de copiar presupuestos del mes anterior
 
 ### 🐷 Metas de Ahorro
 - Crear metas con objetivo y fecha límite
@@ -630,7 +622,6 @@ El proyecto incluye índices compuestos optimizados para queries frecuentes:
 | `Saving` | `(user, status)` |
 | `SavingMovement` | `(saving, -date, -created_at)` |
 | `Category` | `(user, type)`, `(is_system, type)` |
-| `Budget` | `(user, year, month)`, `(user, category)` |
 
 ### Constraints de Base de Datos
 
@@ -638,7 +629,6 @@ El proyecto incluye índices compuestos optimizados para queries frecuentes:
 |--------|------------|-------------|
 | `Category` | `system_category_no_user` | Categorías sistema sin usuario |
 | `Category` | `user_category_requires_user` | Categorías usuario requieren usuario |
-| `Budget` | `unique_budget_per_category_month` | Un presupuesto por categoría/mes/usuario |
 
 
 ---
@@ -651,7 +641,6 @@ control_gastos/
 │   └── workflows/
 │       └── ci.yml              # GitHub Actions CI
 ├── apps/                       # Aplicaciones Django
-│   ├── budgets/               # Presupuestos mensuales
 │   ├── categories/            # Gestión de categorías
 │   ├── core/                  # Mixins, constantes, utilidades
 │   │   ├── management/commands/
@@ -807,7 +796,7 @@ Seguimos [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```
 feat(expenses): add expense creation form
-fix(budgets): correct alert threshold calculation
+refactor(reports): simplify dashboard summary
 perf(reports): optimize dashboard queries
 docs(readme): update installation instructions
 test(savings): add movement validation tests
@@ -825,7 +814,6 @@ ci: add GitHub Actions pipeline
 - [x] CRUD de gastos (multimoneda)
 - [x] CRUD de ingresos (multimoneda)
 - [x] Metas de ahorro con movimientos
-- [x] Presupuestos mensuales con alertas
 - [x] Dashboard con gráficos
 - [x] Rate limiting y seguridad
 - [x] CI/CD con GitHub Actions
@@ -861,13 +849,11 @@ ci: add GitHub Actions pipeline
 | `expenses` | CRUD gastos, multimoneda | ✅ |
 | `income` | CRUD ingresos, multimoneda | ✅ |
 | `savings` | Metas de ahorro, movimientos | ✅ |
-| `budgets` | Presupuestos mensuales, alertas | ✅ |
 | `reports` | Dashboard, gráficos | ✅ |
 
 ### Modelos Principales
 
 - **Expense/Income**: Transacciones con soporte multimoneda
-- **Budget**: Presupuestos mensuales por categoría
 - **Saving**: Metas de ahorro con progreso
 - **SavingMovement**: Depósitos y retiros
 - **Category**: Categorías de sistema y personalizadas

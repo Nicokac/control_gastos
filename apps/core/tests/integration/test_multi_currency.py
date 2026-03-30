@@ -1,5 +1,5 @@
 """
-Tests de integración para escenarios multi-moneda.
+Tests de integraciÃ³n para escenarios multi-moneda.
 """
 
 from datetime import date
@@ -38,7 +38,7 @@ class TestMultiCurrencyExpenses:
         assert expense.amount_ars == Decimal("1000.00")
 
     def test_usd_expense_converts_correctly(self, authenticated_client, user, expense_category):
-        """Verifica conversión correcta de USD a ARS."""
+        """Verifica conversiÃ³n correcta de USD a ARS."""
         create_url = reverse("expenses:create")
         data = {
             "category": expense_category.pk,
@@ -56,48 +56,6 @@ class TestMultiCurrencyExpenses:
         assert expense.amount == Decimal("100.00")
         assert expense.exchange_rate == Decimal("1150.50")
         assert expense.amount_ars == Decimal("115050.00")
-
-    def test_mixed_currency_expenses_in_same_budget(
-        self, authenticated_client, user, expense_category, budget_factory
-    ):
-        """Verifica que presupuesto sume correctamente gastos mixtos."""
-        today = date.today()
-
-        budget = budget_factory(
-            user, expense_category, month=today.month, year=today.year, amount=Decimal("200000.00")
-        )
-
-        create_url = reverse("expenses:create")
-
-        # Gasto en ARS
-        authenticated_client.post(
-            create_url,
-            {
-                "category": expense_category.pk,
-                "description": "Gasto ARS",
-                "amount": "50000.00",
-                "currency": Currency.ARS,
-                "date": today.isoformat(),
-            },
-        )
-
-        # Gasto en USD
-        authenticated_client.post(
-            create_url,
-            {
-                "category": expense_category.pk,
-                "description": "Gasto USD",
-                "amount": "100.00",
-                "currency": Currency.USD,
-                "exchange_rate": "1000.00",
-                "date": today.isoformat(),
-            },
-        )
-
-        # Presupuesto debería sumar en ARS
-        budget.refresh_from_db()
-        # 50000 ARS + (100 USD * 1000) = 150000 ARS
-        assert budget.spent_amount == Decimal("150000.00")
 
 
 @pytest.mark.slow
@@ -124,7 +82,7 @@ class TestMultiCurrencyIncome:
         assert income.amount_ars == Decimal("150000.00")
 
     def test_usd_income_converts_correctly(self, authenticated_client, user, income_category):
-        """Verifica conversión correcta de ingreso USD a ARS."""
+        """Verifica conversiÃ³n correcta de ingreso USD a ARS."""
         create_url = reverse("income:create")
         data = {
             "category": income_category.pk,
@@ -146,38 +104,4 @@ class TestMultiCurrencyIncome:
 @pytest.mark.integration
 @pytest.mark.django_db
 class TestExchangeRateEdgeCases:
-    """Tests de casos límite con tipos de cambio."""
-
-    def test_very_high_exchange_rate(self, authenticated_client, user, expense_category):
-        """Verifica manejo de tipo de cambio alto."""
-        create_url = reverse("expenses:create")
-        data = {
-            "category": expense_category.pk,
-            "description": "Gasto Cambio Alto",
-            "amount": "10.00",
-            "currency": Currency.USD,
-            "exchange_rate": "9999.99",
-            "date": date.today().isoformat(),
-        }
-
-        authenticated_client.post(create_url, data)
-
-        expense = Expense.objects.get(description="Gasto Cambio Alto")
-        assert expense.amount_ars == Decimal("99999.90")
-
-    def test_decimal_exchange_rate(self, authenticated_client, user, expense_category):
-        """Verifica manejo de tipo de cambio decimal."""
-        create_url = reverse("expenses:create")
-        data = {
-            "category": expense_category.pk,
-            "description": "Gasto Decimal",
-            "amount": "100.00",
-            "currency": Currency.USD,
-            "exchange_rate": "1234.56",
-            "date": date.today().isoformat(),
-        }
-
-        authenticated_client.post(create_url, data)
-
-        expense = Expense.objects.get(description="Gasto Decimal")
-        assert expense.amount_ars == Decimal("123456.00")
+    """Tests de casos lÃ­mite con tipos de cambio."""

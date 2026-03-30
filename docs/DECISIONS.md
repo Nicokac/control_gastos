@@ -142,32 +142,40 @@ Mantener `CategoryListView` con `LoginRequiredMixin` + `ListView` directamente.
 
 ---
 
-## D-007 â€” EliminaciÃ³n completa del mÃ³dulo de Presupuestos
+## D-007 - Eliminacion completa del modulo de Presupuestos
 
 **Issue relacionada:** PRD-REMOVE-BUDGETS  
 **Fecha:** 2026-03-29  
-**Estado:** â³ Aprobado para ejecuciÃ³n
+**Estado:** En ejecucion
 
 ### Contexto
-El producto hoy incluye un mÃ³dulo completo de presupuestos mensuales por categorÃ­a
-(`apps.budgets`) con integraciÃ³n en dashboard, navegaciÃ³n lateral, perfil de usuario
-y suite de tests. Se decidiÃ³ remover la funcionalidad por completo.
+El producto incluia un modulo completo de presupuestos mensuales por categoria
+(`apps.budgets`) con integracion en dashboard, navegacion lateral, perfil de usuario
+y suite de tests. Se decidio remover la funcionalidad por completo.
 
-### DecisiÃ³n
+### Decision
 Eliminar el bloque de Presupuestos de manera total, incluyendo:
 - app Django `apps.budgets`
-- rutas, vistas, formularios, admin y templates del mÃ³dulo
-- integraciÃ³n en dashboard y navegaciÃ³n
+- rutas, vistas, formularios, admin y templates del modulo
+- integracion en dashboard y navegacion
 - referencias de perfil ligadas a alertas de presupuesto
-- fixtures, tests, documentaciÃ³n y roadmap asociados
+- fixtures, tests, documentacion y roadmap asociados
 
-### JustificaciÃ³n
-- El mÃ³dulo no es estructural para el registro de gastos, ingresos, ahorro o categorÃ­as.
-- No existen otros modelos que dependan de `Budget` mediante claves forÃ¡neas entrantes.
-- El mayor acoplamiento es de UI, reportes y tests, lo que permite una remociÃ³n controlada
-  sin rediseÃ±ar el dominio principal.
+### Justificacion
+- El modulo no es estructural para el registro de gastos, ingresos, ahorro o categorias.
+- No existen otros modelos que dependan de `Budget` mediante claves foraneas entrantes.
+- El mayor acoplamiento es de UI, reportes y tests, lo que permite una remocion controlada
+  sin redisenar el dominio principal.
 
-### EjecuciÃ³n
+### Ejecucion
 El plan operativo detallado, con orden de trabajo y archivos alcanzados, queda documentado en:
 
 `docs/REMOVE_BUDGETS_PLAN.md`
+
+### Estado actual
+- la UI ya no expone Presupuestos
+- `apps.budgets` ya no forma parte del runtime principal
+- fixtures y tests acoplados al modulo fueron retirados o reescritos
+- ya existe una migracion transicional para eliminar `budgets_budget`
+- la limpieza documental esta en curso
+- la remocion de persistencia en base de datos queda como frente pendiente
