@@ -24,6 +24,29 @@ INTERNAL_IPS = ["127.0.0.1"]
 apply_email_settings(globals(), default_backend="django.core.mail.backends.console.EmailBackend")
 
 
+# =============================================================================
+# LOGGING - Desarrollo
+# =============================================================================
+
+# En entornos locales y sandbox evitamos depender de escritura en /logs.
+LOGGING["handlers"]["console"]["level"] = "DEBUG"
+LOGGING["handlers"]["file"] = {
+    "level": "INFO",
+    "class": "logging.StreamHandler",
+    "formatter": "verbose",
+}
+LOGGING["handlers"]["error_file"] = {
+    "level": "ERROR",
+    "class": "logging.StreamHandler",
+    "formatter": "verbose",
+}
+LOGGING["handlers"]["security_file"] = {
+    "level": "INFO",
+    "class": "logging.StreamHandler",
+    "formatter": "security",
+}
+
+
 # ============================================================================
 # CSP RELAJADO SOLO PARA DESARROLLO
 # ============================================================================
