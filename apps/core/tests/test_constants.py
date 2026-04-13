@@ -3,6 +3,7 @@ Tests para las constantes del sistema.
 """
 
 from apps.core.constants import (
+    CATEGORY_ICON_CHOICES,
     DEFAULT_ALERT_THRESHOLD,
     DEFAULT_CURRENCY,
     DEFAULT_EXCHANGE_RATE,
@@ -221,3 +222,23 @@ class TestSystemCategories:
         """Verifica que exista la categoría Sueldo."""
         names = [c["name"] for c in SYSTEM_CATEGORIES["INCOME"]]
         assert "Sueldo" in names
+
+
+class TestCategoryIconChoices:
+    """Tests para el catálogo de iconos de categorías."""
+
+    def test_category_icons_has_broad_catalog(self):
+        """Verifica que el catálogo no quede limitado a pocas opciones."""
+        assert len(CATEGORY_ICON_CHOICES) >= 30
+
+    def test_category_icons_use_bootstrap_icons(self):
+        """Verifica que todos los iconos sean clases de Bootstrap Icons."""
+        for value, _label in CATEGORY_ICON_CHOICES:
+            assert value.startswith("bi-")
+
+    def test_category_icons_include_income_and_expense_options(self):
+        """Verifica que existan iconos usados en gasto e ingreso."""
+        values = {value for value, _label in CATEGORY_ICON_CHOICES}
+        assert "bi-cart" in values
+        assert "bi-cash" in values
+        assert "bi-graph-up-arrow" in values

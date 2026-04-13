@@ -36,6 +36,53 @@ class CategoryType(models.TextChoices):
     INCOME = "INCOME", "Ingreso"
 
 
+# Iconos disponibles para categorías personalizadas
+CATEGORY_ICON_CHOICES = [
+    ("bi-cart", "Compras"),
+    ("bi-car-front", "Transporte"),
+    ("bi-house", "Vivienda"),
+    ("bi-lightning", "Servicios"),
+    ("bi-heart-pulse", "Salud"),
+    ("bi-controller", "Entretenimiento"),
+    ("bi-book", "Educación"),
+    ("bi-bag", "Ropa"),
+    ("bi-cup-hot", "Café / Restó"),
+    ("bi-basket", "Supermercado"),
+    ("bi-egg-fried", "Comida"),
+    ("bi-truck", "Logística"),
+    ("bi-fuel-pump", "Combustible"),
+    ("bi-bus-front", "Colectivo"),
+    ("bi-airplane", "Viajes"),
+    ("bi-phone", "Tecnología"),
+    ("bi-laptop", "Freelance"),
+    ("bi-wifi", "Internet"),
+    ("bi-tv", "Streaming"),
+    ("bi-music-note", "Música"),
+    ("bi-film", "Cine"),
+    ("bi-bicycle", "Deporte"),
+    ("bi-trophy", "Objetivos"),
+    ("bi-gift", "Regalos"),
+    ("bi-people", "Familia"),
+    ("bi-person-heart", "Bienestar"),
+    ("bi-briefcase", "Trabajo"),
+    ("bi-cash", "Dinero"),
+    ("bi-cash-coin", "Cobros"),
+    ("bi-wallet2", "Billetera"),
+    ("bi-bank", "Banco"),
+    ("bi-credit-card", "Tarjeta"),
+    ("bi-piggy-bank", "Ahorro"),
+    ("bi-graph-up-arrow", "Inversiones"),
+    ("bi-shop", "Negocio"),
+    ("bi-tools", "Mantenimiento"),
+    ("bi-house-gear", "Hogar"),
+    ("bi-mortarboard", "Cursos"),
+    ("bi-box-seam", "Suscripciones"),
+    ("bi-stars", "Ocio"),
+    ("bi-tag", "General"),
+    ("bi-three-dots", "Otros"),
+]
+
+
 # Categorías del sistema (seed data)
 SYSTEM_CATEGORIES = {
     "EXPENSE": [

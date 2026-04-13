@@ -4,22 +4,9 @@ Formularios para categorías.
 
 from django import forms
 
-from .models import Category
+from apps.core.constants import CATEGORY_ICON_CHOICES
 
-CATEGORY_ICONS = [
-    ("bi-cart", "Compras"),
-    ("bi-heart-pulse", "Salud"),
-    ("bi-lightning", "Servicios"),
-    ("bi-bag", "Ropa"),
-    ("bi-controller", "Entretenimiento"),
-    ("bi-book", "Educación"),
-    ("bi-briefcase", "Trabajo"),
-    ("bi-phone", "Tecnología"),
-    ("bi-music-note", "Música"),
-    ("bi-bicycle", "Deporte"),
-    ("bi-cup-hot", "Café/Resto"),
-    ("bi-tag", "General"),
-]
+from .models import Category
 
 
 class CategoryForm(forms.ModelForm):
@@ -49,7 +36,7 @@ class CategoryForm(forms.ModelForm):
         """
         self.user = user
         super().__init__(*args, **kwargs)
-        self.fields["icon"].choices = [("", "Sin ícono")] + CATEGORY_ICONS
+        self.fields["icon"].choices = [("", "Sin ícono")] + CATEGORY_ICON_CHOICES
         self.fields["icon"].required = False
 
     def clean(self):

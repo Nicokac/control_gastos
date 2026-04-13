@@ -70,7 +70,7 @@ class TestCategoryForm:
         """Verifica longitud máxima del nombre."""
         form = CategoryForm(
             data={
-                "name": "A" * 256,  # Excede el máximo
+                "name": "A" * 256,
                 "type": CategoryType.EXPENSE,
             }
         )
@@ -93,7 +93,7 @@ class TestCategoryForm:
         assert form.is_valid()
 
     def test_default_icon(self, user):
-        """Verifica icono por defecto."""
+        """Verifica ícono por defecto."""
         form = CategoryForm(
             data={
                 "name": "Test",
@@ -103,20 +103,6 @@ class TestCategoryForm:
         form.instance.user = user
 
         assert form.is_valid()
-        # El icono debería tener un valor por defecto o ser opcional
-
-    # def test_duplicate_name_same_user_type(self, user, expense_category):
-    #     """Verifica que no se permitan nombres duplicados."""
-    #     form = CategoryForm(data={
-    #         'name': expense_category.name,
-    #         'type': CategoryType.EXPENSE,
-    #     })
-    #     form.instance.user = user
-
-    #     # La validación de unicidad debería fallar
-    #     # Nota: Esto depende de cómo esté implementado el form
-    #     if hasattr(form, 'clean'):
-    #         assert not form.is_valid() or 'name' in form.errors or '__all__' in form.errors
 
     def test_save_creates_category(self, user):
         """Verifica que save() cree la categoría."""
@@ -183,29 +169,12 @@ class TestCategoryFormEdit:
 class TestCategoryFormDuplicates:
     """Tests para validación de duplicados en CategoryForm."""
 
-    # def test_duplicate_name_same_user_type_invalid(self, user, expense_category):
-    #     """Verifica que no se permitan nombres duplicados."""
-    #     form = CategoryForm(
-    #         data={
-    #             'name': expense_category.name,  # Mismo nombre
-    #             'type': CategoryType.EXPENSE,   # Mismo tipo
-    #             'icon': 'bi-tag',
-    #             'color': '#FF0000',
-    #         }
-    #     )
-    #     form.instance.user = user
-
-    #     # Debe ser inválido
-    #     assert not form.is_valid()
-    #     # Error puede estar en __all__ o en name
-    #     assert '__all__' in form.errors or 'name' in form.errors
-
     def test_same_name_different_type_valid(self, user, expense_category):
         """Verifica que mismo nombre con diferente tipo sea válido."""
         form = CategoryForm(
             data={
-                "name": expense_category.name,  # Mismo nombre
-                "type": CategoryType.INCOME,  # Diferente tipo
+                "name": expense_category.name,
+                "type": CategoryType.INCOME,
                 "icon": "bi-cash",
                 "color": "#00FF00",
             }
@@ -266,3 +235,14 @@ class TestCategoryFormCleanedData:
 
         cleaned_name = form.cleaned_data["name"]
         assert cleaned_name == cleaned_name.strip()
+
+    def test_icon_choices_include_extended_catalog(self, user):
+        """Verifica que el formulario ofrezca un catálogo amplio de iconos."""
+        form = CategoryForm(user=user)
+
+        values = [value for value, _label in form.fields["icon"].choices]
+
+        assert "" in values
+        assert "bi-cash" in values
+        assert "bi-graph-up-arrow" in values
+        assert len(values) >= 31
