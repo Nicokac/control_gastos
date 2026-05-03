@@ -268,6 +268,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         income_data = []
         expense_data = []
         savings_data = []
+        balance_data = []
 
         # Rango completo: enero → fin del mes actual (1 query por modelo)
         year_start, _ = get_month_date_range_exclusive(1, year)
@@ -299,40 +300,50 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         savings_by_month = {row["date__month"]: float(row["total"]) for row in savings_qs}
 
         for m in months:
+            inc = income_by_month.get(m, 0)
+            exp = expense_by_month.get(m, 0)
+            sav = savings_by_month.get(m, 0)
             labels.append(get_month_name(m))
-            income_data.append(income_by_month.get(m, 0))
-            expense_data.append(expense_by_month.get(m, 0))
-            savings_data.append(savings_by_month.get(m, 0))
+            income_data.append(inc)
+            expense_data.append(exp)
+            savings_data.append(sav)
+            balance_data.append(round(inc - exp - sav, 2))
 
         return {
             "evolution_labels": labels,
             "evolution_income": income_data,
             "evolution_expenses": expense_data,
             "evolution_savings": savings_data,
+            "evolution_balance": balance_data,
         }
 
     def _get_expense_distribution(self, user, month, year):
         """Obtiene distribución de gastos por categoría para el gráfico."""
         start_date, end_date = get_month_date_range_exclusive(month, year)
-        distribution = (
+        distribution = list(
             Expense.objects.filter(user=user, date__gte=start_date, date__lt=end_date)
             .values("category__name", "category__color", "category__icon")
             .annotate(total=Sum("amount_ars"))
             .order_by("-total")[:6]
         )
 
-        # Preparar datos para el gráfico
+        # Preparar datos para el gráfico y calcular porcentajes
         chart_labels = []
         chart_data = []
         chart_colors = []
+        grand_total = sum(float(item["total"]) for item in distribution)
 
         for item in distribution:
             chart_labels.append(item["category__name"])
             chart_data.append(float(item["total"]))
             chart_colors.append(item["category__color"] or "#6c757d")
+            if grand_total > 0:
+                item["percentage"] = round((float(item["total"]) / grand_total) * 100, 1)
+            else:
+                item["percentage"] = 0
 
         return {
-            "expense_distribution": list(distribution),
+            "expense_distribution": distribution,
             "chart_labels": chart_labels,
             "chart_data": chart_data,
             "chart_colors": chart_colors,

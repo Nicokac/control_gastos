@@ -61,13 +61,15 @@ function initEvolutionChart() {
     const incomeNode   = document.getElementById('evolution-income-data');
     const expensesNode = document.getElementById('evolution-expenses-data');
     const savingsNode  = document.getElementById('evolution-savings-data');
+    const balanceNode  = document.getElementById('evolution-balance-data');
 
-    if (!labelsNode || !incomeNode || !expensesNode || !savingsNode) return;
+    if (!labelsNode || !incomeNode || !expensesNode || !savingsNode || !balanceNode) return;
 
     const labels   = JSON.parse(labelsNode.textContent);
     const income   = JSON.parse(incomeNode.textContent);
     const expenses = JSON.parse(expensesNode.textContent);
     const savings  = JSON.parse(savingsNode.textContent);
+    const balance  = JSON.parse(balanceNode.textContent);
 
     if (!labels.length) return;
 
@@ -108,6 +110,17 @@ function initEvolutionChart() {
                     tension: 0.4,
                     pointRadius: 4,
                     pointHoverRadius: 6,
+                },
+                {
+                    label: 'Balance',
+                    data: balance,
+                    borderColor: '#6f42c1',
+                    backgroundColor: 'rgba(111, 66, 193, 0.0)',
+                    fill: false,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    borderDash: [5, 4],
                 },
             ],
         },

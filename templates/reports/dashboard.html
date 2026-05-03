@@ -242,7 +242,10 @@
                                     <span class="rounded-circle me-2 legend-dot" data-color="{{ item.category__color|default:'#6c757d' }}" data-color-prop="backgroundColor"></span>
                                     <span>{{ item.category__name }}</span>
                                 </div>
-                                <strong>{{ item.total|currency }}</strong>
+                                <div class="text-end">
+                                    <strong>{{ item.total|currency }}</strong>
+                                    <small class="text-muted d-block">{{ item.percentage }}%</small>
+                                </div>
                             </li>
                             {% endfor %}
                         </ul>
@@ -323,5 +326,6 @@
     {{ evolution_income|json_script:"evolution-income-data" }}
     {{ evolution_expenses|json_script:"evolution-expenses-data" }}
     {{ evolution_savings|json_script:"evolution-savings-data" }}
+    {{ evolution_balance|json_script:"evolution-balance-data" }}
     <script src="{% static 'js/dashboard.js' %}"></script>
 {% endblock %}
