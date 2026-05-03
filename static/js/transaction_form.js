@@ -76,8 +76,9 @@ function initFormValidation(formId) {
         let isValid = true;
         let firstError = null;
 
-        // Validar monto
-        if (!amount.value || parseFloat(amount.value) <= 0) {
+        // Validar monto (acepta coma o punto como separador decimal)
+        const amountNormalized = amount.value.trim().replace(/\./g, '').replace(',', '.');
+        if (!amountNormalized || parseFloat(amountNormalized) <= 0) {
             amount.classList.add('is-invalid');
             isValid = false;
             firstError = firstError || amount;

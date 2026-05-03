@@ -10,6 +10,25 @@ from apps.categories.models import Category
 from apps.core.constants import Currency
 
 
+class ARSDecimalField(forms.DecimalField):
+    """
+    DecimalField que acepta formato argentino: "1.500,50" o "1500,50".
+
+    Normaliza antes de la conversión: elimina puntos de miles y reemplaza
+    la coma decimal por punto, para que Decimal() lo procese correctamente.
+    """
+
+    def to_python(self, value):
+        if isinstance(value, str) and value.strip():
+            v = value.strip()
+            if "," in v:
+                # Argentine format: "1.500,50" or "1500,50"
+                # Strip thousands dots then swap decimal comma to dot
+                v = v.replace(".", "").replace(",", ".")
+            value = v
+        return super().to_python(value)
+
+
 class CurrencyFormMixin:
     """
     Mixin con validaciones comunes para formularios con moneda.
@@ -18,6 +37,18 @@ class CurrencyFormMixin:
         class ExpenseForm(CurrencyFormMixin, forms.ModelForm):
             ...
     """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if "amount" in self.fields:
+            original = self.fields["amount"]
+            self.fields["amount"] = ARSDecimalField(
+                max_digits=getattr(original, "max_digits", 12),
+                decimal_places=getattr(original, "decimal_places", 2),
+                required=original.required,
+                widget=original.widget,
+                label=original.label,
+            )
 
     def clean_amount(self):
         """Valida que el monto sea positivo."""
