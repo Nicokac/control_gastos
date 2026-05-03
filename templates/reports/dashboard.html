@@ -102,13 +102,13 @@
                     </div>
                 </div>
                 {% with pct=expense_percentage|floatformat:0 %}
-                <div class="progress mt-1" style="height: 6px;">
+                <div class="progress mt-1" style="height: 8px; background-color: #e9ecef;">
                     <div class="progress-bar
                         {% if expense_percentage < 50 %}bg-success
                         {% elif expense_percentage < 80 %}bg-warning
                         {% else %}bg-danger{% endif %}"
                         role="progressbar"
-                        style="width: {% if expense_percentage > 100 %}100{% else %}{{ expense_percentage|floatformat:0 }}{% endif %}%"
+                        style="width: {% if expense_percentage > 100 %}100{% else %}{{ expense_percentage|floatformat:0 }}{% endif %}%; min-width: 8px;"
                         aria-valuenow="{{ expense_percentage|floatformat:0 }}"
                         aria-valuemin="0" aria-valuemax="100">
                     </div>
