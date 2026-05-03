@@ -8,20 +8,46 @@ function initDonutChart() {
     if (!ctx) return;
 
     try {
-        const labelsNode = document.getElementById('chart-labels-data');
-        const valuesNode = document.getElementById('chart-values-data');
-        const colorsNode = document.getElementById('chart-colors-data');
+        const labelsNode    = document.getElementById('chart-labels-data');
+        const valuesNode    = document.getElementById('chart-values-data');
+        const colorsNode    = document.getElementById('chart-colors-data');
+        const totalNode     = document.getElementById('chart-grand-total-data');
 
         if (!labelsNode || !valuesNode || !colorsNode) return;
 
         const labels = JSON.parse(labelsNode.textContent);
-        const data = JSON.parse(valuesNode.textContent);
+        const data   = JSON.parse(valuesNode.textContent);
         const colors = JSON.parse(colorsNode.textContent);
+        const grandTotal = totalNode ? JSON.parse(totalNode.textContent) : null;
 
         if (!labels.length || !data.length) return;
 
+        const formatARS = value =>
+            '$ ' + value.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+        const centerTextPlugin = {
+            id: 'centerText',
+            afterDraw(chart) {
+                if (!grandTotal) return;
+                const { ctx: c, chartArea: { top, bottom, left, right } } = chart;
+                const cx = (left + right) / 2;
+                const cy = (top + bottom) / 2;
+                c.save();
+                c.textAlign = 'center';
+                c.textBaseline = 'middle';
+                c.fillStyle = '#6b7280';
+                c.font = '13px system-ui, sans-serif';
+                c.fillText('Total gastado', cx, cy - 14);
+                c.fillStyle = '#dc3545';
+                c.font = 'bold 18px system-ui, sans-serif';
+                c.fillText(formatARS(grandTotal), cx, cy + 10);
+                c.restore();
+            },
+        };
+
         new Chart(ctx, {
             type: 'doughnut',
+            plugins: [centerTextPlugin],
             data: {
                 labels: labels,
                 datasets: [{
@@ -42,12 +68,12 @@ function initDonutChart() {
                                 const value = context.raw;
                                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                 const percentage = ((value / total) * 100).toFixed(1);
-                                return `$ ${value.toLocaleString('es-AR', { minimumFractionDigits: 2 })} (${percentage}%)`;
+                                return ` ${formatARS(value)} (${percentage}%)`;
                             },
                         },
                     },
                 },
-                cutout: '60%',
+                cutout: '65%',
             },
         });
     } catch (e) {}

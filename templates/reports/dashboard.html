@@ -214,43 +214,30 @@
     </div>
 </div>
 
-<!-- Distribución de Gastos (full width) -->
+<!-- Distribución de Gastos + Ranking -->
 <div class="row g-4 mb-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <i class="bi bi-pie-chart me-2"></i>Distribución de Gastos
+    <!-- Donut -->
+    <div class="col-lg-7">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-pie-chart me-2"></i>Distribución de Gastos</span>
+                <small class="text-muted">{{ month_name }} {{ current_year }}</small>
             </div>
             <div class="card-body">
-                {% if expense_distribution and chart_data %}
-                <div class="row align-items-center">
-                    <div class="col-md-5">
-                        <div class="chart-container">
-                            <canvas
-                                id="expenseChart"
-                                data-labels='{{ chart_labels|escapejs }}'
-                                data-data='{{ chart_data|escapejs }}'
-                                data-colors='{{ chart_colors|escapejs }}'>
-                            </canvas>
-                        </div>
-                    </div>
-                    <div class="col-md-7">
-                        <ul class="list-unstyled mb-0">
-                            {% for item in expense_distribution %}
-                            <li class="d-flex justify-content-between align-items-center mb-2">
-                                <div class="d-flex align-items-center">
-                                    <span class="rounded-circle me-2 legend-dot" data-color="{{ item.category__color|default:'#6c757d' }}" data-color-prop="backgroundColor"></span>
-                                    <span>{{ item.category__name }}</span>
-                                </div>
-                                <div class="text-end">
-                                    <strong>{{ item.total|currency }}</strong>
-                                    <small class="text-muted d-block">{{ item.percentage }}%</small>
-                                </div>
-                            </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
+                {% if ranking_distribution %}
+                {% if top_category %}
+                <div class="alert alert-danger py-2 mb-3 small">
+                    Tu mayor gasto fue <strong>{{ top_category.name }}</strong>,
+                    con <strong>{{ top_category.total|currency }}</strong>
+                    ({{ top_category.percentage }}% del total).
                 </div>
+                {% endif %}
+                <div class="chart-container">
+                    <canvas id="expenseChart"></canvas>
+                </div>
+                <p class="text-muted text-center small mt-2 mb-0">
+                    Vista rápida de las categorías con mayor peso en el mes.
+                </p>
                 {% else %}
                 <div class="text-center py-4">
                     <i class="bi bi-pie-chart display-4 text-muted mb-3"></i>
@@ -258,6 +245,49 @@
                     <a href="{% url 'expenses:create' %}" class="btn btn-danger btn-sm">
                         <i class="bi bi-plus-lg me-1"></i>Registrar primer gasto
                     </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Ranking -->
+    <div class="col-lg-5">
+        <div class="card h-100">
+            <div class="card-header">
+                <i class="bi bi-bar-chart-steps me-2"></i>Ranking de Categorías
+            </div>
+            <div class="card-body p-0">
+                {% if ranking_distribution %}
+                <div class="px-3 py-2 border-bottom bg-light">
+                    <small class="text-muted">
+                        Total: <strong class="text-dark">{{ expense_total|currency }}</strong>
+                        &mdash; {{ ranking_distribution|length }} categoría{{ ranking_distribution|length|pluralize }}
+                    </small>
+                </div>
+                <div style="max-height: 380px; overflow-y: auto;">
+                    <ul class="list-group list-group-flush">
+                        {% for item in ranking_distribution %}
+                        <li class="list-group-item px-3 py-2">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="rounded-circle flex-shrink-0"
+                                          style="width:10px;height:10px;background:{{ item.color }};display:inline-block;"></span>
+                                    <span class="small fw-semibold">{{ item.name }}</span>
+                                </div>
+                                <div class="text-end">
+                                    <span class="small fw-bold">{{ item.total|currency }}</span>
+                                    <span class="text-muted small ms-2">{{ item.percentage }}%</span>
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="bi bi-bar-chart display-4 text-muted"></i>
+                    <p class="text-muted mt-2 mb-0">Sin datos este mes</p>
                 </div>
                 {% endif %}
             </div>
@@ -321,6 +351,7 @@
         {{ chart_labels|json_script:"chart-labels-data" }}
         {{ chart_data|json_script:"chart-values-data" }}
         {{ chart_colors|json_script:"chart-colors-data" }}
+        {{ chart_grand_total|json_script:"chart-grand-total-data" }}
     {% endif %}
     {{ evolution_labels|json_script:"evolution-labels-data" }}
     {{ evolution_income|json_script:"evolution-income-data" }}

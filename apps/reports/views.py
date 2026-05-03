@@ -318,33 +318,61 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         }
 
     def _get_expense_distribution(self, user, month, year):
-        """Obtiene distribución de gastos por categoría para el gráfico."""
+        """
+        Obtiene distribución de gastos por categoría.
+
+        Retorna dos listas:
+        - ranking_distribution: todas las categorías (para el ranking con scroll)
+        - chart_distribution: top 5 + "Otros" agrupado (para el donut)
+        """
         start_date, end_date = get_month_date_range_exclusive(month, year)
-        distribution = list(
+        all_items = list(
             Expense.objects.filter(user=user, date__gte=start_date, date__lt=end_date)
-            .values("category__name", "category__color", "category__icon")
+            .values("category__name", "category__color")
             .annotate(total=Sum("amount_ars"))
-            .order_by("-total")[:6]
+            .order_by("-total")
         )
 
-        # Preparar datos para el gráfico y calcular porcentajes
-        chart_labels = []
-        chart_data = []
-        chart_colors = []
-        grand_total = sum(float(item["total"]) for item in distribution)
+        grand_total = sum(float(item["total"]) for item in all_items)
 
-        for item in distribution:
-            chart_labels.append(item["category__name"])
-            chart_data.append(float(item["total"]))
-            chart_colors.append(item["category__color"] or "#6c757d")
-            if grand_total > 0:
-                item["percentage"] = round((float(item["total"]) / grand_total) * 100, 1)
-            else:
-                item["percentage"] = 0
+        # Ranking completo con porcentajes
+        ranking = []
+        for item in all_items:
+            pct = round((float(item["total"]) / grand_total) * 100, 1) if grand_total > 0 else 0
+            ranking.append(
+                {
+                    "name": item["category__name"],
+                    "color": item["category__color"] or "#6c757d",
+                    "total": item["total"],
+                    "percentage": pct,
+                }
+            )
+
+        # Donut: top 5 + "Otros"
+        TOP_N = 5
+        top = ranking[:TOP_N]
+        others = ranking[TOP_N:]
+
+        chart_labels = [r["name"] for r in top]
+        chart_data = [float(r["total"]) for r in top]
+        chart_colors = [r["color"] for r in top]
+
+        if others:
+            others_total = sum(float(r["total"]) for r in others)
+            chart_labels.append("Otros")
+            chart_data.append(others_total)
+            chart_colors.append("#6c757d")
+
+        # Insight: categoría con mayor gasto
+        top_category = ranking[0] if ranking else None
 
         return {
-            "expense_distribution": distribution,
+            "ranking_distribution": ranking,
             "chart_labels": chart_labels,
             "chart_data": chart_data,
             "chart_colors": chart_colors,
+            "chart_grand_total": grand_total,
+            "top_category": top_category,
+            # Mantener retrocompatibilidad con el check del template
+            "expense_distribution": ranking,
         }
