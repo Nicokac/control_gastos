@@ -133,7 +133,7 @@
 <!-- KPI Cards -->
 <div class="row g-4 mb-4">
     <!-- Gastos -->
-    <div class="col-md-4">
+    <div class="col-md-6">
         <div class="card border-danger h-100">
             <div class="card-body" style="padding: 1.25rem 1.5rem;">
                 <div class="d-flex justify-content-between align-items-start">
@@ -166,35 +166,8 @@
         </div>
     </div>
 
-    <!-- Ahorro -->
-    <div class="col-md-4">
-        <div class="card border-info h-100">
-            <div class="card-body" style="padding: 1.25rem 1.5rem;">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <p class="text-muted mb-1">Ahorro</p>
-                        <h3 class="text-info mb-0 fw-semibold" style="font-size: 1.6rem;">{{ savings_deposits_total|currency }}</h3>
-                    </div>
-                    <div class="bg-info bg-opacity-10 rounded p-2">
-                        <i class="bi bi-piggy-bank text-info fs-4"></i>
-                    </div>
-                </div>
-                <div class="mt-2">
-                    {% if savings_deposits_total == 0 %}
-                    <small class="text-muted">No estás ahorrando este mes</small>
-                    {% else %}
-                    <small class="text-muted">Depositado este mes</small>
-                    {% endif %}
-                    {% if savings_count > 0 %}
-                    <small class="text-info d-block mt-1">{{ savings_count }} meta(s) activa(s)</small>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Ingresos -->
-    <div class="col-md-4">
+    <div class="col-md-6">
         <div class="card border-success h-100">
             <div class="card-body" style="padding: 1.25rem 1.5rem;">
                 <div class="d-flex justify-content-between align-items-start">
@@ -227,18 +200,17 @@
     </div>
 </div>
 
-<div class="row g-4">
-    <!-- Columna izquierda -->
-    <div class="col-lg-8">
-        <!-- Distribución de gastos -->
-        <div class="card mb-4">
+<!-- Distribución de Gastos (full width) -->
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="card">
             <div class="card-header">
                 <i class="bi bi-pie-chart me-2"></i>Distribución de Gastos
             </div>
             <div class="card-body">
                 {% if expense_distribution and chart_data %}
-                <div class="row">
-                    <div class="col-md-6">
+                <div class="row align-items-center">
+                    <div class="col-md-5">
                         <div class="chart-container">
                             <canvas
                                 id="expenseChart"
@@ -248,8 +220,8 @@
                             </canvas>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <ul class="list-unstyled">
+                    <div class="col-md-7">
+                        <ul class="list-unstyled mb-0">
                             {% for item in expense_distribution %}
                             <li class="d-flex justify-content-between align-items-center mb-2">
                                 <div class="d-flex align-items-center">
@@ -274,76 +246,11 @@
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Columna derecha -->
-    <div class="col-lg-4">
-        <!-- Metas de Ahorro -->
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <span>
-                    <i class="bi bi-piggy-bank me-2"></i>Metas de Ahorro
-                </span>
-                <a href="{% url 'savings:list' %}" class="btn btn-sm btn-outline-info">
-                    Ver todas
-                </a>
-            </div>
-            <div class="card-body">
-                {% if savings_count > 0 %}
-                <!-- Resumen -->
-                <div class="text-center mb-3">
-                    <div class="display-6 text-info">{{ savings_progress|floatformat:0 }}%</div>
-                    <small class="text-muted">Progreso global</small>
-                    <div class="progress mt-2 progress-bar-small">
-                        <div class="progress-bar bg-info" data-width="{{ savings_progress }}"></div>
-                    </div>
-                </div>
-
-                <div class="row text-center mb-3">
-                    <div class="col-6">
-                        <small class="text-muted d-block">Ahorrado</small>
-                        <strong class="text-info">{{ savings_total_current|currency }}</strong>
-                    </div>
-                    <div class="col-6">
-                        <small class="text-muted d-block">Objetivo</small>
-                        <strong>{{ savings_total_target|currency }}</strong>
-                    </div>
-                </div>
-
-                {% if savings_completed_month > 0 %}
-                <div class="alert alert-success py-2 mb-3">
-                    <i class="bi bi-trophy me-1"></i>
-                    ¡{{ savings_completed_month }} meta(s) completada(s) este mes!
-                </div>
-                {% endif %}
-
-                <!-- Top metas -->
-                {% for saving in top_savings %}
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <small>
-                            <i class="{{ saving.icon }}" data-color="{{ saving.color }}"></i>
-                            {{ saving.name }}
-                        </small>
-                        <small class="fw-bold">{{ saving.progress_percentage }}%</small>
-                    </div>
-                    <div class="progress progress-bar-small">
-                        <div class="progress-bar" data-width="{{ saving.progress_percentage }}" data-progress-color="{{ saving.color }}"></div>
-                    </div>
-                </div>
-                {% endfor %}
-                {% else %}
-                <div class="text-center py-3">
-                    <i class="bi bi-piggy-bank display-6 text-muted"></i>
-                    <p class="text-muted mt-2 mb-2">No hay metas activas</p>
-                    <a href="{% url 'savings:create' %}" class="btn btn-sm btn-outline-info">
-                        Crear meta
-                    </a>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Últimas transacciones -->
+<!-- Últimas Transacciones (full width) -->
+<div class="row g-4">
+    <div class="col-12">
         <div class="card">
             <div class="card-header">
                 <i class="bi bi-clock-history me-2"></i>Últimas Transacciones
