@@ -1,27 +1,25 @@
 document.addEventListener('DOMContentLoaded', function () {
+    initDonutChart();
+    initEvolutionChart();
+});
+
+function initDonutChart() {
     const ctx = document.getElementById('expenseChart');
-    if (!ctx) {
-        return;
-    }
+    if (!ctx) return;
 
     try {
         const labelsNode = document.getElementById('chart-labels-data');
         const valuesNode = document.getElementById('chart-values-data');
         const colorsNode = document.getElementById('chart-colors-data');
 
-        if (!labelsNode || !valuesNode || !colorsNode) {
-            return;
-        }
+        if (!labelsNode || !valuesNode || !colorsNode) return;
 
         const labels = JSON.parse(labelsNode.textContent);
         const data = JSON.parse(valuesNode.textContent);
         const colors = JSON.parse(colorsNode.textContent);
 
-        if (!labels.length || !data.length) {
-            return;
-        }
+        if (!labels.length || !data.length) return;
 
-        // Crear gráfico
         new Chart(ctx, {
             type: 'doughnut',
             data: {
@@ -37,9 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        display: false,
-                    },
+                    legend: { display: false },
                     tooltip: {
                         callbacks: {
                             label: function (context) {
@@ -54,7 +50,81 @@ document.addEventListener('DOMContentLoaded', function () {
                 cutout: '60%',
             },
         });
-    } catch (error) {
-        // Silenciar errores de parsing en producción
-    }
-});
+    } catch (e) {}
+}
+
+function initEvolutionChart() {
+    const ctx = document.getElementById('evolutionChart');
+    if (!ctx) return;
+
+    const labels   = window.EVOLUTION_LABELS   || [];
+    const income   = window.EVOLUTION_INCOME   || [];
+    const expenses = window.EVOLUTION_EXPENSES || [];
+    const savings  = window.EVOLUTION_SAVINGS  || [];
+
+    if (!labels.length) return;
+
+    const formatARS = value =>
+        '$ ' + value.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Ingresos',
+                    data: income,
+                    borderColor: '#198754',
+                    backgroundColor: 'rgba(25, 135, 84, 0.08)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                },
+                {
+                    label: 'Gastos',
+                    data: expenses,
+                    borderColor: '#dc3545',
+                    backgroundColor: 'rgba(220, 53, 69, 0.08)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                },
+                {
+                    label: 'Ahorro',
+                    data: savings,
+                    borderColor: '#0dcaf0',
+                    backgroundColor: 'rgba(13, 202, 240, 0.08)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            return ` ${context.dataset.label}: ${formatARS(context.raw)}`;
+                        },
+                    },
+                },
+            },
+            scales: {
+                y: {
+                    ticks: {
+                        callback: value => formatARS(value),
+                    },
+                },
+            },
+        },
+    });
+}

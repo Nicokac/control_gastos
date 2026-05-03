@@ -2,6 +2,7 @@
 Vistas para dashboard y reportes.
 """
 
+import json
 from datetime import datetime, time
 from decimal import Decimal
 
@@ -41,6 +42,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context.update(self._get_savings_data(user))
         context.update(self._get_recent_transactions(user))
         context.update(self._get_expense_distribution(user, current_month, current_year))
+        context.update(self._get_monthly_evolution(user, current_month, current_year))
 
         return context
 
@@ -255,6 +257,59 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         return {
             "recent_transactions": transactions[:8],
+        }
+
+    def _get_monthly_evolution(self, user, month, year):
+        """
+        Retorna ingresos, gastos y ahorro acumulados por mes,
+        desde enero del año actual hasta el mes actual inclusive.
+        """
+        months = range(1, month + 1)
+        labels = []
+        income_data = []
+        expense_data = []
+        savings_data = []
+
+        # Rango completo: enero → fin del mes actual (1 query por modelo)
+        year_start, _ = get_month_date_range_exclusive(1, year)
+        _, period_end = get_month_date_range_exclusive(month, year)
+
+        expenses_qs = (
+            Expense.objects.filter(user=user, date__gte=year_start, date__lt=period_end)
+            .values("date__month")
+            .annotate(total=Sum("amount_ars"))
+        )
+        incomes_qs = (
+            Income.objects.filter(user=user, date__gte=year_start, date__lt=period_end)
+            .values("date__month")
+            .annotate(total=Sum("amount_ars"))
+        )
+        savings_qs = (
+            SavingMovement.objects.filter(
+                saving__user=user,
+                type=MovementType.DEPOSIT,
+                date__gte=year_start,
+                date__lt=period_end,
+            )
+            .values("date__month")
+            .annotate(total=Sum("amount"))
+        )
+
+        expense_by_month = {row["date__month"]: float(row["total"]) for row in expenses_qs}
+        income_by_month = {row["date__month"]: float(row["total"]) for row in incomes_qs}
+        savings_by_month = {row["date__month"]: float(row["total"]) for row in savings_qs}
+
+        for m in months:
+            labels.append(get_month_name(m))
+            income_data.append(income_by_month.get(m, 0))
+            expense_data.append(expense_by_month.get(m, 0))
+            savings_data.append(savings_by_month.get(m, 0))
+
+        return {
+            "evolution_labels": json.dumps(labels),
+            "evolution_income": json.dumps(income_data),
+            "evolution_expenses": json.dumps(expense_data),
+            "evolution_savings": json.dumps(savings_data),
         }
 
     def _get_expense_distribution(self, user, month, year):

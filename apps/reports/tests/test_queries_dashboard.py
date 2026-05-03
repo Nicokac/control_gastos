@@ -64,8 +64,8 @@ class TestDashboardQueries:
 
         url = reverse("reports:dashboard")
 
-        # Act + Assert (anti N+1): baseline actual te dio 11 queries, dejamos margen
-        with django_assert_max_num_queries(13):
+        # Act + Assert (anti N+1): +3 queries por _get_monthly_evolution
+        with django_assert_max_num_queries(16):
             resp = client.get(url)
 
         assert resp.status_code == 200
@@ -89,7 +89,7 @@ class TestDashboardQueries:
 
         from apps.reports.views import DashboardView
 
-        with django_assert_max_num_queries(9):
+        with django_assert_max_num_queries(12):
             response = DashboardView.as_view()(request)
 
         assert response.status_code == 200

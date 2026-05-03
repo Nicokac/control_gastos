@@ -142,6 +142,32 @@ Mantener `CategoryListView` con `LoginRequiredMixin` + `ListView` directamente.
 
 ---
 
+## D-008 — Evolución mensual: enero → mes actual (no 12 meses fijos)
+
+**Fecha:** 2026-05-03
+**Estado:** ✅ Decisión tomada
+
+### Contexto
+El gráfico de evolución mensual en el dashboard necesitaba definir su rango de tiempo.
+Las opciones eran: últimos N meses, año completo (12 meses fijos), o enero → mes actual.
+
+### Decisión
+Mostrar desde enero del año en curso hasta el mes actual inclusive.
+El rango crece mes a mes: en Mayo muestra Ene–May, en Junio muestra Ene–Jun, etc.
+
+### Justificación
+- Refleja el año fiscal natural del usuario sin mostrar meses futuros vacíos.
+- Evita lógica compleja de "últimos N meses" que cruza años.
+- 3 queries fijas (Expense, Income, SavingMovement) independientemente del mes actual.
+- Cada query usa agregación por mes en DB (`values("date__month").annotate(Sum)`),
+  sin iterar meses en Python.
+
+### Riesgo aceptado
+Si el usuario quiere comparar con el año anterior, este gráfico no lo permite.
+Queda como mejora futura en una sección de Reportes dedicada.
+
+---
+
 ## D-007 - Eliminacion completa del modulo de Presupuestos
 
 **Issue relacionada:** PRD-REMOVE-BUDGETS  

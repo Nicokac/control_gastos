@@ -200,6 +200,20 @@
     </div>
 </div>
 
+<!-- Evolución Mensual (full width) -->
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-graph-up me-2"></i>Evolución Mensual
+            </div>
+            <div class="card-body">
+                <canvas id="evolutionChart" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Distribución de Gastos (full width) -->
 <div class="row g-4 mb-4">
     <div class="col-12">
@@ -305,5 +319,11 @@
         {{ chart_data|json_script:"chart-values-data" }}
         {{ chart_colors|json_script:"chart-colors-data" }}
     {% endif %}
+    <script>
+        window.EVOLUTION_LABELS  = {{ evolution_labels }};
+        window.EVOLUTION_INCOME  = {{ evolution_income }};
+        window.EVOLUTION_EXPENSES = {{ evolution_expenses }};
+        window.EVOLUTION_SAVINGS = {{ evolution_savings }};
+    </script>
     <script src="{% static 'js/dashboard.js' %}"></script>
 {% endblock %}

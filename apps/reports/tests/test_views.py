@@ -440,7 +440,7 @@ class TestDashboardQueryPerformance:
 
         # Dashboard vacío debería usar pocas queries
         # Baseline: ~8 queries (session, user, balance, budgets, savings, etc.)
-        with django_assert_max_num_queries(11):
+        with django_assert_max_num_queries(14):
             authenticated_client.get(url_helper("dashboard"))
 
     def test_dashboard_with_data_query_count(
@@ -488,7 +488,7 @@ class TestDashboardQueryPerformance:
 
         # Con datos, queries deberían mantenerse constantes (no N+1)
         # Máximo 15 queries permitidas
-        with django_assert_max_num_queries(11):
+        with django_assert_max_num_queries(14):
             response = authenticated_client.get(url_helper("dashboard"))
 
         assert response.status_code == 200
@@ -541,8 +541,99 @@ class TestDashboardQueryPerformance:
 
         # Aún con más datos, queries deben mantenerse ~igual
         # Si hay N+1, esto fallaría (sería 50+ queries)
-        with django_assert_max_num_queries(11):
+        with django_assert_max_num_queries(14):
             response = authenticated_client.get(url_helper("dashboard"))
 
         assert response.status_code == 200
         assert len(response.context["recent_transactions"]) == 8
+
+
+@pytest.mark.django_db
+class TestMonthlyEvolution:
+    """Tests para _get_monthly_evolution del dashboard."""
+
+    def test_evolution_context_keys_present(self, authenticated_client, url_helper):
+        """El contexto incluye todas las claves de evolución mensual."""
+        response = authenticated_client.get(url_helper("dashboard"))
+        assert response.status_code == 200
+        assert "evolution_labels" in response.context
+        assert "evolution_income" in response.context
+        assert "evolution_expenses" in response.context
+        assert "evolution_savings" in response.context
+
+    def test_evolution_labels_cover_jan_to_current_month(self, authenticated_client, url_helper):
+        """Los labels van de Enero hasta el mes actual inclusive."""
+        import json
+
+        response = authenticated_client.get(url_helper("dashboard"))
+        labels = json.loads(response.context["evolution_labels"])
+        today = timezone.now().date()
+        assert len(labels) == today.month
+        assert labels[0] == "Enero"
+
+    def test_evolution_empty_when_no_transactions(self, authenticated_client, url_helper):
+        """Con 0 transacciones todos los valores son 0."""
+        import json
+
+        response = authenticated_client.get(url_helper("dashboard"))
+        income_data = json.loads(response.context["evolution_income"])
+        expense_data = json.loads(response.context["evolution_expenses"])
+        savings_data = json.loads(response.context["evolution_savings"])
+        assert all(v == 0 for v in income_data)
+        assert all(v == 0 for v in expense_data)
+        assert all(v == 0 for v in savings_data)
+
+    def test_evolution_reflects_current_month_income(
+        self, authenticated_client, url_helper, user, income_factory, income_category
+    ):
+        """Un ingreso del mes actual aparece en el último elemento de evolution_income."""
+        import json
+
+        today = timezone.now().date()
+        income_factory(user, income_category, amount=Decimal("5000.00"), date=today)
+        response = authenticated_client.get(url_helper("dashboard"))
+        income_data = json.loads(response.context["evolution_income"])
+        assert income_data[-1] == 5000.0
+
+    def test_evolution_reflects_current_month_expense(
+        self, authenticated_client, url_helper, user, expense_factory, expense_category
+    ):
+        """Un gasto del mes actual aparece en el último elemento de evolution_expenses."""
+        import json
+
+        today = timezone.now().date()
+        expense_factory(user, expense_category, amount=Decimal("1500.00"), date=today)
+        response = authenticated_client.get(url_helper("dashboard"))
+        expense_data = json.loads(response.context["evolution_expenses"])
+        assert expense_data[-1] == 1500.0
+
+    def test_evolution_excludes_other_user_data(
+        self,
+        authenticated_client,
+        url_helper,
+        other_user,
+        income_category_factory,
+        income_factory,
+    ):
+        """Los datos de otro usuario no aparecen en la evolución."""
+        import json
+
+        today = timezone.now().date()
+        other_cat = income_category_factory(other_user, name="OtherIncome")
+        income_factory(other_user, other_cat, amount=Decimal("9999.00"), date=today)
+        response = authenticated_client.get(url_helper("dashboard"))
+        income_data = json.loads(response.context["evolution_income"])
+        assert all(v == 0 for v in income_data)
+
+    def test_evolution_aggregates_multiple_transactions_same_month(
+        self, authenticated_client, url_helper, user, expense_factory, expense_category
+    ):
+        """Múltiples gastos en el mismo mes se suman correctamente."""
+        import json
+
+        today = timezone.now().date()
+        expense_factory(user, expense_category, amount=Decimal("1000.00"), date=today)
+        expense_factory(user, expense_category, amount=Decimal("500.00"), date=today)
+        response = authenticated_client.get(url_helper("dashboard"))
+        expense_data = json.loads(response.context["evolution_expenses"])
+        assert expense_data[-1] == 1500.0
