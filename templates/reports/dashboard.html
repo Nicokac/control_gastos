@@ -319,11 +319,9 @@
         {{ chart_data|json_script:"chart-values-data" }}
         {{ chart_colors|json_script:"chart-colors-data" }}
     {% endif %}
-    <script>
-        window.EVOLUTION_LABELS  = {{ evolution_labels }};
-        window.EVOLUTION_INCOME  = {{ evolution_income }};
-        window.EVOLUTION_EXPENSES = {{ evolution_expenses }};
-        window.EVOLUTION_SAVINGS = {{ evolution_savings }};
-    </script>
+    {{ evolution_labels|json_script:"evolution-labels-data" }}
+    {{ evolution_income|json_script:"evolution-income-data" }}
+    {{ evolution_expenses|json_script:"evolution-expenses-data" }}
+    {{ evolution_savings|json_script:"evolution-savings-data" }}
     <script src="{% static 'js/dashboard.js' %}"></script>
 {% endblock %}

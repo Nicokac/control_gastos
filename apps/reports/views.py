@@ -2,7 +2,6 @@
 Vistas para dashboard y reportes.
 """
 
-import json
 from datetime import datetime, time
 from decimal import Decimal
 
@@ -306,10 +305,10 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             savings_data.append(savings_by_month.get(m, 0))
 
         return {
-            "evolution_labels": json.dumps(labels),
-            "evolution_income": json.dumps(income_data),
-            "evolution_expenses": json.dumps(expense_data),
-            "evolution_savings": json.dumps(savings_data),
+            "evolution_labels": labels,
+            "evolution_income": income_data,
+            "evolution_expenses": expense_data,
+            "evolution_savings": savings_data,
         }
 
     def _get_expense_distribution(self, user, month, year):

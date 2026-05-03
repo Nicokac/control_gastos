@@ -563,49 +563,36 @@ class TestMonthlyEvolution:
 
     def test_evolution_labels_cover_jan_to_current_month(self, authenticated_client, url_helper):
         """Los labels van de Enero hasta el mes actual inclusive."""
-        import json
-
         response = authenticated_client.get(url_helper("dashboard"))
-        labels = json.loads(response.context["evolution_labels"])
+        labels = response.context["evolution_labels"]
         today = timezone.now().date()
         assert len(labels) == today.month
         assert labels[0] == "Enero"
 
     def test_evolution_empty_when_no_transactions(self, authenticated_client, url_helper):
         """Con 0 transacciones todos los valores son 0."""
-        import json
-
         response = authenticated_client.get(url_helper("dashboard"))
-        income_data = json.loads(response.context["evolution_income"])
-        expense_data = json.loads(response.context["evolution_expenses"])
-        savings_data = json.loads(response.context["evolution_savings"])
-        assert all(v == 0 for v in income_data)
-        assert all(v == 0 for v in expense_data)
-        assert all(v == 0 for v in savings_data)
+        assert all(v == 0 for v in response.context["evolution_income"])
+        assert all(v == 0 for v in response.context["evolution_expenses"])
+        assert all(v == 0 for v in response.context["evolution_savings"])
 
     def test_evolution_reflects_current_month_income(
         self, authenticated_client, url_helper, user, income_factory, income_category
     ):
         """Un ingreso del mes actual aparece en el último elemento de evolution_income."""
-        import json
-
         today = timezone.now().date()
         income_factory(user, income_category, amount=Decimal("5000.00"), date=today)
         response = authenticated_client.get(url_helper("dashboard"))
-        income_data = json.loads(response.context["evolution_income"])
-        assert income_data[-1] == 5000.0
+        assert response.context["evolution_income"][-1] == 5000.0
 
     def test_evolution_reflects_current_month_expense(
         self, authenticated_client, url_helper, user, expense_factory, expense_category
     ):
         """Un gasto del mes actual aparece en el último elemento de evolution_expenses."""
-        import json
-
         today = timezone.now().date()
         expense_factory(user, expense_category, amount=Decimal("1500.00"), date=today)
         response = authenticated_client.get(url_helper("dashboard"))
-        expense_data = json.loads(response.context["evolution_expenses"])
-        assert expense_data[-1] == 1500.0
+        assert response.context["evolution_expenses"][-1] == 1500.0
 
     def test_evolution_excludes_other_user_data(
         self,
@@ -616,24 +603,18 @@ class TestMonthlyEvolution:
         income_factory,
     ):
         """Los datos de otro usuario no aparecen en la evolución."""
-        import json
-
         today = timezone.now().date()
         other_cat = income_category_factory(other_user, name="OtherIncome")
         income_factory(other_user, other_cat, amount=Decimal("9999.00"), date=today)
         response = authenticated_client.get(url_helper("dashboard"))
-        income_data = json.loads(response.context["evolution_income"])
-        assert all(v == 0 for v in income_data)
+        assert all(v == 0 for v in response.context["evolution_income"])
 
     def test_evolution_aggregates_multiple_transactions_same_month(
         self, authenticated_client, url_helper, user, expense_factory, expense_category
     ):
         """Múltiples gastos en el mismo mes se suman correctamente."""
-        import json
-
         today = timezone.now().date()
         expense_factory(user, expense_category, amount=Decimal("1000.00"), date=today)
         expense_factory(user, expense_category, amount=Decimal("500.00"), date=today)
         response = authenticated_client.get(url_helper("dashboard"))
-        expense_data = json.loads(response.context["evolution_expenses"])
-        assert expense_data[-1] == 1500.0
+        assert response.context["evolution_expenses"][-1] == 1500.0

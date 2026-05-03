@@ -57,10 +57,17 @@ function initEvolutionChart() {
     const ctx = document.getElementById('evolutionChart');
     if (!ctx) return;
 
-    const labels   = window.EVOLUTION_LABELS   || [];
-    const income   = window.EVOLUTION_INCOME   || [];
-    const expenses = window.EVOLUTION_EXPENSES || [];
-    const savings  = window.EVOLUTION_SAVINGS  || [];
+    const labelsNode   = document.getElementById('evolution-labels-data');
+    const incomeNode   = document.getElementById('evolution-income-data');
+    const expensesNode = document.getElementById('evolution-expenses-data');
+    const savingsNode  = document.getElementById('evolution-savings-data');
+
+    if (!labelsNode || !incomeNode || !expensesNode || !savingsNode) return;
+
+    const labels   = JSON.parse(labelsNode.textContent);
+    const income   = JSON.parse(incomeNode.textContent);
+    const expenses = JSON.parse(expensesNode.textContent);
+    const savings  = JSON.parse(savingsNode.textContent);
 
     if (!labels.length) return;
 
