@@ -205,3 +205,35 @@ El plan operativo detallado, con orden de trabajo y archivos alcanzados, queda d
 - ya existe una migracion transicional para eliminar `budgets_budget`
 - la limpieza documental esta en curso
 - la remocion de persistencia en base de datos queda como frente pendiente
+
+---
+
+## D-009 — CSP permite unsafe-inline en style-src
+
+**Fecha:** 2026-05-04
+**Estado:** ✅ Decisión tomada
+
+### Contexto
+El dashboard usa inline styles para valores dinámicos generados en el template
+(ancho del progress bar, height del ranking, color dots de categorías).
+La CSP sin `'unsafe-inline'` los bloqueaba en ambos entornos, rompiendo
+visualmente la barra de progreso y el scroll del ranking.
+
+Se evaluó migrar a `data-*` + JS, pero `element.style.X = ...` desde JavaScript
+también es un inline style y queda igualmente bloqueado por CSP.
+
+### Decisión
+Agregar `'unsafe-inline'` a `CSP_STYLE_SRC` en dev.py y prod.py.
+El color del progress bar se resuelve con clases Bootstrap (`bg-success/warning/danger`)
+para no depender de inline color; el resto de los estilos estáticos permanecen inline.
+
+### Justificación
+- App personal sin contenido generado por usuarios — el vector de XSS vía CSS
+  es teórico y de impacto mínimo.
+- La alternativa correcta (CSS custom properties con nonce) requiere integración
+  con django-csp nonce y refactor de templates, complejidad desproporcionada
+  para el contexto actual.
+
+### Riesgo aceptado
+`unsafe-inline` en `style-src` permite inyección de estilos si existiera XSS,
+pero no ejecución de scripts. En una app sin UGC el riesgo es aceptable.

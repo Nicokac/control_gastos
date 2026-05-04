@@ -55,11 +55,10 @@ LOGGING["handlers"]["security_file"] = {
 CSP_DEFAULT_SRC = ("'self'",)
 
 # Permitir estilos desde:
-# - tu propio dominio ('self')
-# - estilos inline (por ahora, para no pelear con nada en dev)
-# - CDN de jsDelivr (Bootstrap, Bootstrap Icons)
+# Estilos: unsafe-inline requerido para estilos dinámicos en templates (ver D-009)
 CSP_STYLE_SRC = (
     "'self'",
+    "'unsafe-inline'",
     "https://cdn.jsdelivr.net",
 )
 

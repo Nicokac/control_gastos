@@ -184,9 +184,10 @@ CSP_SCRIPT_SRC = (
     "https://cdnjs.cloudflare.com",
 )
 
-# Estilos: mismo origen + CDNs (sin unsafe-inline — colores migrados a data-* + JS)
+# Estilos: unsafe-inline requerido para estilos dinámicos en templates (ver D-009)
 CSP_STYLE_SRC = (
     "'self'",
+    "'unsafe-inline'",
     "https://cdn.jsdelivr.net",
     "https://fonts.googleapis.com",
 )
