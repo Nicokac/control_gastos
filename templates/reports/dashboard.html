@@ -106,12 +106,9 @@
                     <div class="col-md-8">
                         {% with pct=expense_percentage|floatformat:0 %}
                         <div class="progress mb-2" style="height: 12px; border-radius: 6px; background-color: #e9ecef;">
-                            <div class="progress-bar
-                                {% if expense_percentage < 50 %}bg-success
-                                {% elif expense_percentage < 80 %}bg-warning
-                                {% else %}bg-danger{% endif %}"
+                            <div class="progress-bar"
                                 role="progressbar"
-                                style="width: {% if expense_percentage > 100 %}100{% else %}{{ expense_percentage|floatformat:0 }}{% endif %}%; min-width: 10px; border-radius: 6px;"
+                                style="width: {% if expense_percentage > 100 %}100{% else %}{{ expense_percentage|floatformat:0 }}{% endif %}%; min-width: 10px; border-radius: 6px; background-color: {% if expense_percentage < 50 %}#198754{% elif expense_percentage < 80 %}#ffc107{% else %}#dc3545{% endif %};"
                                 aria-valuenow="{{ expense_percentage|floatformat:0 }}"
                                 aria-valuemin="0" aria-valuemax="100">
                             </div>
@@ -251,7 +248,7 @@
                         &mdash; {{ ranking_distribution|length }} categoría{{ ranking_distribution|length|pluralize }}
                     </small>
                 </div>
-                <div style="height: 380px; overflow-y: auto;">
+                <div style="height: 320px; overflow-y: auto;">
                     <ul class="list-group list-group-flush">
                         {% for item in ranking_distribution %}
                         <li class="list-group-item px-3 py-2">
