@@ -34,8 +34,8 @@
 
 | Métrica | Valor |
 |---------|-------|
-| Tests | 678 |
-| Coverage | 94.53% (enforced ≥80%) |
+| Tests | 571 |
+| Coverage | 93.38% (enforced ≥80%) |
 | Python | 3.12+ |
 | Django | 5.2 |
 | CI Jobs | 5 |
@@ -65,11 +65,12 @@
 - Paginación en listados
 
 ### 📊 Dashboard Interactivo
-- Resumen de balance mensual (ingresos vs gastos)
+- Balance mensual como card hero con barra de progreso
 - Comparación porcentual con mes anterior
-- Progreso de metas de ahorro
-- Gráfico de distribución de gastos por categoría
-- Últimas transacciones
+- Gráfico donut de distribución de gastos por categoría (top 5 + Otros)
+- Ranking de categorías con scroll
+- Gráfico de evolución mensual (Ingresos / Gastos / Ahorro / Balance)
+- Últimas 5 transacciones
 
 ### 🐷 Metas de Ahorro
 - Crear metas con objetivo y fecha límite
@@ -107,7 +108,7 @@
 
 | Componente | Tecnología |
 |------------|------------|
-| **Backend** | Python 3.11+ / Django 5.2 |
+| **Backend** | Python 3.12+ / Django 5.2 |
 | **Frontend** | Django Templates + Bootstrap 5 |
 | **Base de datos** | SQLite (dev) / PostgreSQL (prod) |
 | **Gráficos** | Chart.js |
@@ -302,21 +303,21 @@ pytest --cov=apps --cov-fail-under=80
 
 | Ítem | Valor |
 |-----|------|
-| Fecha | **2026-03-08** |
+| Fecha | **2026-05-04** |
 | Entorno | Local (Windows) |
 | Python | 3.12.0 |
-| Django | 5.2.9 |
+| Django | 5.2 |
 | Settings | `config.settings.dev` |
-| Commit | develop @ fb632aa |
+| Commit | develop @ 4adb390 |
 
 Resultado:
 
 | Ítem | Valor |
 |-----|------|
-| ✅ | 678 tests pasados |
+| ✅ | 571 tests pasados |
 | ⏭️ | 2 skipped |
 | ❌ | 0 fallos |
-| ⏱️ | Duración total: ~4m 26s |
+| ⏱️ | Duración total: ~3m 30s |
 
 
 📈 Coverage
@@ -328,7 +329,7 @@ Resultado verificado:
 
 | Métrica | Valor |
 |-----|------|
-| Coverage total | 94.53% |
+| Coverage total | 93.38% |
 | Coverage mínimo requerido | 80% |
 | Estado | ✅ Cumple |
 
@@ -827,8 +828,9 @@ ci: add GitHub Actions pipeline
 - [x] Picker visual de íconos en formularios
 - [x] Rate limiting con página de bloqueo (account_locked)
 - [x] Middleware de performance (RequestTimingMiddleware)
+- [x] Gráfico de evolución mensual (Ingresos / Gastos / Ahorro / Balance)
+- [x] Dashboard rediseñado: balance hero, donut + ranking, formato ARS en formularios
 - [ ] Exportación a Excel/PDF
-- [ ] Gráficos de evolución mensual
 - [ ] Transacciones recurrentes
 - [ ] PWA (Progressive Web App)
 - [ ] Notificaciones por email

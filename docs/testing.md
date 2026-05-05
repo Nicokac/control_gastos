@@ -103,5 +103,3 @@ pytest -s
 # Paralelizar tests (requiere pytest-xdist)
 pytest -n auto
 ```
-```
-```
