@@ -261,8 +261,8 @@ class TestRecentTransactions:
         assert transactions[1]["description"] == "Ingreso reciente"
         assert transactions[2]["description"] == "Gasto antiguo"
 
-    def test_recent_transactions_limit_to_8(self, client, user):
-        """Verifica que solo se muestran las 8 transacciones más recientes."""
+    def test_recent_transactions_limit_to_5(self, client, user):
+        """Verifica que solo se muestran las 5 transacciones más recientes."""
         client.force_login(user)
 
         expense_cat = Category.objects.create(
@@ -274,8 +274,8 @@ class TestRecentTransactions:
         today = timezone.now().date()
         from datetime import timedelta
 
-        # Crear 12 gastos
-        for i in range(12):
+        # Crear 10 gastos
+        for i in range(10):
             Expense.objects.create(
                 user=user,
                 category=expense_cat,
@@ -290,15 +290,15 @@ class TestRecentTransactions:
         response = client.get(reverse("reports:dashboard"))
         transactions = response.context["recent_transactions"]
 
-        # Solo debe haber 8 transacciones
-        assert len(transactions) == 8
+        # Solo debe haber 5 transacciones
+        assert len(transactions) == 5
         # Las más recientes primero (Gasto 0 es el más reciente)
         assert transactions[0]["description"] == "Gasto 0"
-        assert transactions[7]["description"] == "Gasto 7"
+        assert transactions[4]["description"] == "Gasto 4"
 
     def test_recent_transactions_truly_recent(self, client, user):
         """
-        Verifica que se muestran las 8 transacciones realmente más recientes,
+        Verifica que se muestran las 5 transacciones realmente más recientes,
         incluso si todas son del mismo tipo.
         """
         client.force_login(user)
@@ -317,8 +317,8 @@ class TestRecentTransactions:
         today = timezone.now().date()
         from datetime import timedelta
 
-        # Crear 10 gastos recientes (días 0-9)
-        for i in range(10):
+        # Crear 8 gastos recientes (días 0-7)
+        for i in range(8):
             Expense.objects.create(
                 user=user,
                 category=expense_cat,
@@ -346,8 +346,8 @@ class TestRecentTransactions:
         response = client.get(reverse("reports:dashboard"))
         transactions = response.context["recent_transactions"]
 
-        # Debe mostrar los 8 gastos más recientes, NO mezclar con ingresos antiguos
-        assert len(transactions) == 8
+        # Debe mostrar los 5 gastos más recientes, NO mezclar con ingresos antiguos
+        assert len(transactions) == 5
         # Todos deben ser gastos (los más recientes)
         for tx in transactions:
             assert tx["type"] == "expense"
@@ -545,7 +545,7 @@ class TestDashboardQueryPerformance:
             response = authenticated_client.get(url_helper("dashboard"))
 
         assert response.status_code == 200
-        assert len(response.context["recent_transactions"]) == 8
+        assert len(response.context["recent_transactions"]) == 5
 
 
 @pytest.mark.django_db
