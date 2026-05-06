@@ -292,6 +292,9 @@ SERVER_EMAIL = config("SERVER_EMAIL", default=DEFAULT_FROM_EMAIL)
 
 apply_email_settings(globals())
 
+# Destinatario del formulario de feedback de usuarios
+FEEDBACK_EMAIL = config("FEEDBACK_EMAIL", default=ADMIN_EMAIL or "kachuknm@gmail.com")
+
 # =============================================================================
 # SENTRY - Error Tracking
 # =============================================================================

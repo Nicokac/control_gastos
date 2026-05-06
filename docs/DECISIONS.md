@@ -237,3 +237,34 @@ para no depender de inline color; el resto de los estilos estáticos permanecen 
 ### Riesgo aceptado
 `unsafe-inline` en `style-src` permite inyección de estilos si existiera XSS,
 pero no ejecución de scripts. En una app sin UGC el riesgo es aceptable.
+
+---
+
+## D-010 — Feedback via Gmail SMTP, sin app ni modelo propio
+
+**Fecha:** 2026-05-04
+**Estado:** ✅ Implementado
+
+### Contexto
+Se necesitaba un formulario de feedback (bugs, mejoras, preguntas) accesible desde
+el sidebar que enviara un email al administrador con los datos del reporte.
+
+### Decisión
+Implementar como vista en `apps.core` (`FeedbackView`) sin modelo de base de datos.
+El reporte se envía directamente por email usando `send_mail()` de Django con el
+backend SMTP ya configurado en `email_backend.py`.
+
+### Justificación
+- La infraestructura SMTP ya existía (`apply_email_settings`, `EMAIL_HOST`, etc.).
+- No se necesita persistencia: el email es suficiente como destino del reporte.
+- Agregar un modelo requeriría migraciones y gestión en el admin sin valor adicional.
+- En dev, el backend de consola imprime el email en el terminal sin configuración extra.
+
+### Variables de entorno requeridas (prod)
+- `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` — credenciales Gmail SMTP
+- `FEEDBACK_EMAIL` — destinatario (default: `kachuknm@gmail.com`)
+
+### Riesgo aceptado
+Sin persistencia, los reportes solo existen en la bandeja de entrada del admin.
+Si el email falla silenciosamente en producción, el reporte se pierde.
+Mitigación: `fail_silently=False` + logging del error + mensaje de error al usuario.

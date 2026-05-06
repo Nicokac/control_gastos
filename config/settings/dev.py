@@ -23,6 +23,9 @@ INTERNAL_IPS = ["127.0.0.1"]
 # Email to console
 apply_email_settings(globals(), default_backend="django.core.mail.backends.console.EmailBackend")
 
+# Destinatario del formulario de feedback de usuarios
+FEEDBACK_EMAIL = "kachuknm@gmail.com"
+
 
 # =============================================================================
 # LOGGING - Desarrollo

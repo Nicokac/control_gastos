@@ -60,6 +60,13 @@
           <span>Mi cuenta</span>
         </a>
       </li>
+      <li class="nav-item">
+        <a href="{% url 'core:feedback' %}"
+           class="nav-link {% if 'feedback' in request.path %}active{% endif %}">
+          <i class="bi bi-megaphone me-2" aria-hidden="true"></i>
+          <span>Reportar / Sugerir</span>
+        </a>
+      </li>
     </ul>
   </div>
 </nav>

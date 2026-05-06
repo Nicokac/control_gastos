@@ -77,6 +77,34 @@ class CurrencyFormMixin:
         return Decimal("1.0000")
 
 
+class FeedbackForm(forms.Form):
+    """Formulario para que el usuario reporte bugs, mejoras u otros comentarios."""
+
+    TIPO_CHOICES = [
+        ("bug", "Bug / Falla"),
+        ("mejora", "Sugerencia de mejora"),
+        ("pregunta", "Pregunta"),
+        ("otro", "Otro"),
+    ]
+
+    tipo = forms.ChoiceField(
+        choices=TIPO_CHOICES,
+        label="Tipo de reporte",
+        widget=forms.Select(attrs={"class": "form-select"}),
+    )
+    mensaje = forms.CharField(
+        label="Mensaje",
+        widget=forms.Textarea(
+            attrs={
+                "class": "form-control",
+                "rows": 5,
+                "placeholder": "Describí el problema o sugerencia con el mayor detalle posible...",
+            }
+        ),
+        max_length=2000,
+    )
+
+
 class BaseFilterForm(forms.Form):
     """
     Form base para filtros de mes/año/categoría.

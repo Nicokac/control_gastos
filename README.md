@@ -34,8 +34,8 @@
 
 | Métrica | Valor |
 |---------|-------|
-| Tests | 571 |
-| Coverage | 93.38% (enforced ≥80%) |
+| Tests | 579 |
+| Coverage | 93.50% (enforced ≥80%) |
 | Python | 3.12+ |
 | Django | 5.2 |
 | CI Jobs | 5 |
@@ -308,19 +308,19 @@ pytest --cov=apps --cov-fail-under=80
 | Python | 3.12.0 |
 | Django | 5.2 |
 | Settings | `config.settings.dev` |
-| Commit | develop @ 4adb390 |
+| Commit | develop (en curso) |
 
 Resultado:
 
 | Ítem | Valor |
 |-----|------|
-| ✅ | 571 tests pasados |
+| ✅ | 579 tests pasados |
 | ⏭️ | 2 skipped |
 | ❌ | 0 fallos |
 | ⏱️ | Duración total: ~3m 30s |
 
-
 📈 Coverage
+
 ```bash
 pytest --cov=apps --cov-report=term-missing
 ```
@@ -329,7 +329,7 @@ Resultado verificado:
 
 | Métrica | Valor |
 |-----|------|
-| Coverage total | 93.38% |
+| Coverage total | 93.50% |
 | Coverage mínimo requerido | 80% |
 | Estado | ✅ Cumple |
 
@@ -830,6 +830,7 @@ ci: add GitHub Actions pipeline
 - [x] Middleware de performance (RequestTimingMiddleware)
 - [x] Gráfico de evolución mensual (Ingresos / Gastos / Ahorro / Balance)
 - [x] Dashboard rediseñado: balance hero, donut + ranking, formato ARS en formularios
+- [x] Formulario de feedback (bugs/mejoras) con envío por email al administrador
 - [ ] Exportación a Excel/PDF
 - [ ] Transacciones recurrentes
 - [ ] PWA (Progressive Web App)
