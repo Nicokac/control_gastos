@@ -83,8 +83,8 @@ CATEGORY_ICON_CHOICES = [
 ]
 
 
-# Categorías del sistema (seed data)
-SYSTEM_CATEGORIES = {
+# Grupos del sistema (primer nivel de jerarquía — sin parent)
+SYSTEM_GROUPS = {
     "EXPENSE": [
         {"name": "Alimentación", "icon": "bi-cart", "color": "#28a745"},
         {"name": "Transporte", "icon": "bi-car-front", "color": "#17a2b8"},
@@ -95,14 +95,19 @@ SYSTEM_CATEGORIES = {
         {"name": "Educación", "icon": "bi-book", "color": "#6f42c1"},
         {"name": "Ropa", "icon": "bi-bag", "color": "#fd7e14"},
         {"name": "Otros gastos", "icon": "bi-three-dots", "color": "#6c757d"},
+        {"name": "Sin clasificar", "icon": "bi-question-circle", "color": "#adb5bd"},
     ],
     "INCOME": [
         {"name": "Sueldo", "icon": "bi-briefcase", "color": "#28a745"},
         {"name": "Freelance", "icon": "bi-laptop", "color": "#17a2b8"},
         {"name": "Inversiones", "icon": "bi-graph-up-arrow", "color": "#6f42c1"},
         {"name": "Otros ingresos", "icon": "bi-three-dots", "color": "#6c757d"},
+        {"name": "Sin clasificar", "icon": "bi-question-circle", "color": "#adb5bd"},
     ],
 }
+
+# Retrocompatibilidad: SYSTEM_CATEGORIES apunta a SYSTEM_GROUPS
+SYSTEM_CATEGORIES = SYSTEM_GROUPS
 
 # Valores por defecto
 DEFAULT_CURRENCY = Currency.ARS

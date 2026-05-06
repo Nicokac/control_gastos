@@ -27,17 +27,27 @@ class TestNewUserJourney:
     def test_complete_expense_tracking_journey(self, authenticated_client, user):
         """
         Simula journey completo de tracking de gastos:
-        1. Crear categorÃ­a
+        1. Crear grupo + subcategoría
         2. Registrar gastos
         3. Editar gasto
         4. Eliminar gasto
         """
         today = date.today()
 
+        # Crear grupo primero
+        group = Category.objects.create(
+            name="Alimentación Test",
+            type=CategoryType.EXPENSE,
+            user=user,
+            is_system=False,
+            parent=None,
+        )
+
         cat_url = reverse("categories:create")
         cat_data = {
             "name": "Supermercado",
             "type": CategoryType.EXPENSE,
+            "parent": group.pk,
             "icon": "bi-cart",
             "color": "#28a745",
         }
@@ -47,6 +57,7 @@ class TestNewUserJourney:
 
         category = Category.objects.get(name="Supermercado", user=user)
         assert category.type == CategoryType.EXPENSE
+        assert category.parent == group
 
         expense_url = reverse("expenses:create")
 
@@ -96,16 +107,26 @@ class TestNewUserJourney:
     def test_complete_income_tracking_journey(self, authenticated_client, user):
         """
         Simula journey completo de tracking de ingresos:
-        1. Crear categorÃ­a de ingreso
+        1. Crear grupo + subcategoría de ingreso
         2. Registrar ingresos (ARS y USD)
         3. Verificar totales
         """
         today = date.today()
 
+        # Crear grupo primero
+        group = Category.objects.create(
+            name="Trabajo Test",
+            type=CategoryType.INCOME,
+            user=user,
+            is_system=False,
+            parent=None,
+        )
+
         cat_url = reverse("categories:create")
         cat_data = {
-            "name": "Trabajo",
+            "name": "Sueldo mensual cat",
             "type": CategoryType.INCOME,
+            "parent": group.pk,
             "icon": "bi-briefcase",
             "color": "#007bff",
         }
@@ -113,7 +134,7 @@ class TestNewUserJourney:
         response = authenticated_client.post(cat_url, cat_data)
         assert response.status_code == 302
 
-        category = Category.objects.get(name="Trabajo", user=user)
+        category = Category.objects.get(name="Sueldo mensual cat", user=user)
 
         income_url = reverse("income:create")
 

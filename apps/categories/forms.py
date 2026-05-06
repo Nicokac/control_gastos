@@ -14,12 +14,13 @@ class CategoryForm(forms.ModelForm):
 
     class Meta:
         model = Category
-        fields = ["name", "type", "icon", "color"]
+        fields = ["name", "type", "parent", "icon", "color"]
         widgets = {
             "name": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "Nombre de la categoría"}
             ),
             "type": forms.Select(attrs={"class": "form-select"}),
+            "parent": forms.Select(attrs={"class": "form-select"}),
             "icon": forms.RadioSelect(
                 attrs={"class": "icon-radio"},
             ),
@@ -38,6 +39,11 @@ class CategoryForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["icon"].choices = [("", "Sin ícono")] + CATEGORY_ICON_CHOICES
         self.fields["icon"].required = False
+        self.fields["parent"].required = False
+        self.fields["parent"].empty_label = "-- Sin grupo (crear grupo nuevo) --"
+        # Solo grupos disponibles para el usuario como opciones de parent
+        if user:
+            self.fields["parent"].queryset = Category.get_groups(user)
 
     def clean(self):
         cleaned = super().clean()

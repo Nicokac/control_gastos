@@ -148,17 +148,47 @@ def exchange_rate():
 
 
 @pytest.fixture
-def expense_category_factory(db):
-    """Factory para crear categorías de gasto."""
+def system_expense_group(db):
+    """Grupo de sistema para gastos (usado como parent en factories)."""
+    group, _ = Category.objects.get_or_create(
+        name="Otros gastos",
+        type=CategoryType.EXPENSE,
+        is_system=True,
+        user=None,
+        parent=None,
+        defaults={"icon": "bi-three-dots", "color": "#6c757d"},
+    )
+    return group
 
-    def _create_category(user=None, **kwargs):
+
+@pytest.fixture
+def system_income_group(db):
+    """Grupo de sistema para ingresos (usado como parent en factories)."""
+    group, _ = Category.objects.get_or_create(
+        name="Otros ingresos",
+        type=CategoryType.INCOME,
+        is_system=True,
+        user=None,
+        parent=None,
+        defaults={"icon": "bi-three-dots", "color": "#6c757d"},
+    )
+    return group
+
+
+@pytest.fixture
+def expense_category_factory(db, system_expense_group):
+    """Factory para crear subcategorías de gasto."""
+
+    def _create_category(user=None, parent=None, **kwargs):
+        is_system = user is None
         defaults = {
             "name": "Categoría Gasto Test",
             "type": CategoryType.EXPENSE,
             "icon": "bi-cart",
             "color": "#FF5733",
             "user": user,
-            "is_system": user is None,
+            "is_system": is_system,
+            "parent": parent if parent is not None else system_expense_group,
         }
         defaults.update(kwargs)
         return Category.objects.create(**defaults)
@@ -167,17 +197,19 @@ def expense_category_factory(db):
 
 
 @pytest.fixture
-def income_category_factory(db):
-    """Factory para crear categorías de ingreso (unificada)."""
+def income_category_factory(db, system_income_group):
+    """Factory para crear subcategorías de ingreso."""
 
-    def _create_category(user=None, name="Test Income Category", **kwargs):
+    def _create_category(user=None, name="Test Income Category", parent=None, **kwargs):
+        is_system = user is None
         defaults = {
             "name": name,
             "type": CategoryType.INCOME,
             "icon": "bi-cash",
             "color": "#28A745",
             "user": user,
-            "is_system": user is None,
+            "is_system": is_system,
+            "parent": parent if parent is not None else system_income_group,
         }
         defaults.update(kwargs)
         return Category.objects.create(**defaults)
@@ -192,26 +224,26 @@ def income_category_factory(db):
 
 @pytest.fixture
 def expense_category(user, expense_category_factory):
-    """Crea una categoría de gasto para el usuario de prueba."""
+    """Crea una subcategoría de gasto para el usuario de prueba."""
     return expense_category_factory(user=user, name="Alimentación")
 
 
 @pytest.fixture
 def income_category(user, income_category_factory):
-    """Crea una categoría de ingreso para el usuario de prueba."""
+    """Crea una subcategoría de ingreso para el usuario de prueba."""
     return income_category_factory(user=user, name="Salario")
 
 
 @pytest.fixture
 def system_expense_category(expense_category_factory):
-    """Crea una categoría de sistema (gasto)."""
-    return expense_category_factory(user=None, name="Otros Gastos", is_system=True)
+    """Crea una subcategoría de sistema (gasto)."""
+    return expense_category_factory(user=None, name="Otros Gastos Test", is_system=True)
 
 
 @pytest.fixture
 def system_income_category(income_category_factory):
-    """Crea una categoría de sistema (ingreso)."""
-    return income_category_factory(user=None, name="Otros Ingresos", is_system=True)
+    """Crea una subcategoría de sistema (ingreso)."""
+    return income_category_factory(user=None, name="Otros Ingresos Test", is_system=True)
 
 
 # =============================================================================

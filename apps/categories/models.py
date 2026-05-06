@@ -28,6 +28,15 @@ class Category(TimestampMixin, models.Model):
         related_name="categories",
         verbose_name="Usuario",
     )
+    parent = models.ForeignKey(
+        "self",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="subcategories",
+        verbose_name="Grupo",
+        help_text="Grupo al que pertenece esta subcategoría. Vacío = es un grupo.",
+    )
     icon = models.CharField(
         max_length=50,
         default="bi-tag",
@@ -90,6 +99,34 @@ class Category(TimestampMixin, models.Model):
                 {"user": "Las categorías personalizadas deben tener un usuario asignado."}
             )
 
+        # El parent no puede ser una subcategoría (máximo 2 niveles)
+        if self.parent_id is not None:
+            if self.parent.parent_id is not None:
+                raise ValidationError(
+                    {
+                        "parent": "No se puede asignar una subcategoría como grupo (máximo 2 niveles)."
+                    }
+                )
+            # El parent debe ser del mismo tipo
+            if self.parent.type != self.type:
+                raise ValidationError(
+                    {"parent": "El grupo debe ser del mismo tipo que la subcategoría."}
+                )
+
+        # Una categoría no puede ser su propio padre
+        if self.pk and self.parent_id == self.pk:
+            raise ValidationError({"parent": "Una categoría no puede ser su propio grupo."})
+
+    @property
+    def is_group(self):
+        """Verdadero si es un grupo (sin parent)."""
+        return self.parent_id is None
+
+    @property
+    def is_subcategory(self):
+        """Verdadero si es una subcategoría (tiene parent)."""
+        return self.parent_id is not None
+
     @property
     def is_editable(self):
         """Indica si la categoría puede ser editada."""
@@ -97,35 +134,43 @@ class Category(TimestampMixin, models.Model):
 
     @property
     def is_deletable(self):
-        """Indica si la categoría puede ser eliminada,"""
+        """Indica si la categoría puede ser eliminada."""
         return not self.is_system
 
     @classmethod
     def get_user_categories(cls, user, category_type=None):
         """
-        Obtiene las categorías disponibles para un usuario.
+        Obtiene las subcategorías disponibles para un usuario.
+        Solo retorna subcategorías (parent != null) — los grupos no se asignan a transacciones.
         Incluye las del sistema y las propias del usuario.
-
-        Args:
-            user: Usuario
-            category_type: Filtrar por tipo (EXPENSE/INCOME)
-
-        Returns:
-            QuerySet de categorías
         """
-        queryset = cls.objects.filter(models.Q(is_system=True) | models.Q(user=user))
+        queryset = cls.objects.filter(
+            models.Q(is_system=True) | models.Q(user=user),
+            parent__isnull=False,
+        )
 
         if category_type:
             queryset = queryset.filter(type=category_type)
 
-        return queryset.order_by("type", "name")
+        return queryset.select_related("parent").order_by("parent__name", "name")
 
     @classmethod
     def get_expense_categories(cls, user):
-        """Obtiene categorías de tipo EXPENSE para un usuario."""
+        """Obtiene subcategorías de tipo EXPENSE para un usuario."""
         return cls.get_user_categories(user, CategoryType.EXPENSE)
 
     @classmethod
     def get_income_categories(cls, user):
-        """Obtiene categorías de tipo INCOME para un usuario."""
+        """Obtiene subcategorías de tipo INCOME para un usuario."""
         return cls.get_user_categories(user, CategoryType.INCOME)
+
+    @classmethod
+    def get_groups(cls, user, category_type=None):
+        """Obtiene los grupos disponibles para un usuario (sistema + propios)."""
+        queryset = cls.objects.filter(
+            models.Q(is_system=True) | models.Q(user=user),
+            parent__isnull=True,
+        )
+        if category_type:
+            queryset = queryset.filter(type=category_type)
+        return queryset.order_by("name")

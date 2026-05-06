@@ -127,3 +127,65 @@ class TestCategoryQuerySet:
         system_cats = Category.objects.filter(is_system=True)
 
         assert system_expense_category in system_cats
+
+
+@pytest.mark.django_db
+class TestCategoryHierarchy:
+    """Tests para la jerarquía grupo → subcategoría."""
+
+    def test_group_has_no_parent(self, system_expense_group):
+        assert system_expense_group.parent is None
+        assert system_expense_group.is_group is True
+        assert system_expense_group.is_subcategory is False
+
+    def test_subcategory_has_parent(self, expense_category):
+        assert expense_category.parent is not None
+        assert expense_category.is_group is False
+        assert expense_category.is_subcategory is True
+
+    def test_cannot_nest_beyond_two_levels(self, user, expense_category):
+        with pytest.raises(ValidationError):
+            Category.objects.create(
+                name="Nivel 3",
+                type=CategoryType.EXPENSE,
+                user=user,
+                parent=expense_category,
+            )
+
+    def test_parent_must_match_type(self, user, system_income_group):
+        with pytest.raises(ValidationError):
+            Category.objects.create(
+                name="Tipo incorrecto",
+                type=CategoryType.EXPENSE,
+                user=user,
+                parent=system_income_group,
+            )
+
+    def test_get_user_categories_returns_only_subcategories(
+        self, user, expense_category, system_expense_group
+    ):
+        result = list(Category.get_expense_categories(user))
+        assert expense_category in result
+        assert system_expense_group not in result
+
+    def test_get_groups_returns_only_groups(self, user, expense_category, system_expense_group):
+        result = list(Category.get_groups(user, CategoryType.EXPENSE))
+        assert system_expense_group in result
+        assert expense_category not in result
+
+    def test_user_can_create_own_group(self, user):
+        group = Category.objects.create(
+            name="Mi grupo",
+            type=CategoryType.EXPENSE,
+            user=user,
+            is_system=False,
+            parent=None,
+        )
+        assert group.is_group is True
+        assert group.user == user
+
+    def test_delete_group_with_subcategories_is_protected(self, user, expense_category):
+        from django.db import models as django_models
+
+        with pytest.raises(django_models.ProtectedError):
+            expense_category.parent.delete()
