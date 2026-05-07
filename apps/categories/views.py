@@ -122,9 +122,9 @@ class CategoryUpdateView(LoginRequiredMixin, UserFormKwargsMixin, UpdateView):
         return Category.objects.filter(user=self.request.user, is_system=False)
 
     def get_context_data(self, **kwargs):
-        """Agrega datos al contexto."""
         context = super().get_context_data(**kwargs)
         context["is_edit"] = True
+        context["is_subcategory"] = self.object.is_subcategory
         return context
 
     def form_valid(self, form):

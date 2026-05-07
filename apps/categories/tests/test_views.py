@@ -280,3 +280,68 @@ class TestCategoryViewRedirects:
         assert response.status_code == 302
         assert "login" in response.url
         assert f"next={protected_url}" in response.url or "next=" in response.url
+
+
+@pytest.mark.django_db
+class TestCategoryMoveSubcategory:
+    """Tests para mover subcategorías entre grupos (Fase 5)."""
+
+    def test_move_subcategory_to_another_group(self, authenticated_client, user, expense_category):
+        """Editar una subcategoría cambiando su grupo padre."""
+        from apps.categories.models import Category
+        from apps.core.constants import CategoryType
+
+        new_group = Category.objects.create(
+            name="Nuevo Grupo", type=CategoryType.EXPENSE, user=user, parent=None, is_system=False
+        )
+        url = reverse("categories:update", kwargs={"pk": expense_category.pk})
+        data = {
+            "name": expense_category.name,
+            "type": expense_category.type,
+            "parent": new_group.pk,
+            "icon": expense_category.icon or "",
+            "color": expense_category.color or "#6c757d",
+        }
+        response = authenticated_client.post(url, data)
+
+        assert response.status_code == 302
+        expense_category.refresh_from_db()
+        assert expense_category.parent == new_group
+
+    def test_update_view_shows_parent_field_for_subcategory(
+        self, authenticated_client, expense_category
+    ):
+        """El formulario de edición muestra el campo parent para subcategorías."""
+        url = reverse("categories:update", kwargs={"pk": expense_category.pk})
+        response = authenticated_client.get(url)
+
+        assert response.status_code == 200
+        assert response.context["is_subcategory"] is True
+        assert "parent" in response.context["form"].fields
+
+    def test_update_view_does_not_show_parent_for_group(
+        self, authenticated_client, user, system_expense_group
+    ):
+        """El formulario de edición de un grupo no muestra campo parent (es grupo)."""
+        # Solo podemos editar grupos del usuario, así que creamos uno
+        from apps.categories.models import Category
+        from apps.core.constants import CategoryType
+
+        user_group = Category.objects.create(
+            name="Mi grupo edit", type=CategoryType.EXPENSE, user=user, parent=None, is_system=False
+        )
+        url = reverse("categories:update", kwargs={"pk": user_group.pk})
+        response = authenticated_client.get(url)
+
+        assert response.status_code == 200
+        assert response.context["is_subcategory"] is False
+
+    def test_preset_parent_on_create_via_querystring(
+        self, authenticated_client, user, system_expense_group
+    ):
+        """?parent=<pk> pre-selecciona el grupo en el formulario de creación."""
+        url = reverse("categories:create") + f"?parent={system_expense_group.pk}"
+        response = authenticated_client.get(url)
+
+        assert response.status_code == 200
+        assert response.context["preset_parent"] == system_expense_group

@@ -54,7 +54,7 @@
                     </div>
 
                     {% if preset_parent %}
-                    <!-- Tipo y Grupo fijos cuando viene de un grupo pre-seleccionado -->
+                    <!-- Tipo y Grupo fijos cuando viene de un grupo pre-seleccionado (crear sub) -->
                     <input type="hidden" name="type" value="{{ preset_parent.type }}">
                     <input type="hidden" name="parent" value="{{ preset_parent.pk }}">
                     <div class="mb-3">
@@ -76,15 +76,21 @@
                         {% endif %}
                     </div>
 
-                    <!-- Grupo padre -->
+                    <!-- Grupo padre: visible siempre en edición de sub, y en creación manual -->
+                    {% if is_edit and is_subcategory or not is_edit %}
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Grupo padre</label>
                         {{ form.parent }}
+                        {% if is_edit %}
+                        <div class="form-text">Podés mover esta subcategoría a otro grupo.</div>
+                        {% else %}
                         <div class="form-text">Elegí un grupo para crear una subcategoría. Dejalo vacío para crear un grupo nuevo.</div>
+                        {% endif %}
                         {% if form.parent.errors %}
                         <div class="text-danger small mt-1">{{ form.parent.errors.0 }}</div>
                         {% endif %}
                     </div>
+                    {% endif %}
                     {% endif %}
 
                     <!-- Ícono -->
