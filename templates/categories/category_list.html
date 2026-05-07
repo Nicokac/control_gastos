@@ -6,41 +6,66 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>Categorías</h1>
     <a href="{% url 'categories:create' %}" class="btn btn-primary">
-        <i class="bi bi-plus-lg"></i> Nueva Categoría
+        <i class="bi bi-plus-lg"></i> Nuevo Grupo
     </a>
 </div>
 
+<div class="alert alert-light border mb-4">
+    <p class="mb-1 fw-semibold">Estructura de categorías</p>
+    <ul class="mb-0 small ps-3">
+        <li><strong>Grupos</strong>: agrupadores visuales (ej: "Alimentación"). No se asignan directamente a transacciones.</li>
+        <li><strong>Subcategorías</strong>: las que asignás a cada gasto/ingreso (ej: "Supermercado"). Siempre pertenecen a un grupo.</li>
+    </ul>
+</div>
+
 <div class="row">
-    <!-- Categorías de Gastos -->
+    <!-- Gastos -->
     <div class="col-md-6 mb-4">
         <div class="card">
             <div class="card-header bg-danger text-white">
                 <h5 class="mb-0"><i class="bi bi-arrow-up-circle"></i> Gastos</h5>
             </div>
             <ul class="list-group list-group-flush">
-                {% for category in expense_categories %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center gap-3">
+                {% for entry in expense_tree %}
+                <!-- Fila de grupo -->
+                <li class="list-group-item py-2 bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center gap-2">
-                            {% if category.icon %}
-                            <i class="{{ category.icon }}" data-color="{{ category.color|default:'#6c757d' }}"></i>
+                            <i class="{{ entry.group.icon|default:'bi-folder' }} text-muted small"></i>
+                            <span class="fw-semibold small text-uppercase text-muted">{{ entry.group.name }}</span>
+                            {% if entry.group.is_system %}
+                            <span class="badge bg-secondary" style="font-size:0.65rem">Sistema</span>
                             {% endif %}
-                            <span>{{ category.name }}</span>
                         </div>
-                        {% if category.is_system %}
-                        <span class="badge bg-secondary">Sistema</span>
+                        {% if not entry.group.is_system %}
+                        <div>
+                            <a href="{% url 'categories:update' entry.group.pk %}" class="btn btn-sm btn-outline-primary py-0 px-1"><i class="bi bi-pencil"></i></a>
+                            <a href="{% url 'categories:delete' entry.group.pk %}" class="btn btn-sm btn-outline-danger py-0 px-1"><i class="bi bi-trash"></i></a>
+                        </div>
                         {% endif %}
+                    </div>
+                </li>
+                <!-- Subcategorías del grupo -->
+                {% for category in entry.subcategories %}
+                <li class="list-group-item d-flex justify-content-between align-items-center ps-4">
+                    <div class="d-flex align-items-center gap-2">
+                        {% if category.icon %}<i class="{{ category.icon }}" data-color="{{ category.color|default:'#6c757d' }}"></i>{% endif %}
+                        <span>{{ category.name }}</span>
+                        {% if category.is_system %}<span class="badge bg-secondary" style="font-size:0.65rem">Sistema</span>{% endif %}
                     </div>
                     {% if not category.is_system %}
                     <div>
-                        <a href="{% url 'categories:update' category.pk %}" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        <a href="{% url 'categories:delete' category.pk %}" class="btn btn-sm btn-outline-danger">
-                            <i class="bi bi-trash"></i>
-                        </a>
+                        <a href="{% url 'categories:update' category.pk %}" class="btn btn-sm btn-outline-primary py-0 px-1"><i class="bi bi-pencil"></i></a>
+                        <a href="{% url 'categories:delete' category.pk %}" class="btn btn-sm btn-outline-danger py-0 px-1"><i class="bi bi-trash"></i></a>
                     </div>
                     {% endif %}
+                </li>
+                {% endfor %}
+                <!-- Agregar subcategoría (siempre visible al final del grupo) -->
+                <li class="list-group-item ps-4 py-2">
+                    <a href="{% url 'categories:create' %}?parent={{ entry.group.pk }}" class="text-decoration-none small text-primary">
+                        <i class="bi bi-plus-circle me-1"></i>Agregar subcategoría
+                    </a>
                 </li>
                 {% empty %}
                 <li class="list-group-item text-muted">No hay categorías de gastos.</li>
@@ -49,36 +74,53 @@
         </div>
     </div>
 
-    <!-- Categorías de Ingresos -->
+    <!-- Ingresos -->
     <div class="col-md-6 mb-4">
         <div class="card">
             <div class="card-header bg-success text-white">
                 <h5 class="mb-0"><i class="bi bi-arrow-down-circle"></i> Ingresos</h5>
             </div>
             <ul class="list-group list-group-flush">
-                {% for category in income_categories %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center gap-3">
+                {% for entry in income_tree %}
+                <!-- Fila de grupo -->
+                <li class="list-group-item py-2 bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center gap-2">
-                            {% if category.icon %}
-                            <i class="{{ category.icon }}" data-color="{{ category.color|default:'#6c757d' }}"></i>
+                            <i class="{{ entry.group.icon|default:'bi-folder' }} text-muted small"></i>
+                            <span class="fw-semibold small text-uppercase text-muted">{{ entry.group.name }}</span>
+                            {% if entry.group.is_system %}
+                            <span class="badge bg-secondary" style="font-size:0.65rem">Sistema</span>
                             {% endif %}
-                            <span>{{ category.name }}</span>
                         </div>
-                        {% if category.is_system %}
-                        <span class="badge bg-secondary">Sistema</span>
+                        {% if not entry.group.is_system %}
+                        <div>
+                            <a href="{% url 'categories:update' entry.group.pk %}" class="btn btn-sm btn-outline-primary py-0 px-1"><i class="bi bi-pencil"></i></a>
+                            <a href="{% url 'categories:delete' entry.group.pk %}" class="btn btn-sm btn-outline-danger py-0 px-1"><i class="bi bi-trash"></i></a>
+                        </div>
                         {% endif %}
+                    </div>
+                </li>
+                <!-- Subcategorías -->
+                {% for category in entry.subcategories %}
+                <li class="list-group-item d-flex justify-content-between align-items-center ps-4">
+                    <div class="d-flex align-items-center gap-2">
+                        {% if category.icon %}<i class="{{ category.icon }}" data-color="{{ category.color|default:'#6c757d' }}"></i>{% endif %}
+                        <span>{{ category.name }}</span>
+                        {% if category.is_system %}<span class="badge bg-secondary" style="font-size:0.65rem">Sistema</span>{% endif %}
                     </div>
                     {% if not category.is_system %}
                     <div>
-                        <a href="{% url 'categories:update' category.pk %}" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        <a href="{% url 'categories:delete' category.pk %}" class="btn btn-sm btn-outline-danger">
-                            <i class="bi bi-trash"></i>
-                        </a>
+                        <a href="{% url 'categories:update' category.pk %}" class="btn btn-sm btn-outline-primary py-0 px-1"><i class="bi bi-pencil"></i></a>
+                        <a href="{% url 'categories:delete' category.pk %}" class="btn btn-sm btn-outline-danger py-0 px-1"><i class="bi bi-trash"></i></a>
                     </div>
                     {% endif %}
+                </li>
+                {% endfor %}
+                <!-- Agregar subcategoría (siempre visible al final del grupo) -->
+                <li class="list-group-item ps-4 py-2">
+                    <a href="{% url 'categories:create' %}?parent={{ entry.group.pk }}" class="text-decoration-none small text-success">
+                        <i class="bi bi-plus-circle me-1"></i>Agregar subcategoría
+                    </a>
                 </li>
                 {% empty %}
                 <li class="list-group-item text-muted">No hay categorías de ingresos.</li>

@@ -10,6 +10,8 @@
                 <h4 class="mb-0">
                     {% if form.instance.pk %}
                     <i class="bi bi-pencil"></i> Editar Categoría
+                    {% elif preset_parent %}
+                    <i class="bi bi-plus-lg"></i> Nueva subcategoría en "{{ preset_parent.name }}"
                     {% else %}
                     <i class="bi bi-plus-lg"></i> Nueva Categoría
                     {% endif %}
@@ -32,10 +34,13 @@
                         <p class="mb-1 fw-semibold">No pudimos guardar la categoría.</p>
                         <p class="mb-0 small">Completá nombre y tipo. Ícono y color son opcionales.</p>
                     </div>
-                    {% else %}
+                    {% elif not preset_parent and not form.instance.pk %}
                     <div class="alert alert-light border mb-4">
-                        <p class="mb-1 fw-semibold">Antes de crearla</p>
-                        <p class="mb-0 small">Nombre y tipo son obligatorios. Ícono y color son opcionales.</p>
+                        <p class="mb-1 fw-semibold">¿Grupo o subcategoría?</p>
+                        <ul class="mb-0 small ps-3">
+                            <li><strong>Grupo:</strong> agrupador visual (ej: "Alimentación"). Dejá el grupo padre vacío.</li>
+                            <li><strong>Subcategoría:</strong> la que asignás a cada gasto/ingreso (ej: "Supermercado"). Elegí un grupo padre.</li>
+                        </ul>
                     </div>
                     {% endif %}
 
@@ -48,6 +53,20 @@
                         {% endif %}
                     </div>
 
+                    {% if preset_parent %}
+                    <!-- Tipo y Grupo fijos cuando viene de un grupo pre-seleccionado -->
+                    <input type="hidden" name="type" value="{{ preset_parent.type }}">
+                    <input type="hidden" name="parent" value="{{ preset_parent.pk }}">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Grupo</label>
+                        <div class="form-control bg-light d-flex align-items-center gap-2">
+                            <i class="{{ preset_parent.icon|default:'bi-folder' }} text-muted"></i>
+                            <span>{{ preset_parent.name }}</span>
+                            <span class="badge bg-secondary ms-1">{{ preset_parent.get_type_display }}</span>
+                        </div>
+                        <div class="form-text">El tipo se hereda del grupo.</div>
+                    </div>
+                    {% else %}
                     <!-- Tipo -->
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Tipo <span class="text-danger">*</span></label>
@@ -56,6 +75,17 @@
                         <div class="text-danger small mt-1">{{ form.type.errors.0 }}</div>
                         {% endif %}
                     </div>
+
+                    <!-- Grupo padre -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Grupo padre</label>
+                        {{ form.parent }}
+                        <div class="form-text">Elegí un grupo para crear una subcategoría. Dejalo vacío para crear un grupo nuevo.</div>
+                        {% if form.parent.errors %}
+                        <div class="text-danger small mt-1">{{ form.parent.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
 
                     <!-- Ícono -->
                     <div class="mb-3">
