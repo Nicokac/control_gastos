@@ -189,3 +189,44 @@ class TestCategoryHierarchy:
 
         with pytest.raises(django_models.ProtectedError):
             expense_category.parent.delete()
+
+
+@pytest.mark.django_db
+class TestGetCategoriesByGroup:
+    """Tests para el método get_categories_by_group."""
+
+    def test_returns_list_of_dicts(self, user, expense_category):
+        result = Category.get_categories_by_group(user, CategoryType.EXPENSE)
+        assert isinstance(result, list)
+        assert len(result) >= 1
+        assert "group" in result[0]
+        assert "subcategories" in result[0]
+
+    def test_subcategory_in_correct_group(self, user, expense_category):
+        result = Category.get_categories_by_group(user, CategoryType.EXPENSE)
+        all_subs = [sub for entry in result for sub in entry["subcategories"]]
+        assert expense_category in all_subs
+
+    def test_groups_without_subcategories_excluded(self, user, system_expense_group):
+        result = Category.get_categories_by_group(user, CategoryType.EXPENSE)
+        for entry in result:
+            assert len(entry["subcategories"]) > 0
+
+    def test_does_not_include_other_user_subcategories(
+        self, user, other_user, expense_category_factory
+    ):
+        expense_category_factory(other_user, name="Ajena del otro")
+        result = Category.get_categories_by_group(user, CategoryType.EXPENSE)
+        all_subs = [sub for entry in result for sub in entry["subcategories"]]
+        names = [s.name for s in all_subs]
+        assert "Ajena del otro" not in names
+
+    def test_filters_by_type(self, user, expense_category, income_category):
+        expense_result = Category.get_categories_by_group(user, CategoryType.EXPENSE)
+        income_result = Category.get_categories_by_group(user, CategoryType.INCOME)
+        expense_subs = [sub for e in expense_result for sub in e["subcategories"]]
+        income_subs = [sub for e in income_result for sub in e["subcategories"]]
+        assert expense_category in expense_subs
+        assert income_category not in expense_subs
+        assert income_category in income_subs
+        assert expense_category not in income_subs

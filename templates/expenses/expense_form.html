@@ -97,29 +97,43 @@
                             {% endif %}
                         </div>
 
-                        <!-- CATEGORÍA (botones visuales) -->
-                          <div class="mb-4">
-                              <label class="form-label">Categoría</label>
-                              {% if form.category.errors %}
-                              <div class="text-danger small mb-2">{{ form.category.errors.0 }}</div>
-                              {% endif %}
-                              <div class="category-grid">
-                                  {% for category in categories %}
-                                  <label class="category-btn">
-                                      <input type="radio"
-                                             name="category"
-                                             value="{{ category.id }}"
-                                             {% if form.category.value|stringformat:"s" == category.id|stringformat:"s" %}checked{% endif %}
-                                             required>
-                                      <div class="btn btn-outline-secondary">
-                                          <i class="{{ category.icon|default:'bi-tag' }}"
-                                             data-color="{{ category.color|default:'#6c757d' }}"></i>
-                                          <small>{{ category.name }}</small>
-                                      </div>
-                                  </label>
-                                  {% endfor %}
-                              </div>
-                          </div>
+                        <!-- CATEGORÍA (botones visuales agrupados) -->
+                        <div class="mb-4">
+                            <label class="form-label">Categoría</label>
+                            {% if form.category.errors %}
+                            <div class="text-danger small mb-2">{{ form.category.errors.0 }}</div>
+                            {% endif %}
+                            {% if categories_by_group %}
+                                {% for entry in categories_by_group %}
+                                <div class="mb-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="{{ entry.group.icon|default:'bi-folder' }} me-2 text-muted small"></i>
+                                        <span class="text-muted small fw-semibold text-uppercase letter-spacing-1">{{ entry.group.name }}</span>
+                                    </div>
+                                    <div class="category-grid">
+                                        {% for category in entry.subcategories %}
+                                        <label class="category-btn">
+                                            <input type="radio"
+                                                   name="category"
+                                                   value="{{ category.id }}"
+                                                   {% if form.category.value|stringformat:"s" == category.id|stringformat:"s" %}checked{% endif %}
+                                                   required>
+                                            <div class="btn btn-outline-secondary">
+                                                <i class="{{ category.icon|default:'bi-tag' }}"
+                                                   data-color="{{ category.color|default:'#6c757d' }}"></i>
+                                                <small>{{ category.name }}</small>
+                                            </div>
+                                        </label>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted small">
+                                    No tenés categorías de gasto. <a href="{% url 'categories:create' %}">Creá una</a>.
+                                </p>
+                            {% endif %}
+                        </div>
 
                         <!-- DESTINO DE AHORRO (opcional, visible) -->
                         <div class="mb-4">

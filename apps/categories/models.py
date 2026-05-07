@@ -174,3 +174,18 @@ class Category(TimestampMixin, models.Model):
         if category_type:
             queryset = queryset.filter(type=category_type)
         return queryset.order_by("name")
+
+    @classmethod
+    def get_categories_by_group(cls, user, category_type):
+        """
+        Retorna lista de (grupo, [subcategorías]) para armar un selector agrupado.
+        Solo incluye grupos que tengan al menos una subcategoría disponible.
+        """
+        subcategories = cls.get_user_categories(user, category_type).select_related("parent")
+        groups: dict = {}
+        for sub in subcategories:
+            group = sub.parent
+            if group.pk not in groups:
+                groups[group.pk] = {"group": group, "subcategories": []}
+            groups[group.pk]["subcategories"].append(sub)
+        return list(groups.values())

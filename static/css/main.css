@@ -352,6 +352,15 @@ form#incomeForm .category-btn:hover .btn {
     border-color: var(--bs-success);
 }
 
+/* Category group header */
+.category-group-header {
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    color: var(--bs-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
 /* Category validation error state */
 .category-grid.border-danger {
     animation: shake 0.5s ease-in-out;

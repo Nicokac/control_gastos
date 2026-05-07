@@ -115,7 +115,9 @@ class IncomeCreateView(UserOwnedCreateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["categories"] = Category.get_income_categories(self.request.user)
+        context["categories_by_group"] = Category.get_categories_by_group(
+            self.request.user, "INCOME"
+        )
         return context
 
 
@@ -138,7 +140,9 @@ class IncomeUpdateView(UserOwnedUpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["categories"] = Category.get_income_categories(self.request.user)
+        context["categories_by_group"] = Category.get_categories_by_group(
+            self.request.user, "INCOME"
+        )
         return context
 
 

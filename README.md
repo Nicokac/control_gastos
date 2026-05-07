@@ -34,8 +34,8 @@
 
 | Métrica | Valor |
 |---------|-------|
-| Tests | 579 |
-| Coverage | 93.50% (enforced ≥80%) |
+| Tests | 601 |
+| Coverage | 93.79% (enforced ≥80%) |
 | Python | 3.12+ |
 | Django | 5.2 |
 | CI Jobs | 5 |

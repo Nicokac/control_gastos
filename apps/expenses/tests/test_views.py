@@ -697,3 +697,60 @@ class TestExpenseListViewOrdering:
         content = response.content.decode()
         assert "Gasto A" in content
         assert "Gasto B" in content
+
+
+@pytest.mark.django_db
+class TestExpenseFormGroupedCategories:
+    """Tests para el selector de categorías agrupadas en formulario de gastos."""
+
+    def test_create_view_has_categories_by_group(self, authenticated_client, expense_category):
+        """El contexto del create view incluye categories_by_group."""
+        url = reverse("expenses:create")
+        response = authenticated_client.get(url)
+
+        assert response.status_code == 200
+        assert "categories_by_group" in response.context
+
+    def test_categories_by_group_structure(self, authenticated_client, user, expense_category):
+        """categories_by_group es una lista con 'group' y 'subcategories'."""
+        url = reverse("expenses:create")
+        response = authenticated_client.get(url)
+
+        by_group = response.context["categories_by_group"]
+        assert len(by_group) >= 1
+        first = by_group[0]
+        assert "group" in first
+        assert "subcategories" in first
+        assert expense_category in first["subcategories"]
+
+    def test_update_view_has_categories_by_group(self, authenticated_client, expense):
+        """El contexto del update view también incluye categories_by_group."""
+        url = reverse("expenses:update", kwargs={"pk": expense.pk})
+        response = authenticated_client.get(url)
+
+        assert response.status_code == 200
+        assert "categories_by_group" in response.context
+
+    def test_group_header_rendered_in_template(self, authenticated_client, expense_category):
+        """El nombre del grupo aparece en el HTML del formulario."""
+        url = reverse("expenses:create")
+        response = authenticated_client.get(url)
+
+        content = response.content.decode()
+        assert expense_category.parent.name in content
+
+    def test_categories_from_other_users_not_in_groups(
+        self, authenticated_client, other_user, expense_category_factory
+    ):
+        """Categorías de otros usuarios no aparecen en categories_by_group."""
+        other_cat = expense_category_factory(other_user, name="Ajena")
+
+        url = reverse("expenses:create")
+        response = authenticated_client.get(url)
+
+        all_subs = [
+            sub
+            for entry in response.context["categories_by_group"]
+            for sub in entry["subcategories"]
+        ]
+        assert other_cat not in all_subs

@@ -361,3 +361,44 @@ class TestIncomeDetailView:
         response = authenticated_client.get(url)
 
         assert response.status_code in [403, 404]
+
+
+@pytest.mark.django_db
+class TestIncomeFormGroupedCategories:
+    """Tests para el selector de categorías agrupadas en formulario de ingresos."""
+
+    def test_create_view_has_categories_by_group(self, authenticated_client, income_category):
+        """El contexto del create view incluye categories_by_group."""
+        url = reverse("income:create")
+        response = authenticated_client.get(url)
+
+        assert response.status_code == 200
+        assert "categories_by_group" in response.context
+
+    def test_categories_by_group_structure(self, authenticated_client, user, income_category):
+        """categories_by_group es una lista con 'group' y 'subcategories'."""
+        url = reverse("income:create")
+        response = authenticated_client.get(url)
+
+        by_group = response.context["categories_by_group"]
+        assert len(by_group) >= 1
+        first = by_group[0]
+        assert "group" in first
+        assert "subcategories" in first
+        assert income_category in first["subcategories"]
+
+    def test_update_view_has_categories_by_group(self, authenticated_client, income):
+        """El contexto del update view también incluye categories_by_group."""
+        url = reverse("income:update", kwargs={"pk": income.pk})
+        response = authenticated_client.get(url)
+
+        assert response.status_code == 200
+        assert "categories_by_group" in response.context
+
+    def test_group_header_rendered_in_template(self, authenticated_client, income_category):
+        """El nombre del grupo aparece en el HTML del formulario."""
+        url = reverse("income:create")
+        response = authenticated_client.get(url)
+
+        content = response.content.decode()
+        assert income_category.parent.name in content
