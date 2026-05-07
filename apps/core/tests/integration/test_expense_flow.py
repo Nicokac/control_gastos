@@ -124,15 +124,28 @@ class TestExpenseFilteringFlow:
     def test_filter_expenses_by_category(
         self, authenticated_client, user, expense_category_factory, expense_factory
     ):
-        """Verifica filtrado de gastos por categorÃ­a."""
-        cat_comida = expense_category_factory(user, name="Comida")
-        cat_transporte = expense_category_factory(user, name="Transporte")
+        """Verifica filtrado de gastos por grupo."""
+        from apps.categories.models import Category
+        from apps.core.constants import CategoryType
+
+        group_comida = Category.objects.create(
+            name="Comida Integ", type=CategoryType.EXPENSE, user=user, parent=None, is_system=False
+        )
+        group_transporte = Category.objects.create(
+            name="Transporte Integ",
+            type=CategoryType.EXPENSE,
+            user=user,
+            parent=None,
+            is_system=False,
+        )
+        cat_comida = expense_category_factory(user, name="Almuerzo sub", parent=group_comida)
+        cat_transporte = expense_category_factory(user, name="Uber sub", parent=group_transporte)
 
         expense_factory(user, cat_comida, description="Almuerzo")
         expense_factory(user, cat_transporte, description="Uber")
 
         list_url = reverse("expenses:list")
-        response = authenticated_client.get(list_url, {"category": cat_comida.pk})
+        response = authenticated_client.get(list_url, {"category": group_comida.pk})
 
         content = response.content.decode()
         assert "Almuerzo" in content

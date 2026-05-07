@@ -206,12 +206,20 @@ class ExpenseFilterForm(BaseFilterForm):
         widget=forms.Select(attrs={"class": "form-select form-select-sm"}),
     )
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, user=user, **kwargs)
         self.fields["payment_method"].choices = [("", "Todos los métodos")] + list(
             PaymentMethod.choices
         )
         self.fields["expense_type"].choices = [("", "Todos los tipos")] + list(ExpenseType.choices)
+        # Reemplazar el campo category por un filtro de grupo (parent)
+        if user:
+            from apps.core.constants import CategoryType
+
+            self.fields["category"].queryset = Category.get_groups(user, CategoryType.EXPENSE)
+            self.fields["category"].empty_label = "Todos los grupos"
 
     def get_category_queryset(self, user):
-        return Category.get_expense_categories(user)
+        from apps.core.constants import CategoryType
+
+        return Category.get_groups(user, CategoryType.EXPENSE)

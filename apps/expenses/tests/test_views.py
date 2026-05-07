@@ -60,11 +60,12 @@ class TestExpenseListView:
     def test_filter_by_category(
         self, authenticated_client, user, expense_category, expense_factory
     ):
-        """Verifica filtrado por categoría."""
+        """Verifica filtrado por grupo padre."""
         expense_factory(user, expense_category, description="Filtrado")
 
         url = reverse("expenses:list")
-        response = authenticated_client.get(url, {"category": expense_category.pk})
+        # El filtro ahora es por grupo (parent), no por subcategoría
+        response = authenticated_client.get(url, {"category": expense_category.parent.pk})
 
         assert response.status_code == 200
         assert "Filtrado" in response.content.decode()
@@ -483,17 +484,35 @@ class TestExpenseListViewFilters:
         assert "Gasto Marzo" not in content
 
     def test_filter_by_category_shows_only_category_expenses(
-        self, authenticated_client, user, expense_category_factory, expense_factory
+        self,
+        authenticated_client,
+        user,
+        expense_category_factory,
+        expense_factory,
+        system_expense_group,
     ):
-        """Verifica que filtro por categoría funcione."""
-        cat_comida = expense_category_factory(user, name="Comida")
-        cat_transporte = expense_category_factory(user, name="Transporte")
+        """Verifica que filtro por grupo muestre solo gastos de ese grupo."""
+        from apps.categories.models import Category
+        from apps.core.constants import CategoryType
+
+        group_comida = Category.objects.create(
+            name="Comida Test", type=CategoryType.EXPENSE, user=user, parent=None, is_system=False
+        )
+        group_transporte = Category.objects.create(
+            name="Transporte Test",
+            type=CategoryType.EXPENSE,
+            user=user,
+            parent=None,
+            is_system=False,
+        )
+        cat_comida = expense_category_factory(user, name="Almuerzo sub", parent=group_comida)
+        cat_transporte = expense_category_factory(user, name="Subte sub", parent=group_transporte)
 
         expense_factory(user, cat_comida, description="Almuerzo")
         expense_factory(user, cat_transporte, description="Subte")
 
         url = reverse("expenses:list")
-        response = authenticated_client.get(url, {"category": cat_comida.pk})
+        response = authenticated_client.get(url, {"category": group_comida.pk})
 
         assert response.status_code == 200
         content = response.content.decode()
@@ -561,15 +580,24 @@ class TestExpenseListViewFilters:
         """Verifica que múltiples filtros funcionen juntos."""
         from datetime import date
 
-        cat1 = expense_category_factory(user, name="Cat1")
-        cat2 = expense_category_factory(user, name="Cat2")
+        from apps.categories.models import Category
+        from apps.core.constants import CategoryType
+
+        group1 = Category.objects.create(
+            name="Grupo1 Test", type=CategoryType.EXPENSE, user=user, parent=None, is_system=False
+        )
+        group2 = Category.objects.create(
+            name="Grupo2 Test", type=CategoryType.EXPENSE, user=user, parent=None, is_system=False
+        )
+        cat1 = expense_category_factory(user, name="Cat1 sub", parent=group1)
+        cat2 = expense_category_factory(user, name="Cat2 sub", parent=group2)
 
         expense_factory(user, cat1, date=date(2025, 1, 15), description="Cat1 Enero")
         expense_factory(user, cat1, date=date(2025, 2, 15), description="Cat1 Febrero")
         expense_factory(user, cat2, date=date(2025, 1, 15), description="Cat2 Enero")
 
         url = reverse("expenses:list")
-        response = authenticated_client.get(url, {"category": cat1.pk, "month": 1, "year": 2025})
+        response = authenticated_client.get(url, {"category": group1.pk, "month": 1, "year": 2025})
 
         assert response.status_code == 200
         content = response.content.decode()

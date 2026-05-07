@@ -28,7 +28,7 @@ class ExpenseListView(UserOwnedListView):
     context_object_name = "expenses"
 
     def get_queryset(self):
-        qs = super().get_queryset().select_related("category", "saving")
+        qs = super().get_queryset().select_related("category", "category__parent", "saving")
 
         has_filters = any(
             key in self.request.GET
@@ -76,7 +76,8 @@ class ExpenseListView(UserOwnedListView):
                     pass
 
         if category:
-            qs = qs.filter(category_id=category)
+            # category contiene el pk de un grupo (parent); filtramos sus subcategorías
+            qs = qs.filter(category__parent_id=category)
         if payment_method:
             qs = qs.filter(payment_method=payment_method)
         if expense_type:

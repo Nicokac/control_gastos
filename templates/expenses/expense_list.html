@@ -26,7 +26,7 @@
                 {{ filter_form.year }}
             </div>
             <div class="col-md-3">
-                <label class="form-label small text-muted">Categoría</label>
+                <label class="form-label small text-muted">Grupo</label>
                 {{ filter_form.category }}
             </div>
 
@@ -146,6 +146,9 @@
                         {% endif %}
                     </td>
                     <td>
+                        {% if expense.category.parent %}
+                        <small class="text-muted d-block" style="font-size:0.7rem">{{ expense.category.parent.name }}</small>
+                        {% endif %}
                         <span class="badge" data-color="{{ expense.category.color|default:'#6c757d' }}" data-color-prop="backgroundColor">
                             {% if expense.category.icon %}
                             <i class="{{ expense.category.icon }} me-1"></i>
