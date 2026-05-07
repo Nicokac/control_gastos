@@ -34,8 +34,8 @@
 
 | Métrica | Valor |
 |---------|-------|
-| Tests | 601 |
-| Coverage | 93.79% (enforced ≥80%) |
+| Tests | 609 |
+| Coverage | 93.38% (enforced ≥80%) |
 | Python | 3.12+ |
 | Django | 5.2 |
 | CI Jobs | 5 |
@@ -95,6 +95,10 @@
 - Categorías personalizadas por usuario
 - Tipos: Gasto e Ingreso
 - Iconos y colores personalizables
+- Jerarquía grupo → subcategoría: los gastos se asignan a subcategorías y el dashboard agrupa por grupo
+- Selector visual agrupado en formularios de gastos/ingresos
+- Filtro de lista de gastos por grupo
+- Mover subcategorías entre grupos desde la edición
 
 ### 🔒 Seguridad
 - Rate limiting con django-axes (5 intentos, bloqueo 2 horas)
@@ -303,7 +307,7 @@ pytest --cov=apps --cov-fail-under=80
 
 | Ítem | Valor |
 |-----|------|
-| Fecha | **2026-05-04** |
+| Fecha | **2026-05-07** |
 | Entorno | Local (Windows) |
 | Python | 3.12.0 |
 | Django | 5.2 |
@@ -314,7 +318,7 @@ Resultado:
 
 | Ítem | Valor |
 |-----|------|
-| ✅ | 579 tests pasados |
+| ✅ | 609 tests pasados |
 | ⏭️ | 2 skipped |
 | ❌ | 0 fallos |
 | ⏱️ | Duración total: ~3m 30s |
@@ -329,7 +333,7 @@ Resultado verificado:
 
 | Métrica | Valor |
 |-----|------|
-| Coverage total | 93.50% |
+| Coverage total | 93.38% |
 | Coverage mínimo requerido | 80% |
 | Estado | ✅ Cumple |
 
@@ -831,6 +835,7 @@ ci: add GitHub Actions pipeline
 - [x] Gráfico de evolución mensual (Ingresos / Gastos / Ahorro / Balance)
 - [x] Dashboard rediseñado: balance hero, donut + ranking, formato ARS en formularios
 - [x] Formulario de feedback (bugs/mejoras) con envío por email al administrador
+- [x] Jerarquía de categorías: grupos → subcategorías con selector visual y filtro por grupo
 - [ ] Exportación a Excel/PDF
 - [ ] Transacciones recurrentes
 - [ ] PWA (Progressive Web App)

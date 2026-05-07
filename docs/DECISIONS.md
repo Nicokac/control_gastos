@@ -268,3 +268,40 @@ backend SMTP ya configurado en `email_backend.py`.
 Sin persistencia, los reportes solo existen en la bandeja de entrada del admin.
 Si el email falla silenciosamente en producción, el reporte se pierde.
 Mitigación: `fail_silently=False` + logging del error + mensaje de error al usuario.
+
+---
+
+## D-011 — Jerarquía de categorías: grupo → subcategoría (FK self)
+
+**Fecha:** 2026-05-07
+**Estado:** ✅ Implementado (Fases 1–5)
+
+### Contexto
+Las categorías pasaron de ser una lista plana a una jerarquía de dos niveles:
+**grupos** (agrupadores visuales, sin parent) → **subcategorías** (las que se asignan
+a cada gasto/ingreso, con parent apuntando a un grupo).
+
+### Decisión
+Implementar con FK self en `Category.parent = ForeignKey("self", null=True, blank=True)`.
+Se decidió limitar a dos niveles (no árbol arbitrario) para simplificar las queries,
+los selectores de formulario y la lógica de dashboard.
+
+### Fases implementadas
+
+1. **Modelo**: FK self + `is_subcategory` property + `get_categories_by_group()` + migraciones
+2. **Formularios de gastos/ingresos**: selector agrupado con radio buttons bajo cabeceras de grupo
+3. **Dashboard**: donut y ranking agrupados por grupo padre (con fallback a subcategoría si no tiene parent)
+4. **Filtro de lista de gastos**: filtra por `category__parent_id` (grupo), no por subcategoría
+5. **Edición de categorías**: campo `parent` visible al editar subcategorías para mover entre grupos; `?parent=<pk>` en CREATE pre-selecciona el grupo
+
+### Por qué dos niveles
+
+- Los gastos del mundo real se entienden por grupos ("Comida", "Transporte"), no por subcategorías granulares ("Supermercado", "Colectivo").
+- Dos niveles cubren el 100% de los casos de uso sin la complejidad de `django-mptt` o `treebeard`.
+- `get_categories_by_group()` hace una sola query con `select_related("parent")` — sin N+1.
+
+### Riesgo aceptado (D-011)
+
+Si en el futuro se necesita más de un nivel de jerarquía, la estructura actual de `parent`
+solo admite un nivel. Mitigación: la FK self podría extenderse, pero requeriría refactor
+de las queries de dashboard y de los selectores.
