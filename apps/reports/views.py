@@ -319,36 +319,51 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
     def _get_expense_distribution(self, user, month, year):
         """
-        Obtiene distribución de gastos por categoría.
+        Obtiene distribución de gastos agrupada por grupo padre de la categoría.
 
-        Retorna dos listas:
-        - ranking_distribution: todas las categorías (para el ranking con scroll)
-        - chart_distribution: top 5 + "Otros" agrupado (para el donut)
+        Retorna:
+        - ranking_distribution: grupos ordenados por total (para el ranking con scroll)
+        - chart_*: top 5 grupos + "Otros" agrupado (para el donut)
         """
         start_date, end_date = get_month_date_range_exclusive(month, year)
-        all_items = list(
+
+        raw = list(
             Expense.objects.filter(user=user, date__gte=start_date, date__lt=end_date)
-            .values("category__name", "category__color")
+            .select_related("category__parent")
+            .values(
+                "category__parent__name",
+                "category__parent__color",
+                "category__name",
+                "category__color",
+            )
             .annotate(total=Sum("amount_ars"))
             .order_by("-total")
         )
 
-        grand_total = sum(float(item["total"]) for item in all_items)
-
-        # Ranking completo con porcentajes
-        ranking = []
-        for item in all_items:
-            pct = round((float(item["total"]) / grand_total) * 100, 1) if grand_total > 0 else 0
-            ranking.append(
-                {
-                    "name": item["category__name"],
-                    "color": item["category__color"] or "#6c757d",
-                    "total": item["total"],
-                    "percentage": pct,
+        # Agrupar por grupo padre; si no tiene padre usar la categoría misma como grupo
+        groups: dict = {}
+        for item in raw:
+            group_name = (
+                item["category__parent__name"] or item["category__name"] or "Sin clasificar"
+            )
+            group_color = item["category__parent__color"] or item["category__color"] or "#6c757d"
+            if group_name not in groups:
+                groups[group_name] = {
+                    "name": group_name,
+                    "color": group_color,
+                    "total": Decimal("0"),
                 }
+            groups[group_name]["total"] += item["total"]
+
+        grand_total = sum(float(g["total"]) for g in groups.values())
+
+        ranking = sorted(groups.values(), key=lambda g: g["total"], reverse=True)
+        for item in ranking:
+            item["percentage"] = (
+                round((float(item["total"]) / grand_total) * 100, 1) if grand_total > 0 else 0
             )
 
-        # Donut: top 5 + "Otros"
+        # Donut: top 5 grupos + "Otros"
         TOP_N = 5
         top = ranking[:TOP_N]
         others = ranking[TOP_N:]
@@ -363,7 +378,6 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             chart_data.append(others_total)
             chart_colors.append("#6c757d")
 
-        # Insight: categoría con mayor gasto
         top_category = ranking[0] if ranking else None
 
         return {
@@ -373,6 +387,5 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             "chart_colors": chart_colors,
             "chart_grand_total": grand_total,
             "top_category": top_category,
-            # Mantener retrocompatibilidad con el check del template
             "expense_distribution": ranking,
         }

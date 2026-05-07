@@ -210,7 +210,7 @@
                 {% if ranking_distribution %}
                 {% if top_category %}
                 <div class="alert alert-danger py-2 mb-3 small">
-                    Tu mayor gasto fue <strong>{{ top_category.name }}</strong>,
+                    Tu mayor grupo de gasto fue <strong>{{ top_category.name }}</strong>,
                     con <strong>{{ top_category.total|currency }}</strong>
                     ({{ top_category.percentage }}% del total).
                 </div>
@@ -219,7 +219,7 @@
                     <canvas id="expenseChart"></canvas>
                 </div>
                 <p class="text-muted text-center small mt-2 mb-0">
-                    Vista rápida de las categorías con mayor peso en el mes.
+                    Vista rápida de los grupos con mayor peso en el mes.
                 </p>
                 {% else %}
                 <div class="text-center py-4">
@@ -238,14 +238,14 @@
     <div class="col-lg-5">
         <div class="card h-100">
             <div class="card-header">
-                <i class="bi bi-bar-chart-steps me-2"></i>Ranking de Categorías
+                <i class="bi bi-bar-chart-steps me-2"></i>Ranking de Grupos
             </div>
             <div class="card-body p-0">
                 {% if ranking_distribution %}
                 <div class="px-3 py-2 border-bottom bg-light">
                     <small class="text-muted">
                         Total: <strong class="text-dark">{{ expense_total|currency }}</strong>
-                        &mdash; {{ ranking_distribution|length }} categoría{{ ranking_distribution|length|pluralize }}
+                        &mdash; {{ ranking_distribution|length }} grupo{{ ranking_distribution|length|pluralize }}
                     </small>
                 </div>
                 <div style="height: 320px; overflow-y: auto;">
