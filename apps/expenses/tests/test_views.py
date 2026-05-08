@@ -506,18 +506,21 @@ class TestExpenseListViewFilters:
             is_system=False,
         )
         cat_comida = expense_category_factory(user, name="Almuerzo sub", parent=group_comida)
-        cat_transporte = expense_category_factory(user, name="Subte sub", parent=group_transporte)
+        cat_transporte = expense_category_factory(
+            user, name="Colectivo sub", parent=group_transporte
+        )
 
-        expense_factory(user, cat_comida, description="Almuerzo")
-        expense_factory(user, cat_transporte, description="Subte")
+        expense_factory(user, cat_comida, description="Desc-comida-xyz")
+        expense_factory(user, cat_transporte, description="Desc-transporte-xyz")
 
         url = reverse("expenses:list")
         response = authenticated_client.get(url, {"category": group_comida.pk})
 
         assert response.status_code == 200
-        content = response.content.decode()
-        assert "Almuerzo" in content
-        assert "Subte" not in content
+        expenses_in_response = list(response.context["expenses"])
+        descriptions = [e.description for e in expenses_in_response]
+        assert "Desc-comida-xyz" in descriptions
+        assert "Desc-transporte-xyz" not in descriptions
 
     def test_filter_by_payment_method(
         self, authenticated_client, user, expense_category, expense_factory

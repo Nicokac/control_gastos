@@ -238,7 +238,7 @@
     <div class="col-lg-5">
         <div class="card h-100">
             <div class="card-header">
-                <i class="bi bi-bar-chart-steps me-2"></i>Ranking de Grupos
+                <i class="bi bi-bar-chart-steps me-2"></i>Ranking de Categorías
             </div>
             <div class="card-body p-0">
                 {% if ranking_distribution %}
@@ -249,20 +249,45 @@
                     </small>
                 </div>
                 <div style="height: 320px; overflow-y: auto;">
-                    <ul class="list-group list-group-flush">
+                    <ul class="list-group list-group-flush" id="ranking-list">
                         {% for item in ranking_distribution %}
                         <li class="list-group-item px-3 py-2">
-                            <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center justify-content-between ranking-group-row"
+                                 role="button"
+                                 data-group="{{ item.name }}"
+                                 {% if item.subcategories %}
+                                 data-bs-toggle="collapse"
+                                 data-bs-target="#ranking-sub-{{ forloop.counter }}"
+                                 aria-expanded="false"
+                                 {% endif %}>
                                 <div class="d-flex align-items-center gap-2">
                                     <span class="rounded-circle flex-shrink-0"
                                           style="width:10px;height:10px;background:{{ item.color }};display:inline-block;"></span>
                                     <span class="small fw-semibold">{{ item.name }}</span>
+                                    {% if item.subcategories %}
+                                    <i class="bi bi-chevron-down text-muted small ranking-chevron"></i>
+                                    {% endif %}
                                 </div>
                                 <div class="text-end">
                                     <span class="small fw-bold">{{ item.total|currency }}</span>
                                     <span class="text-muted small ms-2">{{ item.percentage }}%</span>
                                 </div>
                             </div>
+                            {% if item.subcategories %}
+                            <div class="collapse" id="ranking-sub-{{ forloop.counter }}">
+                                <ul class="list-unstyled mt-1 mb-0 ps-3">
+                                    {% for sub in item.subcategories %}
+                                    <li class="d-flex justify-content-between py-1 border-top">
+                                        <span class="small text-muted">
+                                            {% if sub.icon %}<i class="{{ sub.icon }} me-1"></i>{% endif %}
+                                            {{ sub.name }}
+                                        </span>
+                                        <span class="small text-muted">{{ sub.total|currency }}</span>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
                         </li>
                         {% endfor %}
                     </ul>

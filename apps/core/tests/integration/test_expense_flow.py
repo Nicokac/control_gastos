@@ -139,14 +139,17 @@ class TestExpenseFilteringFlow:
             is_system=False,
         )
         cat_comida = expense_category_factory(user, name="Almuerzo sub", parent=group_comida)
-        cat_transporte = expense_category_factory(user, name="Uber sub", parent=group_transporte)
+        cat_transporte = expense_category_factory(
+            user, name="Colectivo sub", parent=group_transporte
+        )
 
-        expense_factory(user, cat_comida, description="Almuerzo")
-        expense_factory(user, cat_transporte, description="Uber")
+        expense_factory(user, cat_comida, description="Gasto-comida-integ")
+        expense_factory(user, cat_transporte, description="Gasto-transporte-integ")
 
         list_url = reverse("expenses:list")
         response = authenticated_client.get(list_url, {"category": group_comida.pk})
 
-        content = response.content.decode()
-        assert "Almuerzo" in content
-        assert "Uber" not in content
+        expenses_in_response = list(response.context["expenses"])
+        descriptions = [e.description for e in expenses_in_response]
+        assert "Gasto-comida-integ" in descriptions
+        assert "Gasto-transporte-integ" not in descriptions

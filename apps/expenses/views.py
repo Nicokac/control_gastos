@@ -36,6 +36,7 @@ class ExpenseListView(UserOwnedListView):
                 "month",
                 "year",
                 "category",
+                "subcategory",
                 "date_from",
                 "date_to",
                 "payment_method",
@@ -52,6 +53,7 @@ class ExpenseListView(UserOwnedListView):
             year = str(today.year)
 
         category = self.request.GET.get("category")
+        subcategory = self.request.GET.get("subcategory")
         payment_method = self.request.GET.get("payment_method")
         expense_type = self.request.GET.get("expense_type")
 
@@ -75,7 +77,10 @@ class ExpenseListView(UserOwnedListView):
                 except ValueError:
                     pass
 
-        if category:
+        if subcategory:
+            # subcategoría específica tiene prioridad sobre el grupo
+            qs = qs.filter(category_id=subcategory)
+        elif category:
             # category contiene el pk de un grupo (parent); filtramos sus subcategorías
             qs = qs.filter(category__parent_id=category)
         if payment_method:
@@ -95,6 +100,7 @@ class ExpenseListView(UserOwnedListView):
                 "month",
                 "year",
                 "category",
+                "subcategory",
                 "date_from",
                 "date_to",
                 "payment_method",

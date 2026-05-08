@@ -335,6 +335,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 "category__parent__color",
                 "category__name",
                 "category__color",
+                "category__icon",
             )
             .annotate(total=Sum("amount_ars"))
             .order_by("-total")
@@ -352,8 +353,18 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                     "name": group_name,
                     "color": group_color,
                     "total": Decimal("0"),
+                    "subcategories": [],
                 }
             groups[group_name]["total"] += item["total"]
+            # Solo agregar subcategoría si la categoría tiene padre (no es el grupo mismo)
+            if item["category__parent__name"]:
+                groups[group_name]["subcategories"].append(
+                    {
+                        "name": item["category__name"],
+                        "icon": item["category__icon"] or "",
+                        "total": item["total"],
+                    }
+                )
 
         grand_total = sum(float(g["total"]) for g in groups.values())
 

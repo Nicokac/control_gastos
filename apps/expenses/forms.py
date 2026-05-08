@@ -195,6 +195,12 @@ class ExpenseForm(CurrencyFormMixin, forms.ModelForm):
 class ExpenseFilterForm(BaseFilterForm):
     """Formulario para filtrar gastos."""
 
+    subcategory = forms.ModelChoiceField(
+        queryset=Category.objects.none(),
+        required=False,
+        empty_label="Todas las subcategorías",
+        widget=forms.Select(attrs={"class": "form-select form-select-sm", "id": "id_subcategory"}),
+    )
     payment_method = forms.ChoiceField(
         choices=[],
         required=False,
@@ -212,12 +218,16 @@ class ExpenseFilterForm(BaseFilterForm):
             PaymentMethod.choices
         )
         self.fields["expense_type"].choices = [("", "Todos los tipos")] + list(ExpenseType.choices)
-        # Reemplazar el campo category por un filtro de grupo (parent)
         if user:
             from apps.core.constants import CategoryType
 
             self.fields["category"].queryset = Category.get_groups(user, CategoryType.EXPENSE)
             self.fields["category"].empty_label = "Todos los grupos"
+
+            # Poblar subcategorías: todas las del usuario tipo EXPENSE
+            self.fields["subcategory"].queryset = Category.get_user_categories(
+                user, CategoryType.EXPENSE
+            ).select_related("parent")
 
     def get_category_queryset(self, user):
         from apps.core.constants import CategoryType
