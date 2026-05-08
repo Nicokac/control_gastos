@@ -57,8 +57,17 @@ class Category(TimestampMixin, models.Model):
         verbose_name_plural = "Categorías"
         ordering = ["type", "name"]
         constraints = [
+            # Grupos: nombre único por usuario y tipo dentro de los grupos (parent IS NULL)
             models.UniqueConstraint(
-                fields=["name", "user", "type"], name="unique_category_per_user_and_type"
+                fields=["name", "user", "type"],
+                condition=models.Q(parent__isnull=True),
+                name="unique_group_name_per_user_and_type",
+            ),
+            # Subcategorías: nombre único por usuario, tipo y grupo padre
+            models.UniqueConstraint(
+                fields=["name", "user", "type", "parent"],
+                condition=models.Q(parent__isnull=False),
+                name="unique_subcategory_name_per_user_type_and_parent",
             ),
             # Categorías del sistema no pueden tener usuario
             models.CheckConstraint(
