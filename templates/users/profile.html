@@ -105,6 +105,13 @@
 
                                 <dt class="text-muted small">Último acceso</dt>
                                 <dd>{{ user.last_login|date:"d M Y, H:i"|default:"Nunca" }}</dd>
+
+                                <dt class="text-muted small">Versión de la app</dt>
+                                <dd>
+                                    <a href="{% url 'core:whats_new' %}" class="text-decoration-none">
+                                        <span class="badge bg-primary">v0.9.0</span>
+                                    </a>
+                                </dd>
                             </dl>
                         </div>
                     </div>

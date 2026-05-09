@@ -91,6 +91,15 @@ body {
     color: var(--primary-color);
 }
 
+.sidebar-version {
+    font-size: 0.75rem;
+    color: #adb5bd;
+}
+
+.sidebar--collapsed .sidebar-version {
+    display: none !important;
+}
+
 .sidebar-section {
     padding: 1rem 0;
 }

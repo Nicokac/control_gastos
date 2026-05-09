@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Novedades - Control de Gastos{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="bi bi-stars me-2 text-warning"></i>Novedades
+                </h1>
+                <span class="badge bg-primary">v{{ app_version }}</span>
+            </div>
+
+            {% for release in whats_new %}
+            <div class="card mb-3 {% if forloop.first %}border-primary{% endif %}">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        {% if forloop.first %}
+                        <span class="badge bg-primary me-2">Última versión</span>
+                        {% endif %}
+                        <strong>{{ release.title }}</strong>
+                    </div>
+                    <small class="text-muted">v{{ release.version }} · {{ release.date }}</small>
+                </div>
+                <div class="card-body pb-2">
+                    <ul class="mb-0 ps-3">
+                        {% for item in release.items %}
+                        <li class="mb-1 text-secondary">{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endfor %}
+
+        </div>
+    </div>
+</div>
+
+<script>
+    localStorage.setItem('whats_new_seen', '{{ app_version }}');
+</script>
+{% endblock %}

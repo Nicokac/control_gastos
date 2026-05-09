@@ -13,6 +13,7 @@ from django.views.generic import (
     DetailView,
     FormView,
     ListView,
+    TemplateView,
     UpdateView,
 )
 
@@ -154,3 +155,69 @@ class FeedbackView(LoginRequiredMixin, FormView):
             )
 
         return super().form_valid(form)
+
+
+APP_VERSION = "0.9.0"
+
+WHATS_NEW = [
+    {
+        "version": "0.9.0",
+        "date": "Mayo 2026",
+        "title": "Sidebar mobile y mejoras de navegación",
+        "items": [
+            "Sidebar disponible en celular como menú deslizable",
+            "Rate limiting en el endpoint de salud del sistema",
+            "Sección Novedades para seguir la evolución de la app",
+        ],
+    },
+    {
+        "version": "0.8.0",
+        "date": "Mayo 2026",
+        "title": "Sidebar colapsable",
+        "items": [
+            "El sidebar ahora se puede contraer a solo íconos para ganar espacio",
+            "El estado se recuerda entre sesiones",
+            "Corrección del layout horizontal en todas las pantallas",
+        ],
+    },
+    {
+        "version": "0.7.0",
+        "date": "Mayo 2026",
+        "title": "Correcciones de producción",
+        "items": [
+            "Formulario de feedback ahora funciona correctamente en producción",
+            "El cambio de día a las 21hs (hora Argentina) quedó corregido",
+        ],
+    },
+    {
+        "version": "0.6.0",
+        "date": "Mayo 2026",
+        "title": "Jerarquía de categorías",
+        "items": [
+            "Las categorías ahora se organizan en grupos y subcategorías",
+            "Filtro por grupo y subcategoría en la lista de gastos",
+            "Dashboard con drill-down por subcategoría en el ranking",
+        ],
+    },
+    {
+        "version": "0.5.0",
+        "date": "Mayo 2026",
+        "title": "Dashboard rediseñado y nuevas funciones",
+        "items": [
+            "Nuevo gráfico de evolución mensual (ingresos, gastos, ahorro, balance)",
+            "Dashboard con balance hero, donut de categorías y ranking",
+            "Formulario de feedback desde el sidebar",
+            "Selector visual de íconos en categorías y metas",
+        ],
+    },
+]
+
+
+class WhatsNewView(LoginRequiredMixin, TemplateView):
+    template_name = "core/whats_new.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["whats_new"] = WHATS_NEW
+        context["app_version"] = APP_VERSION
+        return context

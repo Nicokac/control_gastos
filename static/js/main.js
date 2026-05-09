@@ -29,6 +29,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Apply dynamic colors
     initDynamicColors();
+
+    // Show "Nuevo" badge on whats-new link if unseen version
+    initWhatsNewBadge();
 });
 
 /**
@@ -253,6 +256,19 @@ function initSidebarToggle() {
         setCollapsed(next);
         localStorage.setItem(STORAGE_KEY, String(next));
     });
+}
+
+/**
+ * Muestra badge "Nuevo" en el link de Novedades si hay versión no vista
+ */
+function initWhatsNewBadge() {
+    const CURRENT_VERSION = '0.9.0';
+    const seen = localStorage.getItem('whats_new_seen');
+    if (seen !== CURRENT_VERSION) {
+        document.querySelectorAll('#sidebarNewBadge').forEach(el => {
+            el.style.display = 'inline';
+        });
+    }
 }
 
 /**
