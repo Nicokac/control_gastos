@@ -5,6 +5,19 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [0.8.0] — 2026-05-09
+
+### Added
+
+- **Sidebar colapsable** — botón "Contraer/Expandir" que reduce el sidebar a íconos (64px). Estado persistido en `localStorage`. Animación CSS suave (`transition: width/margin-left 0.2s`).
+
+### Fixed
+
+- **Layout sin overflow horizontal** — reemplazado `container-fluid > row` por `div.app-layout` con `display: flex`. El `main` usa `flex: 1 + min-width: 0` en lugar de heredar `100vw` del grid de Bootstrap, eliminando el scroll horizontal espurio.
+- **Responsive del main al colapsar sidebar** — el área de contenido ahora se expande correctamente cuando el sidebar se colapsa (64px) y se contrae cuando se expande (280px), en desktop. En mobile el sidebar pasa a `position: relative` y el main ocupa el ancho completo.
+
+---
+
 ## [0.7.0] — 2026-05-09
 
 ### Corregido

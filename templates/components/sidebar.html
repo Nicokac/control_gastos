@@ -1,69 +1,80 @@
 {% if user.is_authenticated %}
-<nav class="sidebar d-none d-md-block" aria-label="Navegación lateral">
-  <div class="pt-3">
+<nav class="sidebar d-none d-md-block" id="appSidebar" aria-label="Navegación lateral">
+  <button type="button" class="sidebar-toggle-btn" id="sidebarToggle" aria-label="Contraer menú">
+    <i class="bi bi-layout-sidebar-reverse" id="sidebarToggleIcon"></i>
+    <span class="ms-2" id="sidebarToggleText">Contraer</span>
+  </button>
+  <div class="pt-2">
     <ul class="nav flex-column">
       <!-- Sección: Principal -->
       <li class="nav-item">
-        <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
-           href="{% url 'reports:dashboard' %}">
-          <i class="bi bi-speedometer2 me-2" aria-hidden="true"></i>
+        <a class="nav-link sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+           href="{% url 'reports:dashboard' %}"
+           title="Dashboard">
+          <i class="bi bi-speedometer2" aria-hidden="true"></i>
           <span>Dashboard</span>
         </a>
       </li>
 
       <!-- Sección: Transacciones -->
-      <li class="mt-3">
-        <small class="sidebar-label d-block px-3 text-uppercase">TRANSACCIONES</small>
+      <li class="mt-2">
+        <small class="sidebar-label d-block px-3 text-uppercase text-muted">Transacciones</small>
       </li>
       <li class="nav-item">
         <a href="{% url 'expenses:list' %}"
-           class="nav-link {% if 'expenses' in request.path %}active{% endif %}">
-          <i class="bi bi-arrow-up-circle text-danger me-2" aria-hidden="true"></i>
+           class="nav-link sidebar-link {% if 'expenses' in request.path %}active{% endif %}"
+           title="Gastos">
+          <i class="bi bi-arrow-up-circle text-danger" aria-hidden="true"></i>
           <span>Gastos</span>
         </a>
       </li>
       <li class="nav-item">
         <a href="{% url 'income:list' %}"
-           class="nav-link {% if 'income' in request.path %}active{% endif %}">
-          <i class="bi bi-arrow-down-circle text-success me-2" aria-hidden="true"></i>
+           class="nav-link sidebar-link {% if 'income' in request.path %}active{% endif %}"
+           title="Ingresos">
+          <i class="bi bi-arrow-down-circle text-success" aria-hidden="true"></i>
           <span>Ingresos</span>
         </a>
       </li>
 
       <!-- Sección: Planificación -->
-      <li class="mt-3">
-        <small class="sidebar-label d-block px-3 text-uppercase">PLANIFICACIÓN</small>
+      <li class="mt-2">
+        <small class="sidebar-label d-block px-3 text-uppercase text-muted">Planificación</small>
       </li>
       <li class="nav-item">
         <a href="{% url 'savings:list' %}"
-           class="nav-link {% if 'savings' in request.path %}active{% endif %}">
-          <i class="bi bi-piggy-bank text-info me-2" aria-hidden="true"></i>
+           class="nav-link sidebar-link {% if 'savings' in request.path %}active{% endif %}"
+           title="Ahorro">
+          <i class="bi bi-piggy-bank text-info" aria-hidden="true"></i>
           <span>Ahorro</span>
         </a>
       </li>
       <li class="nav-item">
         <a href="{% url 'categories:list' %}"
-           class="nav-link {% if 'categories' in request.path %}active{% endif %}">
-          <i class="bi bi-tags me-2" aria-hidden="true"></i>
+           class="nav-link sidebar-link {% if 'categories' in request.path %}active{% endif %}"
+           title="Categorías">
+          <i class="bi bi-tags" aria-hidden="true"></i>
           <span>Categorías</span>
         </a>
       </li>
 
       <!-- Sección: Cuenta -->
-      <li class="mt-3">
-        <small class="sidebar-label d-block px-3 text-uppercase">CUENTA</small>
+      <li class="mt-2">
+        <small class="sidebar-label d-block px-3 text-uppercase text-muted">Cuenta</small>
       </li>
       <li class="nav-item">
         <a href="{% url 'users:profile' %}"
-           class="nav-link {% if 'profile' in request.path %}active{% endif %}">
-          <i class="bi bi-gear me-2" aria-hidden="true"></i>
+           class="nav-link sidebar-link {% if 'profile' in request.path %}active{% endif %}"
+           title="Mi cuenta">
+          <i class="bi bi-gear" aria-hidden="true"></i>
           <span>Mi cuenta</span>
         </a>
       </li>
       <li class="nav-item">
         <a href="{% url 'core:feedback' %}"
-           class="nav-link {% if 'feedback' in request.path %}active{% endif %}">
-          <i class="bi bi-megaphone me-2" aria-hidden="true"></i>
+           class="nav-link sidebar-link {% if 'feedback' in request.path %}active{% endif %}"
+           title="Reportar / Sugerir">
+          <i class="bi bi-megaphone" aria-hidden="true"></i>
           <span>Reportar / Sugerir</span>
         </a>
       </li>

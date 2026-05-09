@@ -18,14 +18,12 @@
     {% include 'components/navbar.html' %}
 
     {% if user.is_authenticated %}
-    <div class="container-fluid">
-        <div class="row">
-            {% include 'components/sidebar.html' %}
-            <main class="app-main app-main--with-sidebar col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
-                {% include 'components/alerts.html' %}
-                {% block content %}{% endblock %}
-            </main>
-        </div>
+    <div class="app-layout">
+        {% include 'components/sidebar.html' %}
+        <main class="app-main app-main--with-sidebar px-md-4 py-4" id="appMain">
+            {% include 'components/alerts.html' %}
+            {% block content %}{% endblock %}
+        </main>
     </div>
     {% else %}
     <main class="app-main">

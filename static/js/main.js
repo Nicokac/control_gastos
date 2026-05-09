@@ -3,8 +3,11 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Bootstrap tooltips
+    // Initialize Bootstrap tooltips first so sidebar toggle can enable/disable them
     initTooltips();
+
+    // Initialize sidebar toggle (reads localStorage and sets initial state)
+    initSidebarToggle();
 
     // Initialize password toggles
     initPasswordToggles();
@@ -218,6 +221,37 @@ function initQuickDepositModal() {
             barEl.style.width = Math.min(progress, 100) + '%';
             barEl.style.visibility = 'visible';
         }
+    });
+}
+
+/**
+ * Collapsible sidebar with localStorage persistence
+ */
+function initSidebarToggle() {
+    const sidebar = document.getElementById('appSidebar');
+    const mainContent = document.getElementById('appMain');
+    const toggleBtn = document.getElementById('sidebarToggle');
+    const toggleIcon = document.getElementById('sidebarToggleIcon');
+    const toggleText = document.getElementById('sidebarToggleText');
+
+    if (!sidebar || !toggleBtn) return;
+
+    const STORAGE_KEY = 'sidebar_collapsed';
+
+    function setCollapsed(collapsed) {
+        sidebar.classList.toggle('sidebar--collapsed', collapsed);
+        if (mainContent) mainContent.classList.toggle('app-main--sidebar-collapsed', collapsed);
+        toggleIcon.className = collapsed ? 'bi bi-layout-sidebar' : 'bi bi-layout-sidebar-reverse';
+        if (toggleText) toggleText.textContent = collapsed ? 'Expandir' : 'Contraer';
+    }
+
+    const savedState = localStorage.getItem(STORAGE_KEY) === 'true';
+    setCollapsed(savedState);
+
+    toggleBtn.addEventListener('click', function() {
+        const next = !sidebar.classList.contains('sidebar--collapsed');
+        setCollapsed(next);
+        localStorage.setItem(STORAGE_KEY, String(next));
     });
 }
 
