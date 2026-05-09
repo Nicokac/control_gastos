@@ -122,7 +122,9 @@ class ExpenseListView(UserOwnedListView):
         context["total"] = total
 
         expense_type_labels = dict(ExpenseType.choices)
-        context["expense_type_summary"] = [
+        type_classified = qs.exclude(expense_type="").aggregate(s=Sum("amount_ars"))["s"] or 0
+        type_unclassified = (total - type_classified) if total else 0
+        expense_type_summary = [
             {
                 "label": expense_type_labels.get(row["expense_type"], row["expense_type"]),
                 "subtotal": row["subtotal"],
@@ -132,9 +134,14 @@ class ExpenseListView(UserOwnedListView):
             .annotate(subtotal=Sum("amount_ars"))
             .order_by("expense_type")
         ]
+        if type_unclassified > 0:
+            expense_type_summary.append({"label": "Sin clasificar", "subtotal": type_unclassified})
+        context["expense_type_summary"] = expense_type_summary
 
         payment_method_labels = dict(PaymentMethod.choices)
-        context["payment_method_summary"] = [
+        method_classified = qs.exclude(payment_method="").aggregate(s=Sum("amount_ars"))["s"] or 0
+        method_unclassified = (total - method_classified) if total else 0
+        payment_method_summary = [
             {
                 "label": payment_method_labels.get(row["payment_method"], row["payment_method"]),
                 "subtotal": row["subtotal"],
@@ -144,6 +151,11 @@ class ExpenseListView(UserOwnedListView):
             .annotate(subtotal=Sum("amount_ars"))
             .order_by("payment_method")
         ]
+        if method_unclassified > 0:
+            payment_method_summary.append(
+                {"label": "Sin clasificar", "subtotal": method_unclassified}
+            )
+        context["payment_method_summary"] = payment_method_summary
 
         return context
 

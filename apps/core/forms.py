@@ -42,13 +42,19 @@ class CurrencyFormMixin:
         super().__init__(*args, **kwargs)
         if "amount" in self.fields:
             original = self.fields["amount"]
-            self.fields["amount"] = ARSDecimalField(
+            # Preserve instance value before replacing the field
+            instance_value = None
+            if hasattr(self, "instance") and self.instance and self.instance.pk:
+                instance_value = getattr(self.instance, "amount", None)
+            new_field = ARSDecimalField(
                 max_digits=getattr(original, "max_digits", 12),
                 decimal_places=getattr(original, "decimal_places", 2),
                 required=original.required,
                 widget=original.widget,
                 label=original.label,
+                initial=instance_value if instance_value is not None else original.initial,
             )
+            self.fields["amount"] = new_field
 
     def clean_amount(self):
         """Valida que el monto sea positivo."""

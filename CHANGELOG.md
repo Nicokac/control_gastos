@@ -5,6 +5,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [0.10.0] — 2026-05-09
+
+### Fixed
+
+- **Monto vacío al editar gasto/ingreso** — `CurrencyFormMixin` reemplazaba el campo `amount` con `ARSDecimalField` sin preservar el valor de la instancia, dejando el campo vacío en edición. Corregido pasando `instance.amount` como `initial` al nuevo campo.
+- **Resumen sin "Sin clasificar"** — el panel "Ver resumen" ignoraba los gastos sin tipo/método asignado. Ahora incluye una fila "Sin clasificar" con el monto restante cuando corresponde.
+
+---
+
 ## [0.9.0] — 2026-05-09
 
 ### Added
