@@ -25,24 +25,27 @@ from django.http import HttpResponse
 from django.urls import include, path
 
 _healthz_hits: dict[str, list[float]] = defaultdict(list)
-_HEALTHZ_LIMIT = 10  # máx requests
+_HEALTHZ_LIMIT = 30  # máx requests por IP externa
 _HEALTHZ_WINDOW = 60  # segundos
 
 
 def healthz(request):
     """Health check endpoint que verifica conexión a DB."""
-    ip = (
-        request.META.get("HTTP_X_FORWARDED_FOR", request.META.get("REMOTE_ADDR", ""))
-        .split(",")[0]
-        .strip()
-    )
-    now = time.monotonic()
-    window_start = now - _HEALTHZ_WINDOW
-    hits = [t for t in _healthz_hits[ip] if t > window_start]
-    if len(hits) >= _HEALTHZ_LIMIT:
-        return HttpResponse("too many requests", content_type="text/plain", status=429)
-    hits.append(now)
-    _healthz_hits[ip] = hits
+    # El health checker de Render (user-agent Render/1.0) no se throttlea
+    user_agent = request.META.get("HTTP_USER_AGENT", "")
+    if "Render" not in user_agent:
+        ip = (
+            request.META.get("HTTP_X_FORWARDED_FOR", request.META.get("REMOTE_ADDR", ""))
+            .split(",")[0]
+            .strip()
+        )
+        now = time.monotonic()
+        window_start = now - _HEALTHZ_WINDOW
+        hits = [t for t in _healthz_hits[ip] if t > window_start]
+        if len(hits) >= _HEALTHZ_LIMIT:
+            return HttpResponse("too many requests", content_type="text/plain", status=429)
+        hits.append(now)
+        _healthz_hits[ip] = hits
 
     from django.db import connection
 

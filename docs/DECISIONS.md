@@ -95,6 +95,7 @@ Throttle simple en memoria en `config/urls.py`: máximo 10 requests por IP en ve
 - Sin dependencias extra (usa `defaultdict` + `time.monotonic()`).
 - Render Free ya aplica rate limiting externo; esto es una segunda capa liviana.
 - `django-axes` está orientado a login, no a endpoints públicos.
+- El health checker de Render (`User-Agent: Render/1.0`) queda excluido del throttle — llama cada 5 segundos y un 429 hace que Render mate el proceso.
 
 ### Riesgo aceptado
 El dict en memoria se resetea con cada restart del proceso (Render Free reinicia frecuentemente). No persiste entre workers si se escala horizontalmente — aceptable para el contexto actual.
