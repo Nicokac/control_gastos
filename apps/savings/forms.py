@@ -116,7 +116,7 @@ class SavingForm(forms.ModelForm):
     def clean_target_date(self):
         """Valida que la fecha objetivo sea futura (si se especifica)."""
         target_date = self.cleaned_data.get("target_date")
-        if target_date and target_date < timezone.now().date():
+        if target_date and target_date < timezone.localdate():
             raise forms.ValidationError("La fecha objetivo debe ser futura.")
         return target_date
 

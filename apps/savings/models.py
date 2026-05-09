@@ -142,7 +142,7 @@ class Saving(TimestampMixin, models.Model):
             return False
         from django.utils import timezone
 
-        return self.target_date < timezone.now().date() and self.status == SavingStatus.ACTIVE
+        return self.target_date < timezone.localdate() and self.status == SavingStatus.ACTIVE
 
     def add_deposit(self, amount, description=""):
         """

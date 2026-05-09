@@ -111,7 +111,7 @@ class ExpenseForm(CurrencyFormMixin, forms.ModelForm):
 
         # Fecha default = hoy
         if not self.instance.pk:
-            self.fields["date"].initial = timezone.now().date()
+            self.fields["date"].initial = timezone.localdate()
 
         # Moneda default del usuario
         if user and not self.instance.pk:

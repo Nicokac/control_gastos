@@ -26,7 +26,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
 
         user = self.request.user
-        today = timezone.now().date()
+        today = timezone.localdate()
         current_month = today.month
         current_year = today.year
 
@@ -143,7 +143,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
     def _get_savings_data(self, user):
         """Obtiene datos de metas de ahorro activas."""
-        today = timezone.now().date()
+        today = timezone.localdate()
         month_start_date, month_end_date = get_month_date_range_exclusive(today.month, today.year)
 
         # Convertir a datetime aware para filtrar DateTimeField (updated_at)

@@ -10,7 +10,7 @@ from django.utils import timezone
 
 def get_current_month_year():
     """Retorna el mes y año actuales como tupla (month, year)."""
-    today = timezone.now().date()
+    today = timezone.localdate()
     return today.month, today.year
 
 
@@ -80,7 +80,7 @@ def get_years_choices(start_year: int = 2020):
     Returns:
         Lista de tuplas (year, year) para choices
     """
-    current_year = timezone.now().year
+    current_year = timezone.localdate().year
     return [(year, str(year)) for year in range(start_year, current_year + 2)]
 
 

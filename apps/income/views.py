@@ -38,7 +38,7 @@ class IncomeListView(UserOwnedListView):
             year = self.request.GET.get("year")
         else:
             # Default: mes y año actual
-            today = timezone.now().date()
+            today = timezone.localdate()
             month = str(today.month)
             year = str(today.year)
 
@@ -78,7 +78,7 @@ class IncomeListView(UserOwnedListView):
             key in self.request.GET for key in ["month", "year", "category", "date_from", "date_to"]
         )
 
-        today = timezone.now().date()
+        today = timezone.localdate()
 
         if has_filters:
             form_data = self.request.GET

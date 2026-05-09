@@ -48,7 +48,7 @@ class ExpenseListView(UserOwnedListView):
             month = self.request.GET.get("month")
             year = self.request.GET.get("year")
         else:
-            today = timezone.now().date()
+            today = timezone.localdate()
             month = str(today.month)
             year = str(today.year)
 
@@ -111,7 +111,7 @@ class ExpenseListView(UserOwnedListView):
         if has_filters:
             form_data = self.request.GET
         else:
-            today = timezone.now().date()
+            today = timezone.localdate()
             form_data = {"month": today.month, "year": today.year}
 
         context["filter_form"] = ExpenseFilterForm(form_data, user=self.request.user)
