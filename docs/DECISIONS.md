@@ -305,3 +305,54 @@ los selectores de formulario y la lógica de dashboard.
 Si en el futuro se necesita más de un nivel de jerarquía, la estructura actual de `parent`
 solo admite un nivel. Mitigación: la FK self podría extenderse, pero requeriría refactor
 de las queries de dashboard y de los selectores.
+
+---
+
+## D-012 — timezone.localdate() en lugar de timezone.now().date()
+
+**Fecha:** 2026-05-08
+**Estado:** ✅ Corregido
+
+### Contexto
+La app mostraba el día siguiente a partir de las 21:00 hora Argentina. El código usaba
+`timezone.now().date()` que devuelve la fecha en UTC. Argentina es UTC-3, por lo que
+a las 21:00 local ya son las 00:00 UTC del día siguiente.
+
+### Decisión
+Usar `timezone.localdate()` en todo el código de producción que determina "hoy":
+vistas, formularios, utils y modelos. `timezone.localdate()` aplica el `TIME_ZONE`
+configurado (`America/Argentina/Buenos_Aires`) antes de extraer la fecha.
+
+### Archivos corregidos
+- `apps/core/utils.py` — `get_current_month_year()`, `get_years_choices()`
+- `apps/expenses/views.py`, `apps/income/views.py`, `apps/reports/views.py`
+- `apps/expenses/forms.py`, `apps/income/forms.py`
+- `apps/savings/forms.py` — validación de fecha futura
+- `apps/savings/models.py` — property `is_overdue`
+
+### Por qué no se tocaron los tests
+Los tests usan `timezone.now().date()` para construir datos de prueba (fechas de gastos).
+Eso está bien: en el entorno de test la zona horaria no afecta la lógica que se verifica,
+y cambiarlos a `localdate()` no aportaría cobertura adicional.
+
+---
+
+## D-013 — Feedback: SMTP bloqueado en Render Free tier
+
+**Fecha:** 2026-05-09
+**Estado:** ⏳ Pendiente resolución
+
+### Contexto
+El formulario de feedback (`/feedback/`) falla en producción con `OSError: [Errno 101]
+Network is unreachable` al intentar conectar a `smtp.gmail.com:587`. Render Free tier
+bloquea conexiones salientes en puertos SMTP (25, 465, 587) para prevenir spam.
+
+### Opciones evaluadas
+1. **Servicio transaccional** (Resend, SendGrid, Mailgun) — operan sobre HTTPS (puerto 443),
+   compatible con Render Free. Todos tienen tier gratuito suficiente.
+2. **Upgrade a Render Starter** ($7/mes) — desbloquea SMTP saliente.
+3. **Persistencia en DB** — guardar feedbacks en un modelo `Feedback` sin email.
+   Más simple, sin dependencias externas, pero requiere revisar el admin o una vista.
+
+### Estado
+Pendiente decisión sobre qué opción implementar.

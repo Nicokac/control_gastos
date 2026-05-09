@@ -1,0 +1,112 @@
+# Changelog
+
+Todas las versiones notables de este proyecto están documentadas aquí.
+Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
+
+---
+
+## [Unreleased]
+
+### Known Issues
+- El formulario de feedback no puede enviar emails desde Render Free tier (OSError: Network is unreachable). El plan Free bloquea conexiones SMTP salientes (puerto 587). Pendiente migrar a un servicio transaccional (Resend, SendGrid) o guardar feedbacks en DB.
+
+---
+
+## [0.6.0] — 2026-05-08
+
+### Added
+- **Jerarquía de categorías** — modelo grupo → subcategoría con FK self (`parent`). Los gastos se asignan a subcategorías; los grupos son agrupadores visuales (Fases 1–5).
+- **Selector agrupado en formularios** — radio buttons de categorías agrupados bajo cabecera de grupo en formularios de gastos e ingresos (Fase 2).
+- **Dashboard drill-down** — ranking de categorías expandible por grupo para ver desglose por subcategoría. Donut agrupado por grupo padre (Fase 3).
+- **Filtro por grupo en lista de gastos** — selector de grupo + selector dinámico de subcategoría (JS con `data-parent`). La subcategoría tiene prioridad sobre el grupo al filtrar (Fase 4).
+- **Mover subcategorías entre grupos** — campo `parent` visible al editar subcategorías; `?parent=<pk>` pre-selecciona el grupo en creación (Fase 5).
+
+### Fixed
+- **Constraint de unicidad de categorías** — reemplazada constraint `(name, user, type)` por dos constraints condicionales: una para grupos (`parent IS NULL`) y otra para subcategorías (`parent IS NOT NULL`), permitiendo nombres iguales en grupos y subcategorías distintas.
+- **Cambio de día a las 21hs** — reemplazado `timezone.now().date()` por `timezone.localdate()` en todas las vistas, formularios y utils. La app ahora usa la fecha local de Argentina (UTC-3) en lugar de UTC.
+
+### Changed
+- "Ranking de Grupos" renombrado a "Ranking de Categorías" en el dashboard.
+- Dashboard: distribución de gastos ahora agrupa por grupo padre con fallback a subcategoría para categorías sin jerarquía.
+
+---
+
+## [0.5.0] — 2026-05-04
+
+### Added
+- **Formulario de feedback** — sección "Reportar / Sugerir" en el sidebar. Envía email al administrador con tipo de reporte, mensaje y datos del usuario. Implementado en `apps.core` sin modelo de DB (D-010).
+- **Gráfico de evolución mensual** — línea con 4 series (Ingresos, Gastos, Ahorro, Balance) desde enero hasta el mes actual. Balance con línea punteada (D-008).
+- **Dashboard rediseñado** — Balance como card hero con barra de progreso y comparación porcentual vs mes anterior. Donut + ranking de categorías con scroll.
+- **Picker visual de íconos** — selector de íconos con radio buttons en formularios de categorías y metas de ahorro.
+- **Filtros avanzados de gastos** — filtro por método de pago y tipo de gasto (fijo/variable) con resumen colapsable.
+- **Vinculación gasto → meta de ahorro** — al registrar un gasto se puede seleccionar una meta como destino; el monto se deposita automáticamente.
+- **Formato ARS en campos de monto** — acepta coma como separador decimal en formularios.
+
+### Fixed
+- CSP: habilitado `unsafe-inline` en `style-src` para styles dinámicos del dashboard (D-009).
+- Barra de progreso del balance usa clases Bootstrap en lugar de inline color.
+- `format_currency()` centralizado en filtro de template.
+
+---
+
+## [0.4.0] — 2026-03-29
+
+### Removed
+- **Módulo de presupuestos** (`apps.budgets`) eliminado por completo — vistas, formularios, admin, templates, fixtures, tests y referencias en dashboard/sidebar/perfil (D-007).
+
+---
+
+## [0.3.0] — 2026-03-08
+
+### Added
+- **Rate limiting** con django-axes: 5 intentos fallidos → bloqueo 2 horas. Página `account_locked` dedicada.
+- **Headers de seguridad** — HSTS, CSP, X-Frame-Options, SESSION/CSRF cookies seguras en prod.
+- **Logging estructurado** — eventos de seguridad, performance (RequestTimingMiddleware) y errores.
+- **Error tracking** con Sentry (prod).
+- **Comando `generate_secret_key`** — genera SECRET_KEY segura con opción `--env-format`.
+- **Comando `axes_status`** — muestra y limpia intentos de login fallidos.
+- **Comando `view_logs`** — consulta logs por tipo (security, error, app).
+- **Healthcheck** `/healthz/` — verifica DB y retorna 200/503.
+- **Índices compuestos** en Expense, Income, Saving, Category para queries frecuentes.
+- **Constraints de DB** en Category: `system_category_no_user`, `user_category_requires_user`.
+
+### Fixed
+- `alert_threshold` del User se usa como default en cada Budget (D-003).
+- Income: unificado filtrado de fechas con `get_month_date_range_exclusive`.
+- Login redirige al dashboard en lugar de categories.
+- Eliminado `MEDIA_ROOT` sin definir y comentarios muertos.
+
+### Changed
+- Sidebar: "Configuración" → "Mi cuenta".
+- "Nuevo Gasto" estandarizado en toda la UI.
+
+---
+
+## [0.2.0] — 2026-02-17
+
+### Added
+- **Metas de ahorro** (`apps.savings`) — crear metas con objetivo y fecha límite, registrar depósitos y retiros, seguimiento de progreso porcentual, auto-completado al llegar al objetivo.
+- **Multimoneda** — soporte ARS/USD con tipo de cambio configurable. `amount_ars` calculado en Python via `CurrencyMixin.save()` (D-001).
+- **Dashboard** — balance mensual, comparación con mes anterior, últimas transacciones, distribución de gastos por categoría.
+- **Categorías personalizadas** — CRUD de categorías por usuario, iconos y colores, tipos Gasto/Ingreso.
+- **Paginación** en listados de gastos, ingresos y metas.
+- **CI/CD** con GitHub Actions — lint, tests, coverage ≥80%, security checks, django-checks, collectstatic, deploy a Render.
+- **Pre-commit hooks** — Ruff, ruff-format, detect-secrets, validaciones de whitespace.
+- **Scripts de backup** (`backup_db.ps1`, `restore_db.ps1`) para uso futuro con acceso externo a PostgreSQL.
+
+### Changed
+- Arquitectura: mixins unificados en `core/views.py` (`UserOwnedListView`, `UserOwnedCreateView`, etc.).
+- Separación de settings en `base.py`, `dev.py`, `prod.py`.
+
+---
+
+## [0.1.0] — 2026-01-15
+
+### Added
+- Proyecto inicial Django 5.2 / Python 3.12.
+- Autenticación — registro, login, logout, perfil de usuario.
+- CRUD de gastos con fecha, descripción, monto y categoría.
+- CRUD de ingresos.
+- Categorías de sistema predefinidas (`seed_categories`).
+- Deploy inicial a Render (Free tier) con PostgreSQL.
+- SQLite en desarrollo, PostgreSQL en producción.

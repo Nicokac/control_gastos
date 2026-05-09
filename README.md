@@ -25,7 +25,9 @@
 - [Estructura del Proyecto](#estructura-del-proyecto)
 - [Comandos Útiles](#comandos-útiles)
 - [Pipeline de Calidad](#pipeline-de-calidad)
+- [Known Issues](#known-issues)
 - [Roadmap](#roadmap)
+- [Changelog](#changelog)
 - [Autor](#autor)
 
 ---
@@ -34,8 +36,8 @@
 
 | Métrica | Valor |
 |---------|-------|
-| Tests | 609 |
-| Coverage | 93.38% (enforced ≥80%) |
+| Tests | 605 |
+| Coverage | 93.31% (enforced ≥80%) |
 | Python | 3.12+ |
 | Django | 5.2 |
 | CI Jobs | 5 |
@@ -61,14 +63,14 @@
 ### 💰 Gestión de Gastos e Ingresos
 - Registro con fecha, descripción, monto y categoría
 - Soporte multimoneda (ARS/USD) con conversión automática
-- Filtros por mes, año y categoría
+- Filtros por mes, año, grupo y subcategoría
 - Paginación en listados
 
 ### 📊 Dashboard Interactivo
 - Balance mensual como card hero con barra de progreso
 - Comparación porcentual con mes anterior
-- Gráfico donut de distribución de gastos por categoría (top 5 + Otros)
-- Ranking de categorías con scroll
+- Gráfico donut de distribución de gastos por grupo (top 5 + Otros)
+- Ranking de categorías con drill-down por subcategoría
 - Gráfico de evolución mensual (Ingresos / Gastos / Ahorro / Balance)
 - Últimas 5 transacciones
 
@@ -871,6 +873,20 @@ ci: add GitHub Actions pipeline
 ## Licencia
 
 Este proyecto es de uso privado.
+
+---
+
+## Known Issues
+
+- **Feedback SMTP bloqueado** — Render Free no permite conexiones salientes en el puerto 587. El formulario de feedback falla en producción. ⏳ Pendiente resolución (ver D-013).
+
+Ver detalle en [docs/DECISIONS.md — D-013](docs/DECISIONS.md).
+
+---
+
+## Changelog
+
+Ver [CHANGELOG.md](CHANGELOG.md) para el historial completo de versiones.
 
 ---
 
