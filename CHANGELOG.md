@@ -5,10 +5,12 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
-## [Unreleased]
+## [0.7.0] — 2026-05-09
 
-### Known Issues
-- El formulario de feedback no puede enviar emails desde Render Free tier (OSError: Network is unreachable). El plan Free bloquea conexiones SMTP salientes (puerto 587). Pendiente migrar a un servicio transaccional (Resend, SendGrid) o guardar feedbacks en DB.
+### Corregido
+
+- **Feedback via Resend API HTTP** — el envío de email del formulario de feedback fallaba en Render Free tier porque bloquea conexiones SMTP salientes (puertos 25, 465, 587). Migrado de `send_mail()` a `resend.Emails.send()` via API HTTP (puerto 443). Dependencia `resend` agregada a `requirements/prod.txt`.
+- **Cambio de día a las 21hs** — reemplazado `timezone.now().date()` por `timezone.localdate()` en vistas, formularios, utils y modelos. La app ahora usa la fecha local de Argentina (UTC-3) en lugar de UTC.
 
 ---
 

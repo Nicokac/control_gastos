@@ -337,22 +337,25 @@ y cambiarlos a `localdate()` no aportaría cobertura adicional.
 
 ---
 
-## D-013 — Feedback: SMTP bloqueado en Render Free tier
+## D-013 — Feedback: API HTTP de Resend en lugar de SMTP
 
 **Fecha:** 2026-05-09
-**Estado:** ⏳ Pendiente resolución
+**Estado:** ✅ Resuelto
 
 ### Contexto
-El formulario de feedback (`/feedback/`) falla en producción con `OSError: [Errno 101]
-Network is unreachable` al intentar conectar a `smtp.gmail.com:587`. Render Free tier
-bloquea conexiones salientes en puertos SMTP (25, 465, 587) para prevenir spam.
+El formulario de feedback (`/feedback/`) fallaba en producción porque Render Free tier
+bloquea conexiones salientes en puertos SMTP (25, 465, 587). Se intentaron Gmail SMTP
+y Resend SMTP — ambos bloqueados.
 
-### Opciones evaluadas
-1. **Servicio transaccional** (Resend, SendGrid, Mailgun) — operan sobre HTTPS (puerto 443),
-   compatible con Render Free. Todos tienen tier gratuito suficiente.
-2. **Upgrade a Render Starter** ($7/mes) — desbloquea SMTP saliente.
-3. **Persistencia en DB** — guardar feedbacks en un modelo `Feedback` sin email.
-   Más simple, sin dependencias externas, pero requiere revisar el admin o una vista.
+### Decisión
+Usar la API HTTP de Resend (`resend.Emails.send()`) en lugar del backend SMTP de Django.
+La API opera sobre HTTPS (puerto 443), compatible con Render Free.
 
-### Estado
-Pendiente decisión sobre qué opción implementar.
+### Implementación
+- `FeedbackView.form_valid()` en `apps/core/views.py` usa `resend.Emails.send()` directamente.
+- `RESEND_API_KEY` se lee desde variable de entorno via `settings.RESEND_API_KEY`.
+- `DEFAULT_FROM_EMAIL=onboarding@resend.dev` (dominio de prueba de Resend; sin dominio verificado solo se puede enviar al email de la cuenta).
+- `FEEDBACK_EMAIL` y `ADMIN_EMAIL` deben coincidir con el email registrado en Resend mientras no se verifique un dominio propio.
+
+### Riesgo aceptado
+Sin dominio verificado en Resend, el `from` queda como `onboarding@resend.dev` y el destinatario debe ser el mismo email de la cuenta. Para enviar a cualquier destinatario con remitente propio, verificar un dominio en resend.com/domains.

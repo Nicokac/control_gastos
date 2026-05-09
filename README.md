@@ -246,14 +246,12 @@ DB_PASSWORD=password-seguro
 DB_HOST=localhost
 DB_PORT=5432
 
-# Email (opcional, para notificaciones de errores)
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_HOST_USER=tu-email@gmail.com
-EMAIL_HOST_PASSWORD=tu-app-password
-DEFAULT_FROM_EMAIL=noreply@tudominio.com
+# Email transaccional via Resend API (para formulario de feedback)
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxx
+DEFAULT_FROM_EMAIL=onboarding@resend.dev
+FEEDBACK_EMAIL=tu-email@tudominio.com
 
-# Admin para notificaciones
+# Admin para notificaciones de error del sistema
 ADMIN_EMAIL=admin@tudominio.com
 ```
 
@@ -269,6 +267,10 @@ ADMIN_EMAIL=admin@tudominio.com
 | `DB_PASSWORD` | ✅ Prod | - | Contraseña PostgreSQL |
 | `DB_HOST` | ✅ Prod | `localhost` | Host de la base de datos |
 | `DB_PORT` | No | `5432` | Puerto PostgreSQL |
+| `RESEND_API_KEY` | ✅ Prod | - | API key de Resend para envío de feedback |
+| `DEFAULT_FROM_EMAIL` | No | `onboarding@resend.dev` | Remitente de emails |
+| `FEEDBACK_EMAIL` | No | `ADMIN_EMAIL` | Destinatario del formulario de feedback |
+| `ADMIN_EMAIL` | No | - | Destinatario de alertas de error del sistema |
 
 ---
 
@@ -374,6 +376,9 @@ Configurar en **Render Dashboard → Environment**:
 | `DB_HOST` | ✅ | `dpg-XXXX.render.com` | Desde Render PostgreSQL |
 | `DB_PORT` | No | `5432` | Default |
 | `ADMIN_EMAIL` | No | `admin@example.com` | Para alertas de errores |
+| `RESEND_API_KEY` | ✅ | `re_xxxx...` | API key de Resend para formulario de feedback |
+| `DEFAULT_FROM_EMAIL` | No | `onboarding@resend.dev` | Remitente de emails |
+| `FEEDBACK_EMAIL` | No | `ADMIN_EMAIL` | Destinatario del formulario de feedback |
 | `SENTRY_DSN` | No | `https://...@sentry.io/...` | Error tracking en producción |
 
 ---
@@ -878,7 +883,7 @@ Este proyecto es de uso privado.
 
 ## Known Issues
 
-- **Feedback SMTP bloqueado** — Render Free no permite conexiones salientes en el puerto 587. El formulario de feedback falla en producción. ⏳ Pendiente resolución (ver D-013).
+Sin issues conocidos actualmente.
 
 Ver detalle en [docs/DECISIONS.md — D-013](docs/DECISIONS.md).
 
