@@ -157,16 +157,24 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "0.9.0"
+APP_VERSION = "0.10.0"
 
 WHATS_NEW = [
+    {
+        "version": "0.10.0",
+        "date": "Mayo 2026",
+        "title": "Correcciones en gastos",
+        "items": [
+            "El monto ya no aparece vacío al editar un gasto existente",
+            'El resumen de gastos ahora muestra "Sin clasificar" para los que no tienen tipo o método de pago',
+        ],
+    },
     {
         "version": "0.9.0",
         "date": "Mayo 2026",
         "title": "Sidebar mobile y mejoras de navegación",
         "items": [
             "Sidebar disponible en celular como menú deslizable",
-            "Rate limiting en el endpoint de salud del sistema",
             "Sección Novedades para seguir la evolución de la app",
         ],
     },
