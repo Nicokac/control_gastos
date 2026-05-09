@@ -7,3 +7,4 @@ django-axes>=7.0
 whitenoise>=6.6
 django-csp==3.8
 sentry-sdk[django]==2.53.0
+resend>=2.0

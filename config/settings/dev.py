@@ -26,6 +26,9 @@ apply_email_settings(globals(), default_backend="django.core.mail.backends.conso
 # Destinatario del formulario de feedback de usuarios
 FEEDBACK_EMAIL = "kachuknm@gmail.com"
 
+# Resend API key (vacío en dev — se usa console backend)
+RESEND_API_KEY = config("RESEND_API_KEY", default="")
+
 
 # =============================================================================
 # LOGGING - Desarrollo

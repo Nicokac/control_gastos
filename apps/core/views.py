@@ -121,15 +121,30 @@ class FeedbackView(LoginRequiredMixin, FormView):
         subject = f"[Control de Gastos] {tipo_label} — {user.username}"
         body = f"Usuario: {user.username}\nEmail: {user.email}\nTipo: {tipo_label}\n---\n{mensaje}"
         recipient = getattr(settings, "FEEDBACK_EMAIL", "kachuknm@gmail.com")
+        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "onboarding@resend.dev")
+        resend_api_key = getattr(settings, "RESEND_API_KEY", "")
 
         try:
-            send_mail(
-                subject=subject,
-                message=body,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[recipient],
-                fail_silently=False,
-            )
+            if resend_api_key:
+                import resend
+
+                resend.api_key = resend_api_key
+                resend.Emails.send(
+                    {
+                        "from": from_email,
+                        "to": [recipient],
+                        "subject": subject,
+                        "text": body,
+                    }
+                )
+            else:
+                send_mail(
+                    subject=subject,
+                    message=body,
+                    from_email=from_email,
+                    recipient_list=[recipient],
+                    fail_silently=False,
+                )
             messages.success(self.request, "¡Gracias! Tu reporte fue enviado correctamente.")
         except Exception:
             logger.exception("Error al enviar feedback de usuario %s", user.username)

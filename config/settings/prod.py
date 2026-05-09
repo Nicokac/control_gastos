@@ -295,6 +295,9 @@ apply_email_settings(globals())
 # Destinatario del formulario de feedback de usuarios
 FEEDBACK_EMAIL = config("FEEDBACK_EMAIL", default=ADMIN_EMAIL or "kachuknm@gmail.com")
 
+# Resend API (email transaccional via HTTP — no requiere SMTP)
+RESEND_API_KEY = config("RESEND_API_KEY", default="")
+
 # =============================================================================
 # SENTRY - Error Tracking
 # =============================================================================
