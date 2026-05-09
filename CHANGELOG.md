@@ -5,6 +5,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [0.9.0] — 2026-05-09
+
+### Added
+
+- **Sidebar mobile** — en pantallas pequeñas el sidebar se abre como offcanvas (Bootstrap) desde un botón hamburguesa en el navbar. Comparte la misma navegación que el sidebar desktop via partial `sidebar_nav.html`.
+- **Rate limiting en `/healthz/`** — throttle en memoria: máx 10 requests por IP en ventana de 60 segundos, retorna HTTP 429. Sin dependencias extra (D-004).
+
+---
+
 ## [0.8.0] — 2026-05-09
 
 ### Added

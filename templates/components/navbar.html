@@ -5,7 +5,19 @@
             <i class="bi bi-wallet2 me-2" aria-hidden="true"></i>Control de Gastos
         </a>
 
-        <!-- Mobile toggle -->
+        <!-- Mobile sidebar toggle (< md) -->
+        {% if user.is_authenticated %}
+        <button class="btn btn-outline-light btn-sm d-md-none me-2"
+                type="button"
+                data-bs-toggle="offcanvas"
+                data-bs-target="#mobileSidebar"
+                aria-controls="mobileSidebar"
+                aria-label="Abrir menú">
+            <i class="bi bi-list fs-5" aria-hidden="true"></i>
+        </button>
+        {% endif %}
+
+        <!-- Mobile navbar toggle -->
         <button class="navbar-toggler"
                 type="button"
                 data-bs-toggle="collapse"

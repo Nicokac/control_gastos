@@ -15,15 +15,35 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+import time
+from collections import defaultdict
+
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import include, path
 
+_healthz_hits: dict[str, list[float]] = defaultdict(list)
+_HEALTHZ_LIMIT = 10  # máx requests
+_HEALTHZ_WINDOW = 60  # segundos
 
-def healthz(_request):
+
+def healthz(request):
     """Health check endpoint que verifica conexión a DB."""
+    ip = (
+        request.META.get("HTTP_X_FORWARDED_FOR", request.META.get("REMOTE_ADDR", ""))
+        .split(",")[0]
+        .strip()
+    )
+    now = time.monotonic()
+    window_start = now - _HEALTHZ_WINDOW
+    hits = [t for t in _healthz_hits[ip] if t > window_start]
+    if len(hits) >= _HEALTHZ_LIMIT:
+        return HttpResponse("too many requests", content_type="text/plain", status=429)
+    hits.append(now)
+    _healthz_hits[ip] = hits
+
     from django.db import connection
 
     try:

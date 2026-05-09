@@ -78,19 +78,26 @@ almacena el valor efectivo para ese presupuesto específico.
 
 ---
 
-## D-004 — healthz sin rate limiting
+## D-004 — healthz con rate limiting en memoria
 
 **Issue relacionada:** H-007  
-**Fecha:** 2026-03-08  
-**Estado:** ⏳ Pendiente investigación (Fase 17 — tarea 17-7)
+**Fecha:** 2026-03-08 / Implementado 2026-05-09  
+**Estado:** ✅ Implementado
 
 ### Contexto
 `/healthz/` es una ruta pública que ejecuta una query a la DB en cada request.
-Sin rate limiting, podría usarse para amplificar carga sobre la DB.
+Sin rate limiting podría usarse para amplificar carga sobre la DB.
 
-### Pendiente
-Evaluar si Render Free o el proxy ya aplica rate limiting externo antes de llegar
-a Django. Si no, agregar throttling simple con `django-axes` o un decorator propio.
+### Decisión
+Throttle simple en memoria en `config/urls.py`: máximo 10 requests por IP en ventana de 60 segundos. Retorna HTTP 429 si se supera el límite.
+
+### Justificación
+- Sin dependencias extra (usa `defaultdict` + `time.monotonic()`).
+- Render Free ya aplica rate limiting externo; esto es una segunda capa liviana.
+- `django-axes` está orientado a login, no a endpoints públicos.
+
+### Riesgo aceptado
+El dict en memoria se resetea con cada restart del proceso (Render Free reinicia frecuentemente). No persiste entre workers si se escala horizontalmente — aceptable para el contexto actual.
 
 ## D-005 — healthz devuelve 503 cuando la DB no está disponible
 
@@ -359,3 +366,22 @@ La API opera sobre HTTPS (puerto 443), compatible con Render Free.
 
 ### Riesgo aceptado
 Sin dominio verificado en Resend, el `from` queda como `onboarding@resend.dev` y el destinatario debe ser el mismo email de la cuenta. Para enviar a cualquier destinatario con remitente propio, verificar un dominio en resend.com/domains.
+
+---
+
+## D-014 — Deudas técnicas registradas (sin fecha de resolución)
+
+**Fecha:** 2026-05-09
+**Estado:** ⏳ Pendiente
+
+### DT-001 — Resend sin dominio verificado
+
+Sin dominio propio verificado en Resend, el remitente queda fijado en `onboarding@resend.dev` y el destinatario debe coincidir con el email de la cuenta Resend. Para desbloquear envío a cualquier destinatario con remitente propio, verificar un dominio en resend.com/domains y actualizar `DEFAULT_FROM_EMAIL`.
+
+### DT-002 — Reportes / comparativa año anterior
+
+El gráfico de evolución mensual (D-008) solo muestra el año en curso. Si el usuario quiere comparar con el año anterior, no hay forma de hacerlo. Queda pendiente como sección de Reportes dedicada.
+
+### DT-003 — healthz: throttle no persiste entre workers
+
+El rate limiting de `/healthz/` usa un `dict` en memoria (D-004). Se resetea con cada restart del proceso y no se comparte entre workers si se escala horizontalmente. Mitigación futura: usar Django cache backend (Redis/Memcached) en lugar del dict local.
