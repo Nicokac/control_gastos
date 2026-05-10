@@ -27,46 +27,59 @@
             </div>
             <ul class="list-group list-group-flush">
                 {% for entry in expense_tree %}
-                <!-- Fila de grupo -->
+                {% with collapse_id="expense-group-"|add:entry.group.pk|stringformat:"s" %}
+                <!-- Encabezado de grupo colapsable -->
                 <li class="list-group-item py-2 bg-light">
                     <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center gap-2">
+                        <button class="btn btn-link text-decoration-none p-0 text-start d-flex align-items-center gap-2 flex-grow-1"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#{{ collapse_id }}"
+                                aria-expanded="true"
+                                aria-controls="{{ collapse_id }}">
+                            <i class="bi bi-chevron-down category-chevron text-muted" style="font-size:0.75rem; transition: transform 0.2s;"></i>
                             <i class="{{ entry.group.icon|default:'bi-folder' }} text-muted small"></i>
                             <span class="fw-semibold small text-uppercase text-muted">{{ entry.group.name }}</span>
                             {% if entry.group.is_system %}
                             <span class="badge bg-secondary" style="font-size:0.65rem">Sistema</span>
                             {% endif %}
-                        </div>
+                        </button>
                         {% if not entry.group.is_system %}
-                        <div>
+                        <div class="ms-2 flex-shrink-0">
                             <a href="{% url 'categories:update' entry.group.pk %}" class="btn btn-sm btn-outline-primary py-0 px-1"><i class="bi bi-pencil"></i></a>
                             <a href="{% url 'categories:delete' entry.group.pk %}" class="btn btn-sm btn-outline-danger py-0 px-1"><i class="bi bi-trash"></i></a>
                         </div>
                         {% endif %}
                     </div>
                 </li>
-                <!-- Subcategorías del grupo -->
-                {% for category in entry.subcategories %}
-                <li class="list-group-item d-flex justify-content-between align-items-center ps-4">
-                    <div class="d-flex align-items-center gap-2">
-                        {% if category.icon %}<i class="{{ category.icon }}" data-color="{{ category.color|default:'#6c757d' }}"></i>{% endif %}
-                        <span>{{ category.name }}</span>
-                        {% if category.is_system %}<span class="badge bg-secondary" style="font-size:0.65rem">Sistema</span>{% endif %}
+                <!-- Subcategorías colapsables -->
+                <li class="list-group-item p-0 border-0">
+                    <div class="collapse show" id="{{ collapse_id }}">
+                        <ul class="list-group list-group-flush">
+                            {% for category in entry.subcategories %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center ps-4">
+                                <div class="d-flex align-items-center gap-2">
+                                    {% if category.icon %}<i class="{{ category.icon }}" data-color="{{ category.color|default:'#6c757d' }}"></i>{% endif %}
+                                    <span>{{ category.name }}</span>
+                                    {% if category.is_system %}<span class="badge bg-secondary" style="font-size:0.65rem">Sistema</span>{% endif %}
+                                </div>
+                                {% if not category.is_system %}
+                                <div>
+                                    <a href="{% url 'categories:update' category.pk %}" class="btn btn-sm btn-outline-primary py-0 px-1"><i class="bi bi-pencil"></i></a>
+                                    <a href="{% url 'categories:delete' category.pk %}" class="btn btn-sm btn-outline-danger py-0 px-1"><i class="bi bi-trash"></i></a>
+                                </div>
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                            <li class="list-group-item ps-4 py-2">
+                                <a href="{% url 'categories:create' %}?parent={{ entry.group.pk }}" class="text-decoration-none small text-primary">
+                                    <i class="bi bi-plus-circle me-1"></i>Agregar subcategoría
+                                </a>
+                            </li>
+                        </ul>
                     </div>
-                    {% if not category.is_system %}
-                    <div>
-                        <a href="{% url 'categories:update' category.pk %}" class="btn btn-sm btn-outline-primary py-0 px-1"><i class="bi bi-pencil"></i></a>
-                        <a href="{% url 'categories:delete' category.pk %}" class="btn btn-sm btn-outline-danger py-0 px-1"><i class="bi bi-trash"></i></a>
-                    </div>
-                    {% endif %}
                 </li>
-                {% endfor %}
-                <!-- Agregar subcategoría (siempre visible al final del grupo) -->
-                <li class="list-group-item ps-4 py-2">
-                    <a href="{% url 'categories:create' %}?parent={{ entry.group.pk }}" class="text-decoration-none small text-primary">
-                        <i class="bi bi-plus-circle me-1"></i>Agregar subcategoría
-                    </a>
-                </li>
+                {% endwith %}
                 {% empty %}
                 <li class="list-group-item text-muted">No hay categorías de gastos.</li>
                 {% endfor %}
@@ -82,46 +95,59 @@
             </div>
             <ul class="list-group list-group-flush">
                 {% for entry in income_tree %}
-                <!-- Fila de grupo -->
+                {% with collapse_id="income-group-"|add:entry.group.pk|stringformat:"s" %}
+                <!-- Encabezado de grupo colapsable -->
                 <li class="list-group-item py-2 bg-light">
                     <div class="d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center gap-2">
+                        <button class="btn btn-link text-decoration-none p-0 text-start d-flex align-items-center gap-2 flex-grow-1"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#{{ collapse_id }}"
+                                aria-expanded="true"
+                                aria-controls="{{ collapse_id }}">
+                            <i class="bi bi-chevron-down category-chevron text-muted" style="font-size:0.75rem; transition: transform 0.2s;"></i>
                             <i class="{{ entry.group.icon|default:'bi-folder' }} text-muted small"></i>
                             <span class="fw-semibold small text-uppercase text-muted">{{ entry.group.name }}</span>
                             {% if entry.group.is_system %}
                             <span class="badge bg-secondary" style="font-size:0.65rem">Sistema</span>
                             {% endif %}
-                        </div>
+                        </button>
                         {% if not entry.group.is_system %}
-                        <div>
+                        <div class="ms-2 flex-shrink-0">
                             <a href="{% url 'categories:update' entry.group.pk %}" class="btn btn-sm btn-outline-primary py-0 px-1"><i class="bi bi-pencil"></i></a>
                             <a href="{% url 'categories:delete' entry.group.pk %}" class="btn btn-sm btn-outline-danger py-0 px-1"><i class="bi bi-trash"></i></a>
                         </div>
                         {% endif %}
                     </div>
                 </li>
-                <!-- Subcategorías -->
-                {% for category in entry.subcategories %}
-                <li class="list-group-item d-flex justify-content-between align-items-center ps-4">
-                    <div class="d-flex align-items-center gap-2">
-                        {% if category.icon %}<i class="{{ category.icon }}" data-color="{{ category.color|default:'#6c757d' }}"></i>{% endif %}
-                        <span>{{ category.name }}</span>
-                        {% if category.is_system %}<span class="badge bg-secondary" style="font-size:0.65rem">Sistema</span>{% endif %}
+                <!-- Subcategorías colapsables -->
+                <li class="list-group-item p-0 border-0">
+                    <div class="collapse show" id="{{ collapse_id }}">
+                        <ul class="list-group list-group-flush">
+                            {% for category in entry.subcategories %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center ps-4">
+                                <div class="d-flex align-items-center gap-2">
+                                    {% if category.icon %}<i class="{{ category.icon }}" data-color="{{ category.color|default:'#6c757d' }}"></i>{% endif %}
+                                    <span>{{ category.name }}</span>
+                                    {% if category.is_system %}<span class="badge bg-secondary" style="font-size:0.65rem">Sistema</span>{% endif %}
+                                </div>
+                                {% if not category.is_system %}
+                                <div>
+                                    <a href="{% url 'categories:update' category.pk %}" class="btn btn-sm btn-outline-primary py-0 px-1"><i class="bi bi-pencil"></i></a>
+                                    <a href="{% url 'categories:delete' category.pk %}" class="btn btn-sm btn-outline-danger py-0 px-1"><i class="bi bi-trash"></i></a>
+                                </div>
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                            <li class="list-group-item ps-4 py-2">
+                                <a href="{% url 'categories:create' %}?parent={{ entry.group.pk }}" class="text-decoration-none small text-success">
+                                    <i class="bi bi-plus-circle me-1"></i>Agregar subcategoría
+                                </a>
+                            </li>
+                        </ul>
                     </div>
-                    {% if not category.is_system %}
-                    <div>
-                        <a href="{% url 'categories:update' category.pk %}" class="btn btn-sm btn-outline-primary py-0 px-1"><i class="bi bi-pencil"></i></a>
-                        <a href="{% url 'categories:delete' category.pk %}" class="btn btn-sm btn-outline-danger py-0 px-1"><i class="bi bi-trash"></i></a>
-                    </div>
-                    {% endif %}
                 </li>
-                {% endfor %}
-                <!-- Agregar subcategoría (siempre visible al final del grupo) -->
-                <li class="list-group-item ps-4 py-2">
-                    <a href="{% url 'categories:create' %}?parent={{ entry.group.pk }}" class="text-decoration-none small text-success">
-                        <i class="bi bi-plus-circle me-1"></i>Agregar subcategoría
-                    </a>
-                </li>
+                {% endwith %}
                 {% empty %}
                 <li class="list-group-item text-muted">No hay categorías de ingresos.</li>
                 {% endfor %}
@@ -129,4 +155,51 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const STORAGE_KEY = 'category_collapsed_groups';
+
+    function loadState() {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { return {}; }
+    }
+    function saveState(state) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    const state = loadState();
+
+    document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(btn => {
+        const targetId = btn.getAttribute('data-bs-target').replace('#', '');
+        const collapseEl = document.getElementById(targetId);
+        if (!collapseEl) return;
+
+        // Restaurar estado guardado (false = colapsado)
+        if (state[targetId] === false) {
+            collapseEl.classList.remove('show');
+            btn.setAttribute('aria-expanded', 'false');
+        }
+
+        // Rotar chevron según estado inicial
+        const chevron = btn.querySelector('.category-chevron');
+        if (chevron) {
+            chevron.style.transform = collapseEl.classList.contains('show') ? '' : 'rotate(-90deg)';
+        }
+
+        // Guardar estado al cambiar y rotar chevron
+        collapseEl.addEventListener('hide.bs.collapse', () => {
+            state[targetId] = false;
+            saveState(state);
+            if (chevron) chevron.style.transform = 'rotate(-90deg)';
+        });
+        collapseEl.addEventListener('show.bs.collapse', () => {
+            state[targetId] = true;
+            saveState(state);
+            if (chevron) chevron.style.transform = '';
+        });
+    });
+})();
+</script>
 {% endblock %}

@@ -178,8 +178,8 @@
             <thead class="table-light">
                 <tr>
                     <th>Fecha</th>
-                    <th>Descripción</th>
                     <th>Categoría</th>
+                    <th>Descripción</th>
                     <th class="text-end">Monto</th>
                     <th class="text-center col-actions">Acciones</th>
                 </tr>
@@ -191,14 +191,6 @@
                         <small class="text-muted">{{ expense.date|date:"d M Y" }}</small>
                     </td>
                     <td>
-                        <a href="{% url 'expenses:detail' expense.pk %}" class="text-decoration-none">
-                            {{ expense.description }}
-                        </a>
-                        {% if expense.payment_method %}
-                        <br><small class="text-muted">{{ expense.get_payment_method_display }}</small>
-                        {% endif %}
-                    </td>
-                    <td>
                         {% if expense.category.parent %}
                         <small class="text-muted d-block" style="font-size:0.7rem">{{ expense.category.parent.name }}</small>
                         {% endif %}
@@ -208,6 +200,14 @@
                             {% endif %}
                             {{ expense.category.name }}
                         </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'expenses:detail' expense.pk %}" class="text-decoration-none">
+                            {{ expense.description }}
+                        </a>
+                        {% if expense.payment_method %}
+                        <br><small class="text-muted">{{ expense.get_payment_method_display }}</small>
+                        {% endif %}
                     </td>
                     <td class="text-end text-nowrap">
                         <strong>{{ expense.formatted_amount }}</strong>

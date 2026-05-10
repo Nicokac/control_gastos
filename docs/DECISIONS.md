@@ -419,6 +419,8 @@ Dos correcciones:
 
 Las categorías se ordenan alfabéticamente. No hay UI de reordenamiento manual (drag-and-drop o flechas). Evaluar si es necesario según feedback de usuarios.
 
+El problema de scroll en listas largas se resolvió con grupos colapsables (v0.20.0): cada grupo puede expandirse/colapsarse y el estado persiste en localStorage.
+
 ### DT-007 — Gastos/Ingresos: sin búsqueda por texto
 
 **Estado:** ✅ Resuelto (v0.19.0)

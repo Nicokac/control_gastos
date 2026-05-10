@@ -44,3 +44,6 @@ logs/*.log.*
 
 # Backups de base de datos
 backups/
+
+# Agent instructions (local only)
+AGENTS.md
