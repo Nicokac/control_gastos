@@ -39,6 +39,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Collapsible category groups (categories list page)
     initCategoryCollapse();
 
+    // Drag & drop reorder for category groups
+    initCategoryReorder();
+
     // Expense subcategory filter (expense list page)
     initExpenseSubcategoryFilter();
 
@@ -463,7 +466,10 @@ function initCategoryCollapse() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
-    const toggleBtns = document.querySelectorAll('[data-bs-toggle="collapse"][data-bs-target^="#expense-group-"], [data-bs-toggle="collapse"][data-bs-target^="#income-group-"]');
+    const toggleBtns = document.querySelectorAll(
+        '[data-bs-toggle="collapse"][data-bs-target^="#expense-group-"], ' +
+        '[data-bs-toggle="collapse"][data-bs-target^="#income-group-"]'
+    );
     if (!toggleBtns.length) return;
 
     const state = loadState();
@@ -493,4 +499,46 @@ function initCategoryCollapse() {
             if (chevron) chevron.style.transform = '';
         });
     });
+}
+
+/**
+ * Drag & drop reorder for category groups using SortableJS.
+ * Only runs on the categories list page (no-op elsewhere).
+ */
+function initCategoryReorder() {
+    if (typeof Sortable === 'undefined') return;
+
+    ['expense-sortable', 'income-sortable'].forEach(containerId => {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        const reorderUrl = container.dataset.reorderUrl;
+        if (!reorderUrl) return;
+
+        Sortable.create(container, {
+            handle: '.sortable-handle',
+            animation: 150,
+            onEnd: function() {
+                const ids = Array.from(container.querySelectorAll('[data-group-id]'))
+                    .map(el => parseInt(el.dataset.groupId, 10));
+
+                fetch(reorderUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken(),
+                    },
+                    body: JSON.stringify({ ids }),
+                }).then(res => {
+                    if (!res.ok) showToast('No se pudo guardar el orden.', 'danger');
+                }).catch(() => showToast('Error al guardar el orden.', 'danger'));
+            },
+        });
+    });
+}
+
+function getCsrfToken() {
+    const el = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (el) return el.value;
+    const cookie = document.cookie.split(';').find(c => c.trim().startsWith('csrftoken='));
+    return cookie ? cookie.trim().split('=')[1] : '';
 }

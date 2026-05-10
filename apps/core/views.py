@@ -157,9 +157,17 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "0.20.0"
+APP_VERSION = "0.21.0"
 
 WHATS_NEW = [
+    {
+        "version": "0.21.0",
+        "date": "Mayo 2026",
+        "title": "Reordenamiento de grupos de categorías",
+        "items": [
+            "Categorías: ahora podés arrastrar los grupos para cambiar el orden en que aparecen en la lista",
+        ],
+    },
     {
         "version": "0.20.0",
         "date": "Mayo 2026",

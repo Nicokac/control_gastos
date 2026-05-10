@@ -11,6 +11,7 @@ app_name = "categories"
 urlpatterns = [
     path("", views.CategoryListView.as_view(), name="list"),
     path("create/", views.CategoryCreateView.as_view(), name="create"),
+    path("reorder/", views.CategoryReorderView.as_view(), name="reorder"),
     path("<int:pk>/edit/", views.CategoryUpdateView.as_view(), name="update"),
     path("<int:pk>/delete/", views.CategoryDeleteView.as_view(), name="delete"),
 ]

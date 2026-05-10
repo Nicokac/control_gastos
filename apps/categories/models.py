@@ -37,6 +37,11 @@ class Category(TimestampMixin, models.Model):
         verbose_name="Grupo",
         help_text="Grupo al que pertenece esta subcategoría. Vacío = es un grupo.",
     )
+    order = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Orden",
+        help_text="Posición del grupo en la lista (solo aplica a grupos).",
+    )
     icon = models.CharField(
         max_length=50,
         default="bi-tag",
@@ -55,7 +60,7 @@ class Category(TimestampMixin, models.Model):
     class Meta:
         verbose_name = "Categoría"
         verbose_name_plural = "Categorías"
-        ordering = ["type", "name"]
+        ordering = ["type", "order", "name"]
         constraints = [
             # Grupos: nombre único por usuario y tipo dentro de los grupos (parent IS NULL)
             models.UniqueConstraint(

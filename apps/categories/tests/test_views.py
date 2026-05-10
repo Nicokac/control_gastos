@@ -2,6 +2,8 @@
 Tests para las vistas de Category.
 """
 
+import json
+
 from django.urls import reverse
 
 import pytest
@@ -395,3 +397,60 @@ class TestCategoryMoveSubcategory:
 
         assert response.status_code == 200
         assert response.context["preset_parent"] == system_expense_group
+
+
+@pytest.mark.django_db
+class TestCategoryReorderView:
+    """Tests para el endpoint de reordenamiento de grupos."""
+
+    def test_login_required(self, client):
+        url = reverse("categories:reorder")
+        response = client.post(url, data=json.dumps({"ids": []}), content_type="application/json")
+        assert response.status_code == 302
+        assert "login" in response.url
+
+    def test_reorder_updates_order_field(self, authenticated_client, user):
+        g1 = Category.objects.create(
+            name="Grupo A", type=CategoryType.EXPENSE, user=user, parent=None, is_system=False
+        )
+        g2 = Category.objects.create(
+            name="Grupo B", type=CategoryType.EXPENSE, user=user, parent=None, is_system=False
+        )
+        url = reverse("categories:reorder")
+        response = authenticated_client.post(
+            url,
+            data=json.dumps({"ids": [g2.pk, g1.pk]}),
+            content_type="application/json",
+        )
+
+        assert response.status_code == 200
+        assert response.json()["ok"] is True
+        g1.refresh_from_db()
+        g2.refresh_from_db()
+        assert g2.order < g1.order
+
+    def test_cannot_reorder_other_user_groups(self, authenticated_client, other_user):
+        other_group = Category.objects.create(
+            name="Grupo Otro",
+            type=CategoryType.EXPENSE,
+            user=other_user,
+            parent=None,
+            is_system=False,
+        )
+        url = reverse("categories:reorder")
+        response = authenticated_client.post(
+            url,
+            data=json.dumps({"ids": [other_group.pk]}),
+            content_type="application/json",
+        )
+
+        assert response.status_code == 200
+        other_group.refresh_from_db()
+        assert other_group.order == 0
+
+    def test_invalid_body_returns_400(self, authenticated_client):
+        url = reverse("categories:reorder")
+        response = authenticated_client.post(
+            url, data="no-es-json", content_type="application/json"
+        )
+        assert response.status_code == 400

@@ -2,11 +2,14 @@
 Vistas para gestión de categorías.
 """
 
+import json
+
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse_lazy
+from django.views import View
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
 from apps.core.views import UserFormKwargsMixin
@@ -52,7 +55,7 @@ class CategoryListView(LoginRequiredMixin, ListView):
             if group.pk not in tree_group_pks:
                 tree.append({"group": group, "subcategories": []})
 
-        return sorted(tree, key=lambda e: e["group"].name)
+        return sorted(tree, key=lambda e: (e["group"].order, e["group"].name))
 
 
 class CategoryCreateView(LoginRequiredMixin, UserFormKwargsMixin, CreateView):
@@ -159,3 +162,34 @@ class CategoryDeleteView(LoginRequiredMixin, DeleteView):
         self.object.delete()
         messages.success(self.request, f"Categoría '{self.object.name}' eliminada correctamente.")
         return HttpResponseRedirect(success_url)
+
+
+class CategoryReorderView(LoginRequiredMixin, View):
+    """Recibe lista ordenada de IDs de grupos y actualiza su campo order."""
+
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            ordered_ids = data.get("ids", [])
+        except (json.JSONDecodeError, AttributeError):
+            return JsonResponse({"error": "Datos inválidos."}, status=400)
+
+        if not isinstance(ordered_ids, list):
+            return JsonResponse({"error": "Se esperaba una lista de IDs."}, status=400)
+
+        groups = Category.objects.filter(
+            pk__in=ordered_ids,
+            user=request.user,
+            parent__isnull=True,
+        )
+        group_map = {g.pk: g for g in groups}
+
+        to_update = []
+        for position, pk in enumerate(ordered_ids):
+            group = group_map.get(pk)
+            if group:
+                group.order = position
+                to_update.append(group)
+
+        Category.objects.bulk_update(to_update, ["order"])
+        return JsonResponse({"ok": True})
