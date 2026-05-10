@@ -60,6 +60,11 @@
                 <a href="{% url 'expenses:list' %}" class="btn btn-outline-secondary btn-sm">
                     <i class="bi bi-x-lg"></i>
                 </a>
+                <a href="{% url 'expenses:export' %}?{{ request.GET.urlencode }}"
+                   class="btn btn-outline-success btn-sm"
+                   title="Exportar a CSV">
+                    <i class="bi bi-download"></i>
+                </a>
             </div>
 
             <div class="col-12">

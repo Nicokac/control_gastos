@@ -157,9 +157,18 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "0.21.0"
+APP_VERSION = "0.22.0"
 
 WHATS_NEW = [
+    {
+        "version": "0.22.0",
+        "date": "Mayo 2026",
+        "title": "Exportar Gastos e Ingresos a CSV",
+        "items": [
+            "Gastos: nuevo botón para descargar los gastos del período actual como archivo CSV, respetando los filtros aplicados",
+            "Ingresos: nuevo botón para descargar los ingresos del período actual como archivo CSV, respetando los filtros aplicados",
+        ],
+    },
     {
         "version": "0.21.0",
         "date": "Mayo 2026",

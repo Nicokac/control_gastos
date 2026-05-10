@@ -1,7 +1,9 @@
+import csv
 import logging
 
 from django.contrib import messages
 from django.db.models import Sum
+from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.utils import timezone
 
@@ -231,3 +233,60 @@ class ExpenseDetailView(UserOwnedDetailView):
 
     def get_queryset(self):
         return super().get_queryset().select_related("category", "saving")
+
+
+class ExpenseExportView(ExpenseListView):
+    """Exporta los gastos filtrados como CSV, respetando los mismos filtros que la lista."""
+
+    def get(self, request, *args, **kwargs):
+        expenses = self.get_queryset().select_related("category", "category__parent")
+
+        today = timezone.localdate()
+        filename = f"gastos {today.strftime('%d.%m.%Y')}.csv"
+        response = HttpResponse(content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        response.write("﻿")  # BOM para compatibilidad con Excel
+
+        writer = csv.writer(response)
+        writer.writerow(
+            [
+                "Fecha",
+                "Grupo",
+                "Subcategoría",
+                "Descripción",
+                "Monto",
+                "Moneda",
+                "Tipo de cambio",
+                "Monto ARS",
+                "Método de pago",
+                "Tipo de gasto",
+            ]
+        )
+
+        expense_type_labels = dict(ExpenseType.choices)
+        payment_method_labels = dict(PaymentMethod.choices)
+
+        for expense in expenses:
+            cat = expense.category
+            grupo = cat.parent.name if cat.parent else cat.name
+            subcategoria = cat.name if cat.parent else ""
+            writer.writerow(
+                [
+                    expense.date.strftime("%d/%m/%Y"),
+                    grupo,
+                    subcategoria,
+                    expense.description,
+                    expense.amount,
+                    expense.currency,
+                    expense.exchange_rate or "",
+                    expense.amount_ars,
+                    payment_method_labels.get(expense.payment_method, "")
+                    if expense.payment_method
+                    else "",
+                    expense_type_labels.get(expense.expense_type, "")
+                    if expense.expense_type
+                    else "",
+                ]
+            )
+
+        return response

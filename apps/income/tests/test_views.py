@@ -354,6 +354,61 @@ class TestIncomeDetailView:
         assert response.status_code == 200
         assert income.description in response.content.decode()
 
+
+@pytest.mark.django_db
+class TestIncomeExportView:
+    """Tests para la exportación CSV de ingresos."""
+
+    def test_login_required(self, client):
+        url = reverse("income:export")
+        response = client.get(url)
+        assert response.status_code == 302
+        assert "login" in response.url
+
+    def test_export_returns_csv(self, authenticated_client, income):
+        url = reverse("income:export")
+        response = authenticated_client.get(url)
+
+        assert response.status_code == 200
+        assert "text/csv" in response["Content-Type"]
+        assert "ingresos" in response["Content-Disposition"]
+        assert ".csv" in response["Content-Disposition"]
+
+    def test_export_contains_income_data(self, authenticated_client, income):
+        url = reverse("income:export")
+        response = authenticated_client.get(url)
+        content = response.content.decode("utf-8-sig")
+
+        assert income.description in content
+        assert "Fecha" in content
+
+    def test_export_respects_filters(
+        self, authenticated_client, user, income_category, income_factory
+    ):
+        from datetime import date
+
+        income_factory(user, income_category, description="Enero", date=date(2026, 1, 15))
+        income_factory(user, income_category, description="Febrero", date=date(2026, 2, 15))
+
+        url = reverse("income:export")
+        response = authenticated_client.get(url, {"month": "1", "year": "2026"})
+        content = response.content.decode("utf-8-sig")
+
+        assert "Enero" in content
+        assert "Febrero" not in content
+
+    def test_export_excludes_other_user_income(
+        self, authenticated_client, other_user, income_category_factory, income_factory
+    ):
+        other_cat = income_category_factory(other_user, name="Otra")
+        income_factory(other_user, other_cat, description="Ingreso Ajeno")
+
+        url = reverse("income:export")
+        response = authenticated_client.get(url)
+        content = response.content.decode("utf-8-sig")
+
+        assert "Ingreso Ajeno" not in content
+
     def test_cannot_view_other_user_income_detail(
         self, authenticated_client, other_user, income_category_factory, income_factory
     ):

@@ -932,3 +932,58 @@ class TestExpenseFormGroupedCategories:
             for sub in entry["subcategories"]
         ]
         assert other_cat not in all_subs
+
+
+@pytest.mark.django_db
+class TestExpenseExportView:
+    """Tests para la exportación CSV de gastos."""
+
+    def test_login_required(self, client):
+        url = reverse("expenses:export")
+        response = client.get(url)
+        assert response.status_code == 302
+        assert "login" in response.url
+
+    def test_export_returns_csv(self, authenticated_client, expense):
+        url = reverse("expenses:export")
+        response = authenticated_client.get(url)
+
+        assert response.status_code == 200
+        assert "text/csv" in response["Content-Type"]
+        assert "gastos" in response["Content-Disposition"]
+        assert ".csv" in response["Content-Disposition"]
+
+    def test_export_contains_expense_data(self, authenticated_client, expense):
+        url = reverse("expenses:export")
+        response = authenticated_client.get(url)
+        content = response.content.decode("utf-8-sig")
+
+        assert expense.description in content
+        assert "Fecha" in content
+
+    def test_export_respects_filters(
+        self, authenticated_client, user, expense_category, expense_factory
+    ):
+        from datetime import date
+
+        expense_factory(user, expense_category, description="Enero", date=date(2026, 1, 15))
+        expense_factory(user, expense_category, description="Febrero", date=date(2026, 2, 15))
+
+        url = reverse("expenses:export")
+        response = authenticated_client.get(url, {"month": "1", "year": "2026"})
+        content = response.content.decode("utf-8-sig")
+
+        assert "Enero" in content
+        assert "Febrero" not in content
+
+    def test_export_excludes_other_user_expenses(
+        self, authenticated_client, other_user, expense_category_factory, expense_factory
+    ):
+        other_cat = expense_category_factory(other_user, name="Otra")
+        expense_factory(other_user, other_cat, description="Gasto Ajeno")
+
+        url = reverse("expenses:export")
+        response = authenticated_client.get(url)
+        content = response.content.decode("utf-8-sig")
+
+        assert "Gasto Ajeno" not in content

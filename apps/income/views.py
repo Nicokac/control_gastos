@@ -1,7 +1,9 @@
+import csv
 import logging
 
 from django.contrib import messages
 from django.db.models import Sum
+from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.utils import timezone
 
@@ -168,3 +170,49 @@ class IncomeDetailView(UserOwnedDetailView):
 
     def get_queryset(self):
         return super().get_queryset().select_related("category")
+
+
+class IncomeExportView(IncomeListView):
+    """Exporta los ingresos filtrados como CSV, respetando los mismos filtros que la lista."""
+
+    def get(self, request, *args, **kwargs):
+        incomes = self.get_queryset().select_related("category", "category__parent")
+
+        today = timezone.localdate()
+        filename = f"ingresos {today.strftime('%d.%m.%Y')}.csv"
+        response = HttpResponse(content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        response.write("﻿")  # BOM para compatibilidad con Excel
+
+        writer = csv.writer(response)
+        writer.writerow(
+            [
+                "Fecha",
+                "Grupo",
+                "Categoría",
+                "Descripción",
+                "Monto",
+                "Moneda",
+                "Tipo de cambio",
+                "Monto ARS",
+            ]
+        )
+
+        for income in incomes:
+            cat = income.category
+            grupo = cat.parent.name if cat.parent else cat.name
+            categoria = cat.name if cat.parent else ""
+            writer.writerow(
+                [
+                    income.date.strftime("%d/%m/%Y"),
+                    grupo,
+                    categoria,
+                    income.description,
+                    income.amount,
+                    income.currency,
+                    income.exchange_rate or "",
+                    income.amount_ars,
+                ]
+            )
+
+        return response
