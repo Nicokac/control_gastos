@@ -4,13 +4,24 @@ Formularios para categorías.
 
 from django import forms
 
-from apps.core.constants import CATEGORY_ICON_CHOICES
+from apps.core.constants import (
+    CATEGORY_COLOR_CHOICES,
+    CATEGORY_ICON_CHOICES,
+    DEFAULT_CATEGORY_COLOR,
+)
 
 from .models import Category
 
 
 class CategoryForm(forms.ModelForm):
     """Formulario para crear/editar categorías de usuario."""
+
+    color = forms.ChoiceField(
+        choices=CATEGORY_COLOR_CHOICES,
+        widget=forms.RadioSelect(attrs={"class": "color-radio"}),
+        initial=DEFAULT_CATEGORY_COLOR,
+        required=False,
+    )
 
     class Meta:
         model = Category
@@ -23,9 +34,6 @@ class CategoryForm(forms.ModelForm):
             "parent": forms.Select(attrs={"class": "form-select"}),
             "icon": forms.RadioSelect(
                 attrs={"class": "icon-radio"},
-            ),
-            "color": forms.TextInput(
-                attrs={"class": "form-control", "type": "color", "value": "#6c757d"}
             ),
         }
 
@@ -41,9 +49,11 @@ class CategoryForm(forms.ModelForm):
         self.fields["icon"].required = False
         self.fields["parent"].required = False
         self.fields["parent"].empty_label = "-- Sin grupo (crear grupo nuevo) --"
-        # Solo grupos disponibles para el usuario como opciones de parent
         if user:
             self.fields["parent"].queryset = Category.get_groups(user)
+        # Pre-cargar color desde instancia (ChoiceField no se vincula automáticamente)
+        if self.instance.pk and self.instance.color:
+            self.fields["color"].initial = self.instance.color
 
     def clean(self):
         cleaned = super().clean()
@@ -58,7 +68,7 @@ class CategoryForm(forms.ModelForm):
 
         color = cleaned.get("color")
         if not color:
-            cleaned["color"] = "#6c757d"
+            cleaned["color"] = DEFAULT_CATEGORY_COLOR
 
         return cleaned
 

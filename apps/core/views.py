@@ -157,9 +157,17 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "0.11.0"
+APP_VERSION = "0.12.0"
 
 WHATS_NEW = [
+    {
+        "version": "0.12.0",
+        "date": "Mayo 2026",
+        "title": "Mejoras en Categorías",
+        "items": [
+            "Selector de color visual con círculos predefinidos (ya no se usa el selector nativo del sistema operativo)",
+        ],
+    },
     {
         "version": "0.11.0",
         "date": "Mayo 2026",

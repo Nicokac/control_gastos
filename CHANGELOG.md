@@ -5,6 +5,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [0.12.0] — 2026-05-09
+
+### Changed
+
+- **Categorías — selector de color visual** — reemplazado `input[type=color]` nativo del browser por grilla de 10 círculos predefinidos (igual que Ahorro). Paleta definida en `CATEGORY_COLOR_CHOICES` en `constants.py`. El color se pre-carga correctamente al editar.
+- **Categorías — copy del botón** — "Nuevo Grupo" renombrado a "Nueva Categoría" para que coincida con el formulario al que lleva.
+
+---
+
 ## [0.11.0] — 2026-05-09
 
 ### Fixed

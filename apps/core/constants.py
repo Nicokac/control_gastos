@@ -83,6 +83,23 @@ CATEGORY_ICON_CHOICES = [
 ]
 
 
+# Paleta de colores para categorías (selector visual)
+CATEGORY_COLOR_CHOICES = [
+    ("#28a745", "Verde"),
+    ("#20c997", "Verde agua"),
+    ("#17a2b8", "Celeste"),
+    ("#007bff", "Azul"),
+    ("#6f42c1", "Violeta"),
+    ("#e83e8c", "Rosa"),
+    ("#dc3545", "Rojo"),
+    ("#fd7e14", "Naranja"),
+    ("#ffc107", "Amarillo"),
+    ("#6c757d", "Gris"),
+]
+
+DEFAULT_CATEGORY_COLOR = "#6c757d"
+
+
 # Grupos del sistema (primer nivel de jerarquía — sin parent)
 SYSTEM_GROUPS = {
     "EXPENSE": [
