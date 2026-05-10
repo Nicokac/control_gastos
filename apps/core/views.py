@@ -157,9 +157,19 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "0.10.0"
+APP_VERSION = "0.11.0"
 
 WHATS_NEW = [
+    {
+        "version": "0.11.0",
+        "date": "Mayo 2026",
+        "title": "Correcciones en Ingresos y Ahorro",
+        "items": [
+            "Ingresos: el total del período ya muestra el monto correcto",
+            "Ingresos: las categorías ahora se cargan correctamente en los formularios",
+            "Ahorro: el monto objetivo y el color se pre-cargan al editar una meta",
+        ],
+    },
     {
         "version": "0.10.0",
         "date": "Mayo 2026",

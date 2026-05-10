@@ -106,6 +106,15 @@ class SavingForm(forms.ModelForm):
         self.fields["icon"].help_text = "Opcional. Si no elegís uno, usamos el ícono por defecto."
         self.fields["color"].help_text = "Opcional. Si no elegís uno, usamos el color por defecto."
 
+        # Pre-cargar valores de la instancia en campos ChoiceField declarados fuera de Meta
+        if self.instance.pk:
+            if self.instance.icon:
+                self.fields["icon"].initial = self.instance.icon
+            if self.instance.color:
+                self.fields["color"].initial = self.instance.color
+            if self.instance.target_amount:
+                self.fields["target_amount"].initial = self.instance.target_amount
+
     def clean_target_amount(self):
         """Valida que el monto objetivo sea positivo."""
         target_amount = self.cleaned_data.get("target_amount")

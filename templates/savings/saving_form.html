@@ -40,7 +40,7 @@
                 </div>
                 {% else %}
                 <div class="alert alert-light border mb-4">
-                    <p class="mb-1 fw-semibold">Antes de crearla</p>
+                    <p class="mb-1 fw-semibold">{% if is_edit %}Antes de guardar{% else %}Antes de crearla{% endif %}</p>
                     <p class="mb-0 small">Solo nombre y monto objetivo son obligatorios. La descripción y la fecha son opcionales; si no elegís ícono o color usamos valores por defecto.</p>
                 </div>
                 {% endif %}

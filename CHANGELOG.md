@@ -5,6 +5,19 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [0.11.0] — 2026-05-09
+
+### Fixed
+
+- **Ingresos — total del período mostraba $0** — el contexto usaba `total_amount` pero el template leía `total`. Renombrado.
+- **Ingresos — categorías vacías en formularios y listado** — `get_income_categories` filtraba solo subcategorías (`parent__isnull=False`), pero las categorías de ingreso del sistema son de un solo nivel. Ahora retorna todas las INCOME sin restricción de parent.
+- **Categorías de ingreso no visibles en `/categories/`** — `_build_full_tree` excluía grupos del sistema sin subcategorías. Corregido incluyendo todos los grupos.
+- **Ahorro — monto objetivo vacío al editar** — `SavingForm` no vinculaba `target_amount` desde la instancia al ser un campo fuera de `Meta`. Corregido seteando `initial` en `__init__`.
+- **Ahorro — color sin pre-seleccionar al editar** — `icon` y `color` son `ChoiceField` declarados fuera de `Meta`; Django no los vincula automáticamente. Corregido en `__init__`.
+- **Ahorro — copy "Antes de crearla" en modo edición** — corregido con `{% if is_edit %}`.
+
+---
+
 ## [0.10.0] — 2026-05-09
 
 ### Fixed
