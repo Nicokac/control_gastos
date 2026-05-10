@@ -157,9 +157,27 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "0.16.0"
+APP_VERSION = "0.20.0"
 
 WHATS_NEW = [
+    {
+        "version": "0.20.0",
+        "date": "Mayo 2026",
+        "title": "Mejoras en Gastos y Categorías",
+        "items": [
+            "Gastos: la tabla ahora muestra la categoría antes que la descripción, para encontrar los gastos más fácil",
+            "Categorías: los grupos ahora se pueden contraer y expandir haciendo clic en el encabezado — el estado se recuerda entre visitas",
+        ],
+    },
+    {
+        "version": "0.19.0",
+        "date": "Mayo 2026",
+        "title": "Búsqueda por texto en Gastos e Ingresos",
+        "items": [
+            "Gastos: nuevo campo de búsqueda en los filtros para encontrar transacciones por descripción",
+            "Ingresos: nuevo campo de búsqueda en los filtros para encontrar transacciones por descripción",
+        ],
+    },
     {
         "version": "0.16.0",
         "date": "Mayo 2026",

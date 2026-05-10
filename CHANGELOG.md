@@ -5,6 +5,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [0.20.0] — 2026-05-10
+
+### Added
+
+- **Categorías — grupos colapsables** — cada grupo puede expandirse y contraerse haciendo clic en el encabezado. El estado de cada grupo persiste en localStorage entre visitas.
+
+### Changed
+
+- **Gastos — orden de columnas en la tabla** — las columnas se reordenaron a Fecha → Categoría → Descripción → Monto para priorizar el clasificador principal sobre el detalle.
+
+---
+
 ## [0.19.0] — 2026-05-10
 
 ### Added
