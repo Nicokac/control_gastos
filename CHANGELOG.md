@@ -11,6 +11,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 - **Categorías — selector de color visual** — reemplazado `input[type=color]` nativo del browser por grilla de 10 círculos predefinidos (igual que Ahorro). Paleta definida en `CATEGORY_COLOR_CHOICES` en `constants.py`. El color se pre-carga correctamente al editar.
 - **Categorías — copy del botón** — "Nuevo Grupo" renombrado a "Nueva Categoría" para que coincida con el formulario al que lleva.
+- **Mi Cuenta — nombre y apellido no se pre-cargan** — el template renderizaba `<input>` manualmente con `{{ form.first_name.value }}`, que devuelve cadena vacía si el campo no fue completado nunca. Corregido usando `{{ form.first_name }}` para delegar el render al widget del form, que vincula correctamente el valor de la instancia.
 
 ---
 

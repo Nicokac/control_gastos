@@ -28,34 +28,25 @@
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="id_first_name" class="form-label">Nombre</label>
-                                        <input type="text"
-                                               name="first_name"
-                                               id="id_first_name"
-                                               class="form-control"
-                                               placeholder="Tu nombre"
-                                               value="{{ form.first_name.value|default:'' }}">
+                                        {{ form.first_name }}
+                                        {% if form.first_name.errors %}
+                                        <div class="text-danger small mt-1">{{ form.first_name.errors.0 }}</div>
+                                        {% endif %}
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label for="id_last_name" class="form-label">Apellido</label>
-                                        <input type="text"
-                                               name="last_name"
-                                               id="id_last_name"
-                                               class="form-control"
-                                               placeholder="Tu apellido"
-                                               value="{{ form.last_name.value|default:'' }}">
+                                        {{ form.last_name }}
+                                        {% if form.last_name.errors %}
+                                        <div class="text-danger small mt-1">{{ form.last_name.errors.0 }}</div>
+                                        {% endif %}
                                     </div>
                                 </div>
 
                                 <div class="mb-3">
                                     <label for="id_email" class="form-label">Email</label>
-                                    <input type="email"
-                                           name="email"
-                                           id="id_email"
-                                           class="form-control {% if form.email.errors %}is-invalid{% endif %}"
-                                           value="{{ form.email.value|default:'' }}"
-                                           required>
+                                    {{ form.email }}
                                     {% if form.email.errors %}
-                                    <div class="invalid-feedback">{{ form.email.errors.0 }}</div>
+                                    <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
                                     {% endif %}
                                 </div>
 
@@ -65,14 +56,10 @@
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label for="id_default_currency" class="form-label">Moneda principal</label>
-                                        <select name="default_currency" id="id_default_currency" class="form-select">
-                                            <option value="ARS" {% if form.default_currency.value == 'ARS' %}selected{% endif %}>
-                                                Peso Argentino (ARS)
-                                            </option>
-                                            <option value="USD" {% if form.default_currency.value == 'USD' %}selected{% endif %}>
-                                                Dólar Estadounidense (USD)
-                                            </option>
-                                        </select>
+                                        {{ form.default_currency }}
+                                        {% if form.default_currency.errors %}
+                                        <div class="text-danger small mt-1">{{ form.default_currency.errors.0 }}</div>
+                                        {% endif %}
                                     </div>
                                 </div>
 
