@@ -183,6 +183,18 @@ body {
     }
 }
 
+/* When crossing the md breakpoint (e.g. rotation), remove any leftover
+   offcanvas backdrop that Bootstrap may not clean up automatically */
+@media (min-width: 768px) {
+    .offcanvas-backdrop {
+        display: none !important;
+    }
+
+    #mobileSidebar {
+        visibility: hidden !important;
+    }
+}
+
 /* --- FAB Button (QW-2.1) --- */
 .fab-button {
     position: fixed;

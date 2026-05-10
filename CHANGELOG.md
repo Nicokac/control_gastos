@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [0.18.0] — 2026-05-10
+
+### Fixed
+
+- **Sidebar mobile — comportamiento en rotación y navegación** — el offcanvas mobile ahora se cierra automáticamente al tocar un link de navegación. Al rotar el dispositivo de portrait a landscape, el offcanvas y su backdrop se limpian correctamente sin bloquear la interfaz.
+
+---
+
 ## [0.17.0] — 2026-05-10
 
 ### Added

@@ -407,9 +407,11 @@ Los tests usan `follow=True` + `response.context["messages"]` para verificar el 
 
 ### DT-005 — Sidebar: inconsistencia de comportamiento en mobile
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v0.18.0)
 
-En pantallas pequeñas el sidebar no colapsa de forma consistente al rotar el dispositivo. Requiere auditoría CSS/JS del comportamiento del sidebar en viewports < 768px.
+Dos correcciones:
+1. **JS — `initMobileOffcanvas()`**: al hacer click en un link dentro del offcanvas mobile, se cierra automáticamente antes de navegar (evitaba que quedara abierto tras cambio de página). Al cruzar el breakpoint md (rotación), se llama `bsOffcanvas.hide()` para limpiar el estado del offcanvas.
+2. **CSS**: se agregó una media query `(min-width: 768px)` que oculta el backdrop y el offcanvas mobile cuando el viewport es desktop, previniendo que un backdrop residual bloquee la interfaz tras rotar de portrait a landscape.
 
 ### DT-006 — Categorías: orden solo alfabético, sin reordenamiento manual
 

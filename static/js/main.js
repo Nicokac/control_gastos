@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize sidebar toggle (reads localStorage and sets initial state)
     initSidebarToggle();
 
+    // Close mobile offcanvas when a nav link is clicked
+    initMobileOffcanvas();
+
     // Initialize password toggles
     initPasswordToggles();
 
@@ -226,6 +229,33 @@ function initQuickDepositModal() {
         if (barEl) {
             barEl.style.width = Math.min(progress, 100) + '%';
             barEl.style.visibility = 'visible';
+        }
+    });
+}
+
+/**
+ * Close mobile offcanvas when a nav link is clicked inside it.
+ * Also ensures the offcanvas is properly hidden when the viewport
+ * crosses the md breakpoint (e.g., device rotation).
+ */
+function initMobileOffcanvas() {
+    const offcanvasEl = document.getElementById('mobileSidebar');
+    if (!offcanvasEl) return;
+
+    // Close offcanvas on any nav link click (so navigating works cleanly)
+    offcanvasEl.querySelectorAll('a.nav-link').forEach(link => {
+        link.addEventListener('click', function() {
+            const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl);
+            if (bsOffcanvas) bsOffcanvas.hide();
+        });
+    });
+
+    // When viewport goes above md breakpoint, hide the offcanvas if open
+    const mdBreakpoint = window.matchMedia('(min-width: 768px)');
+    mdBreakpoint.addEventListener('change', function(e) {
+        if (e.matches) {
+            const bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl);
+            if (bsOffcanvas) bsOffcanvas.hide();
         }
     });
 }
