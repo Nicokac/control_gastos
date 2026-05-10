@@ -157,9 +157,19 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "0.13.0"
+APP_VERSION = "0.14.0"
 
 WHATS_NEW = [
+    {
+        "version": "0.14.0",
+        "date": "Mayo 2026",
+        "title": "Correcciones en Reportar / Sugerir",
+        "items": [
+            "El mensaje de confirmación ahora aparece correctamente tras enviar un reporte",
+            "El error de validación se limpia al empezar a escribir en el campo mensaje",
+            "Validación frontend evita envíos innecesarios con el campo vacío",
+        ],
+    },
     {
         "version": "0.13.0",
         "date": "Mayo 2026",

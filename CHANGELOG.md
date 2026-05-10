@@ -5,6 +5,16 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [0.14.0] — 2026-05-10
+
+### Fixed
+
+- **Feedback — sin confirmación visual tras envío** — los mensajes Django (`messages.success`) no se renderizaban en ningún lado. Se inyectan ahora como `window.DJANGO_MESSAGES` en `base.html` y `initSessionToasts()` los consume disparando `showToast()`. Aplica a toda la app, no solo feedback.
+- **Feedback — error de validación persiste al escribir** — el mensaje "Este campo es obligatorio" permanecía visible mientras el usuario escribía. Se limpia al detectar contenido vía evento `input`.
+- **Feedback — round-trip innecesario con campo vacío** — el form se enviaba al servidor mostrando "Procesando..." sin validar primero. Ahora el JS intercepta el submit, previene el envío si el textarea está vacío y mantiene el foco en el campo.
+
+---
+
 ## [0.13.0] — 2026-05-10
 
 ### Added

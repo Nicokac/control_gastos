@@ -105,6 +105,7 @@ class FeedbackForm(forms.Form):
                 "class": "form-control",
                 "rows": 5,
                 "placeholder": "Describí el problema o sugerencia con el mayor detalle posible...",
+                "required": True,
             }
         ),
         max_length=2000,

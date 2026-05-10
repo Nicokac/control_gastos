@@ -126,14 +126,17 @@ function initKeyboardShortcuts() {
  * Initialize toasts from session messages
  */
 function initSessionToasts() {
-    // Check for Django messages in the page
-    const alerts = document.querySelectorAll('.alert[data-auto-dismiss]');
-    alerts.forEach(alert => {
-        setTimeout(() => {
-            const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
-            bsAlert.close();
-        }, 5000);
-    });
+    if (window.DJANGO_MESSAGES && window.DJANGO_MESSAGES.length > 0) {
+        window.DJANGO_MESSAGES.forEach((msg, i) => {
+            const tags = msg.tags || '';
+            let type = 'info';
+            if (tags.includes('success')) type = 'success';
+            else if (tags.includes('error')) type = 'danger';
+            else if (tags.includes('warning')) type = 'warning';
+            setTimeout(() => showToast(msg.message, type), i * 300);
+        });
+        window.DJANGO_MESSAGES = [];
+    }
 }
 
 /**
