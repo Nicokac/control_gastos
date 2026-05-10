@@ -5,6 +5,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [0.13.0] — 2026-05-10
+
+### Added
+
+- **Mi Cuenta — eliminar cuenta** — nueva sección "Zona de peligro" en el perfil con confirmación antes de borrar. Elimina el usuario y todos sus datos en cascada, cierra la sesión y redirige al login.
+
+### Fixed
+
+- **Mi Cuenta — último acceso en hora local** — se aplicaba `date` en UTC. Corregido con `|localtime` para convertir a `America/Argentina/Buenos_Aires` antes de formatear.
+
+---
+
 ## [0.12.0] — 2026-05-09
 
 ### Changed

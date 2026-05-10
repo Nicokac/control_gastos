@@ -78,7 +78,7 @@ class TestCategoryCreateView:
             "name": "Nueva Categoría",
             "type": CategoryType.EXPENSE,
             "icon": "bi-tag",
-            "color": "#FF5733",
+            "color": "#dc3545",
         }
 
         response = authenticated_client.post(url, data)
@@ -112,7 +112,7 @@ class TestCategoryCreateView:
             "name": "Mi Categoría",
             "type": CategoryType.EXPENSE,
             "icon": "bi-cart",
-            "color": "#000000",
+            "color": "#6c757d",
         }
 
         authenticated_client.post(url, data)
@@ -149,7 +149,7 @@ class TestCategoryUpdateView:
             "name": "Nombre Actualizado",
             "type": expense_category.type,
             "icon": expense_category.icon or "bi-tag",
-            "color": expense_category.color or "#000000",
+            "color": expense_category.color or "#6c757d",
         }
 
         response = authenticated_client.post(url, data)
@@ -235,7 +235,7 @@ class TestCategoryViewRedirects:
             "name": "Nueva Categoría",
             "type": CategoryType.EXPENSE,
             "icon": "bi-tag",
-            "color": "#FF5733",
+            "color": "#dc3545",
         }
 
         response = authenticated_client.post(url, data)
@@ -253,7 +253,7 @@ class TestCategoryViewRedirects:
             "name": "Actualizada",
             "type": expense_category.type,
             "icon": expense_category.icon or "bi-tag",
-            "color": expense_category.color or "#000000",
+            "color": expense_category.color or "#6c757d",
         }
 
         response = authenticated_client.post(url, data)

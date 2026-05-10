@@ -238,6 +238,42 @@ class TestProfileView:
             user.refresh_from_db()
             assert user.username == "updatedusername"
 
+    def test_profile_prepopulates_first_and_last_name(self, client):
+        """Verifica que first_name y last_name se pre-cargan desde la instancia."""
+        user = User.objects.create_user(
+            email="named@test.com",
+            username="nameduser",
+            password="TestPass123!",
+            first_name="Juan",
+            last_name="Pérez",
+        )
+        client.force_login(user)
+
+        response = client.get(reverse("users:profile"))
+
+        assert response.status_code == 200
+        form = response.context["form"]
+        assert form["first_name"].value() == "Juan"
+        assert form["last_name"].value() == "Pérez"
+
+    def test_profile_saves_first_and_last_name(self, client, user):
+        """Verifica que se puede guardar nombre y apellido."""
+        client.force_login(user)
+
+        client.post(
+            reverse("users:profile"),
+            {
+                "first_name": "Nicolás",
+                "last_name": "Kachuk",
+                "email": user.email,
+                "default_currency": "ARS",
+            },
+        )
+
+        user.refresh_from_db()
+        assert user.first_name == "Nicolás"
+        assert user.last_name == "Kachuk"
+
 
 @pytest.mark.django_db
 class TestPasswordChangeView:
@@ -295,3 +331,67 @@ class TestPasswordChangeView:
         )
 
         assert response.status_code == 200  # Se queda en la página
+
+
+@pytest.mark.django_db
+class TestDeleteAccountView:
+    """Tests para la vista de eliminación de cuenta."""
+
+    def test_delete_account_requires_login(self, client):
+        """Verifica que eliminar cuenta requiere autenticación."""
+        response = client.get(reverse("users:delete_account"))
+
+        assert response.status_code == 302
+        assert "login" in response.url
+
+    def test_delete_account_get_renders_confirmation(self, client, user):
+        """Verifica que GET muestra la página de confirmación."""
+        client.force_login(user)
+
+        response = client.get(reverse("users:delete_account"))
+
+        assert response.status_code == 200
+
+    def test_delete_account_post_deletes_user(self, client):
+        """Verifica que POST elimina el usuario de la base de datos."""
+        user = User.objects.create_user(
+            email="todelete@test.com",
+            username="todelete",
+            password="TestPass123!",
+        )
+        user_id = user.pk
+        client.force_login(user)
+
+        client.post(reverse("users:delete_account"))
+
+        assert not User.objects.filter(pk=user_id).exists()
+
+    def test_delete_account_post_redirects_to_login(self, client):
+        """Verifica que POST redirige al login tras eliminar la cuenta."""
+        user = User.objects.create_user(
+            email="todelete2@test.com",
+            username="todelete2",
+            password="TestPass123!",
+        )
+        client.force_login(user)
+
+        response = client.post(reverse("users:delete_account"))
+
+        assert response.status_code == 302
+        assert "login" in response.url
+
+    def test_delete_account_post_logs_out_session(self, client):
+        """Verifica que tras eliminar la cuenta la sesión queda cerrada."""
+        user = User.objects.create_user(
+            email="todelete3@test.com",
+            username="todelete3",
+            password="TestPass123!",
+        )
+        client.force_login(user)
+
+        client.post(reverse("users:delete_account"))
+
+        # La sesión debe estar cerrada: una ruta protegida redirige a login
+        response = client.get(reverse("users:profile"))
+        assert response.status_code == 302
+        assert "login" in response.url

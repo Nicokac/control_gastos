@@ -1,18 +1,19 @@
 """Vistas de autenticación y perfil de usuario."""
 
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, UpdateView
+from django.views.generic import CreateView, DeleteView, UpdateView
 
 from apps.core.logging import (
     get_client_ip,
     log_login_attempt,
     log_logout,
     log_password_change,
+    log_sensitive_action,
     log_user_registration,
 )
 
@@ -108,6 +109,28 @@ class ProfileView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         messages.success(self.request, "Perfil actualizado correctamente.")
         return super().form_valid(form)
+
+
+class DeleteAccountView(LoginRequiredMixin, DeleteView):
+    """Vista para eliminar la cuenta del usuario autenticado."""
+
+    template_name = "users/delete_account.html"
+    success_url = reverse_lazy("users:login")
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def form_valid(self, form):
+        user = self.request.user
+        log_sensitive_action(
+            action="ACCOUNT_DELETED",
+            username=user.email,
+            ip_address=get_client_ip(self.request),
+        )
+        logout(self.request)
+        user.delete()
+        messages.success(self.request, "Tu cuenta fue eliminada correctamente.")
+        return redirect(self.success_url)
 
 
 class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):

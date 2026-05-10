@@ -19,7 +19,7 @@ class TestCategoryForm:
                 "name": "Alimentación",
                 "type": CategoryType.EXPENSE,
                 "icon": "bi-cart",
-                "color": "#FF5733",
+                "color": "#dc3545",
             }
         )
         form.instance.user = user
@@ -33,7 +33,7 @@ class TestCategoryForm:
                 "name": "Salario",
                 "type": CategoryType.INCOME,
                 "icon": "bi-cash",
-                "color": "#28A745",
+                "color": "#28a745",
             }
         )
         form.instance.user = user
@@ -85,7 +85,7 @@ class TestCategoryForm:
             data={
                 "name": "Test",
                 "type": CategoryType.EXPENSE,
-                "color": "#FF5733",
+                "color": "#fd7e14",
             }
         )
         form.instance.user = user
@@ -111,7 +111,7 @@ class TestCategoryForm:
                 "name": "Nueva Categoría",
                 "type": CategoryType.EXPENSE,
                 "icon": "bi-tag",
-                "color": "#6C757D",
+                "color": "#6c757d",
             }
         )
         form.instance.user = user
@@ -137,7 +137,7 @@ class TestCategoryFormEdit:
                 "name": "Nombre Editado",
                 "type": expense_category.type,
                 "icon": expense_category.icon or "bi-tag",
-                "color": expense_category.color or "#000000",
+                "color": expense_category.color or "#6c757d",
             },
             instance=expense_category,
         )
@@ -154,7 +154,7 @@ class TestCategoryFormEdit:
                 "name": expense_category.name,
                 "type": expense_category.type,
                 "icon": "bi-star",
-                "color": expense_category.color or "#000000",
+                "color": expense_category.color or "#6c757d",
             },
             instance=expense_category,
         )
@@ -176,7 +176,7 @@ class TestCategoryFormDuplicates:
                 "name": expense_category.name,
                 "type": CategoryType.INCOME,
                 "icon": "bi-cash",
-                "color": "#00FF00",
+                "color": "#28a745",
             }
         )
         form.instance.user = user
@@ -190,7 +190,7 @@ class TestCategoryFormDuplicates:
                 "name": expense_category.name,
                 "type": expense_category.type,
                 "icon": "bi-star",
-                "color": expense_category.color or "#000000",
+                "color": expense_category.color or "#6c757d",
             },
             instance=expense_category,
         )
@@ -209,7 +209,7 @@ class TestCategoryFormCleanedData:
                 "name": "Nueva Categoría",
                 "type": CategoryType.EXPENSE,
                 "icon": "bi-cart",
-                "color": "#FF5733",
+                "color": "#dc3545",
             }
         )
         form.instance.user = user
@@ -226,7 +226,7 @@ class TestCategoryFormCleanedData:
                 "name": "  Categoría con espacios  ",
                 "type": CategoryType.EXPENSE,
                 "icon": "bi-tag",
-                "color": "#000000",
+                "color": "#6c757d",
             }
         )
         form.instance.user = user

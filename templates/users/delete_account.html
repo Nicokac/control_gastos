@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Cuenta - Control de Gastos{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Eliminar Cuenta
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">Estás a punto de eliminar tu cuenta de forma permanente.</p>
+                    <p class="mb-4 text-muted small">Se borrarán todos tus datos: gastos, ingresos, metas de ahorro y categorías. Esta acción no se puede deshacer.</p>
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-trash me-1"></i>Sí, eliminar mi cuenta
+                            </button>
+                            <a href="{% url 'users:profile' %}" class="btn btn-outline-secondary">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

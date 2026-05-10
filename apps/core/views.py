@@ -157,9 +157,18 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "0.12.0"
+APP_VERSION = "0.13.0"
 
 WHATS_NEW = [
+    {
+        "version": "0.13.0",
+        "date": "Mayo 2026",
+        "title": "Mi Cuenta: eliminar cuenta y corrección de timezone",
+        "items": [
+            "Nueva opción para eliminar tu cuenta y todos tus datos de forma permanente",
+            "El último acceso ahora muestra la hora correcta en zona horaria Argentina",
+        ],
+    },
     {
         "version": "0.12.0",
         "date": "Mayo 2026",

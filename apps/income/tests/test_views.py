@@ -337,7 +337,7 @@ class TestIncomeListViewOrdering:
 
         assert response.status_code == 200
         assert "filter_form" in response.context
-        assert "total_amount" in response.context
+        assert "total" in response.context
         assert response.context["current_month"] == today.month
         assert response.context["current_year"] == today.year
 
