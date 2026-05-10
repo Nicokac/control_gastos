@@ -49,7 +49,7 @@ class CategoryListView(LoginRequiredMixin, ListView):
 
         all_groups = Category.get_groups(user, category_type)
         for group in all_groups:
-            if group.pk not in tree_group_pks and not group.is_system:
+            if group.pk not in tree_group_pks:
                 tree.append({"group": group, "subcategories": []})
 
         return sorted(tree, key=lambda e: e["group"].name)

@@ -88,7 +88,7 @@ class IncomeListView(UserOwnedListView):
         context["filter_form"] = IncomeFilterForm(form_data, user=self.request.user)
 
         total = self.get_queryset().aggregate(total=Sum("amount_ars"))["total"] or 0
-        context["total_amount"] = total
+        context["total"] = total
 
         context["current_month"] = today.month
         context["current_year"] = today.year

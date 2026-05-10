@@ -170,8 +170,19 @@ class Category(TimestampMixin, models.Model):
 
     @classmethod
     def get_income_categories(cls, user):
-        """Obtiene subcategorías de tipo INCOME para un usuario."""
-        return cls.get_user_categories(user, CategoryType.INCOME)
+        """
+        Obtiene categorías de tipo INCOME para un usuario.
+        Incluye tanto grupos como subcategorías porque los ingresos del sistema
+        son de un solo nivel (no tienen parent).
+        """
+        return (
+            cls.objects.filter(
+                models.Q(is_system=True) | models.Q(user=user),
+                type=CategoryType.INCOME,
+            )
+            .select_related("parent")
+            .order_by("parent__name", "name")
+        )
 
     @classmethod
     def get_groups(cls, user, category_type=None):
