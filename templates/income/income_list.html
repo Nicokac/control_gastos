@@ -60,8 +60,8 @@
             <thead class="table-light">
                 <tr>
                     <th>Fecha</th>
-                    <th>Descripción</th>
                     <th>Categoría</th>
+                    <th>Descripción</th>
                     <th class="text-end">Monto</th>
                     <th class="text-center col-actions">Acciones</th>
                 </tr>
@@ -73,17 +73,17 @@
                         <small class="text-muted">{{ income.date|date:"d M Y" }}</small>
                     </td>
                     <td>
-                        <a href="{% url 'income:detail' income.pk %}" class="text-decoration-none">
-                            {{ income.description }}
-                        </a>
-                    </td>
-                    <td>
                         <span class="badge" data-color="{{ income.category.color|default:'#6c757d' }}" data-color-prop="backgroundColor">
                             {% if income.category.icon %}
                             <i class="{{ income.category.icon }} me-1"></i>
                             {% endif %}
                             {{ income.category.name }}
                         </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'income:detail' income.pk %}" class="text-decoration-none">
+                            {{ income.description }}
+                        </a>
                     </td>
                     <td class="text-end text-nowrap">
                         <strong class="text-success">{{ income.formatted_amount }}</strong>

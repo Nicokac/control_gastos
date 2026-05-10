@@ -35,6 +35,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Show "Nuevo" badge on whats-new link if unseen version
     initWhatsNewBadge();
+
+    // Collapsible category groups (categories list page)
+    initCategoryCollapse();
 });
 
 /**
@@ -336,5 +339,51 @@ function initDynamicColors() {
         const color = el.getAttribute('data-progress-color');
         if (color) el.style.backgroundColor = color;
         el.style.visibility = 'visible';
+    });
+}
+
+/**
+ * Collapsible category groups with localStorage persistence.
+ * Only runs on the categories list page (no-op elsewhere).
+ */
+function initCategoryCollapse() {
+    const STORAGE_KEY = 'category_collapsed_groups';
+
+    function loadState() {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch (e) { return {}; }
+    }
+    function saveState(state) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    const toggleBtns = document.querySelectorAll('[data-bs-toggle="collapse"][data-bs-target^="#expense-group-"], [data-bs-toggle="collapse"][data-bs-target^="#income-group-"]');
+    if (!toggleBtns.length) return;
+
+    const state = loadState();
+
+    toggleBtns.forEach(btn => {
+        const targetId = btn.getAttribute('data-bs-target').replace('#', '');
+        const collapseEl = document.getElementById(targetId);
+        if (!collapseEl) return;
+
+        const chevron = btn.querySelector('.category-chevron');
+
+        // Restore saved state (false = collapsed)
+        if (state[targetId] === false) {
+            collapseEl.classList.remove('show');
+            btn.setAttribute('aria-expanded', 'false');
+            if (chevron) chevron.style.transform = 'rotate(-90deg)';
+        }
+
+        collapseEl.addEventListener('hide.bs.collapse', () => {
+            state[targetId] = false;
+            saveState(state);
+            if (chevron) chevron.style.transform = 'rotate(-90deg)';
+        });
+        collapseEl.addEventListener('show.bs.collapse', () => {
+            state[targetId] = true;
+            saveState(state);
+            if (chevron) chevron.style.transform = '';
+        });
     });
 }
