@@ -89,7 +89,7 @@ class TestDashboardQueries:
 
         from apps.reports.views import DashboardView
 
-        with django_assert_max_num_queries(12):
+        with django_assert_max_num_queries(14):
             response = DashboardView.as_view()(request)
 
         assert response.status_code == 200

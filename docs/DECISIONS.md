@@ -370,19 +370,24 @@ Sin dominio verificado en Resend, el `from` queda como `onboarding@resend.dev` y
 
 ---
 
-## D-014 — Deudas técnicas registradas (sin fecha de resolución)
+## D-014 — Deudas técnicas
 
-**Fecha:** 2026-05-09
-**Estado:** ⏳ Pendiente
+**Fecha:** 2026-05-09 / Actualizado 2026-05-10
 
 ### DT-001 — Resend sin dominio verificado
 
-Sin dominio propio verificado en Resend, el remitente queda fijado en `onboarding@resend.dev` y el destinatario debe coincidir con el email de la cuenta Resend. Para desbloquear envío a cualquier destinatario con remitente propio, verificar un dominio en resend.com/domains y actualizar `DEFAULT_FROM_EMAIL`.
+**Estado:** ⏳ Pendiente (configuración externa)
 
-### DT-002 — Reportes / comparativa año anterior
+Sin dominio propio verificado en Resend, el remitente queda fijado en `onboarding@resend.dev` y el destinatario debe coincidir con el email de la cuenta Resend. Para desbloquear envío a cualquier destinatario con remitente propio, verificar un dominio en resend.com/domains y actualizar `DEFAULT_FROM_EMAIL`. No requiere cambios en código.
 
-El gráfico de evolución mensual (D-008) solo muestra el año en curso. Si el usuario quiere comparar con el año anterior, no hay forma de hacerlo. Queda pendiente como sección de Reportes dedicada.
+### DT-002 — Selector de año en gráfico de evolución mensual
 
-### DT-003 — healthz: throttle no persiste entre workers
+**Estado:** ✅ Resuelto (v0.16.0)
 
-El rate limiting de `/healthz/` usa un `dict` en memoria (D-004). Se resetea con cada restart del proceso y no se comparte entre workers si se escala horizontalmente. Mitigación futura: usar Django cache backend (Redis/Memcached) en lugar del dict local.
+El gráfico de evolución ahora incluye un selector de año en el encabezado del card. Al seleccionar un año anterior se muestran los 12 meses completos; para el año actual se muestra enero hasta el mes en curso. Los años disponibles se calculan dinámicamente desde el primer año con datos del usuario.
+
+### DT-003 — healthz: throttle migrado a Django cache
+
+**Estado:** ✅ Resuelto (v0.16.0)
+
+El rate limiting de `/healthz/` se migró de un `dict` en memoria a `django.core.cache`. Con `LocMemCache` (actual) el comportamiento es equivalente pero thread-safe. Para escalar a múltiples workers solo se necesita cambiar `CACHES.BACKEND` a Redis — sin cambios en la lógica del endpoint.

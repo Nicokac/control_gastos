@@ -131,6 +131,39 @@ class TestDashboardView:
         assert response.context["balance"] == Decimal("-300.00")
         assert response.context["balance_is_positive"] is False
 
+    def test_dashboard_year_selector_defaults_to_current_year(self, client, user):
+        """Verifica que el año por defecto es el año actual."""
+        client.force_login(user)
+        response = client.get(reverse("reports:dashboard"))
+        assert response.context["selected_year"] == timezone.localdate().year
+
+    def test_dashboard_year_selector_accepts_valid_year(self, client, user):
+        """Verifica que se puede seleccionar un año anterior."""
+        client.force_login(user)
+        current_year = timezone.localdate().year
+        response = client.get(reverse("reports:dashboard"), {"year": str(current_year)})
+        assert response.context["selected_year"] == current_year
+
+    def test_dashboard_year_selector_rejects_future_year(self, client, user):
+        """Verifica que un año futuro se limita al año actual."""
+        client.force_login(user)
+        current_year = timezone.localdate().year
+        response = client.get(reverse("reports:dashboard"), {"year": str(current_year + 5)})
+        assert response.context["selected_year"] == current_year
+
+    def test_dashboard_year_selector_rejects_invalid_value(self, client, user):
+        """Verifica que un valor no numérico usa el año actual."""
+        client.force_login(user)
+        current_year = timezone.localdate().year
+        response = client.get(reverse("reports:dashboard"), {"year": "abc"})
+        assert response.context["selected_year"] == current_year
+
+    def test_dashboard_year_choices_includes_current_year(self, client, user):
+        """Verifica que la lista de años incluye el año actual."""
+        client.force_login(user)
+        response = client.get(reverse("reports:dashboard"))
+        assert timezone.localdate().year in response.context["year_choices"]
+
 
 @pytest.mark.django_db
 class TestRecentTransactions:
@@ -440,7 +473,7 @@ class TestDashboardQueryPerformance:
 
         # Dashboard vacío debería usar pocas queries
         # Baseline: ~8 queries (session, user, balance, budgets, savings, etc.)
-        with django_assert_max_num_queries(14):
+        with django_assert_max_num_queries(16):
             authenticated_client.get(url_helper("dashboard"))
 
     def test_dashboard_with_data_query_count(
@@ -488,7 +521,7 @@ class TestDashboardQueryPerformance:
 
         # Con datos, queries deberían mantenerse constantes (no N+1)
         # Máximo 15 queries permitidas
-        with django_assert_max_num_queries(14):
+        with django_assert_max_num_queries(16):
             response = authenticated_client.get(url_helper("dashboard"))
 
         assert response.status_code == 200
@@ -541,7 +574,7 @@ class TestDashboardQueryPerformance:
 
         # Aún con más datos, queries deben mantenerse ~igual
         # Si hay N+1, esto fallaría (sería 50+ queries)
-        with django_assert_max_num_queries(14):
+        with django_assert_max_num_queries(16):
             response = authenticated_client.get(url_helper("dashboard"))
 
         assert response.status_code == 200

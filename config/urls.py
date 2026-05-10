@@ -15,23 +15,19 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
-import time
-from collections import defaultdict
-
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.core.cache import cache
 from django.http import HttpResponse
 from django.urls import include, path
 
-_healthz_hits: dict[str, list[float]] = defaultdict(list)
-_HEALTHZ_LIMIT = 30  # máx requests por IP externa
+_HEALTHZ_LIMIT = 30  # máx requests por IP en la ventana
 _HEALTHZ_WINDOW = 60  # segundos
 
 
 def healthz(request):
     """Health check endpoint que verifica conexión a DB."""
-    # El health checker de Render (user-agent Render/1.0) no se throttlea
     user_agent = request.META.get("HTTP_USER_AGENT", "")
     if "Render" not in user_agent:
         ip = (
@@ -39,13 +35,11 @@ def healthz(request):
             .split(",")[0]
             .strip()
         )
-        now = time.monotonic()
-        window_start = now - _HEALTHZ_WINDOW
-        hits = [t for t in _healthz_hits[ip] if t > window_start]
-        if len(hits) >= _HEALTHZ_LIMIT:
+        cache_key = f"healthz_hits_{ip}"
+        hits = cache.get(cache_key, 0)
+        if hits >= _HEALTHZ_LIMIT:
             return HttpResponse("too many requests", content_type="text/plain", status=429)
-        hits.append(now)
-        _healthz_hits[ip] = hits
+        cache.set(cache_key, hits + 1, timeout=_HEALTHZ_WINDOW)
 
     from django.db import connection
 

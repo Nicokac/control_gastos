@@ -30,20 +30,55 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         current_month = today.month
         current_year = today.year
 
+        # Año seleccionado para el gráfico de evolución (por defecto: año actual)
+        try:
+            selected_year = int(self.request.GET.get("year", current_year))
+        except (ValueError, TypeError):
+            selected_year = current_year
+        # Limitar a años con datos posibles (2020 → año actual)
+        selected_year = max(2020, min(selected_year, current_year))
+
+        # Para el gráfico: si es el año actual mostrar hasta el mes actual;
+        # si es un año anterior mostrar los 12 meses completos
+        evolution_month = current_month if selected_year == current_year else 12
+
+        # Años disponibles para el selector (desde el primer año con datos hasta hoy)
+        first_year = self._get_first_data_year(user, current_year)
+        year_choices = list(range(first_year, current_year + 1))
+
         # Información del período
         context["current_month"] = current_month
         context["current_year"] = current_year
         context["month_name"] = get_month_name(current_month)
         context["today"] = today
+        context["selected_year"] = selected_year
+        context["year_choices"] = year_choices
 
         # Obtener datos de cada módulo
         context.update(self._get_balance_data(user, current_month, current_year))
         context.update(self._get_savings_data(user))
         context.update(self._get_recent_transactions(user))
         context.update(self._get_expense_distribution(user, current_month, current_year))
-        context.update(self._get_monthly_evolution(user, current_month, current_year))
+        context.update(self._get_monthly_evolution(user, evolution_month, selected_year))
 
         return context
+
+    def _get_first_data_year(self, user, current_year):
+        """Retorna el año más antiguo con datos del usuario (mínimo 2020)."""
+        expense_year = (
+            Expense.objects.filter(user=user)
+            .order_by("date")
+            .values_list("date__year", flat=True)
+            .first()
+        )
+        income_year = (
+            Income.objects.filter(user=user)
+            .order_by("date")
+            .values_list("date__year", flat=True)
+            .first()
+        )
+        candidates = [y for y in [expense_year, income_year] if y]
+        return min(candidates) if candidates else current_year
 
     def _get_balance_data(self, user, month, year):
         """

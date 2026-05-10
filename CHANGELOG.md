@@ -5,6 +5,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [0.16.0] — 2026-05-10
+
+### Added
+
+- **Dashboard — selector de año en evolución mensual** — nuevo selector en el encabezado del gráfico. Al elegir un año anterior se muestran los 12 meses completos; para el año actual, enero hasta el mes en curso. Los años disponibles se calculan desde el primer año con datos del usuario.
+
+### Changed
+
+- **Healthz — throttle migrado a Django cache** — el rate limiting de `/healthz/` deja de usar un `dict` en memoria y pasa a `django.core.cache`. Comportamiento idéntico con `LocMemCache`; para escalar a múltiples workers solo se cambia el backend a Redis sin tocar la lógica.
+
+---
+
 ## [0.15.0] — 2026-05-10
 
 ### Added

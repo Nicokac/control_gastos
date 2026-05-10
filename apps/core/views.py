@@ -157,9 +157,17 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "0.15.0"
+APP_VERSION = "0.16.0"
 
 WHATS_NEW = [
+    {
+        "version": "0.16.0",
+        "date": "Mayo 2026",
+        "title": "Comparar evolución por año",
+        "items": [
+            "Dashboard: ahora podés ver la evolución de cualquier año anterior usando el selector en el gráfico",
+        ],
+    },
     {
         "version": "0.15.0",
         "date": "Mayo 2026",
