@@ -38,6 +38,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Collapsible category groups (categories list page)
     initCategoryCollapse();
+
+    // Expense subcategory filter (expense list page)
+    initExpenseSubcategoryFilter();
+
+    // Mark whats-new page as seen
+    initWhatsNewSeen();
+
+    // Feedback form validation
+    initFeedbackForm();
 });
 
 /**
@@ -132,17 +141,25 @@ function initKeyboardShortcuts() {
  * Initialize toasts from session messages
  */
 function initSessionToasts() {
-    if (window.DJANGO_MESSAGES && window.DJANGO_MESSAGES.length > 0) {
-        window.DJANGO_MESSAGES.forEach((msg, i) => {
-            const tags = msg.tags || '';
-            let type = 'info';
-            if (tags.includes('success')) type = 'success';
-            else if (tags.includes('error')) type = 'danger';
-            else if (tags.includes('warning')) type = 'warning';
-            setTimeout(() => showToast(msg.message, type), i * 300);
-        });
-        window.DJANGO_MESSAGES = [];
-    }
+    const appData = document.getElementById('app-data');
+    if (!appData) return;
+    const raw = appData.dataset.messages;
+    if (!raw) return;
+
+    raw.split(';;').forEach((entry, i) => {
+        const parts = entry.split('||');
+        const message = parts[0] || '';
+        const tags = parts[1] || '';
+        if (!message) return;
+        let type = 'info';
+        if (tags.includes('success')) type = 'success';
+        else if (tags.includes('error')) type = 'danger';
+        else if (tags.includes('warning')) type = 'warning';
+        setTimeout(() => showToast(message, type), i * 300);
+    });
+
+    // Clear so re-renders don't re-show (remove the attribute)
+    appData.removeAttribute('data-messages');
 }
 
 /**
@@ -298,7 +315,8 @@ function initSidebarToggle() {
  * Muestra badge "Nuevo" en el link de Novedades si hay versión no vista
  */
 function initWhatsNewBadge() {
-    const currentVersion = window.APP_VERSION || '';
+    const appData = document.getElementById('app-data');
+    const currentVersion = appData ? appData.dataset.appVersion : '';
     const seen = localStorage.getItem('whats_new_seen');
     if (currentVersion && seen !== currentVersion) {
         document.querySelectorAll('#sidebarNewBadge').forEach(el => {
@@ -340,6 +358,95 @@ function initDynamicColors() {
         if (color) el.style.backgroundColor = color;
         el.style.visibility = 'visible';
     });
+}
+
+/**
+ * Mark the whats-new page as seen so the sidebar badge disappears.
+ * Only runs when #whats-new-marker is present (whats_new page).
+ */
+function initWhatsNewSeen() {
+    const marker = document.getElementById('whats-new-marker');
+    if (!marker) return;
+    const version = marker.dataset.version;
+    if (version) localStorage.setItem('whats_new_seen', version);
+}
+
+/**
+ * Feedback form: clear error on input, prevent submit when empty,
+ * show loading state on valid submit.
+ * Only runs when #feedbackSubmitBtn is present (feedback page).
+ */
+function initFeedbackForm() {
+    const submitBtn = document.getElementById('feedbackSubmitBtn');
+    if (!submitBtn) return;
+
+    const form = submitBtn.closest('form');
+    const errorDiv = document.getElementById('mensajeError');
+    // Find the textarea inside the form
+    const textarea = form ? form.querySelector('textarea') : null;
+
+    if (textarea && errorDiv) {
+        textarea.addEventListener('input', function () {
+            if (this.value.trim().length > 0) {
+                errorDiv.style.display = 'none';
+            }
+        });
+    }
+
+    if (form && submitBtn) {
+        form.addEventListener('submit', function (e) {
+            if (!textarea || textarea.value.trim().length === 0) {
+                e.preventDefault();
+                if (errorDiv) errorDiv.style.display = 'block';
+                if (textarea) textarea.focus();
+                return;
+            }
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span>Procesando...';
+        });
+    }
+}
+
+/**
+ * Expense list: filter subcategory options based on selected group.
+ * Only runs on the expense list page (no-op elsewhere).
+ */
+function initExpenseSubcategoryFilter() {
+    const groupSelect = document.getElementById('id_category');
+    const subSelect = document.getElementById('id_subcategory');
+    const subWrapper = document.getElementById('subcategory-wrapper');
+    if (!groupSelect || !subSelect || !subWrapper) return;
+
+    const allOptions = Array.from(subSelect.querySelectorAll('option[data-parent]'));
+
+    function filterSubs(parentId) {
+        const currentVal = subSelect.value;
+        allOptions.forEach(opt => { opt.hidden = true; opt.disabled = true; });
+
+        if (!parentId) {
+            subWrapper.style.display = 'none';
+            subSelect.value = '';
+            return;
+        }
+        subWrapper.style.display = '';
+        let hasVisible = false;
+        allOptions.forEach(opt => {
+            if (String(opt.dataset.parent) === String(parentId)) {
+                opt.hidden = false;
+                opt.disabled = false;
+                hasVisible = true;
+            }
+        });
+        if (currentVal && subSelect.querySelector(`option[value="${currentVal}"]:not([hidden])`)) {
+            subSelect.value = currentVal;
+        } else {
+            subSelect.value = '';
+        }
+        if (!hasVisible) subWrapper.style.display = 'none';
+    }
+
+    groupSelect.addEventListener('change', () => filterSubs(groupSelect.value));
+    filterSubs(groupSelect.value);
 }
 
 /**

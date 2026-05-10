@@ -79,46 +79,6 @@
             </div>
         </form>
 
-        <script>
-        (function () {
-            const groupSelect = document.getElementById('id_category');
-            const subSelect   = document.getElementById('id_subcategory');
-            const subWrapper  = document.getElementById('subcategory-wrapper');
-            // Todas las opciones de subcategoría (ya renderizadas con data-parent)
-            const allOptions  = Array.from(subSelect.querySelectorAll('option[data-parent]'));
-
-            function filterSubs(parentId) {
-                const currentVal = subSelect.value;
-                // Ocultar todas primero
-                allOptions.forEach(opt => { opt.hidden = true; opt.disabled = true; });
-
-                if (!parentId) {
-                    subWrapper.style.display = 'none';
-                    subSelect.value = '';
-                    return;
-                }
-                subWrapper.style.display = '';
-                let hasVisible = false;
-                allOptions.forEach(opt => {
-                    if (String(opt.dataset.parent) === String(parentId)) {
-                        opt.hidden = false;
-                        opt.disabled = false;
-                        hasVisible = true;
-                    }
-                });
-                // Si el valor seleccionado no pertenece al grupo, resetear
-                if (currentVal && subSelect.querySelector(`option[value="${currentVal}"]:not([hidden])`)) {
-                    subSelect.value = currentVal;
-                } else {
-                    subSelect.value = '';
-                }
-                if (!hasVisible) subWrapper.style.display = 'none';
-            }
-
-            groupSelect.addEventListener('change', () => filterSubs(groupSelect.value));
-            filterSubs(groupSelect.value);
-        })();
-        </script>
     </div>
 </div>
 

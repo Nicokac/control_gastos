@@ -2,38 +2,6 @@
 
 {% block title %}Reportar / Sugerir - Control de Gastos{% endblock %}
 
-{% block extra_js %}
-<script>
-(function () {
-    const textarea = document.getElementById('{{ form.mensaje.id_for_label }}');
-    const errorDiv = document.getElementById('mensajeError');
-    const submitBtn = document.getElementById('feedbackSubmitBtn');
-    const form = submitBtn && submitBtn.closest('form');
-
-    if (textarea && errorDiv) {
-        textarea.addEventListener('input', function () {
-            if (this.value.trim().length > 0) {
-                errorDiv.style.display = 'none';
-            }
-        });
-    }
-
-    if (form && submitBtn) {
-        form.addEventListener('submit', function (e) {
-            if (!textarea || textarea.value.trim().length === 0) {
-                e.preventDefault();
-                if (errorDiv) errorDiv.style.display = 'block';
-                if (textarea) textarea.focus();
-                return;
-            }
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span>Procesando...';
-        });
-    }
-})();
-</script>
-{% endblock %}
-
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-7 col-lg-6">
