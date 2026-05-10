@@ -207,7 +207,10 @@ CSP_IMG_SRC = (
 )
 
 # Conexiones (fetch, XHR, WebSocket)
-CSP_CONNECT_SRC = ("'self'",)
+CSP_CONNECT_SRC = (
+    "'self'",
+    "https://cdn.jsdelivr.net",
+)
 
 # Frames: ninguno (ya tenemos X-Frame-Options)
 CSP_FRAME_SRC = ("'none'",)
