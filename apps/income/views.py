@@ -30,7 +30,8 @@ class IncomeListView(UserOwnedListView):
 
         # Si no hay parámetros GET, usar mes/año actual como default
         has_filters = any(
-            key in self.request.GET for key in ["month", "year", "category", "date_from", "date_to"]
+            key in self.request.GET
+            for key in ["q", "month", "year", "category", "date_from", "date_to"]
         )
 
         if has_filters:
@@ -42,7 +43,11 @@ class IncomeListView(UserOwnedListView):
             month = str(today.month)
             year = str(today.year)
 
+        q = self.request.GET.get("q", "").strip()
         category = self.request.GET.get("category")
+
+        if q:
+            qs = qs.filter(description__icontains=q)
 
         if month:
             try:
@@ -75,7 +80,8 @@ class IncomeListView(UserOwnedListView):
 
         # Si no hay filtros en GET, usar defaults para el formulario
         has_filters = any(
-            key in self.request.GET for key in ["month", "year", "category", "date_from", "date_to"]
+            key in self.request.GET
+            for key in ["q", "month", "year", "category", "date_from", "date_to"]
         )
 
         today = timezone.localdate()

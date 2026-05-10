@@ -421,9 +421,9 @@ Las categorías se ordenan alfabéticamente. No hay UI de reordenamiento manual 
 
 ### DT-007 — Gastos/Ingresos: sin búsqueda por texto
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v0.19.0)
 
-Los listados de gastos e ingresos filtran por categoría, fecha y método de pago, pero no por texto libre en descripción. Agregar un campo de búsqueda en el filtro existente.
+Se agregó campo `q` en `BaseFilterForm` (heredado por `ExpenseFilterForm` e `IncomeFilterForm`). Los views aplican `description__icontains=q` cuando el parámetro está presente. El campo aparece como primer elemento del formulario de filtros en ambos listados. La búsqueda es case-insensitive y se puede combinar con los demás filtros (mes, año, categoría).
 
 ### DT-008 — Exportación de historial (CSV)
 

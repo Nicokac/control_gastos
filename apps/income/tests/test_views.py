@@ -405,3 +405,53 @@ class TestIncomeFormGroupedCategories:
 
         content = response.content.decode()
         assert income_category.parent.name in content
+
+
+@pytest.mark.django_db
+class TestIncomeSearchFilter:
+    """Tests para el filtro de búsqueda por texto en ingresos."""
+
+    def test_search_by_description_returns_match(
+        self, authenticated_client, user, income_category, income_factory
+    ):
+        income_factory(user, income_category, description="Sueldo enero")
+        income_factory(user, income_category, description="Freelance proyecto")
+
+        url = reverse("income:list")
+        response = authenticated_client.get(url, {"q": "sueldo"})
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "Sueldo enero" in content
+        assert "Freelance proyecto" not in content
+
+    def test_search_is_case_insensitive(
+        self, authenticated_client, user, income_category, income_factory
+    ):
+        income_factory(user, income_category, description="SUELDO MARZO")
+
+        url = reverse("income:list")
+        response = authenticated_client.get(url, {"q": "sueldo"})
+
+        assert response.status_code == 200
+        assert "SUELDO MARZO" in response.content.decode()
+
+    def test_search_returns_empty_when_no_match(
+        self, authenticated_client, user, income_category, income_factory
+    ):
+        income_factory(user, income_category, description="Alquiler cobrado")
+
+        url = reverse("income:list")
+        response = authenticated_client.get(url, {"q": "inexistente xyz"})
+
+        assert response.status_code == 200
+        assert "Alquiler cobrado" not in response.content.decode()
+
+    def test_search_field_renders_in_filter_form(self, authenticated_client):
+        url = reverse("income:list")
+        response = authenticated_client.get(url)
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert 'name="q"' in content
+        assert "Buscar" in content

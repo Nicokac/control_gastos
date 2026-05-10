@@ -33,6 +33,7 @@ class ExpenseListView(UserOwnedListView):
         has_filters = any(
             key in self.request.GET
             for key in [
+                "q",
                 "month",
                 "year",
                 "category",
@@ -52,6 +53,7 @@ class ExpenseListView(UserOwnedListView):
             month = str(today.month)
             year = str(today.year)
 
+        q = self.request.GET.get("q", "").strip()
         category = self.request.GET.get("category")
         subcategory = self.request.GET.get("subcategory")
         payment_method = self.request.GET.get("payment_method")
@@ -77,6 +79,8 @@ class ExpenseListView(UserOwnedListView):
                 except ValueError:
                     pass
 
+        if q:
+            qs = qs.filter(description__icontains=q)
         if subcategory:
             # subcategoría específica tiene prioridad sobre el grupo
             qs = qs.filter(category_id=subcategory)
@@ -97,6 +101,7 @@ class ExpenseListView(UserOwnedListView):
         has_filters = any(
             key in self.request.GET
             for key in [
+                "q",
                 "month",
                 "year",
                 "category",

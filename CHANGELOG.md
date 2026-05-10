@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [0.19.0] — 2026-05-10
+
+### Added
+
+- **Gastos e Ingresos — búsqueda por texto en el listado** — nuevo campo "Buscar" en el formulario de filtros de ambos listados. Filtra por descripción (sin distinción de mayúsculas) y se puede combinar con los demás filtros existentes (mes, año, categoría, etc.).
+
+---
+
 ## [0.18.0] — 2026-05-10
 
 ### Fixed

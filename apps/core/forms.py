@@ -114,7 +114,7 @@ class FeedbackForm(forms.Form):
 
 class BaseFilterForm(forms.Form):
     """
-    Form base para filtros de mes/año/categoría.
+    Form base para filtros de mes/año/categoría/búsqueda.
 
     Uso:
         class ExpenseFilterForm(BaseFilterForm):
@@ -122,6 +122,16 @@ class BaseFilterForm(forms.Form):
                 return Category.get_expense_categories(user)
     """
 
+    q = forms.CharField(
+        required=False,
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control form-control-sm",
+                "placeholder": "Buscar por descripción...",
+                "autocomplete": "off",
+            }
+        ),
+    )
     month = forms.ChoiceField(
         choices=[],
         required=False,

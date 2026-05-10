@@ -18,10 +18,14 @@
     <div class="card-body">
         <form method="get" class="row g-3 align-items-end">
             <div class="col-md-3">
+                <label class="form-label small text-muted">Buscar</label>
+                {{ filter_form.q }}
+            </div>
+            <div class="col-md-2">
                 <label class="form-label small text-muted">Mes</label>
                 {{ filter_form.month }}
             </div>
-            <div class="col-md-2">
+            <div class="col-md-1">
                 <label class="form-label small text-muted">Año</label>
                 {{ filter_form.year }}
             </div>
@@ -29,14 +33,12 @@
                 <label class="form-label small text-muted">Categoría</label>
                 {{ filter_form.category }}
             </div>
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-outline-primary btn-sm w-100">
-                    <i class="bi bi-funnel me-1"></i>Filtrar
+            <div class="col-auto ms-auto d-flex gap-2 align-items-end">
+                <button type="submit" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-funnel"></i>
                 </button>
-            </div>
-            <div class="col-md-2">
-                <a href="{% url 'income:list' %}" class="btn btn-outline-secondary btn-sm w-100">
-                    <i class="bi bi-x-lg me-1"></i>Limpiar
+                <a href="{% url 'income:list' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-x-lg"></i>
                 </a>
             </div>
         </form>

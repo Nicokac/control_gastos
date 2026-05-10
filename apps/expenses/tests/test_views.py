@@ -749,6 +749,76 @@ class TestExpenseViewRedirects:
 
 
 @pytest.mark.django_db
+class TestExpenseSearchFilter:
+    """Tests para el filtro de búsqueda por texto en gastos."""
+
+    def test_search_by_description_returns_match(
+        self, authenticated_client, user, expense_category, expense_factory
+    ):
+        expense_factory(user, expense_category, description="Supermercado Día")
+        expense_factory(user, expense_category, description="Netflix mensual")
+
+        url = reverse("expenses:list")
+        response = authenticated_client.get(url, {"q": "supermercado"})
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "Supermercado Día" in content
+        assert "Netflix mensual" not in content
+
+    def test_search_is_case_insensitive(
+        self, authenticated_client, user, expense_category, expense_factory
+    ):
+        expense_factory(user, expense_category, description="NAFTA YPF")
+
+        url = reverse("expenses:list")
+        response = authenticated_client.get(url, {"q": "nafta"})
+
+        assert response.status_code == 200
+        assert "NAFTA YPF" in response.content.decode()
+
+    def test_search_returns_empty_when_no_match(
+        self, authenticated_client, user, expense_category, expense_factory
+    ):
+        expense_factory(user, expense_category, description="Alquiler enero")
+
+        url = reverse("expenses:list")
+        response = authenticated_client.get(url, {"q": "netflix"})
+
+        assert response.status_code == 200
+        assert "Alquiler enero" not in response.content.decode()
+
+    def test_search_combined_with_month_filter(
+        self, authenticated_client, user, expense_category, expense_factory
+    ):
+        from datetime import date
+
+        expense_factory(
+            user, expense_category, description="Supermercado enero", date=date(2025, 1, 10)
+        )
+        expense_factory(
+            user, expense_category, description="Supermercado febrero", date=date(2025, 2, 10)
+        )
+
+        url = reverse("expenses:list")
+        response = authenticated_client.get(url, {"q": "supermercado", "month": 1, "year": 2025})
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "Supermercado enero" in content
+        assert "Supermercado febrero" not in content
+
+    def test_search_field_renders_in_filter_form(self, authenticated_client):
+        url = reverse("expenses:list")
+        response = authenticated_client.get(url)
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert 'name="q"' in content
+        assert "Buscar" in content
+
+
+@pytest.mark.django_db
 class TestExpenseListViewOrdering:
     """Tests para verificar ordenamiento en ListView."""
 
