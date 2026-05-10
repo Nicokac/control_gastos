@@ -157,34 +157,44 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "0.14.0"
+APP_VERSION = "0.15.0"
 
 WHATS_NEW = [
+    {
+        "version": "0.15.0",
+        "date": "Mayo 2026",
+        "title": "Mejoras en Novedades y Reportar / Sugerir",
+        "items": [
+            'Novedades: el aviso de "Nuevo" en el menú ahora se actualiza automáticamente con cada versión',
+            "Novedades: cada cambio ahora indica en qué sección de la app ocurrió",
+        ],
+    },
     {
         "version": "0.14.0",
         "date": "Mayo 2026",
         "title": "Correcciones en Reportar / Sugerir",
         "items": [
-            "El mensaje de confirmación ahora aparece correctamente tras enviar un reporte",
-            "El error de validación se limpia al empezar a escribir en el campo mensaje",
-            "Validación frontend evita envíos innecesarios con el campo vacío",
+            "Reportar / Sugerir: ahora aparece un mensaje de confirmación cuando tu reporte se envía correctamente",
+            "Reportar / Sugerir: el mensaje de error desaparece automáticamente cuando empezás a escribir",
+            'Reportar / Sugerir: el botón ya no muestra "Procesando..." si el campo está vacío',
         ],
     },
     {
         "version": "0.13.0",
         "date": "Mayo 2026",
-        "title": "Mi Cuenta: eliminar cuenta y corrección de timezone",
+        "title": "Mejoras en Mi Cuenta",
         "items": [
-            "Nueva opción para eliminar tu cuenta y todos tus datos de forma permanente",
-            "El último acceso ahora muestra la hora correcta en zona horaria Argentina",
+            "Mi Cuenta: nueva opción para eliminar tu cuenta y todos tus datos de forma permanente",
+            "Mi Cuenta: la fecha y hora del último acceso ahora se muestra en horario argentino",
         ],
     },
     {
         "version": "0.12.0",
         "date": "Mayo 2026",
-        "title": "Mejoras en Categorías",
+        "title": "Mejoras en Categorías y Mi Cuenta",
         "items": [
-            "Selector de color visual con círculos predefinidos (ya no se usa el selector nativo del sistema operativo)",
+            "Categorías: el selector de color ahora muestra círculos de colores en lugar del selector del sistema",
+            "Mi Cuenta: el nombre y apellido ahora se muestran correctamente al abrir el formulario",
         ],
     },
     {
@@ -192,56 +202,55 @@ WHATS_NEW = [
         "date": "Mayo 2026",
         "title": "Correcciones en Ingresos y Ahorro",
         "items": [
-            "Ingresos: el total del período ya muestra el monto correcto",
-            "Ingresos: las categorías ahora se cargan correctamente en los formularios",
-            "Ahorro: el monto objetivo y el color se pre-cargan al editar una meta",
+            "Ingresos: el total del período ahora muestra el monto correcto",
+            "Ingresos: las categorías ahora aparecen correctamente al registrar un ingreso",
+            "Ahorro: el monto objetivo y el color ahora se muestran correctamente al editar una meta",
         ],
     },
     {
         "version": "0.10.0",
         "date": "Mayo 2026",
-        "title": "Correcciones en gastos",
+        "title": "Correcciones en Gastos",
         "items": [
-            "El monto ya no aparece vacío al editar un gasto existente",
-            'El resumen de gastos ahora muestra "Sin clasificar" para los que no tienen tipo o método de pago',
+            "Gastos: el monto ya no aparece vacío al editar un gasto existente",
+            "Gastos: el resumen ahora incluye los gastos sin tipo o método de pago asignado",
         ],
     },
     {
         "version": "0.9.0",
         "date": "Mayo 2026",
-        "title": "Sidebar mobile y mejoras de navegación",
+        "title": "Menú en celular y sección Novedades",
         "items": [
-            "Sidebar disponible en celular como menú deslizable",
-            "Sección Novedades para seguir la evolución de la app",
+            "El menú lateral ahora está disponible en celular como un panel deslizable",
+            "Nueva sección Novedades para ver qué cambió en cada versión de la app",
         ],
     },
     {
         "version": "0.8.0",
         "date": "Mayo 2026",
-        "title": "Sidebar colapsable",
+        "title": "Menú lateral contraíble",
         "items": [
-            "El sidebar ahora se puede contraer a solo íconos para ganar espacio",
-            "El estado se recuerda entre sesiones",
-            "Corrección del layout horizontal en todas las pantallas",
+            "El menú lateral ahora se puede reducir a solo íconos para ganar espacio en pantalla",
+            "La app recuerda si lo dejaste abierto o cerrado entre sesiones",
         ],
     },
     {
         "version": "0.7.0",
         "date": "Mayo 2026",
-        "title": "Correcciones de producción",
+        "title": "Correcciones generales",
         "items": [
-            "Formulario de feedback ahora funciona correctamente en producción",
-            "El cambio de día a las 21hs (hora Argentina) quedó corregido",
+            "Reportar / Sugerir: el formulario de contacto ahora funciona correctamente",
+            "General: el cambio de día ahora ocurre a medianoche en horario argentino",
         ],
     },
     {
         "version": "0.6.0",
         "date": "Mayo 2026",
-        "title": "Jerarquía de categorías",
+        "title": "Categorías organizadas en grupos",
         "items": [
-            "Las categorías ahora se organizan en grupos y subcategorías",
-            "Filtro por grupo y subcategoría en la lista de gastos",
-            "Dashboard con drill-down por subcategoría en el ranking",
+            "Categorías: ahora se organizan en grupos (ej: Alimentación) y subcategorías (ej: Supermercado)",
+            "Gastos: nuevo filtro por grupo y subcategoría en el listado",
+            "Dashboard: podés ver el detalle de gastos por subcategoría desde el ranking",
         ],
     },
     {
@@ -249,10 +258,11 @@ WHATS_NEW = [
         "date": "Mayo 2026",
         "title": "Dashboard rediseñado y nuevas funciones",
         "items": [
-            "Nuevo gráfico de evolución mensual (ingresos, gastos, ahorro, balance)",
-            "Dashboard con balance hero, donut de categorías y ranking",
-            "Formulario de feedback desde el sidebar",
-            "Selector visual de íconos en categorías y metas",
+            "Dashboard: nuevo gráfico de evolución mensual con ingresos, gastos, ahorro y balance",
+            "Dashboard: balance principal destacado, gráfico de categorías y ranking de gastos",
+            "Gastos: podés vincular un gasto a una meta de ahorro para que el monto se deposite automáticamente",
+            "Categorías y Ahorro: selector visual de íconos para personalizar cada elemento",
+            "Nueva sección Reportar / Sugerir disponible en el menú lateral",
         ],
     },
 ]

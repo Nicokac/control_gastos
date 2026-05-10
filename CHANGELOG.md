@@ -5,6 +5,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [0.15.0] — 2026-05-10
+
+### Added
+
+- **Badge de Novedades dinámico** — la versión ya no está hardcodeada en el JS. Se inyecta desde el servidor via context processor `app_version` → `window.APP_VERSION`. El badge "Nuevo" se actualiza automáticamente con cada deploy sin tocar código JS.
+
+### Changed
+
+- **Novedades — texto accesible con contexto de sección** — cada item ahora indica en qué parte de la app ocurrió el cambio (ej: "Gastos: el monto ya no aparece vacío...") y usa lenguaje sin términos técnicos.
+
+---
+
 ## [0.14.0] — 2026-05-10
 
 ### Fixed

@@ -265,9 +265,9 @@ function initSidebarToggle() {
  * Muestra badge "Nuevo" en el link de Novedades si hay versión no vista
  */
 function initWhatsNewBadge() {
-    const CURRENT_VERSION = '0.12.0';
+    const currentVersion = window.APP_VERSION || '';
     const seen = localStorage.getItem('whats_new_seen');
-    if (seen !== CURRENT_VERSION) {
+    if (currentVersion && seen !== currentVersion) {
         document.querySelectorAll('#sidebarNewBadge').forEach(el => {
             el.style.display = 'inline';
         });
