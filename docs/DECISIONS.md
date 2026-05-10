@@ -391,3 +391,40 @@ El gráfico de evolución ahora incluye un selector de año en el encabezado del
 **Estado:** ✅ Resuelto (v0.16.0)
 
 El rate limiting de `/healthz/` se migró de un `dict` en memoria a `django.core.cache`. Con `LocMemCache` (actual) el comportamiento es equivalente pero thread-safe. Para escalar a múltiples workers solo se necesita cambiar `CACHES.BACKEND` a Redis — sin cambios en la lógica del endpoint.
+
+### DT-004 — Tests de integración para mensajes toast en CRUD
+
+**Estado:** ✅ Resuelto (v0.17.0)
+
+Los mensajes toast del framework `django.contrib.messages` generados en operaciones CRUD (crear, editar, eliminar) ahora están cubiertos por tests de integración en todos los módulos:
+
+- **Expenses**: `TestExpenseCreateMessages`, `TestExpenseUpdateMessages`, `TestExpenseDeleteMessages`
+- **Income**: `test_create_income_success_adds_success_message`, `test_update_income_adds_success_message`, `test_delete_income_adds_success_message` (corregido: ahora aserta el contenido del mensaje)
+- **Categories**: `TestCategoryToastMessages` (Create, Update, Delete)
+- **Savings**: `TestSavingToastMessages` (Create, Update, Delete); movimientos ya cubiertos previamente
+
+Los tests usan `follow=True` + `response.context["messages"]` para verificar el mensaje exacto, no solo el status code.
+
+### DT-005 — Sidebar: inconsistencia de comportamiento en mobile
+
+**Estado:** ⏳ Pendiente
+
+En pantallas pequeñas el sidebar no colapsa de forma consistente al rotar el dispositivo. Requiere auditoría CSS/JS del comportamiento del sidebar en viewports < 768px.
+
+### DT-006 — Categorías: orden solo alfabético, sin reordenamiento manual
+
+**Estado:** ⏳ Pendiente (decisión de producto)
+
+Las categorías se ordenan alfabéticamente. No hay UI de reordenamiento manual (drag-and-drop o flechas). Evaluar si es necesario según feedback de usuarios.
+
+### DT-007 — Gastos/Ingresos: sin búsqueda por texto
+
+**Estado:** ⏳ Pendiente
+
+Los listados de gastos e ingresos filtran por categoría, fecha y método de pago, pero no por texto libre en descripción. Agregar un campo de búsqueda en el filtro existente.
+
+### DT-008 — Exportación de historial (CSV)
+
+**Estado:** ⏳ Pendiente
+
+No hay forma de exportar el historial de gastos/ingresos. Implementar endpoint de descarga CSV sin dependencias externas usando `csv` de stdlib.

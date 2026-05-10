@@ -283,6 +283,56 @@ class TestCategoryViewRedirects:
 
 
 @pytest.mark.django_db
+class TestCategoryToastMessages:
+    """Tests de mensajes toast para operaciones CRUD de categorías."""
+
+    def test_create_category_success_adds_toast(self, authenticated_client, user):
+        url = reverse("categories:create")
+        data = {
+            "name": "Categoría Toast",
+            "type": CategoryType.EXPENSE,
+            "icon": "bi-tag",
+            "color": "#dc3545",
+        }
+
+        response = authenticated_client.post(url, data, follow=True)
+
+        assert response.status_code == 200
+        assert Category.objects.filter(name="Categoría Toast", user=user).exists()
+        msgs = [m.message for m in response.context["messages"]]
+        assert any("Categoría creada" in m for m in msgs)
+
+    def test_update_category_success_adds_toast(self, authenticated_client, expense_category):
+        url = reverse("categories:update", kwargs={"pk": expense_category.pk})
+        data = {
+            "name": "Categoría Editada Toast",
+            "type": expense_category.type,
+            "icon": expense_category.icon or "bi-tag",
+            "color": expense_category.color or "#6c757d",
+        }
+
+        response = authenticated_client.post(url, data, follow=True)
+
+        assert response.status_code == 200
+        expense_category.refresh_from_db()
+        assert expense_category.name == "Categoría Editada Toast"
+        msgs = [m.message for m in response.context["messages"]]
+        assert any("Categoría actualizada" in m for m in msgs)
+
+    def test_delete_category_success_adds_toast(self, authenticated_client, expense_category):
+        cat_name = expense_category.name
+        cat_pk = expense_category.pk
+        url = reverse("categories:delete", kwargs={"pk": cat_pk})
+
+        response = authenticated_client.post(url, follow=True)
+
+        assert response.status_code == 200
+        assert not Category.objects.filter(pk=cat_pk).exists()
+        msgs = [m.message for m in response.context["messages"]]
+        assert any(cat_name in m for m in msgs)
+
+
+@pytest.mark.django_db
 class TestCategoryMoveSubcategory:
     """Tests para mover subcategorías entre grupos (Fase 5)."""
 

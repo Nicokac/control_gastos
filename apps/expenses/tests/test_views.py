@@ -340,6 +340,83 @@ class TestExpenseCreateWithSaving:
 
 
 @pytest.mark.django_db
+class TestExpenseCreateMessages:
+    """Tests de mensajes toast para creación de gastos."""
+
+    def test_create_expense_success_adds_toast(self, authenticated_client, user, expense_category):
+        url = reverse("expenses:create")
+        data = {
+            "category": expense_category.pk,
+            "description": "Gasto Toast",
+            "amount": "999.00",
+            "currency": Currency.ARS,
+            "date": timezone.now().date().isoformat(),
+        }
+
+        response = authenticated_client.post(url, data, follow=True)
+
+        assert response.status_code == 200
+        assert Expense.objects.filter(description="Gasto Toast", user=user).exists()
+        msgs = [m.message for m in response.context["messages"]]
+        assert any("Gasto registrado" in m for m in msgs)
+
+    def test_create_expense_invalid_adds_error_toast(self, authenticated_client, expense_category):
+        url = reverse("expenses:create")
+        data = {
+            "category": expense_category.pk,
+            "description": "Inválido",
+            "amount": "",
+            "currency": Currency.ARS,
+            "date": timezone.now().date().isoformat(),
+        }
+
+        response = authenticated_client.post(url, data, follow=True)
+
+        assert response.status_code == 200
+        assert "No pudimos guardar el gasto." in response.content.decode()
+
+
+@pytest.mark.django_db
+class TestExpenseUpdateMessages:
+    """Tests de mensajes toast para edición de gastos."""
+
+    def test_update_expense_success_adds_toast(self, authenticated_client, expense):
+        url = reverse("expenses:update", kwargs={"pk": expense.pk})
+        data = {
+            "category": expense.category.pk,
+            "description": "Gasto Editado Toast",
+            "amount": str(expense.amount),
+            "currency": expense.currency,
+            "date": expense.date.isoformat(),
+        }
+
+        response = authenticated_client.post(url, data, follow=True)
+
+        assert response.status_code == 200
+        expense.refresh_from_db()
+        assert expense.description == "Gasto Editado Toast"
+        msgs = [m.message for m in response.context["messages"]]
+        assert any("Gasto actualizado" in m for m in msgs)
+
+
+@pytest.mark.django_db
+class TestExpenseDeleteMessages:
+    """Tests de mensajes toast para eliminación de gastos."""
+
+    def test_delete_expense_success_adds_toast(self, authenticated_client, expense):
+        expense_name = expense.description
+        expense_pk = expense.pk
+        url = reverse("expenses:delete", kwargs={"pk": expense_pk})
+
+        response = authenticated_client.post(url, follow=True)
+
+        assert response.status_code == 200
+        assert not Expense.objects.filter(pk=expense_pk).exists()
+        msgs = [m.message for m in response.context["messages"]]
+        assert any(expense_name in m for m in msgs)
+
+
+@pytest.mark.django_db
 class TestExpenseUpdateView:
     """Tests para la vista de edición de gastos."""
 

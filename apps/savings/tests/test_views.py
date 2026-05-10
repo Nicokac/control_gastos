@@ -345,6 +345,66 @@ class TestSavingDeleteView:
 
 
 @pytest.mark.django_db
+class TestSavingToastMessages:
+    """Tests de mensajes toast para operaciones CRUD de metas de ahorro."""
+
+    def test_create_saving_success_adds_toast(self, authenticated_client, user):
+        temp_form = SavingForm()
+        icon_choices = list(temp_form.fields["icon"].choices)
+        color_choices = list(temp_form.fields["color"].choices)
+
+        url = reverse("savings:create")
+        data = {
+            "name": "Meta Toast",
+            "target_amount": "50000.00",
+            "currency": "ARS",
+            "icon": icon_choices[0][0] if icon_choices else "bi-piggy-bank",
+            "color": color_choices[0][0] if color_choices else "#28a745",
+        }
+
+        response = authenticated_client.post(url, data, follow=True)
+
+        assert response.status_code == 200
+        assert Saving.objects.filter(name="Meta Toast", user=user).exists()
+        msgs = [m.message for m in response.context["messages"]]
+        assert any("Meta de ahorro" in m and "creada" in m for m in msgs)
+
+    def test_update_saving_success_adds_toast(self, authenticated_client, saving):
+        temp_form = SavingForm()
+        icon_choices = list(temp_form.fields["icon"].choices)
+        color_choices = list(temp_form.fields["color"].choices)
+
+        url = reverse("savings:update", kwargs={"pk": saving.pk})
+        data = {
+            "name": "Meta Editada Toast",
+            "target_amount": str(saving.target_amount),
+            "currency": saving.currency,
+            "icon": icon_choices[0][0] if icon_choices else "bi-piggy-bank",
+            "color": color_choices[0][0] if color_choices else "#28a745",
+        }
+
+        response = authenticated_client.post(url, data, follow=True)
+
+        assert response.status_code == 200
+        saving.refresh_from_db()
+        assert saving.name == "Meta Editada Toast"
+        msgs = [m.message for m in response.context["messages"]]
+        assert any("actualizada" in m for m in msgs)
+
+    def test_delete_saving_success_adds_toast(self, authenticated_client, saving):
+        saving_name = saving.name
+        saving_pk = saving.pk
+        url = reverse("savings:delete", kwargs={"pk": saving_pk})
+
+        response = authenticated_client.post(url, follow=True)
+
+        assert response.status_code == 200
+        assert not Saving.objects.filter(pk=saving_pk).exists()
+        msgs = [m.message for m in response.context["messages"]]
+        assert any(saving_name in m for m in msgs)
+
+
+@pytest.mark.django_db
 class TestSavingMovementView:
     """Tests para la vista de movimientos de ahorro."""
 

@@ -5,6 +5,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [0.17.0] — 2026-05-10
+
+### Added
+
+- **Tests — cobertura de mensajes toast en CRUD** — se agregaron tests de integración que verifican los mensajes de confirmación al crear, editar y eliminar registros en Gastos, Categorías y Ahorro. Se corrigió el test de eliminación de Ingresos que no aserteaba el contenido del mensaje. Cubre DT-004 de la deuda técnica registrada.
+
+### Docs
+
+- **DECISIONS.md** — se registraron los ítems de deuda técnica no registrada: DT-004 (resuelto), DT-005 (sidebar mobile), DT-006 (orden de categorías), DT-007 (búsqueda por texto), DT-008 (exportación CSV).
+
+---
+
 ## [0.16.0] — 2026-05-10
 
 ### Added

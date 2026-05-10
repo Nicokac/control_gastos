@@ -258,6 +258,7 @@ class TestIncomeDeleteView:
         assert response.status_code in [403, 404]
 
     def test_delete_income_adds_success_message(self, authenticated_client, income):
+        income_name = income.description
         income_pk = income.pk
         url = reverse("income:delete", kwargs={"pk": income_pk})
 
@@ -265,6 +266,8 @@ class TestIncomeDeleteView:
 
         assert response.status_code == 200
         assert not Income.objects.filter(pk=income_pk).exists()
+        msgs = [m.message for m in response.context["messages"]]
+        assert any(income_name in m for m in msgs)
 
 
 @pytest.mark.django_db
