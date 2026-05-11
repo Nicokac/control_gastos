@@ -122,11 +122,31 @@ class FeedbackView(LoginRequiredMixin, FormView):
         subject = f"[Control de Gastos] {tipo_label} — {user.username}"
         body = f"Usuario: {user.username}\nEmail: {user.email}\nTipo: {tipo_label}\n---\n{mensaje}"
         recipient = getattr(settings, "FEEDBACK_EMAIL", "kachuknm@gmail.com")
-        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "onboarding@resend.dev")
+        from_email = getattr(
+            settings, "DEFAULT_FROM_EMAIL", "Control Gastos <noreply@controlmisfinanzas.com>"
+        )
+        brevo_api_key = getattr(settings, "BREVO_API_KEY", "")
         resend_api_key = getattr(settings, "RESEND_API_KEY", "")
 
         try:
-            if resend_api_key:
+            if brevo_api_key:
+                import requests as http_requests
+
+                http_requests.post(
+                    "https://api.brevo.com/v3/smtp/email",
+                    headers={
+                        "api-key": brevo_api_key,
+                        "Content-Type": "application/json",
+                    },
+                    json={
+                        "sender": {"name": "Control Gastos", "email": "kachuknm@gmail.com"},
+                        "to": [{"email": recipient}],
+                        "subject": subject,
+                        "textContent": body,
+                    },
+                    timeout=10,
+                ).raise_for_status()
+            elif resend_api_key:
                 import resend
 
                 resend.api_key = resend_api_key
