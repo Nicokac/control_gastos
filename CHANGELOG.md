@@ -5,6 +5,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [0.24.0] — 2026-05-11
+
+### Added
+
+- **Dashboard — widget de Gastos Fijos** — nuevo card que muestra cuántos gastos fijos fueron pagados sobre el total activo del mes, con barra de progreso y badge de vencidos. El color del card refleja el estado: verde (todos pagados), rojo (hay vencidos), azul (en curso). Solo visible si el usuario tiene gastos fijos activos. Cubre DT-009.
+
+### Fixed
+
+- **Gastos Fijos — tooltips en íconos de estado** — los íconos de pagado, pendiente, vencido e inactivo ahora muestran tooltips de Bootstrap al hacer hover, reemplazando el `title` nativo del browser. Cubre DT-010.
+
+---
+
 ## [0.23.0] — 2026-05-10
 
 ### Added

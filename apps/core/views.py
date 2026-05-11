@@ -157,9 +157,18 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "0.23.0"
+APP_VERSION = "0.24.0"
 
 WHATS_NEW = [
+    {
+        "version": "0.24.0",
+        "date": "Mayo 2026",
+        "title": "Mejoras en Gastos Fijos",
+        "items": [
+            "Dashboard: nuevo widget que muestra cuántos gastos fijos fueron pagados este mes, con indicador de vencidos",
+            "Gastos Fijos: los íconos de estado ahora muestran un tooltip al pasar el mouse con la descripción del estado",
+        ],
+    },
     {
         "version": "0.23.0",
         "date": "Mayo 2026",
