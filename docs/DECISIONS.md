@@ -435,12 +435,36 @@ Se agregaron `ExpenseExportView` e `IncomeExportView` que heredan de sus respect
 
 ### DT-009 — Dashboard: widget de Gastos Fijos
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v0.23.0)
 
-El dashboard no muestra el estado de los gastos fijos del mes. Agregar un widget que muestre "X de Y pagados este mes" con link a `/recurring/`, similar al resumen que ya existe en la lista de gastos fijos.
+Widget agregado entre los KPI cards y la distribución de gastos. Muestra pagados/total con barra de progreso y badge de vencidos. Color del card según estado del mes. Solo visible si el usuario tiene gastos fijos activos.
 
 ### DT-010 — Gastos Fijos: tooltips con Bootstrap en íconos de estado
 
 **Estado:** ✅ Resuelto (v0.23.0)
 
 Los íconos de estado usan `data-bs-toggle="tooltip"` + `data-bs-title` en lugar de `title` nativo. `initTooltips()` ya existía en `main.js` y se inicializa en `DOMContentLoaded`.
+
+### DT-011 — Ingresos recurrentes
+
+**Estado:** ⏳ Pendiente
+
+Mismo concepto que Gastos Fijos pero para ingresos periódicos (sueldos, alquileres cobrados, freelance mensual, etc.). Requiere nuevo modelo `RecurringIncome`, sección dedicada en el sidebar, y flujo de "registrar cobro" similar al de gastos fijos.
+
+### DT-012 — Reportes anuales
+
+**Estado:** ⏳ Pendiente
+
+Vista de reporte anual con comparativa mes a mes: gastos, ingresos y balance para cada mes del año. Posiblemente exportable a CSV. Complementa el gráfico de evolución mensual del dashboard con una tabla detallada y filtros por año.
+
+---
+
+## D-015 — Deudas técnicas descartadas
+
+Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.
+
+### DTD-001 — Presupuestos por categoría
+
+**Estado:** 🚫 Descartado
+
+**Motivo:** Agrega complejidad de configuración (el usuario debe definir límites por categoría cada mes) sin un beneficio claro dado el flujo actual de la app. Los gastos fijos ya cubren el caso de uso de control de compromisos mensuales. Reevaluar si surge demanda concreta de usuarios.
