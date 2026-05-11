@@ -21,13 +21,11 @@
     <div class="app-layout">
         {% include 'components/sidebar.html' %}
         <main class="app-main app-main--with-sidebar px-md-4 py-4" id="appMain">
-            {% include 'components/alerts.html' %}
             {% block content %}{% endblock %}
         </main>
     </div>
     {% else %}
     <main class="app-main">
-        {% include 'components/alerts.html' %}
         {% block auth_content %}{% endblock %}
     </main>
     {% endif %}

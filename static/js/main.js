@@ -158,7 +158,7 @@ function initSessionToasts() {
         if (tags.includes('success')) type = 'success';
         else if (tags.includes('error')) type = 'danger';
         else if (tags.includes('warning')) type = 'warning';
-        setTimeout(() => showToast(message, type), i * 300);
+        setTimeout(() => showToast(message, type), 150 + i * 300);
     });
 
     // Clear so re-renders don't re-show (remove the attribute)
@@ -207,7 +207,7 @@ function showToast(message, type = 'success') {
     toastMessage.textContent = message;
 
     // Show
-    const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 4000 });
+    const toast = bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 5000 });
     toast.show();
 }
 

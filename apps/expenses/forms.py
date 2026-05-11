@@ -143,6 +143,17 @@ class ExpenseForm(CurrencyFormMixin, forms.ModelForm):
                 label="Destino de ahorro",
             )
 
+        # Gasto recurrente vinculado (campo oculto, se setea desde la vista)
+        from apps.recurring.models import RecurringExpense
+
+        self.fields["recurring"] = forms.ModelChoiceField(
+            queryset=RecurringExpense.objects.filter(user=user)
+            if user
+            else RecurringExpense.objects.none(),
+            required=False,
+            widget=forms.HiddenInput(),
+        )
+
         # Agregar opción vacía a selects opcionales
         self.fields["payment_method"].choices = [("", "-- Opcional --")] + list(
             PaymentMethod.choices
@@ -178,6 +189,7 @@ class ExpenseForm(CurrencyFormMixin, forms.ModelForm):
 
         instance = super().save(commit=False)
         instance.user = self.user
+        instance.recurring = self.cleaned_data.get("recurring")
 
         if commit:
             with transaction.atomic():

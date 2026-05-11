@@ -54,6 +54,15 @@ class Expense(TimestampMixin, CurrencyMixin, models.Model):
         verbose_name="Destino de ahorro",
         help_text="Si se selecciona, este gasto se suma automáticamente al ahorro",
     )
+    recurring = models.ForeignKey(
+        "recurring.RecurringExpense",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="expenses",
+        verbose_name="Gasto recurrente",
+        help_text="Gasto recurrente al que corresponde este pago.",
+    )
 
     class Meta:
         verbose_name = "Gasto"

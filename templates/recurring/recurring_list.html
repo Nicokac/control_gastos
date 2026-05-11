@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load currency_filters %}
+
+{% block title %}Gastos Fijos - Control de Gastos{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">
+        <i class="bi bi-arrow-repeat text-primary me-2"></i>Gastos Fijos
+    </h1>
+    <a href="{% url 'recurring:create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>Nuevo
+    </a>
+</div>
+
+<!-- Resumen del mes -->
+<div class="card mb-4 border-primary">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <span class="text-muted">{{ current_month|capfirst }}</span>
+            <span class="fw-semibold">
+                <span class="text-success">{{ total_paid }}</span>
+                <span class="text-muted"> / {{ total_active }} pagados</span>
+            </span>
+        </div>
+        {% if total_active > 0 %}
+        <div class="progress mt-2" style="height: 6px;">
+            <div class="progress-bar bg-success"
+                 style="width: {% widthratio total_paid total_active 100 %}%">
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Lista -->
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Estado</th>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th class="text-center">Vence</th>
+                    <th class="text-end">Último pago</th>
+                    <th class="text-center col-actions">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr class="{% if not item.rec.is_active %}opacity-50{% endif %}">
+                    <td class="text-center" style="width:40px">
+                        {% if not item.rec.is_active %}
+                            <i class="bi bi-pause-circle text-secondary" title="Inactivo"></i>
+                        {% elif item.status == 'paid' %}
+                            <i class="bi bi-check-circle-fill text-success" title="Pagado este mes"></i>
+                        {% elif item.status == 'overdue' %}
+                            <i class="bi bi-exclamation-circle-fill text-danger" title="Vencido"></i>
+                        {% else %}
+                            <i class="bi bi-clock text-warning" title="Pendiente"></i>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="fw-semibold">{{ item.rec.name }}</span>
+                        {% if item.rec.notes %}
+                        <br><small class="text-muted">{{ item.rec.notes }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.rec.category.parent %}
+                        <small class="text-muted d-block" style="font-size:0.7rem">{{ item.rec.category.parent.name }}</small>
+                        {% endif %}
+                        <span class="badge {% if not item.rec.is_active %}bg-secondary{% endif %}"
+                              {% if item.rec.is_active %}data-color="{{ item.rec.category.color|default:'#6c757d' }}" data-color-prop="backgroundColor"{% endif %}>
+                            {% if item.rec.category.icon %}<i class="{{ item.rec.category.icon }} me-1"></i>{% endif %}
+                            {{ item.rec.category.name }}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge bg-light text-dark border">día {{ item.rec.due_day }}</span>
+                    </td>
+                    <td class="text-end text-nowrap">
+                        {% if item.last_expense %}
+                            <strong>{{ item.last_expense.formatted_amount }}</strong>
+                            <br><small class="text-muted">{{ item.last_expense.date|date:"d M Y" }}</small>
+                        {% else %}
+                            <small class="text-muted">Sin pagos</small>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <div class="btn-group btn-group-sm">
+                            {% if item.rec.is_active and item.status != 'paid' %}
+                            <a href="{% url 'expenses:create' %}?recurring={{ item.rec.pk }}"
+                               class="btn btn-outline-success"
+                               title="Registrar pago">
+                                <i class="bi bi-cash-coin"></i>
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'recurring:update' item.rec.pk %}"
+                               class="btn btn-outline-primary"
+                               title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'recurring:delete' item.rec.pk %}"
+                               class="btn btn-outline-danger"
+                               title="Eliminar">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5">
+                        <i class="bi bi-arrow-repeat display-4 text-muted"></i>
+                        <p class="text-muted mt-2 mb-0">No tenés gastos fijos registrados.</p>
+                        <a href="{% url 'recurring:create' %}" class="btn btn-primary btn-sm mt-3">
+                            <i class="bi bi-plus-lg me-1"></i>Agregar el primero
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

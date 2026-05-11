@@ -10,9 +10,15 @@
         <div class="col-lg-8">
             <!-- Header -->
             <div class="mb-4">
+                {% if linked_recurring %}
+                <a href="{% url 'recurring:list' %}" class="text-muted text-decoration-none">
+                    <i class="bi bi-arrow-left me-1"></i>Volver a gastos fijos
+                </a>
+                {% else %}
                 <a href="{% url 'expenses:list' %}" class="text-muted text-decoration-none">
                     <i class="bi bi-arrow-left me-1"></i>Volver a gastos
                 </a>
+                {% endif %}
                 <h1 class="h3 mt-2">
                     {% if is_edit %}
                     <i class="bi bi-pencil text-primary me-2"></i>Editar Gasto
@@ -21,6 +27,13 @@
                     {% endif %}
                 </h1>
             </div>
+
+            {% if linked_recurring %}
+            <div class="alert alert-info d-flex align-items-center mb-3" role="alert">
+                <i class="bi bi-arrow-repeat me-2"></i>
+                <span>Registrando pago de <strong>{{ linked_recurring.name }}</strong></span>
+            </div>
+            {% endif %}
 
             <form method="post" novalidate id="expenseForm">
                 {% csrf_token %}
@@ -216,6 +229,8 @@
                                 </div>
                             </div>
                         </div>
+
+                {{ form.recurring }}
 
                 <!-- BOTÓN SUBMIT -->
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">

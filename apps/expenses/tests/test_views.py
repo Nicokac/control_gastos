@@ -987,3 +987,110 @@ class TestExpenseExportView:
         content = response.content.decode("utf-8-sig")
 
         assert "Gasto Ajeno" not in content
+
+
+@pytest.mark.django_db
+class TestExpenseCreateWithRecurring:
+    """Tests para el flujo de registrar pago desde un gasto recurrente."""
+
+    @pytest.fixture
+    def recurring(self, user, expense_category):
+        from apps.recurring.models import RecurringExpense
+
+        return RecurringExpense.objects.create(
+            user=user, name="Edenor", category=expense_category, due_day=10
+        )
+
+    def test_preload_sets_description_and_category(self, authenticated_client, recurring):
+        url = reverse("expenses:create")
+        response = authenticated_client.get(url, {"recurring": recurring.pk})
+
+        assert response.status_code == 200
+        form = response.context["form"]
+        assert form.initial.get("description") == recurring.name
+        assert form.initial.get("category") == recurring.category
+
+    def test_preload_shows_banner(self, authenticated_client, recurring):
+        url = reverse("expenses:create")
+        response = authenticated_client.get(url, {"recurring": recurring.pk})
+
+        assert response.status_code == 200
+        assert "linked_recurring" in response.context
+        assert response.context["linked_recurring"] == recurring
+        assert recurring.name in response.content.decode()
+
+    def test_preload_invalid_pk_shows_empty_form(self, authenticated_client):
+        url = reverse("expenses:create")
+        response = authenticated_client.get(url, {"recurring": 99999})
+
+        assert response.status_code == 200
+        assert response.context.get("linked_recurring") is None
+
+    def test_preload_other_user_recurring_ignored(
+        self, authenticated_client, other_user, expense_category_factory
+    ):
+        from apps.recurring.models import RecurringExpense
+
+        other_cat = expense_category_factory(other_user, name="Otra")
+        other_rec = RecurringExpense.objects.create(
+            user=other_user, name="Ajeno", category=other_cat, due_day=5
+        )
+        url = reverse("expenses:create")
+        response = authenticated_client.get(url, {"recurring": other_rec.pk})
+
+        assert response.status_code == 200
+        assert response.context.get("linked_recurring") is None
+
+    def test_saving_expense_persists_recurring_fk(
+        self, authenticated_client, user, expense_category, recurring
+    ):
+        url = reverse("expenses:create")
+        data = {
+            "category": expense_category.pk,
+            "description": "Edenor",
+            "amount": "5000.00",
+            "currency": "ARS",
+            "date": timezone.now().date().isoformat(),
+            "recurring": recurring.pk,
+        }
+        response = authenticated_client.post(url, data)
+
+        assert response.status_code == 302
+        expense = Expense.objects.get(description="Edenor", user=user)
+        assert expense.recurring == recurring
+
+    def test_recurring_status_becomes_paid_after_expense(
+        self, authenticated_client, user, expense_category, recurring
+    ):
+        today = timezone.now().date()
+        url = reverse("expenses:create")
+        data = {
+            "category": expense_category.pk,
+            "description": "Edenor",
+            "amount": "5000.00",
+            "currency": "ARS",
+            "date": today.isoformat(),
+            "recurring": recurring.pk,
+        }
+        authenticated_client.post(url, data)
+
+        assert recurring.status_for(today.month, today.year) == "paid"
+
+    def test_redirects_to_recurring_list_and_shows_toast(
+        self, authenticated_client, user, expense_category, recurring
+    ):
+        url = reverse("expenses:create")
+        data = {
+            "category": expense_category.pk,
+            "description": "Edenor",
+            "amount": "5000.00",
+            "currency": "ARS",
+            "date": timezone.now().date().isoformat(),
+            "recurring": recurring.pk,
+        }
+        response = authenticated_client.post(url, data, follow=True)
+
+        assert response.status_code == 200
+        assert response.redirect_chain[-1][0] == reverse("recurring:list")
+        msgs = [m.message for m in response.context["messages"]]
+        assert any("Gasto registrado" in m for m in msgs)

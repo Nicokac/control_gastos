@@ -173,6 +173,11 @@ class ExpenseCreateView(UserOwnedCreateView):
     template_name = "expenses/expense_form.html"
     success_url = reverse_lazy("expenses:list")
 
+    def get_success_url(self):
+        if self.request.GET.get("recurring") or self.request.POST.get("recurring"):
+            return reverse_lazy("recurring:list")
+        return super().get_success_url()
+
     def get_success_message(self):
         obj = self.object
         return f"Gasto registrado: {obj.description} - {obj.formatted_amount}"
@@ -184,11 +189,36 @@ class ExpenseCreateView(UserOwnedCreateView):
         )
         return super().form_invalid(form)
 
+    def get_initial(self):
+        initial = super().get_initial()
+        recurring_pk = self.request.GET.get("recurring")
+        if recurring_pk:
+            try:
+                from apps.recurring.models import RecurringExpense
+
+                recurring = RecurringExpense.objects.get(pk=recurring_pk, user=self.request.user)
+                initial["recurring"] = recurring.pk
+                initial["category"] = recurring.category
+                initial["description"] = recurring.name
+            except (RecurringExpense.DoesNotExist, ValueError):
+                pass
+        return initial
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["categories_by_group"] = Category.get_categories_by_group(
             self.request.user, "EXPENSE"
         )
+        recurring_pk = self.request.GET.get("recurring")
+        if recurring_pk:
+            try:
+                from apps.recurring.models import RecurringExpense
+
+                context["linked_recurring"] = RecurringExpense.objects.get(
+                    pk=recurring_pk, user=self.request.user
+                )
+            except (RecurringExpense.DoesNotExist, ValueError):
+                pass
         return context
 
 
