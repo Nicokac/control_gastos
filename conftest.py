@@ -75,8 +75,8 @@ def other_user_client(client, other_user):
 
 @pytest.fixture
 def today():
-    """Retorna la fecha de hoy."""
-    return timezone.now().date()
+    """Retorna la fecha de hoy en la timezone local del proyecto."""
+    return timezone.localdate()
 
 
 @pytest.fixture

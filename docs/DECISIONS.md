@@ -432,3 +432,15 @@ Se agregó campo `q` en `BaseFilterForm` (heredado por `ExpenseFilterForm` e `In
 **Estado:** ✅ Resuelto (v0.22.0)
 
 Se agregaron `ExpenseExportView` e `IncomeExportView` que heredan de sus respectivas list views para reutilizar la lógica de filtros. La descarga respeta los filtros activos y genera un CSV con BOM (compatible con Excel). Filename con formato `gastos DD.MM.YYYY.csv` / `ingresos DD.MM.YYYY.csv`.
+
+### DT-009 — Dashboard: widget de Gastos Fijos
+
+**Estado:** ⏳ Pendiente
+
+El dashboard no muestra el estado de los gastos fijos del mes. Agregar un widget que muestre "X de Y pagados este mes" con link a `/recurring/`, similar al resumen que ya existe en la lista de gastos fijos.
+
+### DT-010 — Gastos Fijos: tooltips con Bootstrap en íconos de estado
+
+**Estado:** ⏳ Pendiente
+
+Los íconos de estado (✅ pagado, ⏰ pendiente, ❗ vencido, ⏸ inactivo) usan `title` nativo del browser, que requiere hover sostenido y no tiene estilo consistente. Migrar a tooltips de Bootstrap (`data-bs-toggle="tooltip"`) para mejor UX y consistencia visual.

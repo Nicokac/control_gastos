@@ -115,13 +115,13 @@ class TestSavingForm:
             data={
                 "name": "Vacaciones",
                 "target_amount": "50000.00",
+                "currency": "ARS",
                 "target_date": yesterday,
             }
         )
 
-        # Depende de si el form valida fechas pasadas
-        if not form.is_valid():
-            assert "target_date" in form.errors or "__all__" in form.errors
+        assert not form.is_valid()
+        assert "target_date" in form.errors
 
     def test_save_creates_saving(self, user):
         """Verifica que save() cree la meta."""
