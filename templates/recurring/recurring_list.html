@@ -52,13 +52,13 @@
                 <tr class="{% if not item.rec.is_active %}opacity-50{% endif %}">
                     <td class="text-center" style="width:40px">
                         {% if not item.rec.is_active %}
-                            <i class="bi bi-pause-circle text-secondary" title="Inactivo"></i>
+                            <i class="bi bi-pause-circle text-secondary" data-bs-toggle="tooltip" data-bs-title="Inactivo"></i>
                         {% elif item.status == 'paid' %}
-                            <i class="bi bi-check-circle-fill text-success" title="Pagado este mes"></i>
+                            <i class="bi bi-check-circle-fill text-success" data-bs-toggle="tooltip" data-bs-title="Pagado este mes"></i>
                         {% elif item.status == 'overdue' %}
-                            <i class="bi bi-exclamation-circle-fill text-danger" title="Vencido"></i>
+                            <i class="bi bi-exclamation-circle-fill text-danger" data-bs-toggle="tooltip" data-bs-title="Vencido"></i>
                         {% else %}
-                            <i class="bi bi-clock text-warning" title="Pendiente"></i>
+                            <i class="bi bi-clock text-warning" data-bs-toggle="tooltip" data-bs-title="Pendiente"></i>
                         {% endif %}
                     </td>
                     <td>

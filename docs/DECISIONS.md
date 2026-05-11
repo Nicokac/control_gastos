@@ -441,6 +441,6 @@ El dashboard no muestra el estado de los gastos fijos del mes. Agregar un widget
 
 ### DT-010 — Gastos Fijos: tooltips con Bootstrap en íconos de estado
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v0.23.0)
 
-Los íconos de estado (✅ pagado, ⏰ pendiente, ❗ vencido, ⏸ inactivo) usan `title` nativo del browser, que requiere hover sostenido y no tiene estilo consistente. Migrar a tooltips de Bootstrap (`data-bs-toggle="tooltip"`) para mejor UX y consistencia visual.
+Los íconos de estado usan `data-bs-toggle="tooltip"` + `data-bs-title` en lugar de `title` nativo. `initTooltips()` ya existía en `main.js` y se inicializa en `DOMContentLoaded`.
