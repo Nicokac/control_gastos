@@ -301,6 +301,9 @@ FEEDBACK_EMAIL = config("FEEDBACK_EMAIL", default=ADMIN_EMAIL or "kachuknm@gmail
 # Resend API (email transaccional via HTTP — no requiere SMTP)
 RESEND_API_KEY = config("RESEND_API_KEY", default="")
 
+# Brevo API (email transaccional via HTTP — no requiere SMTP)
+BREVO_API_KEY = config("BREVO_API_KEY", default="")
+
 # =============================================================================
 # SENTRY - Error Tracking
 # =============================================================================
