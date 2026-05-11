@@ -57,6 +57,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # Obtener datos de cada módulo
         context.update(self._get_balance_data(user, current_month, current_year))
         context.update(self._get_savings_data(user))
+        context.update(self._get_recurring_data(user, current_month, current_year))
         context.update(self._get_recent_transactions(user))
         context.update(self._get_expense_distribution(user, current_month, current_year))
         context.update(self._get_monthly_evolution(user, evolution_month, selected_year))
@@ -233,6 +234,27 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             "savings_progress": overall_progress,
             "savings_completed_month": aggregates["completed_this_month"],
             "top_savings": top_savings,
+        }
+
+    def _get_recurring_data(self, user, month, year):
+        """Obtiene el estado de gastos fijos del mes actual."""
+        from apps.recurring.models import RecurringExpense
+
+        recurrents = RecurringExpense.objects.filter(user=user, is_active=True).prefetch_related(
+            "expenses"
+        )
+        total_active = len(recurrents)
+        total_paid = sum(1 for r in recurrents if r.is_paid_in(month, year))
+        overdue = sum(
+            1
+            for r in recurrents
+            if not r.is_paid_in(month, year) and r.status_for(month, year) == "overdue"
+        )
+
+        return {
+            "recurring_total": total_active,
+            "recurring_paid": total_paid,
+            "recurring_overdue": overdue,
         }
 
     def _get_recent_transactions(self, user):

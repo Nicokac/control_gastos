@@ -197,6 +197,45 @@
     </div>
 </div>
 
+{% if recurring_total > 0 %}
+<!-- Gastos Fijos -->
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="card {% if recurring_overdue > 0 %}border-danger{% elif recurring_paid == recurring_total %}border-success{% else %}border-primary{% endif %}">
+            <div class="card-body" style="padding: 1rem 1.5rem;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="{% if recurring_overdue > 0 %}bg-danger{% elif recurring_paid == recurring_total %}bg-success{% else %}bg-primary{% endif %} bg-opacity-10 rounded p-2">
+                            <i class="bi bi-arrow-repeat {% if recurring_overdue > 0 %}text-danger{% elif recurring_paid == recurring_total %}text-success{% else %}text-primary{% endif %} fs-4"></i>
+                        </div>
+                        <div>
+                            <p class="text-muted mb-0 small">Gastos Fijos — {{ month_name }}</p>
+                            <span class="fw-semibold">
+                                <span class="{% if recurring_paid == recurring_total %}text-success{% else %}text-dark{% endif %}">{{ recurring_paid }}</span>
+                                <span class="text-muted"> / {{ recurring_total }} pagados</span>
+                                {% if recurring_overdue > 0 %}
+                                <span class="badge bg-danger ms-2">{{ recurring_overdue }} vencido{{ recurring_overdue|pluralize }}</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <a href="{% url 'recurring:list' %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-arrow-right me-1"></i>Ver detalle
+                    </a>
+                </div>
+                {% if recurring_total > 0 %}
+                <div class="progress mt-2" style="height: 6px;">
+                    <div class="progress-bar {% if recurring_overdue > 0 %}bg-danger{% elif recurring_paid == recurring_total %}bg-success{% else %}bg-primary{% endif %}"
+                         style="width: {% widthratio recurring_paid recurring_total 100 %}%">
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <!-- Distribución de Gastos + Ranking -->
 <div class="row g-4 mb-4">
     <!-- Donut -->
