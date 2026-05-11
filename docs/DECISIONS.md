@@ -468,3 +468,153 @@ Vista de reporte anual con comparativa mes a mes: gastos, ingresos y balance par
 **Estado:** 🚫 Descartado
 
 **Motivo:** Agrega complejidad de configuración (el usuario debe definir límites por categoría cada mes) sin un beneficio claro dado el flujo actual de la app. Los gastos fijos ya cubren el caso de uso de control de compromisos mensuales. Reevaluar si surge demanda concreta de usuarios.
+
+---
+
+## D-016 — Roadmap de lanzamiento público
+
+**Fecha:** 2026-05-11
+
+Hoja de ruta para preparar la app para usuarios reales. Ítems ordenados por prioridad y dependencias.
+
+**Prerequisito bloqueante:** DT-001 (Resend sin dominio verificado) debe resolverse antes de implementar cualquier flujo de email (ítems RL-001, RL-005, RL-007).
+
+### RL-001 — Recuperar contraseña (P0)
+
+**Estado:** ⏳ Pendiente  
+**Estimación:** 2-3 horas
+
+Django tiene el flujo built-in (`django.contrib.auth`). Solo requiere templates, URLs y el link en el formulario de login. Más rápido que la estimación original gracias al backend de Resend ya configurado.
+
+**Tareas:**
+
+- 4 templates: `password_reset_form`, `password_reset_done`, `password_reset_confirm`, `password_reset_complete`
+- URLs en `apps/users/urls.py`
+- Link "Olvidé mi contraseña" en `templates/users/login.html`
+- Tests en `apps/users/tests/test_password_reset.py`
+
+### RL-002 — Landing page pública (P1)
+
+**Estado:** ⏳ Pendiente
+**Estimación:** 2-3 horas
+
+Vista pública en `/` que muestra la app a usuarios no autenticados. Los autenticados redirigen al dashboard.
+
+**Tareas:**
+
+- `LandingView` en `apps/core/views.py`
+- Template `templates/core/landing.html` con hero, features y CTA
+- Lógica de redirección en `apps/reports/views.py`
+- Secciones: hero, features (Gastos/Ingresos/Ahorros/Dashboard), CTA registro/login, footer con links legales
+
+### RL-003 — Términos y condiciones (P1)
+
+**Estado:** ⏳ Pendiente
+**Estimación:** 1-2 horas
+
+**Tareas:**
+
+- `TermsView` + URL `/terms/` en `apps/core/`
+- Template `templates/core/terms.html`
+- Checkbox "Acepto los términos" en formulario de registro (`apps/users/forms.py`)
+- Links en footer (`templates/base.html`) y página de registro
+
+**Contenido clave:** uso personal no comercial, no somos asesores financieros, datos en servidores de Render, derecho a eliminar cuenta.
+
+### RL-004 — Política de privacidad (P1)
+
+**Estado:** ⏳ Pendiente
+**Estimación:** 1-2 horas
+
+**Tareas:**
+
+- `PrivacyView` + URL `/privacy/` en `apps/core/`
+- Template `templates/core/privacy.html`
+- Link en footer
+
+**Contenido clave:** qué datos se recopilan (email, transacciones), cómo se usan (solo para la app), no se venden datos, cómo eliminar cuenta, cookies (sesión y CSRF).
+
+### RL-005 — Confirmación de email (P1)
+
+**Estado:** ⏳ Pendiente
+**Estimación:** 3-4 horas
+**Dependencia:** DT-001 (Resend con dominio verificado)
+
+**Tareas:**
+
+- Campo `email_verified` en `apps/users/models.py` + migración
+- `apps/users/tokens.py` para generar tokens de verificación
+- Envío de email post-registro en `apps/users/views.py`
+- Vista de verificación + templates
+- Middleware opcional que bloquea acceso si no verificado
+
+**Flujo:** Registro → email con link → click → `email_verified=True` → acceso completo
+
+### RL-006 — Backup automático de DB (P1)
+
+**Estado:** ⏳ Pendiente
+**Estimación:** 1-2 horas
+
+Debe implementarse **antes del lanzamiento**, no después. Pérdida de datos en el primer día sería catastrófica.
+
+**Tareas:**
+
+- Script `scripts/backup_db.sh` con `pg_dump` + subida a S3 o Cloudflare R2
+- GitHub Action con cron diario (`.github/workflows/backup.yml`)
+- Documentar proceso de restore en `docs/BACKUP.md`
+
+**Alternativa:** Render plan pago ($7/mes) incluye backups automáticos — evaluar según costo vs. complejidad.
+
+### RL-007 — Email de bienvenida (P2)
+
+**Estado:** ⏳ Pendiente
+**Estimación:** 1 hora
+**Dependencia:** DT-001 + RL-005
+
+**Tareas:**
+
+- Template `templates/emails/welcome.html` con tips de uso
+- Envío post-verificación en `apps/users/views.py`
+
+### RL-008 — Tour / guía inicial (P2)
+
+**Estado:** ⏳ Pendiente
+**Estimación:** 2-3 horas
+
+**Tareas:**
+
+- Campo `has_seen_tour` en `apps/users/models.py`
+- Integrar Shepherd.js o librería similar
+- Definir pasos: dashboard → registrar gasto → metas de ahorro → categorías
+- Activar en primer login, botón "Ver tour de nuevo" en perfil
+
+**Orden de ejecución sugerido:**
+
+```text
+Prerequisito:  DT-001 — dominio verificado en Resend
+
+Semana 1:      RL-001 Recuperar contraseña
+               RL-003 Términos y condiciones
+               RL-004 Política de privacidad
+
+Semana 2:      RL-006 Backup DB  ← antes del lanzamiento
+               RL-002 Landing page
+               RL-005 Confirmación de email
+
+Semana 3:      RL-007 Email de bienvenida
+               RL-008 Tour inicial
+```
+
+**Checklist pre-lanzamiento:**
+
+- [ ] DT-001 resuelto (dominio verificado en Resend)
+- [ ] RL-001 Recuperar contraseña funciona en producción
+- [ ] RL-002 Landing page publicada
+- [ ] RL-003 Términos y condiciones publicados
+- [ ] RL-004 Política de privacidad publicada
+- [ ] RL-005 Email de verificación funciona
+- [ ] RL-006 Backups automáticos configurados
+- [ ] Variables de entorno de producción auditadas
+- [ ] Rate limiting en registro revisado
+- [ ] Flujo completo probado como usuario nuevo
+- [ ] Probado en mobile
