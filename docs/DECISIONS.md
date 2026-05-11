@@ -415,7 +415,7 @@ Dos correcciones:
 
 ### DT-006 — Categorías: orden solo alfabético, sin reordenamiento manual
 
-**Estado:** ⏳ Pendiente (decisión de producto)
+**Estado:** ✅ Resuelto (v0.21.0)
 
 Las categorías se ordenan alfabéticamente. No hay UI de reordenamiento manual (drag-and-drop o flechas). Evaluar si es necesario según feedback de usuarios.
 
@@ -429,6 +429,6 @@ Se agregó campo `q` en `BaseFilterForm` (heredado por `ExpenseFilterForm` e `In
 
 ### DT-008 — Exportación de historial (CSV)
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v0.22.0)
 
-No hay forma de exportar el historial de gastos/ingresos. Implementar endpoint de descarga CSV sin dependencias externas usando `csv` de stdlib.
+Se agregaron `ExpenseExportView` e `IncomeExportView` que heredan de sus respectivas list views para reutilizar la lógica de filtros. La descarga respeta los filtros activos y genera un CSV con BOM (compatible con Excel). Filename con formato `gastos DD.MM.YYYY.csv` / `ingresos DD.MM.YYYY.csv`.

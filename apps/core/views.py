@@ -157,9 +157,20 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "0.22.0"
+APP_VERSION = "0.23.0"
 
 WHATS_NEW = [
+    {
+        "version": "0.23.0",
+        "date": "Mayo 2026",
+        "title": "Gastos Fijos",
+        "items": [
+            "Nueva sección Gastos Fijos para registrar servicios, impuestos y cuotas mensuales",
+            "Seguimiento del estado de cada gasto fijo: pagado, pendiente o vencido",
+            "Registrar un pago desde la lista pre-completa el formulario con la categoría y descripción del gasto fijo",
+            "Resumen del mes: cuántos gastos fijos ya fueron pagados sobre el total activo",
+        ],
+    },
     {
         "version": "0.22.0",
         "date": "Mayo 2026",

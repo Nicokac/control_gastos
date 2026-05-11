@@ -5,6 +5,37 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [0.23.0] — 2026-05-10
+
+### Added
+
+- **Gastos Fijos** — nueva sección para registrar servicios, impuestos, cuotas y cualquier gasto mensual recurrente. Cada gasto fijo muestra su estado (pagado ✅, pendiente ⏰, vencido ❗) y el último pago registrado.
+- **Registrar pago desde Gastos Fijos** — el botón "Registrar pago" pre-completa el formulario de gasto con la categoría y descripción del gasto fijo, y al guardar redirige de vuelta a la lista de gastos fijos con el estado actualizado.
+- **Resumen del mes** — barra de progreso que muestra cuántos gastos fijos fueron pagados sobre el total activo del mes corriente.
+
+### Fixed
+
+- **Toast post-pago** — el mensaje de confirmación ahora se muestra correctamente al volver a la lista de gastos fijos tras registrar un pago.
+- **Mensaje duplicado al eliminar** — se eliminó el banner inline que duplicaba el toast de confirmación en toda la app.
+
+---
+
+## [0.22.0] — 2026-05-10
+
+### Added
+
+- **Gastos e Ingresos — exportación CSV** — nuevo botón para descargar el historial del período actual como archivo CSV, respetando los filtros aplicados. Cubre DT-008.
+
+---
+
+## [0.21.0] — 2026-05-10
+
+### Added
+
+- **Categorías — reordenamiento manual de grupos** — los grupos de categorías ahora se pueden arrastrar para cambiar su orden de visualización. El orden persiste en base de datos. Cubre DT-006.
+
+---
+
 ## [0.20.0] — 2026-05-10
 
 ### Added
