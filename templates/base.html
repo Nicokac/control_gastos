@@ -58,6 +58,7 @@
     <!-- App data passed via data-attributes (CSP-safe, no inline scripts) -->
     <div id="app-data"
          data-app-version="{{ APP_VERSION }}"
+         data-dashboard-url="{% url 'reports:dashboard' %}"
          {% if messages %}data-messages="{% for message in messages %}{{ message|escapejs }}||{{ message.tags }}{% if not forloop.last %};;{% endif %}{% endfor %}"{% endif %}
          style="display:none"></div>
 

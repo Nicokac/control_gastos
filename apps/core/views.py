@@ -368,3 +368,14 @@ class WhatsNewView(LoginRequiredMixin, TemplateView):
         context["whats_new"] = WHATS_NEW
         context["app_version"] = APP_VERSION
         return context
+
+
+class LandingView(TemplateView):
+    template_name = "core/landing.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            from django.shortcuts import redirect
+
+            return redirect("reports:dashboard")
+        return super().dispatch(request, *args, **kwargs)

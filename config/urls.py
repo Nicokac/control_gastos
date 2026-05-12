@@ -61,8 +61,7 @@ urlpatterns = [
     path("savings/", include("apps.savings.urls")),
     path("recurring/", include("apps.recurring.urls")),
     path("", include("apps.core.urls")),
-    # Dashboard como página principal
-    path("", include("apps.reports.urls")),
+    path("dashboard/", include("apps.reports.urls")),
     # path("boom/", boom),
 ]
 

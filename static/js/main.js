@@ -135,7 +135,8 @@ function initKeyboardShortcuts() {
         // Ctrl+D = Dashboard
         if (e.ctrlKey && e.key === 'd') {
             e.preventDefault();
-            window.location.href = '/';
+            const appData = document.getElementById('app-data');
+            window.location.href = appData ? appData.dataset.dashboardUrl : '/dashboard/';
         }
     });
 }
