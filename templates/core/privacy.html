@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Política de Privacidad - Control de Gastos{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block auth_content %}
+<nav class="py-3 border-bottom bg-white">
+    <div class="container d-flex justify-content-between align-items-center">
+        <a href="{% url 'core:landing' %}" class="fw-bold fs-5 text-primary text-decoration-none">
+            <i class="bi bi-wallet2 me-2"></i>Control de Gastos
+        </a>
+        <div class="d-flex gap-2">
+            <a href="{% url 'users:login' %}" class="btn btn-outline-primary btn-sm">Iniciar sesión</a>
+            <a href="{% url 'users:register' %}" class="btn btn-primary btn-sm">Crear cuenta</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container py-5" style="max-width: 760px;">
+    <h1 class="h3 fw-bold mb-1">Política de Privacidad</h1>
+    <p class="text-muted small mb-5">Última actualización: mayo 2026</p>
+
+    <h2 class="h5 fw-semibold mt-4 mb-2">1. Qué datos recopilamos</h2>
+    <p>Recopilamos únicamente los datos que vos ingresás:</p>
+    <ul>
+        <li><strong>Cuenta:</strong> nombre de usuario y dirección de email.</li>
+        <li><strong>Datos financieros:</strong> gastos, ingresos, categorías, metas de ahorro y gastos fijos que registrás voluntariamente.</li>
+        <li><strong>Datos técnicos:</strong> dirección IP y user agent, utilizados para detectar accesos no autorizados (protección contra fuerza bruta).</li>
+    </ul>
+
+    <h2 class="h5 fw-semibold mt-4 mb-2">2. Cómo usamos tus datos</h2>
+    <p>Tus datos se usan exclusivamente para:</p>
+    <ul>
+        <li>Mostrarte tus propios registros financieros dentro de la app.</li>
+        <li>Enviarte emails transaccionales (recuperación de contraseña).</li>
+        <li>Detectar y prevenir accesos no autorizados a tu cuenta.</li>
+    </ul>
+    <p>No vendemos, compartimos ni cedemos tus datos a terceros con fines comerciales.</p>
+
+    <h2 class="h5 fw-semibold mt-4 mb-2">3. Dónde se almacenan tus datos</h2>
+    <p>Tus datos se almacenan en servidores de <strong>Render</strong> (render.com) y <strong>Neon</strong> (neon.tech), proveedores de infraestructura en la nube ubicados en Estados Unidos. El servicio de email transaccional es provisto por <strong>Brevo</strong> (brevo.com).</p>
+
+    <h2 class="h5 fw-semibold mt-4 mb-2">4. Cookies</h2>
+    <p>Usamos únicamente cookies estrictamente necesarias para el funcionamiento de la app:</p>
+    <ul>
+        <li><strong>Cookie de sesión:</strong> mantiene tu sesión activa mientras usás la app.</li>
+        <li><strong>Cookie CSRF:</strong> protege los formularios contra ataques de falsificación de solicitudes.</li>
+    </ul>
+    <p>No usamos cookies de seguimiento ni publicidad.</p>
+
+    <h2 class="h5 fw-semibold mt-4 mb-2">5. Tus derechos</h2>
+    <p>Podés ejercer los siguientes derechos en cualquier momento:</p>
+    <ul>
+        <li><strong>Acceso y portabilidad:</strong> todos tus datos son visibles dentro de la app y exportables a CSV.</li>
+        <li><strong>Eliminación:</strong> podés borrar tu cuenta y todos tus datos permanentemente desde <strong>Mi Cuenta → Eliminar cuenta</strong>.</li>
+        <li><strong>Contacto:</strong> para cualquier consulta sobre privacidad, usá el formulario de <a href="{% url 'core:feedback' %}">Reportar / Sugerir</a>.</li>
+    </ul>
+
+    <h2 class="h5 fw-semibold mt-4 mb-2">6. Cambios en esta política</h2>
+    <p>Podemos actualizar esta política en cualquier momento. La fecha de última actualización se indica al inicio del documento.</p>
+
+    <div class="mt-5 pt-3 border-top">
+        <a href="{% url 'core:landing' %}" class="text-muted small text-decoration-none">
+            <i class="bi bi-arrow-left me-1"></i>Volver al inicio
+        </a>
+    </div>
+</div>
+
+<footer class="py-4 border-top bg-light mt-auto">
+    <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+        <span class="text-muted small">&copy; {% now "Y" %} Control de Gastos</span>
+        <div class="d-flex gap-3">
+            <a href="{% url 'core:terms' %}" class="text-muted small text-decoration-none">Términos y condiciones</a>
+            <a href="{% url 'core:privacy' %}" class="text-muted small text-decoration-none">Política de privacidad</a>
+        </div>
+    </div>
+</footer>
+{% endblock %}

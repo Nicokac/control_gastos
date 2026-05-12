@@ -501,8 +501,7 @@ Vista pública en `/` que muestra la app a usuarios no autenticados. Los autenti
 
 ### RL-003 — Términos y condiciones (P1)
 
-**Estado:** ⏳ Pendiente
-**Estimación:** 1-2 horas
+**Estado:** ✅ Resuelto (v0.26.0)
 
 **Tareas:**
 
@@ -515,8 +514,7 @@ Vista pública en `/` que muestra la app a usuarios no autenticados. Los autenti
 
 ### RL-004 — Política de privacidad (P1)
 
-**Estado:** ⏳ Pendiente
-**Estimación:** 1-2 horas
+**Estado:** ✅ Resuelto (v0.26.0)
 
 **Tareas:**
 
@@ -601,9 +599,9 @@ Semana 3:      RL-007 Email de bienvenida
 
 - [x] DT-001 resuelto (Brevo API HTTP — Render Free bloquea SMTP)
 - [x] RL-001 Recuperar contraseña funciona en producción
-- [ ] RL-002 Landing page publicada
-- [ ] RL-003 Términos y condiciones publicados
-- [ ] RL-004 Política de privacidad publicada
+- [x] RL-002 Landing page publicada
+- [x] RL-003 Términos y condiciones publicados
+- [x] RL-004 Política de privacidad publicada
 - [ ] RL-005 Email de verificación funciona
 - [ ] RL-006 Backups automáticos configurados
 - [ ] Variables de entorno de producción auditadas

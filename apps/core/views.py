@@ -177,9 +177,18 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "0.25.0"
+APP_VERSION = "0.26.0"
 
 WHATS_NEW = [
+    {
+        "version": "0.26.0",
+        "date": "Mayo 2026",
+        "title": "Términos, privacidad y registro mejorado",
+        "items": [
+            "Nuevas páginas de Términos y condiciones y Política de privacidad accesibles desde el footer",
+            "Registro: ahora se requiere aceptar los términos antes de crear una cuenta",
+        ],
+    },
     {
         "version": "0.25.0",
         "date": "Mayo 2026",
@@ -368,6 +377,14 @@ class WhatsNewView(LoginRequiredMixin, TemplateView):
         context["whats_new"] = WHATS_NEW
         context["app_version"] = APP_VERSION
         return context
+
+
+class TermsView(TemplateView):
+    template_name = "core/terms.html"
+
+
+class PrivacyView(TemplateView):
+    template_name = "core/privacy.html"
 
 
 class LandingView(TemplateView):

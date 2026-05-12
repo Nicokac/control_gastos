@@ -120,6 +120,26 @@
                         {% endif %}
                     </div>
 
+                    <!-- Términos y condiciones -->
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input type="checkbox"
+                                   name="accept_terms"
+                                   id="id_accept_terms"
+                                   class="form-check-input {% if form.accept_terms.errors %}is-invalid{% endif %}"
+                                   required>
+                            <label class="form-check-label small" for="id_accept_terms">
+                                Acepto los
+                                <a href="{% url 'core:terms' %}" target="_blank">términos y condiciones</a>
+                                y la
+                                <a href="{% url 'core:privacy' %}" target="_blank">política de privacidad</a>
+                            </label>
+                            {% if form.accept_terms.errors %}
+                            <div class="invalid-feedback">{{ form.accept_terms.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
                     <!-- Botón Submit -->
                     <div class="d-grid mb-4">
                         <button type="submit" class="btn btn-primary btn-lg">

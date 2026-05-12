@@ -126,6 +126,7 @@ class TestRegisterForm:
                 "email": "newuser@test.com",
                 "password1": "StrongPass123!",  # pragma: allowlist secret
                 "password2": "StrongPass123!",  # pragma: allowlist secret
+                "accept_terms": True,
             }
         )
         assert form.is_valid(), form.errors
@@ -134,6 +135,19 @@ class TestRegisterForm:
         assert user.username == "newuser"
         assert user.email == "newuser@test.com"  # pragma: allowlist secret
 
+    def test_register_rejects_without_terms(self):
+        form = RegisterForm(
+            data={
+                "username": "newuser",
+                "email": "newuser@test.com",
+                "password1": "StrongPass123!",  # pragma: allowlist secret
+                "password2": "StrongPass123!",  # pragma: allowlist secret
+                "accept_terms": False,
+            }
+        )
+        assert not form.is_valid()
+        assert "accept_terms" in form.errors
+
     def test_register_rejects_duplicate_email_case_insensitive(self, active_user):
         form = RegisterForm(
             data={
@@ -141,6 +155,7 @@ class TestRegisterForm:
                 "email": active_user.email.upper(),  # mismo email, distinto case
                 "password1": "StrongPass123!",  # pragma: allowlist secret
                 "password2": "StrongPass123!",  # pragma: allowlist secret
+                "accept_terms": True,
             }
         )
         assert not form.is_valid()
@@ -154,6 +169,7 @@ class TestRegisterForm:
                 "email": "other@test.com",
                 "password1": "StrongPass123!",  # pragma: allowlist secret
                 "password2": "StrongPass123!",  # pragma: allowlist secret
+                "accept_terms": True,
             }
         )
         assert not form.is_valid()
@@ -167,6 +183,7 @@ class TestRegisterForm:
                 "email": "  MAIL@TEST.COM  ",
                 "password1": "StrongPass123!",  # pragma: allowlist secret
                 "password2": "StrongPass123!",  # pragma: allowlist secret
+                "accept_terms": True,
             }
         )
         assert form.is_valid(), form.errors

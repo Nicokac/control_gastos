@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Términos y Condiciones - Control de Gastos{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block auth_content %}
+<nav class="py-3 border-bottom bg-white">
+    <div class="container d-flex justify-content-between align-items-center">
+        <a href="{% url 'core:landing' %}" class="fw-bold fs-5 text-primary text-decoration-none">
+            <i class="bi bi-wallet2 me-2"></i>Control de Gastos
+        </a>
+        <div class="d-flex gap-2">
+            <a href="{% url 'users:login' %}" class="btn btn-outline-primary btn-sm">Iniciar sesión</a>
+            <a href="{% url 'users:register' %}" class="btn btn-primary btn-sm">Crear cuenta</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container py-5" style="max-width: 760px;">
+    <h1 class="h3 fw-bold mb-1">Términos y Condiciones</h1>
+    <p class="text-muted small mb-5">Última actualización: mayo 2026</p>
+
+    <h2 class="h5 fw-semibold mt-4 mb-2">1. Uso del servicio</h2>
+    <p>Control de Gastos es una herramienta de gestión financiera personal de uso no comercial. Al crear una cuenta, aceptás usar el servicio únicamente para el registro y seguimiento de tus propias finanzas personales.</p>
+
+    <h2 class="h5 fw-semibold mt-4 mb-2">2. No somos asesores financieros</h2>
+    <p>La información y los datos que muestra esta aplicación tienen fines informativos y organizativos únicamente. Control de Gastos no brinda asesoramiento financiero, de inversión ni legal. Las decisiones económicas que tomés son de tu exclusiva responsabilidad.</p>
+
+    <h2 class="h5 fw-semibold mt-4 mb-2">3. Tu cuenta y tus datos</h2>
+    <p>Sos responsable de mantener la confidencialidad de tu contraseña y de toda actividad que ocurra bajo tu cuenta. Tus datos financieros (gastos, ingresos, metas) son de tu propiedad y se almacenan en servidores de Render (render.com), ubicados en Estados Unidos.</p>
+
+    <h2 class="h5 fw-semibold mt-4 mb-2">4. Eliminación de cuenta</h2>
+    <p>Podés eliminar tu cuenta en cualquier momento desde <strong>Mi Cuenta → Eliminar cuenta</strong>. La eliminación es permanente e irreversible: todos tus datos serán borrados de nuestros sistemas.</p>
+
+    <h2 class="h5 fw-semibold mt-4 mb-2">5. Disponibilidad del servicio</h2>
+    <p>Control de Gastos se ofrece "tal como está". No garantizamos disponibilidad continua ni ininterrumpida del servicio. Nos reservamos el derecho de modificar o discontinuar el servicio en cualquier momento.</p>
+
+    <h2 class="h5 fw-semibold mt-4 mb-2">6. Modificaciones</h2>
+    <p>Podemos actualizar estos términos en cualquier momento. El uso continuado del servicio después de cualquier cambio implica la aceptación de los nuevos términos.</p>
+
+    <div class="mt-5 pt-3 border-top">
+        <a href="{% url 'core:landing' %}" class="text-muted small text-decoration-none">
+            <i class="bi bi-arrow-left me-1"></i>Volver al inicio
+        </a>
+    </div>
+</div>
+
+<footer class="py-4 border-top bg-light mt-auto">
+    <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+        <span class="text-muted small">&copy; {% now "Y" %} Control de Gastos</span>
+        <div class="d-flex gap-3">
+            <a href="{% url 'core:terms' %}" class="text-muted small text-decoration-none">Términos y condiciones</a>
+            <a href="{% url 'core:privacy' %}" class="text-muted small text-decoration-none">Política de privacidad</a>
+        </div>
+    </div>
+</footer>
+{% endblock %}

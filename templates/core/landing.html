@@ -173,8 +173,8 @@
             &copy; {% now "Y" %} Control de Gastos
         </span>
         <div class="d-flex gap-3">
-            <a href="#" class="text-muted small text-decoration-none">Términos y condiciones</a>
-            <a href="#" class="text-muted small text-decoration-none">Política de privacidad</a>
+            <a href="{% url 'core:terms' %}" class="text-muted small text-decoration-none">Términos y condiciones</a>
+            <a href="{% url 'core:privacy' %}" class="text-muted small text-decoration-none">Política de privacidad</a>
         </div>
     </div>
 </footer>

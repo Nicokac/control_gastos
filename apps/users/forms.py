@@ -102,6 +102,11 @@ class RegisterForm(UserCreationForm):
             ),
         }
 
+    accept_terms = forms.BooleanField(
+        required=True,
+        error_messages={"required": "Debés aceptar los términos y condiciones para registrarte."},
+    )
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["password1"].widget.attrs.update(

@@ -5,6 +5,17 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [0.26.0] — 2026-05-11
+
+### Added
+
+- **Términos y condiciones** — página pública en `/terms/` con condiciones de uso, responsabilidades y derecho a eliminar cuenta. Cubre RL-003.
+- **Política de privacidad** — página pública en `/privacy/` con detalle de datos recopilados, uso, almacenamiento y cookies. Cubre RL-004.
+- **Checkbox de aceptación** — el formulario de registro ahora requiere aceptar los términos y condiciones antes de crear la cuenta.
+- **Links legales en footer** — la landing, términos y privacidad incluyen links a ambas páginas en el footer.
+
+---
+
 ## [0.25.0] — 2026-05-11
 
 ### Added

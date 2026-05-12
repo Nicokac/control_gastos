@@ -132,6 +132,7 @@ class TestRegisterView:
             "username": "nuevousuario",
             "password1": "TestPass123!",
             "password2": "TestPass123!",
+            "accept_terms": True,
         }
 
         response = client.post(reverse("users:register"), data)
@@ -146,6 +147,7 @@ class TestRegisterView:
             "username": "nuevousuario",
             "password1": "TestPass123!",
             "password2": "DifferentPass456!",
+            "accept_terms": True,
         }
 
         response = client.post(reverse("users:register"), data)
@@ -160,6 +162,7 @@ class TestRegisterView:
             "username": "otrousuario",
             "password1": "TestPass123!",
             "password2": "TestPass123!",
+            "accept_terms": True,
         }
 
         response = client.post(reverse("users:register"), data)
@@ -186,6 +189,7 @@ class TestRegisterViewWithMultipleBackends:
             "username": "nuevousuario",
             "password1": "TestPass123!",
             "password2": "TestPass123!",
+            "accept_terms": True,
         }
 
         response = client.post(reverse("users:register"), data)
