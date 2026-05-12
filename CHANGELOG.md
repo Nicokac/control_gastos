@@ -5,6 +5,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [0.25.0] — 2026-05-11
+
+### Added
+
+- **Recuperar contraseña** — flujo completo para resetear la contraseña desde el login. El usuario ingresa su email, recibe un link por email (válido 24 horas) y elige una nueva contraseña. Cubre RL-001.
+- **Email via Brevo** — los emails transaccionales ahora se envían via Brevo API HTTP, reemplazando Resend que requería dominio propio verificado. Render Free bloquea SMTP; la API HTTP no tiene esa restricción. Cubre DT-001.
+
+---
+
 ## [0.24.0] — 2026-05-11
 
 ### Added

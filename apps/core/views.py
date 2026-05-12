@@ -177,9 +177,18 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "0.24.0"
+APP_VERSION = "0.25.0"
 
 WHATS_NEW = [
+    {
+        "version": "0.25.0",
+        "date": "Mayo 2026",
+        "title": "Recuperar contraseña",
+        "items": [
+            "Login: nuevo link '¿Olvidaste tu contraseña?' para resetear la contraseña por email",
+            "General: los emails de la app ahora se envían via Brevo (antes Resend requería dominio propio)",
+        ],
+    },
     {
         "version": "0.24.0",
         "date": "Mayo 2026",

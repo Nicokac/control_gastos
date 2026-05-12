@@ -477,21 +477,13 @@ Vista de reporte anual con comparativa mes a mes: gastos, ingresos y balance par
 
 Hoja de ruta para preparar la app para usuarios reales. Ítems ordenados por prioridad y dependencias.
 
-**Prerequisito bloqueante:** DT-001 (Resend sin dominio verificado) debe resolverse antes de implementar cualquier flujo de email (ítems RL-001, RL-005, RL-007).
+**Prerequisito bloqueante:** DT-001 resuelto con Brevo API (Render Free bloquea SMTP; se usa HTTP API en su lugar).
 
 ### RL-001 — Recuperar contraseña (P0)
 
-**Estado:** ⏳ Pendiente  
-**Estimación:** 2-3 horas
+**Estado:** ✅ Resuelto (v0.25.0)
 
-Django tiene el flujo built-in (`django.contrib.auth`). Solo requiere templates, URLs y el link en el formulario de login. Más rápido que la estimación original gracias al backend de Resend ya configurado.
-
-**Tareas:**
-
-- 4 templates: `password_reset_form`, `password_reset_done`, `password_reset_confirm`, `password_reset_complete`
-- URLs en `apps/users/urls.py`
-- Link "Olvidé mi contraseña" en `templates/users/login.html`
-- Tests en `apps/users/tests/test_password_reset.py`
+Flujo completo implementado con `BrevoPasswordResetView` que envía via Brevo API HTTP para evitar el bloqueo SMTP de Render Free. Probado en producción.
 
 ### RL-002 — Landing page pública (P1)
 
@@ -607,8 +599,8 @@ Semana 3:      RL-007 Email de bienvenida
 
 **Checklist pre-lanzamiento:**
 
-- [ ] DT-001 resuelto (dominio verificado en Resend)
-- [ ] RL-001 Recuperar contraseña funciona en producción
+- [x] DT-001 resuelto (Brevo API HTTP — Render Free bloquea SMTP)
+- [x] RL-001 Recuperar contraseña funciona en producción
 - [ ] RL-002 Landing page publicada
 - [ ] RL-003 Términos y condiciones publicados
 - [ ] RL-004 Política de privacidad publicada
