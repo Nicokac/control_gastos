@@ -122,21 +122,21 @@
 
                     <!-- Términos y condiciones -->
                     <div class="mb-4">
-                        <div class="form-check">
+                        <div class="d-flex align-items-start gap-2">
                             <input type="checkbox"
                                    name="accept_terms"
                                    id="id_accept_terms"
-                                   class="form-check-input {% if form.accept_terms.errors %}is-invalid{% endif %}"
+                                   class="form-check-input mt-1 flex-shrink-0 {% if form.accept_terms.errors %}is-invalid{% endif %}"
                                    required>
-                            <label class="form-check-label small" for="id_accept_terms">
-                                Acepto los
-                                <a href="{% url 'core:terms' %}" target="_blank">términos y condiciones</a>
-                                y la
-                                <a href="{% url 'core:privacy' %}" target="_blank">política de privacidad</a>
-                            </label>
-                            {% if form.accept_terms.errors %}
-                            <div class="invalid-feedback">{{ form.accept_terms.errors.0 }}</div>
-                            {% endif %}
+                            <div>
+                                <label class="form-check-label small" for="id_accept_terms">Acepto los</label>
+                                <a href="{% url 'core:terms' %}" target="_blank" class="small">términos y condiciones</a>
+                                <span class="small"> y la </span>
+                                <a href="{% url 'core:privacy' %}" target="_blank" class="small">política de privacidad</a>
+                                {% if form.accept_terms.errors %}
+                                <div class="text-danger small mt-1">{{ form.accept_terms.errors.0 }}</div>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
 
