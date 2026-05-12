@@ -84,8 +84,11 @@
                     </div>
                 </form>
 
-                <!-- Link a registro -->
+                <!-- Links secundarios -->
                 <div class="text-center">
+                    <a href="{% url 'users:password_reset' %}" class="text-muted small d-block mb-2">
+                        ¿Olvidaste tu contraseña?
+                    </a>
                     <span class="text-muted">¿No tenés cuenta?</span>
                     <a href="{% url 'users:register' %}" class="ms-1 fw-medium">Crear cuenta</a>
                 </div>

@@ -1,9 +1,12 @@
 """Vistas de autenticación y perfil de usuario."""
 
+import logging
+
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView
+from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, PasswordResetView
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, UpdateView
@@ -19,6 +22,8 @@ from apps.core.logging import (
 
 from .forms import LoginForm, ProfileForm, RegisterForm
 from .models import User
+
+logger = logging.getLogger(__name__)
 
 
 class CustomLoginView(LoginView):
@@ -131,6 +136,57 @@ class DeleteAccountView(LoginRequiredMixin, DeleteView):
         user.delete()
         messages.success(self.request, "Tu cuenta fue eliminada correctamente.")
         return redirect(self.success_url)
+
+
+class BrevoPasswordResetView(PasswordResetView):
+    """PasswordResetView que envía el email via Brevo API en lugar de SMTP."""
+
+    template_name = "users/password_reset.html"
+    email_template_name = "users/emails/password_reset.txt"
+    subject_template_name = "users/emails/password_reset_subject.txt"
+    success_url = reverse_lazy("users:password_reset_done")
+
+    def send_mail(
+        self,
+        subject_template_name,
+        email_template_name,
+        context,
+        from_email,
+        to_email,
+        html_email_template_name=None,
+    ):
+        from django.template.loader import render_to_string
+
+        subject = render_to_string(subject_template_name, context).strip()
+        body = render_to_string(email_template_name, context)
+        brevo_api_key = getattr(settings, "BREVO_API_KEY", "")
+
+        if brevo_api_key:
+            try:
+                import requests as http_requests
+
+                http_requests.post(
+                    "https://api.brevo.com/v3/smtp/email",
+                    headers={"api-key": brevo_api_key, "Content-Type": "application/json"},
+                    json={
+                        "sender": {"name": "Control Gastos", "email": "kachuknm@gmail.com"},
+                        "to": [{"email": to_email}],
+                        "subject": subject,
+                        "textContent": body,
+                    },
+                    timeout=10,
+                ).raise_for_status()
+            except Exception:
+                logger.exception("Error al enviar email de reset via Brevo a %s", to_email)
+        else:
+            super().send_mail(
+                subject_template_name,
+                email_template_name,
+                context,
+                from_email,
+                to_email,
+                html_email_template_name,
+            )
 
 
 class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
