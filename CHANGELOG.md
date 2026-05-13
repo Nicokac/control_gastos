@@ -5,6 +5,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [0.28.0] — 2026-05-12
+
+### Added
+
+- **Confirmación de email** — al registrarse, el usuario recibe un email con un link para verificar su cuenta. El link usa un token firmado válido por 7 días que se invalida automáticamente tras ser usado. Cubre RL-005.
+- **Banner de verificación pendiente** — usuarios con email sin verificar ven un aviso persistente en el encabezado con un botón para reenviar el email de verificación.
+
+---
+
 ## [0.27.0] — 2026-05-13
 
 ### Added

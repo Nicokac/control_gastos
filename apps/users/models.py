@@ -21,6 +21,7 @@ class User(AbstractUser):
         validators=[MinValueValidator(1), MaxValueValidator(100)],
         verbose_name="Umbral de alerta (%)",
     )
+    email_verified = models.BooleanField(default=False, verbose_name="Email verificado")
 
     class Meta:
         verbose_name = "Usuario"

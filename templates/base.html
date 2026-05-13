@@ -18,6 +18,14 @@
     {% block navbar %}{% include 'components/navbar.html' %}{% endblock %}
 
     {% if user.is_authenticated %}
+    {% if not user.email_verified %}
+    <div class="alert alert-warning alert-dismissible mb-0 rounded-0 text-center" role="alert" style="font-size:0.9rem;">
+        <i class="bi bi-envelope-exclamation me-1"></i>
+        Verificá tu email para activar tu cuenta.
+        <a href="{% url 'users:resend_verification' %}" class="alert-link ms-1">Reenviar email</a>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+    {% endif %}
     <div class="app-layout">
         {% include 'components/sidebar.html' %}
         <main class="app-main app-main--with-sidebar px-md-4 py-4" id="appMain">

@@ -177,9 +177,18 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "0.27.0"
+APP_VERSION = "0.28.0"
 
 WHATS_NEW = [
+    {
+        "version": "0.28.0",
+        "date": "Mayo 2026",
+        "title": "Confirmación de email",
+        "items": [
+            "Seguridad: al registrarte recibirás un email para verificar tu cuenta",
+            "Un banner te avisa si tu email aún no fue verificado, con opción de reenviar el link",
+        ],
+    },
     {
         "version": "0.27.0",
         "date": "Mayo 2026",

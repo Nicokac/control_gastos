@@ -9,7 +9,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, PasswordResetView
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DeleteView, UpdateView
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.views.generic import CreateView, DeleteView, UpdateView, View
 
 from apps.core.logging import (
     get_client_ip,
@@ -22,6 +24,43 @@ from apps.core.logging import (
 
 from .forms import LoginForm, ProfileForm, RegisterForm
 from .models import User
+from .tokens import email_verification_token
+
+
+def _send_verification_email(request, user):
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = email_verification_token.make_token(user)
+    verify_url = request.build_absolute_uri(
+        reverse_lazy("users:verify_email", kwargs={"uidb64": uid, "token": token})
+    )
+    subject = "Verificá tu email — Control de Gastos"
+    body = (
+        f"Hola {user.username},\n\n"
+        f"Para verificar tu email hacé clic en el siguiente link:\n\n"
+        f"{verify_url}\n\n"
+        f"Este link es válido por 7 días.\n\n"
+        f"Si no creaste una cuenta, podés ignorar este email.\n\n"
+        f"Control de Gastos"
+    )
+    brevo_api_key = getattr(settings, "BREVO_API_KEY", "")
+    if brevo_api_key:
+        try:
+            import requests as http_requests
+
+            http_requests.post(
+                "https://api.brevo.com/v3/smtp/email",
+                headers={"api-key": brevo_api_key, "Content-Type": "application/json"},
+                json={
+                    "sender": {"name": "Control Gastos", "email": "kachuknm@gmail.com"},
+                    "to": [{"email": user.email}],
+                    "subject": subject,
+                    "textContent": body,
+                },
+                timeout=10,
+            ).raise_for_status()
+        except Exception:
+            logger.exception("Error al enviar email de verificación a %s", user.email)
+
 
 logger = logging.getLogger(__name__)
 
@@ -89,12 +128,14 @@ class RegisterView(CreateView):
         """Loguea al usuario después del registro."""
         response = super().form_valid(form)
 
-        # Loggear registro
         log_user_registration(username=self.object.email, ip_address=get_client_ip(self.request))
 
         login(self.request, self.object, backend="django.contrib.auth.backends.ModelBackend")
+        _send_verification_email(self.request, self.object)
         messages.success(
-            self.request, f"¡Cuenta creada exitosamente! Bienvenido, {self.object.username}."
+            self.request,
+            f"¡Cuenta creada exitosamente! Bienvenido, {self.object.username}. "
+            "Revisá tu email para verificar tu cuenta.",
         )
         return response
 
@@ -187,6 +228,38 @@ class BrevoPasswordResetView(PasswordResetView):
                 to_email,
                 html_email_template_name,
             )
+
+
+class VerifyEmailView(View):
+    def get(self, request, uidb64, token):
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (User.DoesNotExist, ValueError):
+            user = None
+
+        if user and not user.email_verified and email_verification_token.check_token(user, token):
+            user.email_verified = True
+            user.save(update_fields=["email_verified"])
+            messages.success(request, "¡Email verificado correctamente!")
+        elif user and user.email_verified:
+            messages.info(request, "Tu email ya estaba verificado.")
+        else:
+            messages.error(request, "El link de verificación es inválido o ya expiró.")
+
+        if request.user.is_authenticated:
+            return redirect("reports:dashboard")
+        return redirect("users:login")
+
+
+class ResendVerificationView(LoginRequiredMixin, View):
+    def get(self, request):
+        if request.user.email_verified:
+            messages.info(request, "Tu email ya está verificado.")
+        else:
+            _send_verification_email(request, request.user)
+            messages.success(request, "Te reenviamos el email de verificación. Revisá tu bandeja.")
+        return redirect("reports:dashboard")
 
 
 class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):

@@ -526,19 +526,18 @@ Vista pública en `/` que muestra la app a usuarios no autenticados. Los autenti
 
 ### RL-005 — Confirmación de email (P1)
 
-**Estado:** ⏳ Pendiente
-**Estimación:** 3-4 horas
-**Dependencia:** DT-001 (Resend con dominio verificado)
+**Estado:** ✅ Resuelto (v0.28.0)
 
-**Tareas:**
+**Implementación:**
 
-- Campo `email_verified` en `apps/users/models.py` + migración
-- `apps/users/tokens.py` para generar tokens de verificación
-- Envío de email post-registro en `apps/users/views.py`
-- Vista de verificación + templates
-- Middleware opcional que bloquea acceso si no verificado
+- Campo `email_verified` en `apps/users/models.py` + migración `0002_email_verified.py`
+- `apps/users/tokens.py` — `EmailVerificationTokenGenerator` basado en `PasswordResetTokenGenerator`; el token se invalida automáticamente al verificar (el hash incluye `email_verified`)
+- `_send_verification_email()` en `apps/users/views.py` — envía link via Brevo API; link válido 7 días
+- `VerifyEmailView` — GET con `uidb64` + `token`; setea `email_verified=True` y redirige
+- `ResendVerificationView` — reenvío manual desde dashboard
+- Banner en `base.html` para usuarios no verificados
 
-**Flujo:** Registro → email con link → click → `email_verified=True` → acceso completo
+**Flujo:** Registro → email con link → click → `email_verified=True` → banner desaparece
 
 ### RL-006 — Backup automático de DB (P1)
 
@@ -618,7 +617,7 @@ Semana 3:      RL-007 Email de bienvenida
 
 #### P1 — Muy recomendados
 
-- [ ] Confirmación de email al registrarse (RL-005) — 3-4 horas
+- [x] Confirmación de email al registrarse (RL-005) — resuelto v0.28.0
 - [x] Backup automático de DB (RL-006) — workflow diario a Cloudflare R2, probado en producción
 - [ ] Smoke tests post-deploy — 1-2 horas
 - [ ] SLA mínimo documentado (qué esperar en plan free) — 30 min
