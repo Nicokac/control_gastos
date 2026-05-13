@@ -612,8 +612,8 @@ Semana 3:      RL-007 Email de bienvenida
 
 #### P0 — Bloqueantes
 
-- [ ] `render.yaml` versionado en repo (config declarativa de deploy)
-- [ ] Docs email unificados (README dice Resend, código usa Brevo)
+- [x] `render.yaml` versionado en repo (config declarativa de deploy) — resuelto v0.29.0
+- [x] Docs email unificados (README actualizado para reflejar Brevo) — resuelto v0.29.0
 
 #### P1 — Muy recomendados
 

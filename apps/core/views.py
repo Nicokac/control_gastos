@@ -177,9 +177,17 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "0.28.0"
+APP_VERSION = "0.29.0"
 
 WHATS_NEW = [
+    {
+        "version": "0.29.0",
+        "date": "Mayo 2026",
+        "title": "Infraestructura y docs",
+        "items": [
+            "General: configuración de Render versionada en el repositorio (`render.yaml`)",
+        ],
+    },
     {
         "version": "0.28.0",
         "date": "Mayo 2026",

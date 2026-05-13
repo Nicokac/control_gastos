@@ -246,9 +246,8 @@ DB_PASSWORD=password-seguro
 DB_HOST=localhost
 DB_PORT=5432
 
-# Email transaccional via Resend API (para formulario de feedback)
-RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxx
-DEFAULT_FROM_EMAIL=onboarding@resend.dev
+# Email transaccional via Brevo API (no requiere SMTP)
+BREVO_API_KEY=xkeysib-xxxxxxxxxxxxxxxxxxxx
 FEEDBACK_EMAIL=tu-email@tudominio.com
 
 # Admin para notificaciones de error del sistema
@@ -267,8 +266,7 @@ ADMIN_EMAIL=admin@tudominio.com
 | `DB_PASSWORD` | ✅ Prod | - | Contraseña PostgreSQL |
 | `DB_HOST` | ✅ Prod | `localhost` | Host de la base de datos |
 | `DB_PORT` | No | `5432` | Puerto PostgreSQL |
-| `RESEND_API_KEY` | ✅ Prod | - | API key de Resend para envío de feedback |
-| `DEFAULT_FROM_EMAIL` | No | `onboarding@resend.dev` | Remitente de emails |
+| `BREVO_API_KEY` | ✅ Prod | - | API key de Brevo para emails transaccionales (feedback, reset, verificación) |
 | `FEEDBACK_EMAIL` | No | `ADMIN_EMAIL` | Destinatario del formulario de feedback |
 | `ADMIN_EMAIL` | No | - | Destinatario de alertas de error del sistema |
 
@@ -376,8 +374,7 @@ Configurar en **Render Dashboard → Environment**:
 | `DB_HOST` | ✅ | `dpg-XXXX.render.com` | Desde Render PostgreSQL |
 | `DB_PORT` | No | `5432` | Default |
 | `ADMIN_EMAIL` | No | `admin@example.com` | Para alertas de errores |
-| `RESEND_API_KEY` | ✅ | `re_xxxx...` | API key de Resend para formulario de feedback |
-| `DEFAULT_FROM_EMAIL` | No | `onboarding@resend.dev` | Remitente de emails |
+| `BREVO_API_KEY` | ✅ | `xkeysib-xxxx...` | API key de Brevo para emails transaccionales |
 | `FEEDBACK_EMAIL` | No | `ADMIN_EMAIL` | Destinatario del formulario de feedback |
 | `SENTRY_DSN` | No | `https://...@sentry.io/...` | Error tracking en producción |
 
@@ -548,44 +545,20 @@ python manage.py migrate
 
 ### Backups
 
-#### PostgreSQL (Render)
+#### Backup automático a Cloudflare R2
 
-Render Free tier **no incluye backups automáticos** ni permite conexiones externas a la base de datos.
+Un GitHub Action corre diariamente a las 03:00 UTC. Hace `pg_dump` de PostgreSQL y sube el archivo comprimido a Cloudflare R2 (10 GB free tier, retención indefinida).
 
-#### Scripts disponibles (para uso futuro)
+Archivo: `.github/workflows/backup.yml`
 
-Se crearon scripts de backup/restore en PowerShell que estarán listos cuando se habilite acceso externo (Render paid u otro hosting):
+Secrets requeridos en el repositorio:
 
-| Script | Descripción |
+| Secret | Descripción |
 |--------|-------------|
-| `scripts/backup_db.ps1` | Exporta DB con pg_dump, rotación de 7 días |
-| `scripts/restore_db.ps1` | Restaura desde archivo .dump con confirmación |
-
-**Uso (requiere acceso externo a PostgreSQL):**
-```powershell
-# Configurar variables de entorno
-$env:DB_HOST = "tu-host.render.com"
-$env:DB_NAME = "tu_db_name"
-$env:DB_USER = "tu_usuario"
-$env:DB_PASSWORD = "tu_password"
-$env:DB_PORT = "5432"
-
-# Ejecutar backup
-.\scripts\backup_db.ps1
-
-# Restaurar (si es necesario)
-.\scripts\restore_db.ps1 .\backups\backup_2026-02-17_10-00-00.dump
-```
-
-#### Limitaciones Render Free
-
-| Feature | Free | Paid |
-|---------|------|------|
-| Backups automáticos | ❌ | ✅ |
-| Conexión externa (pg_dump local) | ❌ | ✅ |
-| Shell acceso | ❌ | ✅ |
-
-Para habilitar backups, considerar upgrade a Render paid ($7/mes) o migrar a hosting con acceso externo.
+| `DATABASE_URL` | URL completa de la DB de producción |
+| `R2_ACCESS_KEY_ID` | Access key de Cloudflare R2 |
+| `R2_SECRET_ACCESS_KEY` | Secret key de Cloudflare R2 |
+| `CF_ACCOUNT_ID` | Account ID de Cloudflare |
 
 ---
 

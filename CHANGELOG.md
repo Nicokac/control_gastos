@@ -5,6 +5,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [0.29.0] — 2026-05-12
+
+### Added
+
+- **`render.yaml` versionado** — configuración declarativa de Render en el repositorio: servicio web, DB PostgreSQL, variables de entorno y healthcheck. Elimina dependencia de configuración manual en la UI de Render. Cierra P0.
+
+### Fixed
+
+- **Docs email unificados** — el README mencionaba Resend como proveedor de email. Actualizado para reflejar Brevo API como único proveedor transaccional (reset, verificación, feedback). Cierra P0.
+
+---
+
 ## [0.28.0] — 2026-05-12
 
 ### Added
