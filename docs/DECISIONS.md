@@ -542,8 +542,7 @@ Vista pública en `/` que muestra la app a usuarios no autenticados. Los autenti
 
 ### RL-006 — Backup automático de DB (P1)
 
-**Estado:** ⏳ Pendiente
-**Estimación:** 1-2 horas
+**Estado:** ⏳ Parcial — workflow creado, falta configurar secrets en GitHub
 
 Debe implementarse **antes del lanzamiento**, no después. Pérdida de datos en el primer día sería catastrófica.
 
@@ -595,16 +594,46 @@ Semana 3:      RL-007 Email de bienvenida
                RL-008 Tour inicial
 ```
 
-**Checklist pre-lanzamiento:**
+**Checklist pre-lanzamiento consolidado** _(actualizado 2026-05-12)_
 
-- [x] DT-001 resuelto (Brevo API HTTP — Render Free bloquea SMTP)
-- [x] RL-001 Recuperar contraseña funciona en producción
-- [x] RL-002 Landing page publicada
-- [x] RL-003 Términos y condiciones publicados
-- [x] RL-004 Política de privacidad publicada
-- [ ] RL-005 Email de verificación funciona
-- [ ] RL-006 Backups automáticos configurados
-- [ ] Variables de entorno de producción auditadas
-- [ ] Rate limiting en registro revisado
-- [ ] Flujo completo probado como usuario nuevo
-- [ ] Probado en mobile
+#### ✅ Completado
+
+- [x] Recuperar contraseña (RL-001) — `ca5ce04`
+- [x] Landing page pública (RL-002) — `e11b874`
+- [x] Términos y condiciones (RL-003) — `3746b96`
+- [x] Política de privacidad (RL-004) — `3746b96`
+- [x] Checkbox aceptación en registro — `3746b96`
+- [x] Seguridad prod: DEBUG=False, SECRET_KEY, ALLOWED_HOSTS
+- [x] Healthcheck `/healthz/` con throttling
+- [x] Sentry para errores
+- [x] `check --deploy` en CI (ci.yml línea 189)
+- [x] Rate limiting (django-axes)
+- [x] CSP headers
+- [x] HTTPS hardening (HSTS, cookies secure)
+
+#### P0 — Bloqueantes
+
+- [ ] `render.yaml` versionado en repo (config declarativa de deploy)
+- [ ] Docs email unificados (README dice Resend, código usa Brevo)
+
+#### P1 — Muy recomendados
+
+- [ ] Confirmación de email al registrarse (RL-005) — 3-4 horas
+- [ ] Backup automático de DB (RL-006) — workflow en `.github/workflows/backup.yml` creado, falta configurar secrets en GitHub
+- [ ] Smoke tests post-deploy — 1-2 horas
+- [ ] SLA mínimo documentado (qué esperar en plan free) — 30 min
+
+#### P2 — Nice to have
+
+- [ ] Email de bienvenida (RL-007) — depende de RL-005
+- [ ] Tour / guía inicial (RL-008) — 2-3 horas
+- [ ] Prueba de restore de backup — 1 hora
+
+#### Verificaciones manuales
+
+- [ ] URL de Render funcionando
+- [ ] Variables de entorno en Render correctas
+- [ ] Brevo: dominio verificado, SPF/DKIM configurado
+- [ ] Probar envío real de email (reset password)
+- [ ] Probar registro completo como usuario nuevo
+- [ ] Probar en mobile

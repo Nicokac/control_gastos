@@ -1,0 +1,55 @@
+# =============================================================================
+# Backup diario de PostgreSQL → Cloudflare R2
+# Corre todos los días a las 03:00 UTC (00:00 AR)
+# También puede dispararse manualmente desde Actions
+# =============================================================================
+
+name: Backup DB
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  backup:
+    name: 🗄️ Backup PostgreSQL → R2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🐘 Install pg_dump y rclone
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client rclone
+
+      - name: 🗄️ Run pg_dump
+        env:
+          PGPASSWORD: ${{ secrets.DB_PASSWORD }}
+        run: |
+          DATE=$(date +"%Y-%m-%d_%H-%M-%S")
+          pg_dump \
+            -h ${{ secrets.DB_HOST }} \
+            -p 5432 \
+            -U ${{ secrets.DB_USER }} \
+            -d ${{ secrets.DB_NAME }} \
+            -F c \
+            -f backup_${DATE}.dump
+          echo "BACKUP_FILE=backup_${DATE}.dump" >> $GITHUB_ENV
+
+      - name: ☁️ Upload a Cloudflare R2
+        run: |
+          mkdir -p ~/.config/rclone
+          cat > ~/.config/rclone/rclone.conf << EOF
+          [r2]
+          type = s3
+          provider = Cloudflare
+          access_key_id = ${{ secrets.R2_ACCESS_KEY_ID }}
+          secret_access_key = ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          endpoint = https://${{ secrets.CF_ACCOUNT_ID }}.r2.cloudflarestorage.com
+          EOF
+          rclone copy ${{ env.BACKUP_FILE }} r2:control-gastos-backups/
+
+      - name: ✅ Confirm
+        run: |
+          SIZE=$(du -sh ${{ env.BACKUP_FILE }} | cut -f1)
+          echo "✅ Backup subido a R2: ${{ env.BACKUP_FILE }} (${SIZE})"
