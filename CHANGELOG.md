@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [0.27.0] — 2026-05-13
+
+### Added
+
+- **Backup automático de DB** — GitHub Action con cron diario (03:00 UTC) que hace `pg_dump` de PostgreSQL y sube el archivo a Cloudflare R2. Retención indefinida en el free tier (10GB). Cubre RL-006.
+
+---
+
 ## [0.26.0] — 2026-05-11
 
 ### Added

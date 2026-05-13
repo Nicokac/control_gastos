@@ -542,7 +542,7 @@ Vista pública en `/` que muestra la app a usuarios no autenticados. Los autenti
 
 ### RL-006 — Backup automático de DB (P1)
 
-**Estado:** ⏳ Parcial — workflow creado, falta configurar secrets en GitHub
+**Estado:** ✅ Resuelto (v0.27.0)
 
 Debe implementarse **antes del lanzamiento**, no después. Pérdida de datos en el primer día sería catastrófica.
 
@@ -619,7 +619,7 @@ Semana 3:      RL-007 Email de bienvenida
 #### P1 — Muy recomendados
 
 - [ ] Confirmación de email al registrarse (RL-005) — 3-4 horas
-- [ ] Backup automático de DB (RL-006) — workflow en `.github/workflows/backup.yml` creado, falta configurar secrets en GitHub
+- [x] Backup automático de DB (RL-006) — workflow diario a Cloudflare R2, probado en producción
 - [ ] Smoke tests post-deploy — 1-2 horas
 - [ ] SLA mínimo documentado (qué esperar en plan free) — 30 min
 

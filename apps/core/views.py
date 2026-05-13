@@ -177,9 +177,17 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "0.26.0"
+APP_VERSION = "0.27.0"
 
 WHATS_NEW = [
+    {
+        "version": "0.27.0",
+        "date": "Mayo 2026",
+        "title": "Backup automático de base de datos",
+        "items": [
+            "General: la base de datos se respalda automáticamente cada día a Cloudflare R2 — tus datos están protegidos",
+        ],
+    },
     {
         "version": "0.26.0",
         "date": "Mayo 2026",
