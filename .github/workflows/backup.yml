@@ -43,14 +43,9 @@ jobs:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
           mkdir -p ~/.config/rclone
-          cat > ~/.config/rclone/rclone.conf << EOF
-          [r2]
-          type = s3
-          provider = Cloudflare
-          access_key_id = ${R2_ACCESS_KEY_ID}
-          secret_access_key = ${R2_SECRET_ACCESS_KEY}
-          endpoint = https://${CF_ACCOUNT_ID}.r2.cloudflarestorage.com
-          EOF
+          printf '[r2]\ntype = s3\nprovider = Cloudflare\naccess_key_id = %s\nsecret_access_key = %s\nendpoint = https://%s.r2.cloudflarestorage.com\n' \
+            "${R2_ACCESS_KEY_ID}" "${R2_SECRET_ACCESS_KEY}" "${CF_ACCOUNT_ID}" \
+            > ~/.config/rclone/rclone.conf
           rclone copy ${{ env.BACKUP_FILE }} r2:control-gastos-backups/
 
       - name: ✅ Confirm
