@@ -46,12 +46,7 @@ jobs:
           printf '[r2]\ntype = s3\nprovider = Cloudflare\naccess_key_id = %s\nsecret_access_key = %s\nendpoint = https://%s.r2.cloudflarestorage.com\n' \
             "${R2_ACCESS_KEY_ID}" "${R2_SECRET_ACCESS_KEY}" "${CF_ACCOUNT_ID}" \
             > ~/.config/rclone/rclone.conf
-          echo "--- rclone.conf (keys redacted) ---"
-          sed 's/\(access_key_id = \).*/\1[REDACTED]/' ~/.config/rclone/rclone.conf | \
-          sed 's/\(secret_access_key = \).*/\1[REDACTED]/'
-          echo "--- R2_ACCESS_KEY_ID length: ${#R2_ACCESS_KEY_ID} ---"
-          echo "--- CF_ACCOUNT_ID length: ${#CF_ACCOUNT_ID} ---"
-          rclone copy ${{ env.BACKUP_FILE }} r2:control-gastos-backups/ -v --s3-no-check-bucket
+          rclone copy ${{ env.BACKUP_FILE }} r2:control-gastos-backups/ --s3-no-check-bucket
 
       - name: ✅ Confirm
         run: |
