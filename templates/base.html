@@ -41,6 +41,7 @@
     <!-- FAB Button - Nuevo Gasto (QW-2.1) -->
     {% if user.is_authenticated %}
     <a href="{% url 'expenses:create' %}"
+        id="tour-fab"
         class="fab-button btn btn-danger rounded-circle shadow-lg d-flex align-items-center justify-content-center"
         data-bs-toggle="tooltip"
         data-bs-placement="left"

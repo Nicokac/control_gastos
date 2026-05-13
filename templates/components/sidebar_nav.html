@@ -2,6 +2,7 @@
   <li class="nav-item">
     <a class="nav-link sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
        href="{% url 'reports:dashboard' %}"
+       id="tour-nav-dashboard"
        title="Dashboard">
       <i class="bi bi-speedometer2" aria-hidden="true"></i>
       <span>Dashboard</span>
@@ -14,6 +15,7 @@
   <li class="nav-item">
     <a href="{% url 'expenses:list' %}"
        class="nav-link sidebar-link {% if 'expenses' in request.path %}active{% endif %}"
+       id="tour-nav-expenses"
        title="Gastos">
       <i class="bi bi-arrow-up-circle text-danger" aria-hidden="true"></i>
       <span>Gastos</span>
@@ -34,6 +36,7 @@
   <li class="nav-item">
     <a href="{% url 'savings:list' %}"
        class="nav-link sidebar-link {% if 'savings' in request.path %}active{% endif %}"
+       id="tour-nav-savings"
        title="Ahorro">
       <i class="bi bi-piggy-bank text-info" aria-hidden="true"></i>
       <span>Ahorro</span>
@@ -50,6 +53,7 @@
   <li class="nav-item">
     <a href="{% url 'categories:list' %}"
        class="nav-link sidebar-link {% if 'categories' in request.path %}active{% endif %}"
+       id="tour-nav-categories"
        title="Categorías">
       <i class="bi bi-tags" aria-hidden="true"></i>
       <span>Categorías</span>

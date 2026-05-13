@@ -5,6 +5,22 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [0.32.0] — 2026-05-12
+
+### Added
+
+- **Tour interactivo** — al acceder al dashboard por primera vez, Shepherd.js guía al usuario por las secciones clave: Dashboard, Gastos, botón de Nuevo Gasto, Ahorro y Categorías. El tour se puede relanzar desde Mi Perfil → "Ver tour de nuevo". Cubre RL-008.
+
+---
+
+## [0.31.0] — 2026-05-12
+
+### Added
+
+- **Smoke tests post-deploy** — GitHub Action (`.github/workflows/smoke.yml`) que se dispara en cada push a `main` y verifica que `/healthz/`, `/`, `/users/login/`, `/users/register/`, `/terms/` y `/privacy/` responden 200 en producción. Requiere el secret `PRODUCTION_URL` con la URL de Render. Cierra P1.
+
+---
+
 ## [0.30.0] — 2026-05-12
 
 ### Added

@@ -543,6 +543,24 @@ python manage.py migrate
 
 ---
 
+### SLA — Qué esperar del plan free de Render
+
+| Métrica | Valor esperado |
+|---------|---------------|
+| Cold start (primer request tras inactividad) | 30–60 segundos |
+| Inactividad que dispara spin-down | 15 minutos sin tráfico |
+| Uptime una vez caliente | >99% (depende de Render) |
+| Tiempo de deploy | ~3–5 minutos |
+| Rollback (deploy anterior desde dashboard) | ~2 minutos |
+
+**Cold starts:** Render Free hace spin-down del servicio tras 15 minutos sin tráfico. El primer request tarda 30–60 segundos mientras el contenedor arranca. Los usuarios verán la pantalla de carga del browser durante ese tiempo.
+
+**Mitigación recomendada:** Configurar [UptimeRobot](https://uptimerobot.com) con ping cada 5 minutos a `/healthz/` para mantener el servicio caliente. Es gratuito.
+
+**Base de datos:** Render Free PostgreSQL tiene 1 GB de almacenamiento y se elimina después de 90 días de inactividad. Hacer backup manual antes de ese plazo si no hay actividad.
+
+---
+
 ### Backups
 
 #### Backup automático a Cloudflare R2

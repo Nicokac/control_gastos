@@ -618,13 +618,13 @@ Semana 3:      RL-007 Email de bienvenida
 
 - [x] Confirmación de email al registrarse (RL-005) — resuelto v0.28.0
 - [x] Backup automático de DB (RL-006) — workflow diario a Cloudflare R2, probado en producción
-- [ ] Smoke tests post-deploy — 1-2 horas
-- [ ] SLA mínimo documentado (qué esperar en plan free) — 30 min
+- [x] Smoke tests post-deploy — resuelto v0.31.0 (`.github/workflows/smoke.yml`)
+- [x] SLA mínimo documentado (qué esperar en plan free) — resuelto v0.31.0 (README)
 
 #### P2 — Nice to have
 
-- [ ] Email de bienvenida (RL-007) — depende de RL-005
-- [ ] Tour / guía inicial (RL-008) — 2-3 horas
+- [x] Email de bienvenida (RL-007) — resuelto v0.30.0
+- [x] Tour / guía inicial (RL-008) — resuelto v0.32.0 (Shepherd.js)
 - [ ] Prueba de restore de backup — 1 hora
 
 #### Verificaciones manuales

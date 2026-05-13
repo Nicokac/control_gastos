@@ -16,6 +16,8 @@ urlpatterns = [
     path("delete/", views.DeleteAccountView.as_view(), name="delete_account"),
     path("verify/<uidb64>/<token>/", views.VerifyEmailView.as_view(), name="verify_email"),
     path("verify/resend/", views.ResendVerificationView.as_view(), name="resend_verification"),
+    path("tour/done/", views.TourDoneView.as_view(), name="tour_done"),
+    path("tour/reset/", views.TourResetView.as_view(), name="tour_reset"),
     # Password reset
     path(
         "password/reset/",

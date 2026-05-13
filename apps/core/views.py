@@ -177,9 +177,26 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "0.30.0"
+APP_VERSION = "0.32.0"
 
 WHATS_NEW = [
+    {
+        "version": "0.32.0",
+        "date": "Mayo 2026",
+        "title": "Tour interactivo",
+        "items": [
+            "Al entrar por primera vez al dashboard se activa un tour que muestra las secciones principales de la app",
+            "Podés volver a ver el tour desde Mi Perfil en cualquier momento",
+        ],
+    },
+    {
+        "version": "0.31.0",
+        "date": "Mayo 2026",
+        "title": "Smoke tests y SLA documentado",
+        "items": [
+            "Infraestructura: cada push a main verifica automáticamente que los endpoints de producción responden correctamente",
+        ],
+    },
     {
         "version": "0.30.0",
         "date": "Mayo 2026",

@@ -22,6 +22,7 @@ class User(AbstractUser):
         verbose_name="Umbral de alerta (%)",
     )
     email_verified = models.BooleanField(default=False, verbose_name="Email verificado")
+    has_seen_tour = models.BooleanField(default=False, verbose_name="Tour visto")
 
     class Meta:
         verbose_name = "Usuario"

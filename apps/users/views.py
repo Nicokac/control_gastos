@@ -277,6 +277,22 @@ class VerifyEmailView(View):
         return redirect("users:login")
 
 
+class TourDoneView(LoginRequiredMixin, View):
+    def post(self, request):
+        request.user.has_seen_tour = True
+        request.user.save(update_fields=["has_seen_tour"])
+        from django.http import JsonResponse
+
+        return JsonResponse({"ok": True})
+
+
+class TourResetView(LoginRequiredMixin, View):
+    def post(self, request):
+        request.user.has_seen_tour = False
+        request.user.save(update_fields=["has_seen_tour"])
+        return redirect("reports:dashboard")
+
+
 class ResendVerificationView(LoginRequiredMixin, View):
     def get(self, request):
         if request.user.email_verified:

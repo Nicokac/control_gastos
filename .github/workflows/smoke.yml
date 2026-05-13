@@ -1,0 +1,84 @@
+# =============================================================================
+# Smoke Tests — Control de Gastos
+# =============================================================================
+# Verifica que los endpoints clave de producción responden correctamente.
+# Se dispara manualmente o automáticamente tras cada push a main.
+# Requiere el secret PRODUCTION_URL con la URL base de Render (sin trailing slash).
+# Ejemplo: https://control-gastos-xxxx.onrender.com
+# =============================================================================
+
+name: Smoke Tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  smoke:
+    name: Smoke Tests — Producción
+    runs-on: ubuntu-latest
+
+    env:
+      BASE_URL: ${{ secrets.PRODUCTION_URL }}
+
+    steps:
+      - name: Verificar que PRODUCTION_URL está configurado
+        run: |
+          if [ -z "$BASE_URL" ]; then
+            echo "❌ Secret PRODUCTION_URL no configurado en el repositorio."
+            echo "   Ir a Settings → Secrets → New repository secret"
+            echo "   Nombre: PRODUCTION_URL"
+            echo "   Valor:  https://tu-app.onrender.com"
+            exit 1
+          fi
+          echo "✅ BASE_URL: $BASE_URL"
+
+      - name: Esperar cold start de Render (si aplica)
+        run: sleep 10
+
+      - name: GET /healthz/
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/healthz/")
+          echo "Status: $STATUS"
+          [ "$STATUS" = "200" ] || { echo "❌ /healthz/ respondió $STATUS"; exit 1; }
+          echo "✅ /healthz/ OK"
+
+      - name: GET / (landing)
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/")
+          echo "Status: $STATUS"
+          [ "$STATUS" = "200" ] || { echo "❌ / respondió $STATUS"; exit 1; }
+          echo "✅ / OK"
+
+      - name: GET /users/login/
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/users/login/")
+          echo "Status: $STATUS"
+          [ "$STATUS" = "200" ] || { echo "❌ /users/login/ respondió $STATUS"; exit 1; }
+          echo "✅ /users/login/ OK"
+
+      - name: GET /users/register/
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/users/register/")
+          echo "Status: $STATUS"
+          [ "$STATUS" = "200" ] || { echo "❌ /users/register/ respondió $STATUS"; exit 1; }
+          echo "✅ /users/register/ OK"
+
+      - name: GET /terms/
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/terms/")
+          echo "Status: $STATUS"
+          [ "$STATUS" = "200" ] || { echo "❌ /terms/ respondió $STATUS"; exit 1; }
+          echo "✅ /terms/ OK"
+
+      - name: GET /privacy/
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/privacy/")
+          echo "Status: $STATUS"
+          [ "$STATUS" = "200" ] || { echo "❌ /privacy/ respondió $STATUS"; exit 1; }
+          echo "✅ /privacy/ OK"
+
+      - name: Resumen
+        if: success()
+        run: echo "✅ Todos los smoke tests pasaron."
