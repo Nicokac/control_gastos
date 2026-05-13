@@ -12,6 +12,12 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    const isMobile = window.innerWidth < 768;
+
+    function sidebarAttach(elementId) {
+        return isMobile ? null : { element: elementId, on: 'right' };
+    }
+
     const tour = new Shepherd.Tour({
         useModalOverlay: true,
         defaultStepOptions: {
@@ -34,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     tour.addStep({
         id: 'dashboard',
-        attachTo: { element: '#tour-nav-dashboard', on: 'right' },
+        attachTo: sidebarAttach('#tour-nav-dashboard'),
         title: 'Dashboard',
         text: 'Acá vas a ver un resumen de tus finanzas del mes: balance, gastos por categoría y evolución histórica.',
         buttons: [
@@ -45,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     tour.addStep({
         id: 'expenses',
-        attachTo: { element: '#tour-nav-expenses', on: 'right' },
+        attachTo: sidebarAttach('#tour-nav-expenses'),
         title: 'Gastos',
         text: 'Registrá y filtrá todos tus gastos. Podés organizarlos por categoría, método de pago o tipo (fijo/variable).',
     });
@@ -54,19 +60,19 @@ document.addEventListener('DOMContentLoaded', function () {
         id: 'fab',
         attachTo: { element: '#tour-fab', on: 'left' },
         title: 'Nuevo Gasto rápido',
-        text: 'Este botón está siempre visible. También podés usar <kbd>Ctrl+N</kbd> desde cualquier pantalla.',
+        text: 'Este botón rojo siempre está visible. También podés usar <kbd>Ctrl+N</kbd> desde cualquier pantalla.',
     });
 
     tour.addStep({
         id: 'savings',
-        attachTo: { element: '#tour-nav-savings', on: 'right' },
+        attachTo: sidebarAttach('#tour-nav-savings'),
         title: 'Ahorro',
         text: 'Creá metas de ahorro con un objetivo y fecha límite. Cada depósito te acerca más a la meta.',
     });
 
     tour.addStep({
         id: 'categories',
-        attachTo: { element: '#tour-nav-categories', on: 'right' },
+        attachTo: sidebarAttach('#tour-nav-categories'),
         title: 'Categorías',
         text: 'Personalizá tus categorías con íconos y colores. Las podés organizar en grupos para ver subtotales en el dashboard.',
         buttons: [
