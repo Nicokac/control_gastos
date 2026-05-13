@@ -36,11 +36,11 @@
 
 | Métrica | Valor |
 |---------|-------|
-| Tests | 605 |
-| Coverage | 93.31% (enforced ≥80%) |
+| Tests | 687 |
+| Coverage | ≥80% (enforced) |
 | Python | 3.12+ |
 | Django | 5.2 |
-| CI Jobs | 5 |
+| CI Jobs | 6 (+ smoke tests) |
 | Estado | 🟢 **Listo para Producción** |
 
 ---
@@ -119,6 +119,7 @@
 | **Base de datos** | SQLite (dev) / PostgreSQL (prod) |
 | **Gráficos** | Chart.js |
 | **Iconos** | Bootstrap Icons |
+| **Tour interactivo** | Shepherd.js |
 | **CI/CD** | GitHub Actions |
 | **Linting** | Ruff |
 | **Testing** | pytest + pytest-cov |
@@ -309,18 +310,18 @@ pytest --cov=apps --cov-fail-under=80
 
 | Ítem | Valor |
 |-----|------|
-| Fecha | **2026-05-07** |
-| Entorno | Local (Windows) |
+| Fecha | **2026-05-13** |
+| Entorno | Local (Windows) + Producción (Render) |
 | Python | 3.12.0 |
 | Django | 5.2 |
 | Settings | `config.settings.dev` |
-| Commit | develop (en curso) |
+| Commit | main (v0.32.0) |
 
 Resultado:
 
 | Ítem | Valor |
 |-----|------|
-| ✅ | 609 tests pasados |
+| ✅ | 687 tests recolectados |
 | ⏭️ | 2 skipped |
 | ❌ | 0 fallos |
 | ⏱️ | Duración total: ~3m 30s |
@@ -335,9 +336,8 @@ Resultado verificado:
 
 | Métrica | Valor |
 |-----|------|
-| Coverage total | 93.38% |
 | Coverage mínimo requerido | 80% |
-| Estado | ✅ Cumple |
+| Estado | ✅ Cumple (enforced en CI) |
 
 ```bash
 python manage.py check --deploy --settings=config.settings.prod

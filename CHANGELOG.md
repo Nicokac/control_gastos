@@ -5,11 +5,16 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
-## [0.32.0] — 2026-05-12
+## [0.32.0] — 2026-05-13
 
 ### Added
 
 - **Tour interactivo** — al acceder al dashboard por primera vez, Shepherd.js guía al usuario por las secciones clave: Dashboard, Gastos, botón de Nuevo Gasto, Ahorro y Categorías. El tour se puede relanzar desde Mi Perfil → "Ver tour de nuevo". Cubre RL-008.
+
+### Fixed
+
+- **`/terms/` y `/privacy/` vacíos para usuarios logueados** — los templates usaban `{% block auth_content %}` que solo se renderiza para usuarios no autenticados. Cambiado a `{% block content %}` con navbar condicional: muestra "Ir al dashboard" si está logueado y "Iniciar sesión / Crear cuenta" si no.
+- **Tour en mobile** — en viewport < 768px el sidebar está oculto. Los pasos del tour que apuntaban a elementos del sidebar ahora usan `attachTo: null`, haciendo que Shepherd centre el popup en pantalla en lugar de posicionarlo en coordenadas 0,0.
 
 ---
 

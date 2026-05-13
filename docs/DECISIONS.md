@@ -629,9 +629,9 @@ Semana 3:      RL-007 Email de bienvenida
 
 #### Verificaciones manuales
 
-- [ ] URL de Render funcionando
-- [ ] Variables de entorno en Render correctas
+- [x] URL de Render funcionando — confirmado en QA (2026-05-13)
+- [x] Variables de entorno en Render correctas — confirmado en QA (2026-05-13)
 - [ ] Brevo: dominio verificado, SPF/DKIM configurado
-- [ ] Probar envío real de email (reset password)
-- [ ] Probar registro completo como usuario nuevo
-- [ ] Probar en mobile
+- [ ] Probar envío real de email (verificación + reset password) — requiere acceso a bandeja real
+- [ ] Probar registro completo como usuario nuevo (email verificación + bienvenida)
+- [ ] Probar en mobile (tour + navegación general)
