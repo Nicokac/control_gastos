@@ -1,0 +1,23 @@
+Hola {{ username }},
+
+¡Tu cuenta en Control de Gastos está activa!
+
+Algunas cosas que podés hacer desde el primer día:
+
+→ Registrá tu primer gasto
+   Andá a "Nuevo Gasto" (el botón rojo) o usá Ctrl+N desde cualquier pantalla.
+
+→ Creá tus categorías
+   Personalizá las categorías con el color e ícono que quieras desde el menú "Categorías".
+
+→ Armá un presupuesto
+   En "Presupuestos" podés definir un límite mensual por categoría y recibir alertas cuando te acercás al límite.
+
+→ Seguí tus metas de ahorro
+   Creá una meta, asignale un objetivo y registrá depósitos. Control de Gastos te muestra cuánto te falta.
+
+Si tenés alguna sugerencia o encontrás algo raro, usá el formulario de feedback que está en el menú lateral.
+
+¡Bienvenido!
+
+Control de Gastos

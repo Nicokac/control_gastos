@@ -177,9 +177,17 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "0.29.0"
+APP_VERSION = "0.30.0"
 
 WHATS_NEW = [
+    {
+        "version": "0.30.0",
+        "date": "Mayo 2026",
+        "title": "Email de bienvenida",
+        "items": [
+            "Al verificar tu email recibís un mensaje de bienvenida con tips para arrancar a usar la app",
+        ],
+    },
     {
         "version": "0.29.0",
         "date": "Mayo 2026",

@@ -62,6 +62,30 @@ def _send_verification_email(request, user):
             logger.exception("Error al enviar email de verificación a %s", user.email)
 
 
+def _send_welcome_email(user):
+    from django.template.loader import render_to_string
+
+    body = render_to_string("users/emails/welcome.txt", {"username": user.username})
+    brevo_api_key = getattr(settings, "BREVO_API_KEY", "")
+    if brevo_api_key:
+        try:
+            import requests as http_requests
+
+            http_requests.post(
+                "https://api.brevo.com/v3/smtp/email",
+                headers={"api-key": brevo_api_key, "Content-Type": "application/json"},
+                json={
+                    "sender": {"name": "Control Gastos", "email": "kachuknm@gmail.com"},
+                    "to": [{"email": user.email}],
+                    "subject": "¡Bienvenido a Control de Gastos!",
+                    "textContent": body,
+                },
+                timeout=10,
+            ).raise_for_status()
+        except Exception:
+            logger.exception("Error al enviar email de bienvenida a %s", user.email)
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -241,6 +265,7 @@ class VerifyEmailView(View):
         if user and not user.email_verified and email_verification_token.check_token(user, token):
             user.email_verified = True
             user.save(update_fields=["email_verified"])
+            _send_welcome_email(user)
             messages.success(request, "¡Email verificado correctamente!")
         elif user and user.email_verified:
             messages.info(request, "Tu email ya estaba verificado.")

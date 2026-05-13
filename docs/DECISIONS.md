@@ -555,14 +555,13 @@ Debe implementarse **antes del lanzamiento**, no después. Pérdida de datos en 
 
 ### RL-007 — Email de bienvenida (P2)
 
-**Estado:** ⏳ Pendiente
-**Estimación:** 1 hora
-**Dependencia:** DT-001 + RL-005
+**Estado:** ✅ Resuelto (v0.30.0)
 
-**Tareas:**
+**Implementación:**
 
-- Template `templates/emails/welcome.html` con tips de uso
-- Envío post-verificación en `apps/users/views.py`
+- Template `templates/users/emails/welcome.txt` con tips de uso (registrar gasto, categorías, presupuestos, metas)
+- `_send_welcome_email(user)` en `apps/users/views.py` — envía via Brevo API
+- Llamado desde `VerifyEmailView` solo en la primera verificación exitosa
 
 ### RL-008 — Tour / guía inicial (P2)
 

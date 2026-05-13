@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [0.30.0] — 2026-05-12
+
+### Added
+
+- **Email de bienvenida** — al verificar el email, el usuario recibe un mensaje de bienvenida con tips de uso: cómo registrar gastos, crear categorías, armar presupuestos y usar metas de ahorro. Cubre RL-007.
+
+---
+
 ## [0.29.0] — 2026-05-12
 
 ### Added
