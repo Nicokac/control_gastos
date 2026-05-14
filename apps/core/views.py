@@ -17,6 +17,8 @@ from django.views.generic import (
     UpdateView,
 )
 
+from apps.core.utils import send_brevo_email
+
 from .forms import FeedbackForm
 
 logger = logging.getLogger(__name__)
@@ -125,50 +127,32 @@ class FeedbackView(LoginRequiredMixin, FormView):
         from_email = getattr(
             settings, "DEFAULT_FROM_EMAIL", "Control Gastos <noreply@controlmisfinanzas.com>"
         )
-        brevo_api_key = getattr(settings, "BREVO_API_KEY", "")
-        resend_api_key = getattr(settings, "RESEND_API_KEY", "")
+        sent = send_brevo_email(recipient, subject, body)
+        if not sent:
+            resend_api_key = getattr(settings, "RESEND_API_KEY", "")
+            try:
+                if resend_api_key:
+                    import resend
 
-        try:
-            if brevo_api_key:
-                import requests as http_requests
+                    resend.api_key = resend_api_key
+                    resend.Emails.send(
+                        {"from": from_email, "to": [recipient], "subject": subject, "text": body}
+                    )
+                else:
+                    send_mail(
+                        subject=subject,
+                        message=body,
+                        from_email=from_email,
+                        recipient_list=[recipient],
+                        fail_silently=False,
+                    )
+                sent = True
+            except Exception:
+                logger.exception("Error al enviar feedback de usuario %s", user.username)
 
-                http_requests.post(
-                    "https://api.brevo.com/v3/smtp/email",
-                    headers={
-                        "api-key": brevo_api_key,
-                        "Content-Type": "application/json",
-                    },
-                    json={
-                        "sender": {"name": "Control Gastos", "email": "kachuknm@gmail.com"},
-                        "to": [{"email": recipient}],
-                        "subject": subject,
-                        "textContent": body,
-                    },
-                    timeout=10,
-                ).raise_for_status()
-            elif resend_api_key:
-                import resend
-
-                resend.api_key = resend_api_key
-                resend.Emails.send(
-                    {
-                        "from": from_email,
-                        "to": [recipient],
-                        "subject": subject,
-                        "text": body,
-                    }
-                )
-            else:
-                send_mail(
-                    subject=subject,
-                    message=body,
-                    from_email=from_email,
-                    recipient_list=[recipient],
-                    fail_silently=False,
-                )
+        if sent:
             messages.success(self.request, "¡Gracias! Tu reporte fue enviado correctamente.")
-        except Exception:
-            logger.exception("Error al enviar feedback de usuario %s", user.username)
+        else:
             messages.error(
                 self.request,
                 "No se pudo enviar el reporte. Intentá de nuevo más tarde.",

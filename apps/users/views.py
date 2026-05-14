@@ -2,12 +2,13 @@
 
 import logging
 
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, PasswordResetView
+from django.http import JsonResponse
 from django.shortcuts import redirect
+from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -21,6 +22,7 @@ from apps.core.logging import (
     log_sensitive_action,
     log_user_registration,
 )
+from apps.core.utils import send_brevo_email
 
 from .forms import LoginForm, ProfileForm, RegisterForm
 from .models import User
@@ -33,7 +35,6 @@ def _send_verification_email(request, user):
     verify_url = request.build_absolute_uri(
         reverse_lazy("users:verify_email", kwargs={"uidb64": uid, "token": token})
     )
-    subject = "Verificá tu email — Control de Gastos"
     body = (
         f"Hola {user.username},\n\n"
         f"Para verificar tu email hacé clic en el siguiente link:\n\n"
@@ -42,48 +43,12 @@ def _send_verification_email(request, user):
         f"Si no creaste una cuenta, podés ignorar este email.\n\n"
         f"Control de Gastos"
     )
-    brevo_api_key = getattr(settings, "BREVO_API_KEY", "")
-    if brevo_api_key:
-        try:
-            import requests as http_requests
-
-            http_requests.post(
-                "https://api.brevo.com/v3/smtp/email",
-                headers={"api-key": brevo_api_key, "Content-Type": "application/json"},
-                json={
-                    "sender": {"name": "Control Gastos", "email": "kachuknm@gmail.com"},
-                    "to": [{"email": user.email}],
-                    "subject": subject,
-                    "textContent": body,
-                },
-                timeout=10,
-            ).raise_for_status()
-        except Exception:
-            logger.exception("Error al enviar email de verificación a %s", user.email)
+    send_brevo_email(user.email, "Verificá tu email — Control de Gastos", body)
 
 
 def _send_welcome_email(user):
-    from django.template.loader import render_to_string
-
     body = render_to_string("users/emails/welcome.txt", {"username": user.username})
-    brevo_api_key = getattr(settings, "BREVO_API_KEY", "")
-    if brevo_api_key:
-        try:
-            import requests as http_requests
-
-            http_requests.post(
-                "https://api.brevo.com/v3/smtp/email",
-                headers={"api-key": brevo_api_key, "Content-Type": "application/json"},
-                json={
-                    "sender": {"name": "Control Gastos", "email": "kachuknm@gmail.com"},
-                    "to": [{"email": user.email}],
-                    "subject": "¡Bienvenido a Control de Gastos!",
-                    "textContent": body,
-                },
-                timeout=10,
-            ).raise_for_status()
-        except Exception:
-            logger.exception("Error al enviar email de bienvenida a %s", user.email)
+    send_brevo_email(user.email, "¡Bienvenido a Control de Gastos!", body)
 
 
 logger = logging.getLogger(__name__)
@@ -220,30 +185,10 @@ class BrevoPasswordResetView(PasswordResetView):
         to_email,
         html_email_template_name=None,
     ):
-        from django.template.loader import render_to_string
-
         subject = render_to_string(subject_template_name, context).strip()
         body = render_to_string(email_template_name, context)
-        brevo_api_key = getattr(settings, "BREVO_API_KEY", "")
 
-        if brevo_api_key:
-            try:
-                import requests as http_requests
-
-                http_requests.post(
-                    "https://api.brevo.com/v3/smtp/email",
-                    headers={"api-key": brevo_api_key, "Content-Type": "application/json"},
-                    json={
-                        "sender": {"name": "Control Gastos", "email": "kachuknm@gmail.com"},
-                        "to": [{"email": to_email}],
-                        "subject": subject,
-                        "textContent": body,
-                    },
-                    timeout=10,
-                ).raise_for_status()
-            except Exception:
-                logger.exception("Error al enviar email de reset via Brevo a %s", to_email)
-        else:
+        if not send_brevo_email(to_email, subject, body):
             super().send_mail(
                 subject_template_name,
                 email_template_name,
@@ -281,8 +226,6 @@ class TourDoneView(LoginRequiredMixin, View):
     def post(self, request):
         request.user.has_seen_tour = True
         request.user.save(update_fields=["has_seen_tour"])
-        from django.http import JsonResponse
-
         return JsonResponse({"ok": True})
 
 

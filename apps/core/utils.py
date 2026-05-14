@@ -2,10 +2,39 @@
 Funciones de utilidad para todo el proyecto
 """
 
+import logging
 from datetime import date
 from decimal import Decimal
 
+from django.conf import settings
 from django.utils import timezone
+
+import requests
+
+logger = logging.getLogger(__name__)
+
+
+def send_brevo_email(to_email: str, subject: str, body: str) -> bool:
+    """Envía un email via Brevo API HTTP. Retorna True si tuvo éxito."""
+    brevo_api_key = getattr(settings, "BREVO_API_KEY", "")
+    if not brevo_api_key:
+        return False
+    try:
+        requests.post(
+            "https://api.brevo.com/v3/smtp/email",
+            headers={"api-key": brevo_api_key, "Content-Type": "application/json"},
+            json={
+                "sender": {"name": "Control Gastos", "email": "kachuknm@gmail.com"},
+                "to": [{"email": to_email}],
+                "subject": subject,
+                "textContent": body,
+            },
+            timeout=10,
+        ).raise_for_status()
+        return True
+    except Exception:
+        logger.exception("Error al enviar email via Brevo a %s", to_email)
+        return False
 
 
 def get_current_month_year():

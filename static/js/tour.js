@@ -12,10 +12,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    const isMobile = window.innerWidth < 768;
-
     function sidebarAttach(elementId) {
-        return isMobile ? null : { element: elementId, on: 'right' };
+        return window.innerWidth < 768 ? null : { element: elementId, on: 'right' };
     }
 
     const tour = new Shepherd.Tour({

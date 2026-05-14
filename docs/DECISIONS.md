@@ -457,6 +457,12 @@ Mismo concepto que Gastos Fijos pero para ingresos periódicos (sueldos, alquile
 
 Vista de reporte anual con comparativa mes a mes: gastos, ingresos y balance para cada mes del año. Posiblemente exportable a CSV. Complementa el gráfico de evolución mensual del dashboard con una tabla detallada y filtros por año.
 
+### DT-013 — Emails transaccionales síncronos en request path
+
+**Estado:** ⏳ Pendiente
+
+`_send_verification_email`, `_send_welcome_email` y `FeedbackView` hacen llamadas HTTP a Brevo de forma síncrona durante el ciclo de request/response. Si Brevo tarda o falla, el usuario espera hasta el timeout (10s). La solución correcta es una cola de tareas (Celery + Redis, o Django-Q). No se implementa ahora porque Render Free no incluye workers adicionales sin costo extra. Aceptable en MVP con bajo volumen de registros.
+
 ---
 
 ## D-015 — Deudas técnicas descartadas
