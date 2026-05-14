@@ -74,15 +74,9 @@ jobs:
 
       - name: GET /privacy/
         run: |
-          BODY=$(curl -s -w "\n%{http_code}" "$BASE_URL/privacy/")
-          STATUS=$(echo "$BODY" | tail -1)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE_URL/privacy/")
           echo "Status: $STATUS"
-          if [ "$STATUS" != "200" ]; then
-            echo "❌ /privacy/ respondió $STATUS"
-            echo "--- Body ---"
-            echo "$BODY" | head -50
-            exit 1
-          fi
+          [ "$STATUS" = "200" ] || { echo "❌ /privacy/ respondió $STATUS"; exit 1; }
           echo "✅ /privacy/ OK"
 
       - name: Resumen
