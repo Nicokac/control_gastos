@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.0.0] — 2026-05-13
+
+### Added
+
+- **Lanzamiento v1.0** — primera versión estable con todas las funciones principales: dashboard, gastos, ingresos, ahorro, categorías, gastos fijos, tour interactivo y verificación de email.
+
+---
+
 ## [0.32.0] — 2026-05-13
 
 ### Added

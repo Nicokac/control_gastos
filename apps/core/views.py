@@ -161,9 +161,18 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "0.32.0"
+APP_VERSION = "1.0.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.0.0",
+        "date": "Mayo 2026",
+        "title": "Lanzamiento v1.0",
+        "items": [
+            "Primera versión estable de Control de Gastos",
+            "Incluye dashboard, gastos, ingresos, ahorro, categorías, gastos fijos, tour interactivo y verificación de email",
+        ],
+    },
     {
         "version": "0.32.0",
         "date": "Mayo 2026",

@@ -315,7 +315,7 @@ pytest --cov=apps --cov-fail-under=80
 | Python | 3.12.0 |
 | Django | 5.2 |
 | Settings | `config.settings.dev` |
-| Commit | main (v0.32.0) |
+| Commit | main (v1.0.0) |
 
 Resultado:
 
