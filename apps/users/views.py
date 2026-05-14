@@ -91,6 +91,9 @@ class CustomLogoutView(LogoutView):
 
     next_page = reverse_lazy("users:login")
 
+    def get(self, request, *args, **kwargs):
+        return redirect("users:login")
+
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             # Loggear logout antes de cerrar sesión
