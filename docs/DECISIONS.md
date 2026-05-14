@@ -463,6 +463,18 @@ Vista de reporte anual con comparativa mes a mes: gastos, ingresos y balance par
 
 `_send_verification_email`, `_send_welcome_email` y `FeedbackView` hacen llamadas HTTP a Brevo de forma síncrona durante el ciclo de request/response. Si Brevo tarda o falla, el usuario espera hasta el timeout (10s). La solución correcta es una cola de tareas (Celery + Redis, o Django-Q). No se implementa ahora porque Render Free no incluye workers adicionales sin costo extra. Aceptable en MVP con bajo volumen de registros.
 
+### DT-014 — `alert_threshold` en User sin funcionalidad activa
+
+**Estado:** ⏳ Pendiente
+
+El campo `alert_threshold` (IntegerField 1-100, default 80) existe en el modelo `User` y aparece en el formulario de perfil, pero no tiene ningún efecto en la app. Fue diseñado para alertas de presupuesto cuando existía el módulo de budgets, que fue removido en D-007. Opciones: (a) implementar alertas visuales en el dashboard cuando el gasto mensual supera el umbral sobre el total de ingresos, o (b) remover el campo si no se va a implementar. Dejarlo visible en el perfil sin efecto es confuso para el usuario.
+
+### DT-015 — Ingresos recurrentes
+
+**Estado:** ⏳ Pendiente
+
+Los gastos fijos/recurrentes tienen su propio módulo (`apps/recurring`) con CRUD, estados (pagado/pendiente/vencido) y registro de pagos. Los ingresos periódicos (sueldos, alquileres cobrados, freelance mensual) no tienen equivalente. Un usuario que cobra mensualmente no tiene forma de modelar eso sin crear el ingreso manualmente cada mes. Implementación esperada: similar a `recurring` pero para ingresos, reutilizando los mismos patrones de modelo y vistas.
+
 ---
 
 ## D-015 — Deudas técnicas descartadas
