@@ -34,8 +34,8 @@ jobs:
           fi
           echo "✅ BASE_URL: $BASE_URL"
 
-      - name: Esperar cold start de Render (si aplica)
-        run: sleep 10
+      - name: Esperar deploy de Render (~3-5 min)
+        run: sleep 300
 
       - name: GET /healthz/
         run: |
