@@ -471,6 +471,49 @@ Vista de reporte anual con comparativa mes a mes: gastos, ingresos y balance par
 
 ---
 
+## D-017 — Arquitectura de infraestructura en producción
+
+**Fecha:** 2026-05-13
+**Estado:** ✅ Verificado y en producción
+
+### Arquitectura real
+
+| Componente | Proveedor | Detalle |
+| ---------- | --------- | ------- |
+| **Hosting** | Render Free | `control-gastos-fr8z.onrender.com` |
+| **Base de datos** | Render PostgreSQL Free | Host interno `dpg-d5e5c8ili9vc73et5r90-a` |
+| **Email transaccional** | Brevo API HTTP | Reset, verificación, bienvenida, feedback |
+| **Backups DB** | Cloudflare R2 | Dump diario via GitHub Actions, `pg_dump` |
+| **Error tracking** | Sentry | DSN configurado en Render |
+| **CI/CD** | GitHub Actions | Push a `main` → deploy automático |
+
+### Decisiones tomadas
+
+- **Brevo en lugar de Resend/SMTP**: Render Free bloquea puertos SMTP (25, 465, 587). Brevo ofrece API HTTP sin restricciones. Resend requería dominio propio verificado. Ver D-013.
+- **Render PostgreSQL en lugar de Neon**: DB gestionada por el mismo proveedor de hosting. Sin dependencia externa adicional.
+- **Cloudflare R2 para backups**: Render Free no incluye backups automáticos ni acceso externo a la DB. El dump se hace desde GitHub Actions usando `DATABASE_URL` con el external URL de Render. R2 tiene 10 GB free tier.
+
+### Variables de entorno activas (sin secretos)
+
+```env
+ALLOWED_HOSTS=control-gastos-fr8z.onrender.com
+DJANGO_SETTINGS_MODULE=config.settings.prod
+DEBUG=False
+ADMIN_EMAIL=kachuk_nm@hotmail.com
+FEEDBACK_EMAIL=kachuk_nm@hotmail.com
+SERVER_EMAIL=kachuknm@gmail.com
+```
+
+Secretos gestionados en Render Dashboard: `SECRET_KEY`, `DB_*`, `BREVO_API_KEY`, `SENTRY_DSN`.
+
+### Variables huérfanas a limpiar
+
+Las siguientes variables están en Render pero no tienen efecto (código migró a Brevo HTTP):
+
+- `DEFAULT_FROM_EMAIL`, `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_PORT`, `EMAIL_USE_SSL`, `EMAIL_USE_TLS`, `RESEND_API_KEY`
+
+---
+
 ## D-016 — Roadmap de lanzamiento público
 
 **Fecha:** 2026-05-11
