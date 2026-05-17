@@ -74,11 +74,12 @@ class ExpenseForm(CurrencyFormMixin, forms.ModelForm):
                     "class": "form-select",
                 }
             ),
-            "exchange_rate": forms.NumberInput(
+            "exchange_rate": forms.TextInput(
                 attrs={
                     "class": "form-control",
-                    "step": "0.0001",
-                    "min": "0.0001",
+                    "inputmode": "decimal",
+                    "placeholder": "0,00",
+                    "autocomplete": "off",
                 }
             ),
         }

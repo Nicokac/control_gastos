@@ -53,11 +53,12 @@ class IncomeForm(CurrencyFormMixin, forms.ModelForm):
                     "placeholder": "Ej: Sueldo, Freelance, Alquiler...",
                 }
             ),
-            "exchange_rate": forms.NumberInput(
+            "exchange_rate": forms.TextInput(
                 attrs={
                     "class": "form-control",
-                    "step": "0.01",
-                    "min": "0.01",
+                    "inputmode": "decimal",
+                    "placeholder": "0,00",
+                    "autocomplete": "off",
                 }
             ),
         }

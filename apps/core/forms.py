@@ -16,17 +16,25 @@ class ARSDecimalField(forms.DecimalField):
 
     Normaliza antes de la conversión: elimina puntos de miles y reemplaza
     la coma decimal por punto, para que Decimal() lo procese correctamente.
+    Al renderizar (edición), muestra el valor con coma decimal.
     """
 
     def to_python(self, value):
         if isinstance(value, str) and value.strip():
             v = value.strip()
             if "," in v:
-                # Argentine format: "1.500,50" or "1500,50"
-                # Strip thousands dots then swap decimal comma to dot
                 v = v.replace(".", "").replace(",", ".")
             value = v
         return super().to_python(value)
+
+    def prepare_value(self, value):
+        if value is None or value == "":
+            return ""
+        try:
+            d = Decimal(str(value))
+            return f"{d:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        except Exception:
+            return value
 
 
 class CurrencyFormMixin:
@@ -66,6 +74,12 @@ class CurrencyFormMixin:
     def clean_exchange_rate(self):
         """Valida y setea exchange_rate según la moneda."""
         exchange_rate = self.cleaned_data.get("exchange_rate")
+        if isinstance(exchange_rate, str) and exchange_rate.strip():
+            v = exchange_rate.strip().replace(".", "").replace(",", ".")
+            try:
+                exchange_rate = Decimal(v)
+            except Exception as e:
+                raise forms.ValidationError("Ingresá una cotización válida.") from e
         currency = self.cleaned_data.get("currency")
 
         # Si es ARS, exchange_rate siempre es 1

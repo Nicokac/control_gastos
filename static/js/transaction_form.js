@@ -16,6 +16,36 @@ function initTransactionForm(formId) {
     initExchangeRateToggle();
     initFormValidation(formId);
     initClearValidation();
+    initAmountFormatting();
+}
+
+function formatAmountAR(raw) {
+    const normalized = String(raw).trim().replace(/\./g, '').replace(',', '.');
+    const num = parseFloat(normalized);
+    if (isNaN(num)) return raw;
+    return num.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function initAmountFormatting() {
+    ['id_amount', 'id_exchange_rate'].forEach(function(id) {
+        const input = document.getElementById(id);
+        if (!input) return;
+
+        if (input.value) {
+            input.value = formatAmountAR(input.value);
+        }
+
+        input.addEventListener('blur', function() {
+            if (this.value.trim()) {
+                this.value = formatAmountAR(this.value);
+            }
+        });
+
+        input.addEventListener('focus', function() {
+            // Al editar, quitar puntos de miles para facilitar escritura
+            this.value = this.value.replace(/\./g, '').replace(',', ',');
+        });
+    });
 }
 
 /**
@@ -84,6 +114,7 @@ function initFormValidation(formId) {
             firstError = firstError || amount;
         } else {
             amount.classList.remove('is-invalid');
+            amount.value = amountNormalized;
         }
 
         // Validar categoría
@@ -114,12 +145,14 @@ function initFormValidation(formId) {
         const exchangeRate = document.getElementById('id_exchange_rate');
 
         if (currency && currency.value === 'USD') {
-            if (!exchangeRate.value || parseFloat(exchangeRate.value) <= 0) {
+            const erNormalized = exchangeRate.value.trim().replace(/\./g, '').replace(',', '.');
+            if (!erNormalized || parseFloat(erNormalized) <= 0) {
                 exchangeRate.classList.add('is-invalid');
                 isValid = false;
                 firstError = firstError || exchangeRate;
             } else {
                 exchangeRate.classList.remove('is-invalid');
+                exchangeRate.value = erNormalized;
             }
         }
 
