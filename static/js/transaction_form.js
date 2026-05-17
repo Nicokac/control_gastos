@@ -42,7 +42,7 @@ function formatAmountAR(raw) {
 }
 
 function initAmountFormatting() {
-    ['id_amount', 'id_exchange_rate'].forEach(function(id) {
+    ['id_amount', 'id_exchange_rate', 'id_target_amount'].forEach(function(id) {
         const input = document.getElementById(id);
         if (!input) return;
 
