@@ -417,7 +417,8 @@ class WhatsNewView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["whats_new"] = WHATS_NEW
+        context["stable"] = [r for r in WHATS_NEW if not r["version"].startswith("0.")]
+        context["prelaunch"] = [r for r in WHATS_NEW if r["version"].startswith("0.")]
         context["app_version"] = APP_VERSION
         return context
 
