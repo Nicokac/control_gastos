@@ -20,7 +20,22 @@ function initTransactionForm(formId) {
 }
 
 function formatAmountAR(raw) {
-    const normalized = String(raw).trim().replace(/\./g, '').replace(',', '.');
+    const s = String(raw).trim();
+    let normalized;
+    if (s.includes('.') && s.includes(',')) {
+        // "1.234,50" → punto es miles, coma es decimal
+        normalized = s.replace(/\./g, '').replace(',', '.');
+    } else if (s.includes('.') && !s.includes(',')) {
+        const parts = s.split('.');
+        // Si el último segmento tiene 1-2 dígitos → punto decimal (ej: "1234.50")
+        // Si tiene 3 dígitos → punto de miles (ej: "1.234")
+        normalized = parts[parts.length - 1].length <= 2 ? s : s.replace(/\./g, '');
+    } else if (s.includes(',')) {
+        // "1234,50" → coma es decimal
+        normalized = s.replace(',', '.');
+    } else {
+        normalized = s;
+    }
     const num = parseFloat(normalized);
     if (isNaN(num)) return raw;
     return num.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });

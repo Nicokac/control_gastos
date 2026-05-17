@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Agregar Movimiento - Control de Gastos{% endblock %}
 
@@ -110,4 +111,9 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/transaction_form.js' %}"></script>
+<script>initAmountFormatting();</script>
 {% endblock %}
