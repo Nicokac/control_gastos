@@ -5,6 +5,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.1.1] — 2026-05-17
+
+### Fixed
+
+- **Categorías**: el botón flotante de nuevo gasto ya no aparece en la pantalla de categorías.
+- **Categorías**: cada grupo muestra el contador de subcategorías `(N)` en el encabezado.
+
+---
+
 ## [1.1.0] — 2026-05-17
 
 ### Added

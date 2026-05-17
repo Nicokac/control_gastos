@@ -161,9 +161,18 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "1.1.0"
+APP_VERSION = "1.1.1"
 
 WHATS_NEW = [
+    {
+        "version": "1.1.1",
+        "date": "Mayo 2026",
+        "title": "Mejoras en Categorías",
+        "items": [
+            "Categorías: el botón de nuevo gasto rápido ya no aparece en la pantalla de categorías para evitar confusión",
+            "Categorías: cada grupo ahora muestra la cantidad de subcategorías entre paréntesis",
+        ],
+    },
     {
         "version": "1.1.0",
         "date": "Mayo 2026",
