@@ -161,9 +161,19 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.1.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.1.0",
+        "date": "Mayo 2026",
+        "title": "Mejoras de usabilidad y correcciones",
+        "items": [
+            "Montos: los campos de monto ahora muestran coma decimal y punto de miles al estilo argentino (ej: 1.234,50) en todos los formularios",
+            "Novedades: el historial de versiones anteriores a v1.0 se agrupa en un desplegable para no sobrecargar la pantalla",
+            "General: cerrar sesión desde un link directo redirige al login en lugar de mostrar un error 403",
+        ],
+    },
     {
         "version": "1.0.0",
         "date": "Mayo 2026",

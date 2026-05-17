@@ -5,6 +5,20 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.1.0] — 2026-05-17
+
+### Added
+
+- **Novedades**: historial pre-lanzamiento agrupado en desplegable colapsable para no sobrecargar la pantalla.
+
+### Fixed
+
+- **Montos**: todos los campos de monto ahora usan formato argentino (coma decimal, punto de miles) — `1.234,50` — en Gastos, Ingresos y Ahorro. El placeholder mostraba `0.00` con punto, ahora muestra `0,00`.
+- **Auth**: GET directo a `/users/logout/` redirigía con 403 en Django 5.x — ahora redirige al login.
+- **Templates**: `{% endblock content %}` incorrecto en `privacy.html` causaba 500 en producción para usuarios no autenticados.
+
+---
+
 ## [1.0.0] — 2026-05-13
 
 ### Added
