@@ -39,6 +39,7 @@
     {% endif %}
 
     <!-- FAB Button - Nuevo Gasto (QW-2.1) -->
+    {% block fab %}
     {% if user.is_authenticated %}
     <a href="{% url 'expenses:create' %}"
         id="tour-fab"
@@ -50,6 +51,7 @@
             <i class="bi bi-plus-lg fs-4" aria-hidden="true"></i>
     </a>
     {% endif %}
+    {% endblock fab %}
 
     <!-- Toast Container (QW-3.3) -->
     <div class="toast-container position-fixed bottom-0 end-0 p-3 toast-container-fixed">

@@ -42,6 +42,7 @@
                                 <i class="bi bi-chevron-down category-chevron text-muted" style="font-size:0.75rem; transition: transform 0.2s;"></i>
                                 <i class="{{ entry.group.icon|default:'bi-folder' }} text-muted small"></i>
                                 <span class="fw-semibold small text-uppercase text-muted">{{ entry.group.name }}</span>
+                                <span class="text-muted small fw-normal">({{ entry.subcategories|length }})</span>
                                 {% if entry.group.is_system %}
                                 <span class="badge bg-secondary" style="font-size:0.65rem">Sistema</span>
                                 {% endif %}
@@ -111,6 +112,7 @@
                                 <i class="bi bi-chevron-down category-chevron text-muted" style="font-size:0.75rem; transition: transform 0.2s;"></i>
                                 <i class="{{ entry.group.icon|default:'bi-folder' }} text-muted small"></i>
                                 <span class="fw-semibold small text-uppercase text-muted">{{ entry.group.name }}</span>
+                                <span class="text-muted small fw-normal">({{ entry.subcategories|length }})</span>
                                 {% if entry.group.is_system %}
                                 <span class="badge bg-secondary" style="font-size:0.65rem">Sistema</span>
                                 {% endif %}
@@ -158,3 +160,5 @@
     </div>
 </div>
 {% endblock %}
+
+{% block fab %}{% endblock %}
