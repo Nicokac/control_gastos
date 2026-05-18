@@ -38,11 +38,6 @@ class CategoryForm(forms.ModelForm):
         }
 
     def __init__(self, *args, user=None, **kwargs):
-        """
-        Inicializa el formulario con el usuario.
-        Args:
-            user: Usuario que crea la categoría
-        """
         self.user = user
         super().__init__(*args, **kwargs)
         self.fields["icon"].choices = [("", "Sin ícono")] + CATEGORY_ICON_CHOICES
@@ -51,6 +46,9 @@ class CategoryForm(forms.ModelForm):
         self.fields["parent"].empty_label = "-- Sin grupo (crear grupo nuevo) --"
         if user:
             self.fields["parent"].queryset = Category.get_groups(user)
+            # Asignar user a la instancia para que model.clean() no falle en _post_clean
+            if self.instance.pk is None:
+                self.instance.user = user
         # Pre-cargar color desde instancia (ChoiceField no se vincula automáticamente)
         if self.instance.pk and self.instance.color:
             self.fields["color"].initial = self.instance.color
@@ -78,7 +76,7 @@ class CategoryForm(forms.ModelForm):
         if isinstance(name, str):
             name = name.strip()
 
-        category_type = self.cleaned_data.get("type") or self.instance.type
+        category_type = self.cleaned_data.get("type") or self.data.get("type") or self.instance.type
         if not name:
             return name
 

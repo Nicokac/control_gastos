@@ -197,6 +197,36 @@ class TestCategoryFormDuplicates:
 
         assert form.is_valid(), form.errors
 
+    def test_duplicate_user_categories_invalid(self, user, expense_category):
+        """Verifica que dos categorías de usuario con el mismo nombre y tipo sean inválidas."""
+        form = CategoryForm(
+            data={
+                "name": expense_category.name,
+                "type": CategoryType.EXPENSE,
+                "icon": "bi-tag",
+                "color": "#6c757d",
+            },
+            user=user,
+        )
+
+        assert not form.is_valid()
+        assert "name" in form.errors
+
+    def test_duplicate_system_category_name_invalid(self, user, system_expense_category):
+        """Verifica que una categoría de usuario no pueda tener el mismo nombre que una del sistema."""
+        form = CategoryForm(
+            data={
+                "name": system_expense_category.name,
+                "type": CategoryType.EXPENSE,
+                "icon": "bi-tag",
+                "color": "#6c757d",
+            },
+            user=user,
+        )
+
+        assert not form.is_valid()
+        assert "name" in form.errors
+
 
 @pytest.mark.django_db
 class TestCategoryFormCleanedData:

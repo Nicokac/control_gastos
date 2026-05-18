@@ -477,9 +477,37 @@ Los gastos fijos/recurrentes tienen su propio módulo (`apps/recurring`) con CRU
 
 ---
 
+### DT-016 — Nombres duplicados entre categorías Sistema y usuario
+
+**Estado:** ⏳ Pendiente
+
+Un usuario puede crear un grupo con el mismo nombre que uno de Sistema (ej: dos grupos "ALIMENTACIÓN"). La app no valida esto y genera confusión al registrar gastos. Requiere validación en el form/modelo que detecte duplicados entre categorías del usuario y las de Sistema. No es trivial porque son entidades separadas (una tiene `user=None`, la otra tiene `user=request.user`).
+
+### DT-017 — Búsqueda y filtro en Categorías
+
+**Estado:** ⏳ Pendiente
+
+Con listas largas de subcategorías no hay forma de buscar una categoría específica. Manejable con el volumen actual pero se vuelve un problema real a medida que el usuario agrega categorías. Implementación esperada: campo de búsqueda que filtre grupos y subcategorías por nombre en tiempo real (JS del lado del cliente, sin request al servidor).
+
+### DT-018 — Layout de dos columnas en Categorías con scroll asimétrico
+
+**Estado:** ⏳ Pendiente
+
+La columna de Gastos suele ser más larga que la de Ingresos. El layout side-by-side hace que al scrollear, la columna de Ingresos quede huérfana arriba. En móvil/pantallas cortas esto desorienta. Opciones: layout de una sola columna con secciones separadas, o scroll independiente por columna. Requiere rediseño del layout.
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.
+
+### DTD-002 — Consistencia visual de categorías Sistema
+
+**Estado:** 🚫 Descartado
+
+**Motivo:** El comportamiento es correcto y uniforme — cualquier grupo (Sistema o usuario) permite agregar subcategorías propias, y las subcategorías de Sistema no tienen editar/eliminar. La aparente inconsistencia reportada era confusión visual por el estado colapsado/expandido, no un bug real. No requiere cambios.
+
+---
 
 ### DTD-001 — Presupuestos por categoría
 
