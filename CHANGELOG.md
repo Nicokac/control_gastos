@@ -11,6 +11,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 - **Categorías**: el botón flotante de nuevo gasto ya no aparece en la pantalla de categorías.
 - **Categorías**: cada grupo muestra el contador de subcategorías `(N)` en el encabezado.
+- **Categorías**: "Agregar subcategoría" ya no aparece en grupos de Sistema — esos grupos no son editables por el usuario.
+- **Categorías**: la validación de nombres duplicados ahora detecta correctamente conflictos con categorías de Sistema y entre categorías del propio usuario. Había un bug silencioso donde `category_type` se resolvía antes de que el campo `type` fuera validado, dejando la query con tipo vacío.
 
 ---
 
