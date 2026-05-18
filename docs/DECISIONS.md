@@ -479,9 +479,9 @@ Los gastos fijos/recurrentes tienen su propio módulo (`apps/recurring`) con CRU
 
 ### DT-016 — Nombres duplicados entre categorías Sistema y usuario
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.1.1)
 
-Un usuario puede crear un grupo con el mismo nombre que uno de Sistema (ej: dos grupos "ALIMENTACIÓN"). La app no valida esto y genera confusión al registrar gastos. Requiere validación en el form/modelo que detecte duplicados entre categorías del usuario y las de Sistema. No es trivial porque son entidades separadas (una tiene `user=None`, la otra tiene `user=request.user`).
+`CategoryForm.clean_name()` ya validaba duplicados del usuario pero no contra categorías de Sistema. Se corrigieron dos bugs relacionados: (1) `category_type` se resolvía antes de que el campo `type` pasara por `cleaned_data`, dejando la query con tipo vacío; (2) `model.clean()` lanzaba `ValidationError({"user": ...})` pero el form no tiene ese campo, causando `ValueError` en `_post_clean`. Ambos corregidos en `forms.py`. Cobertura agregada en `TestCategoryFormDuplicates`.
 
 ### DT-017 — Búsqueda y filtro en Categorías
 
@@ -506,6 +506,14 @@ La columna de Gastos suele ser más larga que la de Ingresos. El layout side-by-
 **Estado:** 🚫 Descartado
 
 **Motivo:** El comportamiento es correcto y uniforme — cualquier grupo (Sistema o usuario) permite agregar subcategorías propias, y las subcategorías de Sistema no tienen editar/eliminar. La aparente inconsistencia reportada era confusión visual por el estado colapsado/expandido, no un bug real. No requiere cambios.
+
+---
+
+### DTD-003 — Estado expandido de grupos en Categorías
+
+**Estado:** 🚫 Descartado
+
+**Motivo:** El comportamiento actual es correcto: todos los grupos arrancan expandidos en la primera visita y el estado se persiste en `localStorage` por ID de grupo (`category_collapsed_groups`). Si un grupo aparece expandido es porque el usuario nunca lo cerró, no porque haya una lógica inconsistente. Cambiar el default a "colapsado" perjudicaría la primera experiencia obligando al usuario a expandir todo. No requiere cambios.
 
 ---
 
