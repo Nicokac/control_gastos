@@ -73,11 +73,13 @@
                                 {% endif %}
                             </li>
                             {% endfor %}
+                            {% if not entry.group.is_system %}
                             <li class="list-group-item ps-4 py-2">
                                 <a href="{% url 'categories:create' %}?parent={{ entry.group.pk }}" class="text-decoration-none small text-primary">
                                     <i class="bi bi-plus-circle me-1"></i>Agregar subcategoría
                                 </a>
                             </li>
+                            {% endif %}
                         </ul>
                     </div>
                 </div>
@@ -143,11 +145,13 @@
                                 {% endif %}
                             </li>
                             {% endfor %}
+                            {% if not entry.group.is_system %}
                             <li class="list-group-item ps-4 py-2">
                                 <a href="{% url 'categories:create' %}?parent={{ entry.group.pk }}" class="text-decoration-none small text-success">
                                     <i class="bi bi-plus-circle me-1"></i>Agregar subcategoría
                                 </a>
                             </li>
+                            {% endif %}
                         </ul>
                     </div>
                 </div>
