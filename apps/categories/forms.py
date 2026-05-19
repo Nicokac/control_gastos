@@ -13,6 +13,20 @@ from apps.core.constants import (
 from .models import Category
 
 
+class CategoryTypeSelect(forms.Select):
+    """Select que agrega data-type a cada <option> de grupo padre."""
+
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
+        option = super().create_option(name, value, label, selected, index, subindex, attrs)
+        if value:
+            try:
+                cat = Category.objects.get(pk=int(value))
+                option["attrs"]["data-type"] = cat.type
+            except (Category.DoesNotExist, ValueError, TypeError):
+                pass
+        return option
+
+
 class CategoryForm(forms.ModelForm):
     """Formulario para crear/editar categorías de usuario."""
 
@@ -31,7 +45,7 @@ class CategoryForm(forms.ModelForm):
                 attrs={"class": "form-control", "placeholder": "Nombre de la categoría"}
             ),
             "type": forms.Select(attrs={"class": "form-select"}),
-            "parent": forms.Select(attrs={"class": "form-select"}),
+            "parent": CategoryTypeSelect(attrs={"class": "form-select"}),
             "icon": forms.RadioSelect(
                 attrs={"class": "icon-radio"},
             ),
