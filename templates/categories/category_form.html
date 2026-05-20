@@ -156,7 +156,7 @@
 
 {% block extra_js %}
 <script>
-(function () {
+document.addEventListener('DOMContentLoaded', function () {
     const typeSelect = document.getElementById('id_type');
     const parentSelect = document.getElementById('id_parent');
     if (!typeSelect || !parentSelect) return;
@@ -183,6 +183,6 @@
 
     typeSelect.addEventListener('change', filterParentOptions);
     if (typeSelect.value) filterParentOptions();
-})();
+});
 </script>
 {% endblock %}
