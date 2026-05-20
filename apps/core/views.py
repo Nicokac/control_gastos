@@ -161,9 +161,19 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "1.1.1"
+APP_VERSION = "1.2.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.2.0",
+        "date": "Mayo 2026",
+        "title": "Formulario de categorías más inteligente",
+        "items": [
+            "Categorías: al elegir Gasto o Ingreso en el formulario, el selector de grupo padre filtra automáticamente y muestra solo los grupos del mismo tipo",
+            "Categorías: ya no es posible crear una categoría con el mismo nombre que una categoría del sistema",
+            "Categorías: los grupos del sistema ya no muestran la opción de agregar subcategorías, eliminando una inconsistencia visual",
+        ],
+    },
     {
         "version": "1.1.1",
         "date": "Mayo 2026",

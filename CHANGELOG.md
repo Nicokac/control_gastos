@@ -5,6 +5,19 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.2.0] — 2026-05-18
+
+### Added
+
+- **Categorías**: el selector de grupo padre filtra automáticamente al elegir el tipo — al seleccionar Gasto solo aparecen grupos de gasto, al seleccionar Ingreso solo grupos de ingreso. Implementado via `CategoryTypeSelect` (widget con `data-type` en cada `<option>`) y `category_form.js` (archivo externo para cumplir con CSP).
+
+### Fixed
+
+- **Categorías**: "Agregar subcategoría" ya no aparece en grupos de Sistema.
+- **Categorías**: la validación de nombres duplicados detecta correctamente conflictos con categorías de Sistema y entre categorías del propio usuario.
+
+---
+
 ## [1.1.1] — 2026-05-17
 
 ### Fixed
