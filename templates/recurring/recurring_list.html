@@ -83,7 +83,7 @@
                     <td class="text-end text-nowrap">
                         {% if item.last_expense %}
                             <strong>{{ item.last_expense.formatted_amount }}</strong>
-                            <br><small class="text-muted">{{ item.last_expense.date|date:"d M Y" }}</small>
+                            <br><small class="text-muted">{{ item.last_expense.date|date:"d/m/Y" }}</small>
                         {% else %}
                             <small class="text-muted">Sin pagos</small>
                         {% endif %}

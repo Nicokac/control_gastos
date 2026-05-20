@@ -6,6 +6,7 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
+from apps.core.utils import get_month_name
 from apps.core.views import UserFormKwargsMixin
 
 from .forms import RecurringExpenseForm
@@ -41,7 +42,7 @@ class RecurringExpenseListView(LoginRequiredMixin, ListView):
             )
 
         context["items"] = items
-        context["current_month"] = today.strftime("%B %Y")
+        context["current_month"] = f"{get_month_name(today.month)} {today.year}"
         context["total_active"] = sum(1 for i in items if i["rec"].is_active)
         context["total_paid"] = sum(
             1 for i in items if i["rec"].is_active and i["status"] == "paid"

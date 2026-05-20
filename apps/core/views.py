@@ -199,7 +199,7 @@ WHATS_NEW = [
         "title": "Lanzamiento v1.0",
         "items": [
             "Primera versión estable de Control de Gastos",
-            "Incluye dashboard, gastos, ingresos, ahorro, categorías, gastos fijos, tour interactivo y verificación de email",
+            "Incluye dashboard, gastos, ingresos, ahorro, categorías, gastos fijos,  y verificación de email",
         ],
     },
     {

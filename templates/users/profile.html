@@ -99,10 +99,10 @@
                                 <dd>{{ user.username }}</dd>
 
                                 <dt class="text-muted small">Miembro desde</dt>
-                                <dd>{{ user.date_joined|localtime|date:"d M Y" }}</dd>
+                                <dd>{{ user.date_joined|localtime|date:"d/m/Y" }}</dd>
 
                                 <dt class="text-muted small">Último acceso</dt>
-                                <dd>{{ user.last_login|localtime|date:"d M Y, H:i"|default:"Nunca" }}</dd>
+                                <dd>{{ user.last_login|localtime|date:"d/m/Y, H:i"|default:"Nunca" }}</dd>
 
                                 <dt class="text-muted small">Versión de la app</dt>
                                 <dd>
