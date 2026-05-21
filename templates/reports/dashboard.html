@@ -118,7 +118,7 @@
                             <small class="{% if expense_percentage < 50 %}text-success{% elif expense_percentage < 80 %}text-warning{% else %}text-danger{% endif %} fw-semibold">
                                 Gastaste el {{ pct }}% de tus ingresos este mes
                             </small>
-                            <small class="text-muted">Te quedan {{ balance|currency }} disponibles</small>
+                            <small class="text-muted">Día {{ today.day }} de {{ today|date:"t" }} · Te quedan {{ balance|currency }}</small>
                         </div>
                         {% endwith %}
                         {% else %}
@@ -135,7 +135,8 @@
 <div class="row g-4 mb-4">
     <!-- Gastos -->
     <div class="col-md-6">
-        <div class="card border-danger h-100">
+        <a href="{% url 'expenses:list' %}?month={{ current_month }}&year={{ current_year }}" class="text-decoration-none">
+        <div class="card border-danger h-100 card-hover">
             <div class="card-body" style="padding: 1.25rem 1.5rem;">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
@@ -165,11 +166,13 @@
                 </div>
             </div>
         </div>
+        </a>
     </div>
 
     <!-- Ingresos -->
     <div class="col-md-6">
-        <div class="card border-success h-100">
+        <a href="{% url 'income:list' %}?month={{ current_month }}&year={{ current_year }}" class="text-decoration-none">
+        <div class="card border-success h-100 card-hover">
             <div class="card-body" style="padding: 1.25rem 1.5rem;">
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
@@ -197,6 +200,7 @@
                 </div>
             </div>
         </div>
+        </a>
     </div>
 </div>
 
