@@ -199,10 +199,17 @@
                 <tr>
                     <td colspan="5" class="text-center py-5">
                         <i class="bi bi-inbox display-4 text-muted"></i>
+                        {% if has_active_filters %}
+                        <p class="text-muted mt-2 mb-0">No hay gastos que coincidan con los filtros aplicados.</p>
+                        <a href="{% url 'expenses:list' %}?month={{ filter_form.month.value }}&year={{ filter_form.year.value }}" class="btn btn-outline-secondary btn-sm mt-3">
+                            <i class="bi bi-x-lg me-1"></i>Limpiar filtros
+                        </a>
+                        {% else %}
                         <p class="text-muted mt-2 mb-0">No hay gastos registrados.</p>
                         <a href="{% url 'expenses:create' %}" class="btn btn-danger btn-sm mt-3">
                             <i class="bi bi-plus-lg me-1"></i>Registrar primer gasto
                         </a>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}

@@ -583,9 +583,9 @@ No hay opción de duplicar un gasto para reutilizar sus datos en un nuevo regist
 
 ### DT-031 — Gastos: estado vacío no distingue filtros activos vs. mes sin datos
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.2.2)
 
-Cuando un filtro no devuelve resultados, el estado vacío muestra el mismo mensaje que cuando el mes genuinamente no tiene gastos ("No hay gastos registrados. + Registrar primer gasto"). El usuario puede creer que no hay datos cuando en realidad el filtro no coincide. Implementación esperada: detectar si hay filtros activos y mostrar "No hay gastos que coincidan con los filtros. Limpiar filtros" en ese caso.
+Se agrega `has_active_filters` al contexto (detecta q, category, subcategory, payment_method, expense_type). El template muestra "No hay gastos que coincidan con los filtros aplicados." con botón "Limpiar filtros" cuando hay filtros activos, y el mensaje original con "Registrar primer gasto" cuando el mes genuinamente no tiene datos.
 
 ### DT-032 — Gastos: búsqueda de texto no opera sobre nombre de categoría
 

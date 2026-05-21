@@ -122,6 +122,10 @@ class ExpenseListView(UserOwnedListView):
             form_data = {"month": today.month, "year": today.year}
 
         context["filter_form"] = ExpenseFilterForm(form_data, user=self.request.user)
+        context["has_active_filters"] = any(
+            self.request.GET.get(key)
+            for key in ["q", "category", "subcategory", "payment_method", "expense_type"]
+        )
 
         qs = self.object_list
 
