@@ -174,6 +174,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             "expense_percentage": expense_percentage,
             "expense_variation": expense_variation,
             "income_variation": income_variation,
+            "prev_income_total": prev_income_total,
             "prev_month_name": get_month_name(prev_month),
         }
 

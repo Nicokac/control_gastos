@@ -509,6 +509,128 @@ Al cambiar la moneda a USD en los formularios de Gasto e Ingreso, el campo "Coti
 
 ---
 
+## D-016 — Enhancements relevados por QA — Dashboard
+
+### DT-021 — Dashboard: selector de período (mes/año)
+
+**Estado:** ⏳ Pendiente
+
+El dashboard está fijo al mes actual. No hay selector de mes/año ni soporte de parámetros `?month=X&year=Y`. Para revisar un mes anterior el usuario debe ir a `/expenses/` o `/income/` y filtrar manualmente, perdiendo la vista integrada del dashboard. Implementación esperada: selector de mes/año en el header del dashboard que parametrice todas las queries del servidor, usando el mismo patrón de query string que ya implementa `/expenses/`.
+
+### DT-022 — Dashboard: cards de Gastos e Ingresos no navegan al detalle
+
+**Estado:** ⏳ Pendiente
+
+Hacer clic en el monto de los cards de Gastos o Ingresos no hace nada. El usuario que quiere ver el detalle tiene que navegar manualmente al menú lateral. Implementación esperada: agregar `href` a cada card apuntando a `/expenses/?month=X&year=Y` e `/income/?month=X&year=Y` según corresponda.
+
+### DT-023 — Dashboard: ranking de categorías sin drill-down
+
+**Estado:** ⏳ Pendiente
+
+Al hacer clic en un ítem del ranking de categorías, el chevron expande las subcategorías pero no hay forma de ver los gastos de esa categoría en ese mes. Implementación esperada: cada ítem del ranking linkea a `/expenses/?month=X&year=Y&category=Z`.
+
+### DT-024 — Dashboard: card de Ingresos sin variación vs. mes anterior
+
+**Estado:** ✅ Resuelto (v1.2.2)
+
+El card de Gastos muestra variación porcentual vs. el mes anterior. El card de Ingresos mostraba texto estático "Ingresos estables" sin comparativa cuantitativa. La lógica de variación ya estaba implementada para Gastos. Se aplicó la misma lógica al card de Ingresos: muestra badge verde/rojo con porcentaje, "Sin variación vs [mes]" si es exactamente 0%, o nada si no hay datos del mes anterior.
+
+### DT-025 — Dashboard: ausencia de widget de ahorro y metas
+
+**Estado:** ⏳ Pendiente
+
+La sección `/savings/` tiene datos de progreso de metas (objetivo, ahorrado, restante, % global) que no aparecen en el dashboard. Implementación esperada: widget de resumen de metas activas con ahorrado / objetivo / % progreso, usando datos ya disponibles.
+
+### DT-026 — Dashboard: gráfico de evolución mensual no configurable
+
+**Estado:** ⏳ Pendiente
+
+El gráfico muestra siempre los meses del año en curso sin posibilidad de cambiar el rango o ver años anteriores. Los puntos del gráfico no son clickeables para navegar al mes correspondiente. Implementación esperada: controles de rango de tiempo y puntos del gráfico como links al dashboard de ese mes.
+
+### DT-027 — Dashboard: ausencia de widget de gastos fijos pendientes
+
+**Estado:** ⏳ Pendiente
+
+Si el usuario tiene gastos fijos configurados en `/recurring/`, el dashboard no los menciona. No hay alerta de pagos pendientes del mes en curso. Implementación esperada: mini-widget con los gastos fijos no pagados del mes, con link a `/recurring/`.
+
+### DT-028 — Dashboard: barra de progreso sin contexto temporal
+
+**Estado:** ⏳ Pendiente
+
+La barra de balance muestra "Gastaste el X% de tus ingresos" sin indicar en qué día del mes estamos. Gastar el 96% al día 21 de 31 tiene implicancias distintas que al día 5. Implementación esperada: agregar texto contextual como "Día 21 de 31" o ritmo de gasto diario estimado.
+
+---
+
+## D-017 — Enhancements relevados por QA — Gastos
+
+### DT-029 — Gastos: búsqueda dentro del picker de categorías
+
+**Estado:** ⏳ Pendiente
+
+El picker de categoría en el formulario de Gasto es un grid visual con 40+ ítems. No hay campo de búsqueda ni filtro. Implementación esperada: input de filtro encima del grid que oculte en tiempo real las categorías que no coinciden con el texto (JS del lado del cliente, sin request al servidor). Aplicar también a Ingresos.
+
+### DT-030 — Gastos: duplicar un gasto existente
+
+**Estado:** ⏳ Pendiente
+
+No hay opción de duplicar un gasto para reutilizar sus datos en un nuevo registro. El usuario repite manualmente campos frecuentes (alquiler, servicios, cargas). Implementación esperada: botón "Duplicar" en la lista o detalle que abra el formulario pre-completado con los datos del gasto seleccionado.
+
+### DT-031 — Gastos: estado vacío no distingue filtros activos vs. mes sin datos
+
+**Estado:** ⏳ Pendiente
+
+Cuando un filtro no devuelve resultados, el estado vacío muestra el mismo mensaje que cuando el mes genuinamente no tiene gastos ("No hay gastos registrados. + Registrar primer gasto"). El usuario puede creer que no hay datos cuando en realidad el filtro no coincide. Implementación esperada: detectar si hay filtros activos y mostrar "No hay gastos que coincidan con los filtros. Limpiar filtros" en ese caso.
+
+### DT-032 — Gastos: búsqueda de texto no opera sobre nombre de categoría
+
+**Estado:** ⏳ Pendiente
+
+El campo de búsqueda filtra solo por descripción. No es posible buscar por nombre de categoría. Implementación esperada: extender la query para que también compare contra el nombre de la subcategoría asignada.
+
+### DT-033 — Gastos: campos "Método de pago" y "Tipo" ocultos bajo "Opciones avanzadas"
+
+**Estado:** ⏳ Pendiente
+
+Los campos de método de pago y tipo de gasto están colapsados, lo que desincentiva su uso. La mayoría de los gastos existentes los tienen vacíos, haciendo que el panel "Ver resumen — Por método de pago" no tenga valor real. Implementación esperada: mostrar los campos directamente en el formulario o al menos con un valor por defecto pre-seleccionado.
+
+### DT-034 — Gastos: eliminación requiere navegar a página separada
+
+**Estado:** ⏳ Pendiente
+
+El botón de eliminar navega a una página de confirmación separada (`/expenses/:id/delete/`), lo que saca al usuario de la lista y requiere volver. Implementación esperada: modal de confirmación inline que ejecute la eliminación sin salir de la lista. Aplicar también a Ingresos.
+
+### DT-035 — Gastos: ordenamiento por columnas
+
+**Estado:** ⏳ Pendiente
+
+Los headers de la lista (Fecha, Categoría, Descripción, Monto) no son clickeables. No hay forma de ordenar por monto o categoría. Implementación esperada: parámetro `?order_by=amount&dir=desc` con indicador visual del header activo.
+
+### DT-036 — Gastos: paginación sin salto directo a página
+
+**Estado:** ⏳ Pendiente
+
+La paginación solo permite avanzar una página a la vez. No hay botones para ir a la primera/última página ni input de número de página. Baja urgencia dado que el filtro de mes ya acota los resultados.
+
+### DT-037 — Gastos: panel "Ver resumen" sin desglose por categoría individual
+
+**Estado:** ⏳ Pendiente
+
+El panel de resumen muestra desglose por tipo de gasto y método de pago, pero no por categoría individual. El desglose por categoría es la consulta más frecuente. Implementación esperada: top N de categorías con sus totales en el panel de resumen.
+
+### DT-038 — Gastos: filtro por rango de monto
+
+**Estado:** ⏳ Pendiente
+
+No hay forma de filtrar gastos por monto mínimo o máximo. Útil para auditar gastos atípicos. Implementación esperada: campos "Monto mínimo / Monto máximo" en el panel de "Más filtros".
+
+### DT-039 — Gastos/Ingresos: paridad de funcionalidad entre secciones
+
+**Estado:** ⏳ Pendiente
+
+Gastos tiene filtro por grupo, más filtros (método de pago, tipo), panel "Ver resumen" y paginación. Ingresos carece de todos estos. Implementación esperada: portar los mismos filtros y panel de resumen de Gastos a Ingresos una vez que las mejoras de Gastos estén estables.
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.

@@ -181,19 +181,18 @@
                     </div>
                 </div>
                 <div class="mt-2">
-                    {% if income_variation != 0 %}
                     {% if income_variation > 0 %}
                     <span class="badge bg-success">
                         <i class="bi bi-arrow-up"></i> +{{ income_variation }}%
                     </span>
-                    {% else %}
+                    <small class="text-muted ms-1">vs {{ prev_month_name }}</small>
+                    {% elif income_variation < 0 %}
                     <span class="badge bg-danger">
                         <i class="bi bi-arrow-down"></i> {{ income_variation }}%
                     </span>
-                    {% endif %}
                     <small class="text-muted ms-1">vs {{ prev_month_name }}</small>
-                    {% else %}
-                    <small class="text-muted">Ingresos estables</small>
+                    {% elif prev_income_total > 0 %}
+                    <small class="text-muted">Sin variación vs {{ prev_month_name }}</small>
                     {% endif %}
                 </div>
             </div>
