@@ -525,9 +525,9 @@ Cards envueltos en `<a>` apuntando a `/expenses/?month=X&year=Y` e `/income/?mon
 
 ### DT-023 — Dashboard: ranking de categorías sin drill-down
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.2.2)
 
-Al hacer clic en un ítem del ranking de categorías, el chevron expande las subcategorías pero no hay forma de ver los gastos de esa categoría en ese mes. Implementación esperada: cada ítem del ranking linkea a `/expenses/?month=X&year=Y&category=Z`.
+Se agrega `pk` al dict de grupos y subcategorías en `_get_expense_distribution`. El nombre del grupo linkea a `/expenses/?month=X&year=Y&category=<pk>` y cada subcategoría a `/expenses/?month=X&year=Y&subcategory=<pk>`.
 
 ### DT-024 — Dashboard: card de Ingresos sin variación vs. mes anterior
 

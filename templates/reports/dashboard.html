@@ -316,7 +316,8 @@
                                 <div class="d-flex align-items-center gap-2">
                                     <span class="rounded-circle flex-shrink-0"
                                           style="width:10px;height:10px;background:{{ item.color }};display:inline-block;"></span>
-                                    <span class="small fw-semibold">{{ item.name }}</span>
+                                    <a href="{% url 'expenses:list' %}?month={{ current_month }}&year={{ current_year }}&category={{ item.pk }}"
+                                       class="small fw-semibold text-decoration-none text-dark">{{ item.name }}</a>
                                     {% if item.subcategories %}
                                     <i class="bi bi-chevron-down text-muted small ranking-chevron"></i>
                                     {% endif %}
@@ -331,10 +332,11 @@
                                 <ul class="list-unstyled mt-1 mb-0 ps-3">
                                     {% for sub in item.subcategories %}
                                     <li class="d-flex justify-content-between py-1 border-top">
-                                        <span class="small text-muted">
+                                        <a href="{% url 'expenses:list' %}?month={{ current_month }}&year={{ current_year }}&subcategory={{ sub.pk }}"
+                                           class="small text-muted text-decoration-none">
                                             {% if sub.icon %}<i class="{{ sub.icon }} me-1"></i>{% endif %}
                                             {{ sub.name }}
-                                        </span>
+                                        </a>
                                         <span class="small text-muted">{{ sub.total|currency }}</span>
                                     </li>
                                     {% endfor %}

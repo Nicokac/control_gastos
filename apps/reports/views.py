@@ -395,8 +395,10 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             Expense.objects.filter(user=user, date__gte=start_date, date__lt=end_date)
             .select_related("category__parent")
             .values(
+                "category__parent__id",
                 "category__parent__name",
                 "category__parent__color",
+                "category__id",
                 "category__name",
                 "category__color",
                 "category__icon",
@@ -412,10 +414,12 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 item["category__parent__name"] or item["category__name"] or "Sin clasificar"
             )
             group_color = item["category__parent__color"] or item["category__color"] or "#6c757d"
+            group_pk = item["category__parent__id"] or item["category__id"]
             if group_name not in groups:
                 groups[group_name] = {
                     "name": group_name,
                     "color": group_color,
+                    "pk": group_pk,
                     "total": Decimal("0"),
                     "subcategories": [],
                 }
@@ -425,6 +429,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 groups[group_name]["subcategories"].append(
                     {
                         "name": item["category__name"],
+                        "pk": item["category__id"],
                         "icon": item["category__icon"] or "",
                         "total": item["total"],
                     }
