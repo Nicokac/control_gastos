@@ -429,38 +429,53 @@
 <div class="row g-4 pb-5">
     <div class="col-12">
         <div class="card">
-            <div class="card-header">
-                <i class="bi bi-clock-history me-2"></i>Últimas 5 Transacciones
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-clock-history me-2"></i>Últimas 5 Transacciones</span>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'expenses:list' %}?month={{ current_month }}&year={{ current_year }}" class="btn btn-outline-danger btn-sm py-0 px-2">
+                        <i class="bi bi-arrow-up-circle me-1"></i>Ver gastos
+                    </a>
+                    <a href="{% url 'income:list' %}?month={{ current_month }}&year={{ current_year }}" class="btn btn-outline-success btn-sm py-0 px-2">
+                        <i class="bi bi-arrow-down-circle me-1"></i>Ver ingresos
+                    </a>
+                </div>
             </div>
             <div class="card-body p-0">
                 {% if recent_transactions %}
                 <ul class="list-group list-group-flush">
                     {% for tx in recent_transactions %}
                     <li class="list-group-item">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="d-flex align-items-center">
-                                <div class="me-2">
-                                    {% if tx.type == 'expense' %}
-                                    <i class="bi bi-arrow-up-circle text-danger"></i>
-                                    {% else %}
-                                    <i class="bi bi-arrow-down-circle text-success"></i>
-                                    {% endif %}
-                                </div>
-                                <div>
+                        <div class="d-flex justify-content-between align-items-center gap-2">
+                            <div class="d-flex align-items-center gap-2 flex-grow-1 min-width-0">
+                                {% if tx.type == 'expense' %}
+                                <i class="bi bi-arrow-up-circle text-danger flex-shrink-0"></i>
+                                {% else %}
+                                <i class="bi bi-arrow-down-circle text-success flex-shrink-0"></i>
+                                {% endif %}
+                                <div class="min-width-0">
                                     <a href="{% if tx.type == 'expense' %}{% url 'expenses:update' tx.pk %}{% else %}{% url 'income:update' tx.pk %}{% endif %}"
-                                       class="text-decoration-none text-dark">
-                                        {{ tx.description|truncatechars:25|default:"Sin descripción" }}
+                                       class="text-decoration-none text-dark fw-semibold d-block text-truncate">
+                                        {{ tx.description|default:"Sin descripción" }}
                                     </a>
-                                    <br>
                                     <small class="text-muted">
                                         {{ tx.date|date:"d/m/Y" }}
                                         {% if tx.category %}&nbsp;·&nbsp;<i class="{{ tx.category.icon|default:'bi-tag' }}"></i> {{ tx.category.name }}{% endif %}
                                     </small>
                                 </div>
                             </div>
-                            <span class="{% if tx.type == 'expense' %}text-danger{% else %}text-success{% endif %} fw-bold">
-                                {% if tx.type == 'expense' %}-{% endif %}{{ tx.amount|currency }}
-                            </span>
+                            <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                                <span class="{% if tx.type == 'expense' %}text-danger{% else %}text-success{% endif %} fw-bold">
+                                    {% if tx.type == 'expense' %}-{% endif %}{{ tx.amount|currency }}
+                                </span>
+                                <a href="{% if tx.type == 'expense' %}{% url 'expenses:update' tx.pk %}{% else %}{% url 'income:update' tx.pk %}{% endif %}"
+                                   class="btn btn-sm btn-outline-primary py-0 px-1" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% if tx.type == 'expense' %}{% url 'expenses:delete' tx.pk %}{% else %}{% url 'income:delete' tx.pk %}{% endif %}"
+                                   class="btn btn-sm btn-outline-danger py-0 px-1" title="Eliminar">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
                         </div>
                     </li>
                     {% endfor %}
@@ -491,6 +506,7 @@
     {{ evolution_expenses|json_script:"evolution-expenses-data" }}
     {{ evolution_savings|json_script:"evolution-savings-data" }}
     {{ evolution_balance|json_script:"evolution-balance-data" }}
+    {{ evolution_month_urls|json_script:"evolution-month-urls-data" }}
     <script src="{% static 'js/dashboard.js' %}"></script>
     {% if not request.user.has_seen_tour %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@11.2.0/dist/css/shepherd.css">

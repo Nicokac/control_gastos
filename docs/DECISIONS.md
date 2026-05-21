@@ -543,9 +543,9 @@ Card de Ahorro integrada en la fila de KPIs junto a Gastos e Ingresos (layout 3 
 
 ### DT-026 — Dashboard: gráfico de evolución mensual no configurable
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.4.2)
 
-El gráfico muestra siempre los meses del año en curso sin posibilidad de cambiar el rango o ver años anteriores. Los puntos del gráfico no son clickeables para navegar al mes correspondiente. Implementación esperada: controles de rango de tiempo y puntos del gráfico como links al dashboard de ese mes.
+Los puntos del gráfico de evolución son clickeables y navegan al dashboard de ese mes (`?month=M&year=Y`). El cursor cambia a pointer al hacer hover. El tooltip incluye el texto "Click para ver ese mes". El selector de año ya existía; el cambio de rango por meses (3/6/12) queda como mejora futura de baja prioridad.
 
 ### DT-027 — Dashboard: ausencia de widget de gastos fijos pendientes
 

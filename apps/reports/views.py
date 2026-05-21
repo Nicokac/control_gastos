@@ -395,12 +395,15 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             savings_data.append(sav)
             balance_data.append(round(inc - exp - sav, 2))
 
+        month_urls = [f"?month={m}&year={year}" for m in months]
+
         return {
             "evolution_labels": labels,
             "evolution_income": income_data,
             "evolution_expenses": expense_data,
             "evolution_savings": savings_data,
             "evolution_balance": balance_data,
+            "evolution_month_urls": month_urls,
         }
 
     def _get_expense_distribution(self, user, month, year):

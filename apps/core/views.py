@@ -161,9 +161,19 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "1.4.1"
+APP_VERSION = "1.4.2"
 
 WHATS_NEW = [
+    {
+        "version": "1.4.2",
+        "date": "Mayo 2026",
+        "title": "Dashboard: acciones en transacciones y gráfico navegable",
+        "items": [
+            "Dashboard: las últimas transacciones tienen botones de editar y eliminar directamente en la lista, sin salir del dashboard",
+            "Dashboard: el gráfico de evolución mensual es clickeable — hacé click en cualquier punto para ver el dashboard de ese mes",
+            "Dashboard: links directos a la lista de gastos e ingresos del período desde la sección de últimas transacciones",
+        ],
+    },
     {
         "version": "1.4.1",
         "date": "Mayo 2026",

@@ -5,6 +5,16 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.4.2] — 2026-05-21
+
+### Added
+
+- **Dashboard**: botones de editar y eliminar en cada fila de últimas transacciones, sin salir del dashboard.
+- **Dashboard**: links "Ver gastos" y "Ver ingresos" en el header de últimas transacciones, filtrados al período actual.
+- **Dashboard**: puntos del gráfico de evolución clickeables — navegan al dashboard de ese mes.
+
+---
+
 ## [1.4.1] — 2026-05-21
 
 ### Added

@@ -88,6 +88,7 @@ function initEvolutionChart() {
     const expensesNode = document.getElementById('evolution-expenses-data');
     const savingsNode  = document.getElementById('evolution-savings-data');
     const balanceNode  = document.getElementById('evolution-balance-data');
+    const urlsNode     = document.getElementById('evolution-month-urls-data');
 
     if (!labelsNode || !incomeNode || !expensesNode || !savingsNode || !balanceNode) return;
 
@@ -96,13 +97,14 @@ function initEvolutionChart() {
     const expenses = JSON.parse(expensesNode.textContent);
     const savings  = JSON.parse(savingsNode.textContent);
     const balance  = JSON.parse(balanceNode.textContent);
+    const monthUrls = urlsNode ? JSON.parse(urlsNode.textContent) : [];
 
     if (!labels.length) return;
 
     const formatARS = value =>
         '$ ' + value.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
-    new Chart(ctx, {
+    const chart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
@@ -114,8 +116,9 @@ function initEvolutionChart() {
                     backgroundColor: 'rgba(25, 135, 84, 0.08)',
                     fill: true,
                     tension: 0.4,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    pointStyle: 'circle',
                 },
                 {
                     label: 'Gastos',
@@ -124,8 +127,9 @@ function initEvolutionChart() {
                     backgroundColor: 'rgba(220, 53, 69, 0.08)',
                     fill: true,
                     tension: 0.4,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    pointStyle: 'circle',
                 },
                 {
                     label: 'Ahorro',
@@ -134,8 +138,9 @@ function initEvolutionChart() {
                     backgroundColor: 'rgba(13, 202, 240, 0.08)',
                     fill: true,
                     tension: 0.4,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    pointStyle: 'circle',
                 },
                 {
                     label: 'Balance',
@@ -144,8 +149,9 @@ function initEvolutionChart() {
                     backgroundColor: 'rgba(111, 66, 193, 0.0)',
                     fill: false,
                     tension: 0.4,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    pointStyle: 'circle',
                     borderDash: [5, 4],
                 },
             ],
@@ -161,6 +167,9 @@ function initEvolutionChart() {
                         label: function (context) {
                             return ` ${context.dataset.label}: ${formatARS(context.raw)}`;
                         },
+                        footer: function () {
+                            return monthUrls.length ? 'Click para ver ese mes' : '';
+                        },
                     },
                 },
             },
@@ -170,6 +179,16 @@ function initEvolutionChart() {
                         callback: value => formatARS(value),
                     },
                 },
+            },
+            onClick: function (event, elements) {
+                if (!monthUrls.length || !elements.length) return;
+                const index = elements[0].index;
+                if (monthUrls[index]) {
+                    window.location.href = monthUrls[index];
+                }
+            },
+            onHover: function (event, elements) {
+                event.native.target.style.cursor = elements.length ? 'pointer' : 'default';
             },
         },
     });
