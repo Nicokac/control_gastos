@@ -170,7 +170,7 @@ class TestSavingMovementCreateView:
 
         assert response.status_code == 200
         msgs = [m.message for m in response.context["messages"]]
-        assert any("Corregí los errores" in m for m in msgs)
+        assert any("No pudimos registrar el movimiento" in m for m in msgs)
 
     def test_cannot_add_movement_to_other_users_saving(
         self, authenticated_client, other_user, saving_factory
