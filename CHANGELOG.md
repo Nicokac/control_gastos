@@ -5,6 +5,22 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.2.1] — 2026-05-21
+
+### Fixed
+
+- **Dashboard**: ícono del widget Gastos cambiado de `bi-exclamation-triangle` a `bi-arrow-up-circle`.
+- **Dashboard**: la barra de progreso y el texto "Gastaste el X% de tus ingresos" ya no aparecen cuando no hay ingresos registrados en el mes — se muestra un mensaje explicativo en su lugar.
+- **Dashboard**: las últimas 5 transacciones ahora muestran el ícono y nombre de categoría de cada movimiento.
+- **General**: el botón flotante `+` ahora apunta a la acción correcta según la sección activa — Ingresos, Ahorro, Gastos Fijos o Categorías — en lugar de siempre crear un Gasto.
+- **General**: al intentar guardar un Gasto o Ingreso sin seleccionar categoría, aparece el mensaje "Seleccioná una categoría." debajo del grid y desaparece al seleccionar.
+- **General**: el botón de submit ya no queda bloqueado en "Procesando..." cuando la validación del formulario falla en el cliente.
+- **General**: el botón Cancelar usa el mismo estilo (`btn-outline-secondary` con ícono `×`) en todos los formularios.
+- **General**: las fechas en Gastos Fijos y Mi Perfil se mostraban en inglés ("May 2026") — corregido a español y formato numérico (`d/m/Y`).
+- **General**: el toast de confirmación mostraba el guion como escape unicode — corregido cambiando el encoding del data attribute.
+
+---
+
 ## [1.2.0] — 2026-05-18
 
 ### Added

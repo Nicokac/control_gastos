@@ -161,9 +161,24 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "1.2.0"
+APP_VERSION = "1.2.1"
 
 WHATS_NEW = [
+    {
+        "version": "1.2.1",
+        "date": "Mayo 2026",
+        "title": "Correcciones de interfaz",
+        "items": [
+            "Dashboard: el ícono del widget de Gastos ahora representa correctamente un egreso",
+            "Dashboard: cuando no hay ingresos registrados en el mes, ya no muestra '0% de tus ingresos' — en cambio aparece un mensaje explicativo",
+            "Dashboard: las últimas transacciones ahora muestran el ícono y nombre de categoría de cada movimiento",
+            "General: el botón + ahora lleva a crear el tipo correcto según la sección — en Ingresos crea un ingreso, en Ahorro una meta, etc.",
+            "General: al intentar guardar un gasto o ingreso sin categoría, aparece un mensaje de error claro debajo del selector",
+            "General: el botón Cancelar tiene el mismo estilo en todos los formularios",
+            "General: las fechas ahora se muestran siempre en español, incluyendo Gastos Fijos y Mi Perfil",
+            "General: el toast de confirmación ya no mostraba el carácter guion como código unicode",
+        ],
+    },
     {
         "version": "1.2.0",
         "date": "Mayo 2026",
