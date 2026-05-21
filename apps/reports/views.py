@@ -251,11 +251,17 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             for r in recurrents
             if not r.is_paid_in(month, year) and r.status_for(month, year) == "overdue"
         )
+        pending = [
+            {"rec": r, "overdue": r.status_for(month, year) == "overdue"}
+            for r in recurrents
+            if not r.is_paid_in(month, year)
+        ]
 
         return {
             "recurring_total": total_active,
             "recurring_paid": total_paid,
             "recurring_overdue": overdue,
+            "recurring_pending": pending,
         }
 
     def _get_recent_transactions(self, user):

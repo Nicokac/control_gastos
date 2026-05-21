@@ -549,9 +549,9 @@ El gráfico muestra siempre los meses del año en curso sin posibilidad de cambi
 
 ### DT-027 — Dashboard: ausencia de widget de gastos fijos pendientes
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.2.2)
 
-Si el usuario tiene gastos fijos configurados en `/recurring/`, el dashboard no los menciona. No hay alerta de pagos pendientes del mes en curso. Implementación esperada: mini-widget con los gastos fijos no pagados del mes, con link a `/recurring/`.
+El widget de Gastos Fijos ya existía con resumen numérico. Se extendió para mostrar los badges de cada gasto pendiente con nombre y día de vencimiento. Los vencidos se muestran en rojo, los pendientes en gris. La lógica de estado se calcula en la view y se pasa como `recurring_pending`.
 
 ### DT-028 — Dashboard: barra de progreso sin contexto temporal
 

@@ -230,11 +230,18 @@
                         <i class="bi bi-arrow-right me-1"></i>Ver detalle
                     </a>
                 </div>
-                {% if recurring_total > 0 %}
                 <div class="progress mt-2" style="height: 6px;">
                     <div class="progress-bar {% if recurring_overdue > 0 %}bg-danger{% elif recurring_paid == recurring_total %}bg-success{% else %}bg-primary{% endif %}"
                          style="width: {% widthratio recurring_paid recurring_total 100 %}%">
                     </div>
+                </div>
+                {% if recurring_pending %}
+                <div class="mt-2 d-flex flex-wrap gap-2">
+                    {% for item in recurring_pending %}
+                    <span class="badge {% if item.overdue %}bg-danger{% else %}bg-light text-dark border{% endif %} fw-normal">
+                        <i class="bi bi-clock me-1"></i>{{ item.rec.name }} — día {{ item.rec.due_day }}
+                    </span>
+                    {% endfor %}
                 </div>
                 {% endif %}
             </div>
