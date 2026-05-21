@@ -2,7 +2,7 @@ import csv
 import logging
 
 from django.contrib import messages
-from django.db.models import Sum
+from django.db.models import Q, Sum
 from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -28,9 +28,8 @@ class IncomeListView(UserOwnedListView):
     context_object_name = "incomes"
 
     def get_queryset(self):
-        qs = super().get_queryset().select_related("category")
+        qs = super().get_queryset().select_related("category", "category__parent")
 
-        # Si no hay parámetros GET, usar mes/año actual como default
         has_filters = any(
             key in self.request.GET
             for key in ["q", "month", "year", "category", "date_from", "date_to"]
@@ -40,16 +39,12 @@ class IncomeListView(UserOwnedListView):
             month = self.request.GET.get("month")
             year = self.request.GET.get("year")
         else:
-            # Default: mes y año actual
             today = timezone.localdate()
             month = str(today.month)
             year = str(today.year)
 
         q = self.request.GET.get("q", "").strip()
         category = self.request.GET.get("category")
-
-        if q:
-            qs = qs.filter(description__icontains=q)
 
         if month:
             try:
@@ -66,6 +61,13 @@ class IncomeListView(UserOwnedListView):
                     qs = qs.filter(date__year=year_int)
             except ValueError:
                 pass
+
+        if q:
+            qs = qs.filter(
+                Q(description__icontains=q)
+                | Q(category__name__icontains=q)
+                | Q(category__parent__name__icontains=q)
+            )
 
         if category:
             try:
@@ -94,12 +96,10 @@ class IncomeListView(UserOwnedListView):
             form_data = {"month": today.month, "year": today.year}
 
         context["filter_form"] = IncomeFilterForm(form_data, user=self.request.user)
+        context["has_active_filters"] = any(self.request.GET.get(key) for key in ["q", "category"])
 
-        total = self.get_queryset().aggregate(total=Sum("amount_ars"))["total"] or 0
+        total = self.object_list.aggregate(total=Sum("amount_ars"))["total"] or 0
         context["total"] = total
-
-        context["current_month"] = today.month
-        context["current_year"] = today.year
 
         return context
 
@@ -120,6 +120,21 @@ class IncomeCreateView(UserOwnedCreateView):
             "No pudimos guardar el ingreso. Revisá los campos marcados. Monto, categoría, fecha y descripción son obligatorios.",
         )
         return super().form_invalid(form)
+
+    def get_initial(self):
+        initial = super().get_initial()
+        duplicate_pk = self.request.GET.get("duplicate")
+        if duplicate_pk:
+            try:
+                source = Income.objects.get(pk=duplicate_pk, user=self.request.user)
+                initial["category"] = source.category
+                initial["description"] = source.description
+                initial["amount"] = source.amount
+                initial["currency"] = source.currency
+                initial["exchange_rate"] = source.exchange_rate
+            except (Income.DoesNotExist, ValueError):
+                pass
+        return initial
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

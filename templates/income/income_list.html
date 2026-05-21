@@ -80,9 +80,12 @@
                 {% for income in incomes %}
                 <tr>
                     <td class="text-nowrap">
-                        <small class="text-muted">{{ income.date|date:"d M Y" }}</small>
+                        <small class="text-muted">{{ income.date|date:"d/m/Y" }}</small>
                     </td>
                     <td>
+                        {% if income.category.parent %}
+                        <small class="text-muted d-block" style="font-size:0.7rem">{{ income.category.parent.name }}</small>
+                        {% endif %}
                         <span class="badge" data-color="{{ income.category.color|default:'#6c757d' }}" data-color-prop="backgroundColor">
                             {% if income.category.icon %}
                             <i class="{{ income.category.icon }} me-1"></i>
@@ -108,11 +111,20 @@
                                title="Editar">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <a href="{% url 'income:delete' income.pk %}"
-                               class="btn btn-outline-danger"
-                               title="Eliminar">
-                                <i class="bi bi-trash"></i>
+                            <a href="{% url 'income:create' %}?duplicate={{ income.pk }}"
+                               class="btn btn-outline-secondary"
+                               title="Duplicar">
+                                <i class="bi bi-copy"></i>
                             </a>
+                            <button type="button"
+                                    class="btn btn-outline-danger"
+                                    title="Eliminar"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteIncomeModal"
+                                    data-delete-url="{% url 'income:delete' income.pk %}"
+                                    data-description="{{ income.description|default:'este ingreso' }}">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </div>
                     </td>
                 </tr>
@@ -120,10 +132,17 @@
                 <tr>
                     <td colspan="5" class="text-center py-5">
                         <i class="bi bi-inbox display-4 text-muted"></i>
+                        {% if has_active_filters %}
+                        <p class="text-muted mt-2 mb-0">No hay ingresos que coincidan con los filtros aplicados.</p>
+                        <a href="{% url 'income:list' %}?month={{ filter_form.month.value }}&year={{ filter_form.year.value }}" class="btn btn-outline-secondary btn-sm mt-3">
+                            <i class="bi bi-x-lg me-1"></i>Limpiar filtros
+                        </a>
+                        {% else %}
                         <p class="text-muted mt-2 mb-0">No hay ingresos registrados.</p>
                         <a href="{% url 'income:create' %}" class="btn btn-success btn-sm mt-3">
                             <i class="bi bi-plus-lg me-1"></i>Registrar primer ingreso
                         </a>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -134,4 +153,31 @@
 
 <!-- Paginación -->
 {% include 'components/pagination.html' %}
+
+<!-- Modal eliminar ingreso -->
+<div class="modal fade" id="deleteIncomeModal" tabindex="-1" aria-labelledby="deleteIncomeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteIncomeModalLabel"><i class="bi bi-trash text-danger me-2"></i>Eliminar ingreso</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">¿Eliminás <strong id="deleteIncomeDescription"></strong>? Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i> Cancelar</button>
+                <form id="deleteIncomeForm" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-1"></i>Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'js/income_list.js' %}"></script>
 {% endblock %}
