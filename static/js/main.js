@@ -53,6 +53,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // FAB contextual by section
     initFab();
+
+    // Back button
+    initBackButton();
 });
 
 /**
@@ -546,6 +549,18 @@ function getCsrfToken() {
     if (el) return el.value;
     const cookie = document.cookie.split(';').find(c => c.trim().startsWith('csrftoken='));
     return cookie ? cookie.trim().split('=')[1] : '';
+}
+
+function initBackButton() {
+    const btn = document.getElementById('back-btn');
+    if (!btn) return;
+    const ref = document.referrer;
+    if (ref && new URL(ref).hostname === window.location.hostname) {
+        btn.classList.remove('d-none');
+        btn.addEventListener('click', function () {
+            history.back();
+        });
+    }
 }
 
 function initFab() {
