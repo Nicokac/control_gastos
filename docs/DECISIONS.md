@@ -577,9 +577,9 @@ El picker de categoría en el formulario de Gasto es un grid visual con 40+ íte
 
 ### DT-030 — Gastos: duplicar un gasto existente
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.2.2)
 
-No hay opción de duplicar un gasto para reutilizar sus datos en un nuevo registro. El usuario repite manualmente campos frecuentes (alquiler, servicios, cargas). Implementación esperada: botón "Duplicar" en la lista o detalle que abra el formulario pre-completado con los datos del gasto seleccionado.
+Botón "Duplicar" en cada fila de la lista que abre el formulario con `?duplicate=<pk>`. El `get_initial` del `ExpenseCreateView` detecta el parámetro y precarga categoría, descripción, monto, moneda, cotización, método de pago y tipo.
 
 ### DT-031 — Gastos: estado vacío no distingue filtros activos vs. mes sin datos
 

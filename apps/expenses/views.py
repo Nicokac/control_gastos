@@ -206,6 +206,21 @@ class ExpenseCreateView(UserOwnedCreateView):
                 initial["description"] = recurring.name
             except (RecurringExpense.DoesNotExist, ValueError):
                 pass
+
+        duplicate_pk = self.request.GET.get("duplicate")
+        if duplicate_pk:
+            try:
+                source = Expense.objects.get(pk=duplicate_pk, user=self.request.user)
+                initial["category"] = source.category
+                initial["description"] = source.description
+                initial["amount"] = source.amount
+                initial["currency"] = source.currency
+                initial["exchange_rate"] = source.exchange_rate
+                initial["payment_method"] = source.payment_method
+                initial["expense_type"] = source.expense_type
+            except (Expense.DoesNotExist, ValueError):
+                pass
+
         return initial
 
     def get_context_data(self, **kwargs):

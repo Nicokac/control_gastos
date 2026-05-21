@@ -187,6 +187,11 @@
                                title="Editar">
                                 <i class="bi bi-pencil"></i>
                             </a>
+                            <a href="{% url 'expenses:create' %}?duplicate={{ expense.pk }}"
+                               class="btn btn-outline-secondary"
+                               title="Duplicar">
+                                <i class="bi bi-copy"></i>
+                            </a>
                             <button type="button"
                                     class="btn btn-outline-danger"
                                     title="Eliminar"
