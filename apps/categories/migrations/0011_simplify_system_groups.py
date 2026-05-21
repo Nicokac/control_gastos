@@ -11,6 +11,8 @@ from django.db import migrations
 
 def simplify_system_groups(apps, schema_editor):
     Category = apps.get_model("categories", "Category")
+    Expense = apps.get_model("expenses", "Expense")
+    Income = apps.get_model("income", "Income")
 
     to_remove = {
         "EXPENSE": [
@@ -39,7 +41,13 @@ def simplify_system_groups(apps, schema_editor):
             ).first()
             if not group:
                 continue
+            # Reasignar subcategorías de usuario al fallback
             Category._default_manager.filter(parent=group, is_system=False).update(parent=dest)
+            # Reasignar transacciones que apuntan directamente al grupo
+            if category_type == "EXPENSE":
+                Expense._default_manager.filter(category=group).update(category=dest)
+            else:
+                Income._default_manager.filter(category=group).update(category=dest)
             group.delete()
 
 
@@ -51,6 +59,8 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("categories", "0010_add_order_to_category"),
+        ("expenses", "0001_initial"),
+        ("income", "0001_initial"),
     ]
 
     operations = [
