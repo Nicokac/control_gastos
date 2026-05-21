@@ -198,8 +198,9 @@ class QuickDepositView(LoginRequiredMixin, FormView):
         return redirect("savings:list")
 
     def form_invalid(self, form):
-        errors = "; ".join(f"{', '.join(errs)}" for errs in form.errors.values())
-        messages.error(self.request, f"Error en depósito: {errors}")
+        messages.error(
+            self.request, "No pudimos registrar el depósito. Revisá los campos marcados."
+        )
         return redirect("savings:list")
 
 
@@ -245,8 +246,9 @@ class SavingMovementCreateView(LoginRequiredMixin, FormView):
         return redirect("savings:detail", pk=self.get_saving().pk)
 
     def form_invalid(self, form):
-        """Muestra errores."""
-        messages.error(self.request, "Corregí los errores del formulario.")
+        messages.error(
+            self.request, "No pudimos registrar el movimiento. Revisá los campos marcados."
+        )
         return super().form_invalid(form)
 
     def get_success_url(self):
