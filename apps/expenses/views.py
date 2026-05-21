@@ -2,7 +2,7 @@ import csv
 import logging
 
 from django.contrib import messages
-from django.db.models import Sum
+from django.db.models import Q, Sum
 from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.utils import timezone
@@ -82,7 +82,11 @@ class ExpenseListView(UserOwnedListView):
                     pass
 
         if q:
-            qs = qs.filter(description__icontains=q)
+            qs = qs.filter(
+                Q(description__icontains=q)
+                | Q(category__name__icontains=q)
+                | Q(category__parent__name__icontains=q)
+            )
         if subcategory:
             # subcategoría específica tiene prioridad sobre el grupo
             qs = qs.filter(category_id=subcategory)
