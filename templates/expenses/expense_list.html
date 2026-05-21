@@ -52,13 +52,16 @@
                 </select>
             </div>
 
+            <div class="col-md-2">
+                <label class="form-label small text-muted">Método de pago</label>
+                {{ filter_form.payment_method }}
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small text-muted">Tipo</label>
+                {{ filter_form.expense_type }}
+            </div>
+
             <div class="col-auto ms-auto d-flex gap-2 align-items-end">
-                <a class="text-decoration-none small text-nowrap"
-                data-bs-toggle="collapse"
-                href="#moreExpenseFilters"
-                role="button">
-                    <i class="bi bi-sliders me-1"></i>Más filtros
-                </a>
                 <button type="submit" class="btn btn-outline-primary btn-sm">
                     <i class="bi bi-funnel"></i>
                 </button>
@@ -70,22 +73,6 @@
                    title="Exportar a CSV">
                     <i class="bi bi-download"></i>
                 </a>
-            </div>
-
-            <div class="col-12">
-                <div class="collapse {% if filter_form.payment_method.value or filter_form.expense_type.value %}show{% endif %}"
-                    id="moreExpenseFilters">
-                    <div class="row g-3 pt-2">
-                        <div class="col-md-3">
-                            <label class="form-label small text-muted">Método de pago</label>
-                            {{ filter_form.payment_method }}
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label small text-muted">Tipo</label>
-                            {{ filter_form.expense_type }}
-                        </div>
-                    </div>
-                </div>
             </div>
         </form>
 
