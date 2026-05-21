@@ -519,9 +519,9 @@ El dashboard está fijo al mes actual. No hay selector de mes/año ni soporte de
 
 ### DT-022 — Dashboard: cards de Gastos e Ingresos no navegan al detalle
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.2.2)
 
-Hacer clic en el monto de los cards de Gastos o Ingresos no hace nada. El usuario que quiere ver el detalle tiene que navegar manualmente al menú lateral. Implementación esperada: agregar `href` a cada card apuntando a `/expenses/?month=X&year=Y` e `/income/?month=X&year=Y` según corresponda.
+Cards envueltos en `<a>` apuntando a `/expenses/?month=X&year=Y` e `/income/?month=X&year=Y`. Se agregó clase `card-hover` con efecto de elevación al pasar el mouse.
 
 ### DT-023 — Dashboard: ranking de categorías sin drill-down
 
@@ -555,15 +555,21 @@ Si el usuario tiene gastos fijos configurados en `/recurring/`, el dashboard no 
 
 ### DT-028 — Dashboard: barra de progreso sin contexto temporal
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.2.2)
 
-La barra de balance muestra "Gastaste el X% de tus ingresos" sin indicar en qué día del mes estamos. Gastar el 96% al día 21 de 31 tiene implicancias distintas que al día 5. Implementación esperada: agregar texto contextual como "Día 21 de 31" o ritmo de gasto diario estimado.
+La barra de balance muestra "Gastaste el X% de tus ingresos" sin indicar en qué día del mes estamos. Resuelto agregando "Día 21 de 31" junto al balance disponible, usando `today.day` y el filtro `|date:"t"` de Django.
 
 ---
 
 ## D-017 — Enhancements relevados por QA — Gastos
 
-### DT-029 — Gastos: búsqueda dentro del picker de categorías
+### DT-029 — Mes financiero personalizado por fecha de cobro
+
+**Estado:** ⏳ Pendiente
+
+El dashboard calcula el período del mes en base al mes calendario (1 al último día). Pero el "mes financiero" real de cada usuario empieza el día que cobra su sueldo (ej: día 1, día 5, día 10). Implementación esperada: campo configurable en el perfil del usuario ("Día de inicio de mes financiero", rango 1-28) que ajuste el período de cálculo del dashboard y la barra de progreso de balance. El "Día X de Y" en la barra reflejaría días transcurridos dentro del período financiero, no del mes calendario.
+
+### DT-030 — Gastos: búsqueda dentro del picker de categorías
 
 **Estado:** ⏳ Pendiente
 

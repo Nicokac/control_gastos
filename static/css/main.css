@@ -542,3 +542,4 @@ form#incomeForm .category-btn:hover .btn {
 .input-group-wide { max-width: 250px; }
 .chart-container { height: 200px; }
 .legend-dot { width: 12px; height: 12px; display: inline-block; border-radius: 50%; }
+.card-hover { transition: box-shadow 0.15s ease, transform 0.15s ease; cursor: pointer; } .card-hover:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); transform: translateY(-2px); }
