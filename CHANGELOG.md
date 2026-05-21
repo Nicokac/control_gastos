@@ -5,6 +5,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.4.1] — 2026-05-21
+
+### Added
+
+- **Gastos / Ingresos**: headers de tabla clickeables para ordenar por Fecha, Categoría, Descripción o Monto. Clic repetido invierte la dirección. El header activo muestra un chevron indicador.
+- **Formulario Gasto / Ingreso**: campo de búsqueda sobre el picker de categorías — filtra en tiempo real ocultando los botones que no coinciden y colapsa grupos vacíos. Incluye botón `×` para limpiar.
+
+---
+
 ## [1.4.0] — 2026-05-21
 
 ### Added

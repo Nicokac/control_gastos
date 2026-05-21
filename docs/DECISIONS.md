@@ -571,9 +571,9 @@ El dashboard calcula el período del mes en base al mes calendario (1 al último
 
 ### DT-030 — Gastos: búsqueda dentro del picker de categorías
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.4.1)
 
-El picker de categoría en el formulario de Gasto es un grid visual con 40+ ítems. No hay campo de búsqueda ni filtro. Implementación esperada: input de filtro encima del grid que oculte en tiempo real las categorías que no coinciden con el texto (JS del lado del cliente, sin request al servidor). Aplicar también a Ingresos.
+Input de búsqueda encima del grid de categorías en los formularios de Gasto e Ingreso. Filtra en tiempo real ocultando los botones que no coinciden y colapsa el grupo entero si no queda ninguna subcategoría visible. Incluye botón `×` para limpiar. Lógica en `initCategorySearch()` dentro de `transaction_form.js`, compatible con CSP.
 
 ### DT-030 — Gastos: duplicar un gasto existente
 
@@ -607,9 +607,9 @@ Modal Bootstrap reutilizable con un único form cuyo `action` se actualiza via `
 
 ### DT-035 — Gastos: ordenamiento por columnas
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.4.1)
 
-Los headers de la lista (Fecha, Categoría, Descripción, Monto) no son clickeables. No hay forma de ordenar por monto o categoría. Implementación esperada: parámetro `?order_by=amount&dir=desc` con indicador visual del header activo.
+Headers Fecha, Categoría, Descripción y Monto son clickeables en las listas de gastos e ingresos. Parámetros `?order_by=<campo>&dir=<asc|desc>`. El header activo muestra un chevron indicando dirección. Clic repetido invierte el orden. Implementado via template tag `sort_url` en `currency_filters.py` que construye la URL preservando los filtros activos.
 
 ### DT-036 — Gastos: paginación sin salto directo a página
 

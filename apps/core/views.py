@@ -161,9 +161,18 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "1.4.0"
+APP_VERSION = "1.4.1"
 
 WHATS_NEW = [
+    {
+        "version": "1.4.1",
+        "date": "Mayo 2026",
+        "title": "Búsqueda en categorías y ordenamiento de listas",
+        "items": [
+            "Gastos e Ingresos: hacé click en los encabezados Fecha, Categoría, Descripción o Monto para ordenar la lista — un segundo click invierte el orden",
+            "Formulario de Gasto e Ingreso: buscá tu categoría escribiendo en el campo de búsqueda — los grupos sin coincidencias se ocultan automáticamente",
+        ],
+    },
     {
         "version": "1.4.0",
         "date": "Mayo 2026",

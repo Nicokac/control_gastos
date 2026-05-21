@@ -77,7 +77,17 @@ class IncomeListView(UserOwnedListView):
             except ValueError:
                 pass
 
-        return qs.order_by("-date", "-created_at")
+        order_by = self.request.GET.get("order_by", "date")
+        direction = self.request.GET.get("dir", "desc")
+        allowed_fields = {
+            "date": "date",
+            "category": "category__name",
+            "description": "description",
+            "amount": "amount_ars",
+        }
+        field = allowed_fields.get(order_by, "date")
+        prefix = "-" if direction == "desc" else ""
+        return qs.order_by(f"{prefix}{field}", "-created_at")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -97,6 +107,8 @@ class IncomeListView(UserOwnedListView):
 
         context["filter_form"] = IncomeFilterForm(form_data, user=self.request.user)
         context["has_active_filters"] = any(self.request.GET.get(key) for key in ["q", "category"])
+        context["order_by"] = self.request.GET.get("order_by", "date")
+        context["order_dir"] = self.request.GET.get("dir", "desc")
 
         total = self.object_list.aggregate(total=Sum("amount_ars"))["total"] or 0
         context["total"] = total

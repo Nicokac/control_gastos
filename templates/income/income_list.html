@@ -69,10 +69,14 @@
         <table class="table table-hover mb-0">
             <thead class="table-light">
                 <tr>
-                    <th>Fecha</th>
-                    <th>Categoría</th>
-                    <th>Descripción</th>
-                    <th class="text-end">Monto</th>
+                    {% sort_url "date" as url_date %}
+                    {% sort_url "category" as url_category %}
+                    {% sort_url "description" as url_description %}
+                    {% sort_url "amount" as url_amount %}
+                    <th><a href="{{ url_date }}" class="text-decoration-none text-dark d-flex align-items-center gap-1">Fecha{% if order_by == "date" %}<i class="bi bi-chevron-{% if order_dir == 'asc' %}up{% else %}down{% endif %} text-muted" style="font-size:0.7rem"></i>{% endif %}</a></th>
+                    <th><a href="{{ url_category }}" class="text-decoration-none text-dark d-flex align-items-center gap-1">Categoría{% if order_by == "category" %}<i class="bi bi-chevron-{% if order_dir == 'asc' %}up{% else %}down{% endif %} text-muted" style="font-size:0.7rem"></i>{% endif %}</a></th>
+                    <th><a href="{{ url_description }}" class="text-decoration-none text-dark d-flex align-items-center gap-1">Descripción{% if order_by == "description" %}<i class="bi bi-chevron-{% if order_dir == 'asc' %}up{% else %}down{% endif %} text-muted" style="font-size:0.7rem"></i>{% endif %}</a></th>
+                    <th class="text-end"><a href="{{ url_amount }}" class="text-decoration-none text-dark d-flex align-items-center justify-content-end gap-1">Monto{% if order_by == "amount" %}<i class="bi bi-chevron-{% if order_dir == 'asc' %}up{% else %}down{% endif %} text-muted" style="font-size:0.7rem"></i>{% endif %}</a></th>
                     <th class="text-center col-actions">Acciones</th>
                 </tr>
             </thead>

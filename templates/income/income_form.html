@@ -102,6 +102,11 @@
                             <div class="text-danger small mb-2">{{ form.category.errors.0 }}</div>
                             {% endif %}
                             {% if categories_by_group %}
+                                <div class="input-group input-group-sm mb-3" id="category-search-wrap">
+                                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                    <input type="text" id="category-search" class="form-control" placeholder="Buscar categoría..." autocomplete="off">
+                                    <button class="btn btn-outline-secondary" type="button" id="category-search-clear" tabindex="-1"><i class="bi bi-x-lg"></i></button>
+                                </div>
                                 {% for entry in categories_by_group %}
                                 <div class="mb-3">
                                     <div class="d-flex align-items-center mb-2">

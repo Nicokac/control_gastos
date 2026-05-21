@@ -17,6 +17,7 @@ function initTransactionForm(formId) {
     initFormValidation(formId);
     initClearValidation();
     initAmountFormatting();
+    initCategorySearch();
 }
 
 function formatAmountAR(raw) {
@@ -189,6 +190,38 @@ function initFormValidation(formId) {
             }
         }
     });
+}
+
+function initCategorySearch() {
+    const input = document.getElementById('category-search');
+    const clearBtn = document.getElementById('category-search-clear');
+    if (!input) return;
+
+    function filter(q) {
+        document.querySelectorAll('.category-grid').forEach(function (grid) {
+            const group = grid.closest('.mb-3');
+            let anyVisible = false;
+            grid.querySelectorAll('.category-btn').forEach(function (btn) {
+                const name = btn.querySelector('small').textContent.toLowerCase();
+                const match = !q || name.includes(q);
+                btn.style.display = match ? '' : 'none';
+                if (match) anyVisible = true;
+            });
+            if (group) group.style.display = anyVisible ? '' : 'none';
+        });
+    }
+
+    input.addEventListener('input', function () {
+        filter(this.value.trim().toLowerCase());
+    });
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function () {
+            input.value = '';
+            filter('');
+            input.focus();
+        });
+    }
 }
 
 /**

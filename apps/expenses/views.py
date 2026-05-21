@@ -98,7 +98,17 @@ class ExpenseListView(UserOwnedListView):
         if expense_type:
             qs = qs.filter(expense_type=expense_type)
 
-        qs = qs.order_by("-date", "-created_at")
+        order_by = self.request.GET.get("order_by", "date")
+        direction = self.request.GET.get("dir", "desc")
+        allowed_fields = {
+            "date": "date",
+            "category": "category__name",
+            "description": "description",
+            "amount": "amount_ars",
+        }
+        field = allowed_fields.get(order_by, "date")
+        prefix = "-" if direction == "desc" else ""
+        qs = qs.order_by(f"{prefix}{field}", "-created_at")
         return qs
 
     def get_context_data(self, **kwargs):
@@ -130,6 +140,8 @@ class ExpenseListView(UserOwnedListView):
             self.request.GET.get(key)
             for key in ["q", "category", "subcategory", "payment_method", "expense_type"]
         )
+        context["order_by"] = self.request.GET.get("order_by", "date")
+        context["order_dir"] = self.request.GET.get("dir", "desc")
 
         qs = self.object_list
 
