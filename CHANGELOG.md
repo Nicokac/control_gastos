@@ -5,6 +5,20 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.4.0] — 2026-05-21
+
+### Added
+
+- **Categorías**: búsqueda en tiempo real independiente por sección — campo dentro de cada card (Gastos / Ingresos) que filtra grupos y subcategorías por nombre sin request al servidor.
+- **Categorías**: botón `×` para limpiar el campo de búsqueda.
+- **Categorías**: los grupos de sistema se redujeron a uno por tipo — "Sin clasificar" (Gastos) y "Sueldo" (Ingresos). Ambos permiten agregar subcategorías de usuario.
+
+### Fixed
+
+- **Categorías**: el link "Agregar subcategoría" ahora aparece también en grupos de sistema.
+
+---
+
 ## [1.3.0] — 2026-05-21
 
 ### Added

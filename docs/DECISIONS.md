@@ -485,13 +485,13 @@ Los gastos fijos/recurrentes tienen su propio módulo (`apps/recurring`) con CRU
 
 ### DT-017 — Búsqueda y filtro en Categorías
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.3.1)
 
-Con listas largas de subcategorías no hay forma de buscar una categoría específica. Manejable con el volumen actual pero se vuelve un problema real a medida que el usuario agrega categorías. Implementación esperada: campo de búsqueda que filtre grupos y subcategorías por nombre en tiempo real (JS del lado del cliente, sin request al servidor).
+Campo de búsqueda independiente dentro de cada card (Gastos / Ingresos). Filtra grupos y subcategorías por nombre en tiempo real vía `category_list.js` (compatible con CSP). Incluye botón `×` para limpiar. Los grupos con coincidencia se expanden automáticamente.
 
 ### DT-018 — Layout de dos columnas en Categorías con scroll asimétrico
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.3.1)
 
 La columna de Gastos suele ser más larga que la de Ingresos. El layout side-by-side hace que al scrollear, la columna de Ingresos quede huérfana arriba. En móvil/pantallas cortas esto desorienta. Opciones: layout de una sola columna con secciones separadas, o scroll independiente por columna. Requiere rediseño del layout.
 

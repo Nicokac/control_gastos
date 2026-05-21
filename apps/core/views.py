@@ -161,9 +161,19 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "1.3.0"
+APP_VERSION = "1.4.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.4.0",
+        "date": "Mayo 2026",
+        "title": "Mejoras en Categorías",
+        "items": [
+            "Categorías: búsqueda en tiempo real dentro de cada sección — filtrá grupos y subcategorías de Gastos e Ingresos de forma independiente",
+            "Categorías: botón × para limpiar el campo de búsqueda en un click",
+            "Categorías: los grupos de sistema se simplificaron — ahora solo existe 'Sin clasificar' en Gastos y 'Sueldo' en Ingresos, ambos con la opción de agregar subcategorías propias",
+        ],
+    },
     {
         "version": "1.3.0",
         "date": "Mayo 2026",
