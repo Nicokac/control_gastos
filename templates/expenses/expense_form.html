@@ -144,6 +144,7 @@
                                     No tenés categorías de gasto. <a href="{% url 'categories:create' %}">Creá una</a>.
                                 </p>
                             {% endif %}
+                            <div id="category-error" class="text-danger small mt-1" style="display:none">Seleccioná una categoría.</div>
                         </div>
 
                         <!-- DESTINO DE AHORRO (opcional, visible) -->
@@ -233,7 +234,7 @@
                 <!-- BOTÓN SUBMIT -->
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                     <a href="{% url 'expenses:list' %}" class="btn btn-outline-secondary">
-                        Cancelar
+                        <i class="bi bi-x-lg"></i> Cancelar
                     </a>
                     <button type="submit" class="btn btn-danger btn-lg px-5">
                         <i class="bi bi-check-lg me-2"></i>

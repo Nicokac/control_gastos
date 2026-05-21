@@ -133,6 +133,7 @@ function initFormValidation(formId) {
         }
 
         // Validar categoría
+        const categoryError = document.getElementById('category-error');
         if (!categoryValue) {
             const categoryGrid = document.querySelector('.category-grid');
             if (categorySelect) {
@@ -140,10 +141,12 @@ function initFormValidation(formId) {
             } else if (categoryGrid) {
                 categoryGrid.classList.add('border', 'border-danger', 'rounded', 'p-2');
             }
+            if (categoryError) categoryError.style.display = '';
             isValid = false;
             firstError = firstError || categorySelect || categoryGrid;
-        } else if (categorySelect) {
-            categorySelect.classList.remove('is-invalid');
+        } else {
+            if (categorySelect) categorySelect.classList.remove('is-invalid');
+            if (categoryError) categoryError.style.display = 'none';
         }
 
         // Validar descripción solo si está requerida en el formulario

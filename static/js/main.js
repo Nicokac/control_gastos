@@ -50,6 +50,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Feedback form validation
     initFeedbackForm();
+
+    // FAB contextual by section
+    initFab();
 });
 
 /**
@@ -90,24 +93,25 @@ function initLoadingButtons() {
         form.addEventListener('submit', function(e) {
             const submitBtn = this.querySelector('button[type="submit"]');
             if (submitBtn && !submitBtn.disabled) {
-                // Store original content
                 const originalContent = submitBtn.innerHTML;
                 submitBtn.dataset.originalContent = originalContent;
 
-                // Show loading state
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = `
-                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                    Procesando...
-                `;
-
-                // Re-enable after timeout (fallback)
+                // Defer so other submit listeners (validation) run first
                 setTimeout(() => {
-                    if (submitBtn.disabled) {
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = originalContent;
-                    }
-                }, 10000);
+                    if (e.defaultPrevented) return;
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = `
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Procesando...
+                    `;
+                    // Fallback re-enable
+                    setTimeout(() => {
+                        if (submitBtn.disabled) {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = originalContent;
+                        }
+                    }, 10000);
+                }, 0);
             }
         });
     });
@@ -542,4 +546,34 @@ function getCsrfToken() {
     if (el) return el.value;
     const cookie = document.cookie.split(';').find(c => c.trim().startsWith('csrftoken='));
     return cookie ? cookie.trim().split('=')[1] : '';
+}
+
+function initFab() {
+    const fab = document.querySelector('.fab-button');
+    if (!fab) return;
+
+    const appData = document.getElementById('app-data');
+    if (!appData) return;
+
+    const path = window.location.pathname;
+    let url = appData.dataset.expenseCreateUrl;
+    let label = 'Nuevo Gasto (Ctrl+N)';
+
+    if (path.startsWith('/income/')) {
+        url = appData.dataset.incomeCreateUrl;
+        label = 'Nuevo Ingreso (Ctrl+N)';
+    } else if (path.startsWith('/savings/')) {
+        url = appData.dataset.savingCreateUrl;
+        label = 'Nueva Meta de Ahorro (Ctrl+N)';
+    } else if (path.startsWith('/recurring/')) {
+        url = appData.dataset.recurringCreateUrl;
+        label = 'Nuevo Gasto Fijo (Ctrl+N)';
+    } else if (path.startsWith('/categories/')) {
+        url = appData.dataset.categoryCreateUrl;
+        label = 'Nueva Categoría (Ctrl+N)';
+    }
+
+    fab.href = url;
+    fab.title = label;
+    fab.setAttribute('aria-label', label);
 }

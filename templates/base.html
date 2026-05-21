@@ -70,6 +70,11 @@
     <div id="app-data"
          data-app-version="{{ APP_VERSION }}"
          data-dashboard-url="{% url 'reports:dashboard' %}"
+         data-expense-create-url="{% url 'expenses:create' %}"
+         data-income-create-url="{% url 'income:create' %}"
+         data-saving-create-url="{% url 'savings:create' %}"
+         data-recurring-create-url="{% url 'recurring:create' %}"
+         data-category-create-url="{% url 'categories:create' %}"
          {% if messages %}data-messages="{% for message in messages %}{{ message|force_escape }}||{{ message.tags }}{% if not forloop.last %};;{% endif %}{% endfor %}"{% endif %}
          style="display:none"></div>
 

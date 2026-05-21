@@ -394,10 +394,13 @@
                                 <div>
                                     <a href="{% if tx.type == 'expense' %}{% url 'expenses:update' tx.pk %}{% else %}{% url 'income:update' tx.pk %}{% endif %}"
                                        class="text-decoration-none text-dark">
-                                        {{ tx.description|truncatechars:25 }}
+                                        {{ tx.description|truncatechars:25|default:"Sin descripción" }}
                                     </a>
                                     <br>
-                                    <small class="text-muted">{{ tx.date|date:"d M" }}</small>
+                                    <small class="text-muted">
+                                        {{ tx.date|date:"d/m/Y" }}
+                                        {% if tx.category %}&nbsp;·&nbsp;<i class="{{ tx.category.icon|default:'bi-tag' }}"></i> {{ tx.category.name }}{% endif %}
+                                    </small>
                                 </div>
                             </div>
                             <span class="{% if tx.type == 'expense' %}text-danger{% else %}text-success{% endif %} fw-bold">

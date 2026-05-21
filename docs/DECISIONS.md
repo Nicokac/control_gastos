@@ -495,6 +495,18 @@ Con listas largas de subcategorías no hay forma de buscar una categoría espec�
 
 La columna de Gastos suele ser más larga que la de Ingresos. El layout side-by-side hace que al scrollear, la columna de Ingresos quede huérfana arriba. En móvil/pantallas cortas esto desorienta. Opciones: layout de una sola columna con secciones separadas, o scroll independiente por columna. Requiere rediseño del layout.
 
+### DT-019 — Mensajes de error de validación inconsistentes entre formularios
+
+**Estado:** ⏳ Pendiente
+
+Los formularios de Gastos e Ingresos muestran solo borde rojo en el campo + toast genérico "Por favor completá todos los campos requeridos" sin indicar cuál falló. Gastos Fijos muestra mensajes inline específicos por campo. La UX de validación no es uniforme. Solución esperada: mensajes inline específicos por campo en todos los formularios, eliminando el toast genérico de error de validación.
+
+### DT-020 — Campo "Cotización del dólar" sin valor sugerido al seleccionar USD
+
+**Estado:** ⏳ Pendiente
+
+Al cambiar la moneda a USD en los formularios de Gasto e Ingreso, el campo "Cotización del dólar" aparece con valor `0,00` por defecto. No hay cotización referencial precargada. Opciones: (a) integrar una API pública de cotización del dólar (ej: dolarapi.com) para precargar el valor al seleccionar USD, o (b) persistir la última cotización ingresada por el usuario para reutilizarla como sugerencia. No se implementa ahora por scope y dependencia de API externa.
+
 ---
 
 ## D-015 — Deudas técnicas descartadas
