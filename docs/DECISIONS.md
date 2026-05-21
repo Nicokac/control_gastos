@@ -497,9 +497,9 @@ La columna de Gastos suele ser más larga que la de Ingresos. El layout side-by-
 
 ### DT-019 — Mensajes de error de validación inconsistentes entre formularios
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.2.2)
 
-Los formularios de Gastos e Ingresos muestran solo borde rojo en el campo + toast genérico "Por favor completá todos los campos requeridos" sin indicar cuál falló. Gastos Fijos muestra mensajes inline específicos por campo. La UX de validación no es uniforme. Solución esperada: mensajes inline específicos por campo en todos los formularios, eliminando el toast genérico de error de validación.
+Los formularios de depósito y movimiento de ahorro usaban mensajes genéricos o exponían errores técnicos del form. Estandarizados al patrón `"No pudimos registrar X. Revisá los campos marcados."` que usa el resto de la app.
 
 ### DT-020 — Campo "Cotización del dólar" sin valor sugerido al seleccionar USD
 
@@ -513,9 +513,9 @@ Al cambiar la moneda a USD en los formularios de Gasto e Ingreso, el campo "Coti
 
 ### DT-021 — Dashboard: selector de período (mes/año)
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.2.2)
 
-El dashboard está fijo al mes actual. No hay selector de mes/año ni soporte de parámetros `?month=X&year=Y`. Para revisar un mes anterior el usuario debe ir a `/expenses/` o `/income/` y filtrar manualmente, perdiendo la vista integrada del dashboard. Implementación esperada: selector de mes/año en el header del dashboard que parametrice todas las queries del servidor, usando el mismo patrón de query string que ya implementa `/expenses/`.
+Flechas `‹` `›` en el header del dashboard. La vista lee `?month=X&year=Y` y pasa el período a todos los métodos de datos (balance, recurring, distribución). La flecha derecha y botón "Hoy" solo aparecen fuera del mes actual. No se permite navegar al futuro. El selector de año del gráfico preserva el mes seleccionado vía hidden input.
 
 ### DT-022 — Dashboard: cards de Gastos e Ingresos no navegan al detalle
 
@@ -537,9 +537,9 @@ El card de Gastos muestra variación porcentual vs. el mes anterior. El card de 
 
 ### DT-025 — Dashboard: ausencia de widget de ahorro y metas
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.2.2)
 
-La sección `/savings/` tiene datos de progreso de metas (objetivo, ahorrado, restante, % global) que no aparecen en el dashboard. Implementación esperada: widget de resumen de metas activas con ahorrado / objetivo / % progreso, usando datos ya disponibles.
+Card de Ahorro integrada en la fila de KPIs junto a Gastos e Ingresos (layout 3 columnas). Muestra total acumulado, barra de progreso global y cantidad de metas activas. Siempre visible — muestra "Sin metas activas" cuando no hay ninguna.
 
 ### DT-026 — Dashboard: gráfico de evolución mensual no configurable
 
@@ -589,21 +589,21 @@ Se agrega `has_active_filters` al contexto (detecta q, category, subcategory, pa
 
 ### DT-032 — Gastos: búsqueda de texto no opera sobre nombre de categoría
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.2.2)
 
-El campo de búsqueda filtra solo por descripción. No es posible buscar por nombre de categoría. Implementación esperada: extender la query para que también compare contra el nombre de la subcategoría asignada.
+El filtro `q` usa un `Q` combinado que opera sobre `description`, `category__name` y `category__parent__name`. El mismo patrón se aplicó a Ingresos en la misma versión.
 
 ### DT-033 — Gastos: campos "Método de pago" y "Tipo" ocultos bajo "Opciones avanzadas"
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.2.2)
 
-Los campos de método de pago y tipo de gasto están colapsados, lo que desincentiva su uso. La mayoría de los gastos existentes los tienen vacíos, haciendo que el panel "Ver resumen — Por método de pago" no tenga valor real. Implementación esperada: mostrar los campos directamente en el formulario o al menos con un valor por defecto pre-seleccionado.
+Eliminado el collapse "Más filtros". Los campos de método de pago y tipo se movieron como columnas inline dentro de la fila de filtros del formulario de lista.
 
 ### DT-034 — Gastos: eliminación requiere navegar a página separada
 
 **Estado:** ✅ Resuelto (v1.2.2)
 
-Modal Bootstrap reutilizable con un único form cuyo `action` se actualiza via `data-delete-url` al abrir. La lógica JS vive en `expense_list.js` (externo, compatible con CSP). Pendiente aplicar el mismo patrón a Ingresos (ver DT-039).
+Modal Bootstrap reutilizable con un único form cuyo `action` se actualiza via `data-delete-url` al abrir. La lógica JS vive en `expense_list.js` (externo, compatible con CSP). El mismo patrón se aplicó a Ingresos en v1.2.2 (ver DT-039).
 
 ### DT-035 — Gastos: ordenamiento por columnas
 
@@ -631,9 +631,9 @@ No hay forma de filtrar gastos por monto mínimo o máximo. Útil para auditar g
 
 ### DT-039 — Gastos/Ingresos: paridad de funcionalidad entre secciones
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.2.2)
 
-Gastos tiene filtro por grupo, más filtros (método de pago, tipo), panel "Ver resumen" y paginación. Ingresos carece de todos estos. Implementación esperada: portar los mismos filtros y panel de resumen de Gastos a Ingresos una vez que las mejoras de Gastos estén estables.
+Ingresos recibió: duplicar con `?duplicate=<pk>`, modal de eliminación con confirmación (`income_list.js`), búsqueda por categoría/grupo (Q filter), `has_active_filters` con estado vacío diferenciado, fecha en `d/m/Y`, grupo visible sobre el badge y `select_related("category__parent")`.
 
 ---
 

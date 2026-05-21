@@ -5,6 +5,28 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.3.0] — 2026-05-21
+
+### Added
+
+- **Dashboard**: navegación por período con flechas `‹` `›` — todos los KPIs, distribución y gastos fijos responden al mes seleccionado. La flecha derecha y el botón "Hoy" solo aparecen cuando no se está en el mes actual.
+- **Dashboard**: card de Ahorro integrada en la fila de KPIs junto a Gastos e Ingresos, con total acumulado, barra de progreso y cantidad de metas activas.
+- **Dashboard**: cards de Gastos e Ingresos clickeables (link a lista filtrada por mes).
+- **Dashboard**: badges de gastos fijos pendientes debajo de la barra de progreso.
+- **Dashboard**: barra de balance muestra día del mes y monto disponible restante.
+- **Gastos**: búsqueda por nombre de categoría y grupo además de descripción (Q filter).
+- **Gastos**: botón duplicar precarga todos los campos del gasto original en el formulario.
+- **Gastos**: filtros de método de pago y tipo siempre visibles (eliminado el collapse "Más filtros").
+- **Gastos**: estado vacío diferencia entre sin datos y sin resultados para filtros activos.
+- **Ingresos**: paridad con Gastos — duplicar, modal de eliminación con confirmación, búsqueda por categoría/grupo, estado vacío diferenciado, fecha en `d/m/Y`, grupo visible sobre el badge.
+- **General**: botón "← Volver" contextual en todas las listas (Gastos, Ingresos, Ahorro, Gastos Fijos, Categorías) — visible solo cuando hay referrer del mismo dominio.
+
+### Fixed
+
+- **General**: mensajes de error en formularios de depósito y movimiento de ahorro unificados al patrón estándar de la app.
+
+---
+
 ## [1.2.1] — 2026-05-21
 
 ### Fixed

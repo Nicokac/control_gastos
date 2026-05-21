@@ -161,9 +161,28 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "1.2.1"
+APP_VERSION = "1.3.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.3.0",
+        "date": "Mayo 2026",
+        "title": "Dashboard mejorado y paridad Gastos/Ingresos",
+        "items": [
+            "Dashboard: navegación por período — usá las flechas para ver cualquier mes anterior sin perder el contexto",
+            "Dashboard: nueva card de Ahorro junto a Gastos e Ingresos, con progreso global hacia tus metas activas",
+            "Dashboard: las cards de Gastos e Ingresos son clickeables y llevan directo a la lista del período",
+            "Dashboard: los gastos fijos pendientes se muestran como badges debajo de la barra de progreso",
+            "Dashboard: la barra de balance muestra el día del mes y cuánto te queda disponible",
+            "Gastos: buscá por nombre de categoría o grupo además de por descripción",
+            "Gastos: botón duplicar para copiar un gasto existente con todos sus datos precargados",
+            "Gastos: método de pago y tipo siempre visibles en los filtros, sin necesidad de expandir",
+            "Gastos: el estado vacío diferencia entre 'sin datos' y 'sin resultados para los filtros aplicados'",
+            "Ingresos: paridad con la sección de Gastos — duplicar, modal de eliminación, búsqueda por categoría y estado vacío diferenciado",
+            "General: botón 'Volver' contextual en todas las listas — aparece solo cuando hay una página anterior en el mismo sitio",
+            "General: mensajes de error de validación unificados en todos los formularios",
+        ],
+    },
     {
         "version": "1.2.1",
         "date": "Mayo 2026",
