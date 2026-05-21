@@ -724,8 +724,7 @@ Flujo completo implementado con `BrevoPasswordResetView` que envía via Brevo AP
 
 ### RL-002 — Landing page pública (P1)
 
-**Estado:** ⏳ Pendiente
-**Estimación:** 2-3 horas
+**Estado:** ✅ Resuelto (e11b874)
 
 Vista pública en `/` que muestra la app a usuarios no autenticados. Los autenticados redirigen al dashboard.
 
@@ -802,8 +801,7 @@ Debe implementarse **antes del lanzamiento**, no después. Pérdida de datos en 
 
 ### RL-008 — Tour / guía inicial (P2)
 
-**Estado:** ⏳ Pendiente
-**Estimación:** 2-3 horas
+**Estado:** ✅ Resuelto (v0.32.0 — Shepherd.js)
 
 **Tareas:**
 
