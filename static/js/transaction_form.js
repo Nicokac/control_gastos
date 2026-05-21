@@ -219,6 +219,8 @@ function initClearValidation() {
             if (categoryGrid) {
                 categoryGrid.classList.remove('border', 'border-danger', 'rounded', 'p-2');
             }
+            const categoryError = document.getElementById('category-error');
+            if (categoryError) categoryError.style.display = 'none';
         });
     });
 

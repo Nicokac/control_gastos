@@ -574,6 +574,13 @@ function initFab() {
     }
 
     fab.href = url;
-    fab.title = label;
     fab.setAttribute('aria-label', label);
+
+    // Update Bootstrap tooltip instance if already initialized
+    const tooltipInstance = bootstrap.Tooltip.getInstance(fab);
+    if (tooltipInstance) {
+        tooltipInstance.dispose();
+    }
+    fab.title = label;
+    new bootstrap.Tooltip(fab);
 }
