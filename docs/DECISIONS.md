@@ -601,9 +601,9 @@ Los campos de método de pago y tipo de gasto están colapsados, lo que desincen
 
 ### DT-034 — Gastos: eliminación requiere navegar a página separada
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.2.2)
 
-El botón de eliminar navega a una página de confirmación separada (`/expenses/:id/delete/`), lo que saca al usuario de la lista y requiere volver. Implementación esperada: modal de confirmación inline que ejecute la eliminación sin salir de la lista. Aplicar también a Ingresos.
+Modal Bootstrap reutilizable con un único form cuyo `action` se actualiza via `data-delete-url` al abrir. La lógica JS vive en `expense_list.js` (externo, compatible con CSP). Pendiente aplicar el mismo patrón a Ingresos (ver DT-039).
 
 ### DT-035 — Gastos: ordenamiento por columnas
 

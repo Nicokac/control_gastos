@@ -187,11 +187,15 @@
                                title="Editar">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <a href="{% url 'expenses:delete' expense.pk %}"
-                               class="btn btn-outline-danger"
-                               title="Eliminar">
+                            <button type="button"
+                                    class="btn btn-outline-danger"
+                                    title="Eliminar"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteExpenseModal"
+                                    data-delete-url="{% url 'expenses:delete' expense.pk %}"
+                                    data-description="{{ expense.description|default:'este gasto' }}">
                                 <i class="bi bi-trash"></i>
-                            </a>
+                            </button>
                         </div>
                     </td>
                 </tr>
@@ -220,4 +224,31 @@
 
 <!-- Paginación -->
 {% include 'components/pagination.html' %}
+
+<!-- Modal eliminar gasto -->
+<div class="modal fade" id="deleteExpenseModal" tabindex="-1" aria-labelledby="deleteExpenseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteExpenseModalLabel"><i class="bi bi-trash text-danger me-2"></i>Eliminar gasto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">¿Eliminás <strong id="deleteExpenseDescription"></strong>? Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i> Cancelar</button>
+                <form id="deleteExpenseForm" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-1"></i>Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'js/expense_list.js' %}"></script>
 {% endblock %}
