@@ -27,39 +27,61 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         user = self.request.user
         today = timezone.localdate()
-        current_month = today.month
-        current_year = today.year
 
-        # Año seleccionado para el gráfico de evolución (por defecto: año actual)
+        # Período seleccionado (por defecto: mes actual)
         try:
-            selected_year = int(self.request.GET.get("year", current_year))
+            selected_month = int(self.request.GET.get("month", today.month))
+            selected_year = int(self.request.GET.get("year", today.year))
         except (ValueError, TypeError):
-            selected_year = current_year
-        # Limitar a años con datos posibles (2020 → año actual)
-        selected_year = max(2020, min(selected_year, current_year))
+            selected_month = today.month
+            selected_year = today.year
 
-        # Para el gráfico: si es el año actual mostrar hasta el mes actual;
-        # si es un año anterior mostrar los 12 meses completos
-        evolution_month = current_month if selected_year == current_year else 12
+        # Limitar a rango válido: no futuro, no antes de 2020
+        if selected_year > today.year or (
+            selected_year == today.year and selected_month > today.month
+        ):
+            selected_month, selected_year = today.month, today.year
+        selected_month = max(1, min(selected_month, 12))
+        selected_year = max(2020, selected_year)
 
-        # Años disponibles para el selector (desde el primer año con datos hasta hoy)
-        first_year = self._get_first_data_year(user, current_year)
-        year_choices = list(range(first_year, current_year + 1))
+        is_current_period = selected_month == today.month and selected_year == today.year
 
-        # Información del período
-        context["current_month"] = current_month
-        context["current_year"] = current_year
-        context["month_name"] = get_month_name(current_month)
+        # Mes anterior y siguiente para navegación
+        if selected_month == 1:
+            prev_month, prev_nav_year = 12, selected_year - 1
+        else:
+            prev_month, prev_nav_year = selected_month - 1, selected_year
+
+        if selected_month == 12:
+            next_month, next_nav_year = 1, selected_year + 1
+        else:
+            next_month, next_nav_year = selected_month + 1, selected_year
+
+        # Años disponibles para el gráfico de evolución
+        first_year = self._get_first_data_year(user, today.year)
+        year_choices = list(range(first_year, today.year + 1))
+
+        # Para el gráfico de evolución: usar el año seleccionado
+        evolution_month = selected_month if selected_year == today.year else 12
+
+        context["current_month"] = selected_month
+        context["current_year"] = selected_year
+        context["month_name"] = get_month_name(selected_month)
         context["today"] = today
+        context["is_current_period"] = is_current_period
+        context["prev_month"] = prev_month
+        context["prev_nav_year"] = prev_nav_year
+        context["next_month"] = next_month
+        context["next_nav_year"] = next_nav_year
         context["selected_year"] = selected_year
         context["year_choices"] = year_choices
 
         # Obtener datos de cada módulo
-        context.update(self._get_balance_data(user, current_month, current_year))
+        context.update(self._get_balance_data(user, selected_month, selected_year))
         context.update(self._get_savings_data(user))
-        context.update(self._get_recurring_data(user, current_month, current_year))
+        context.update(self._get_recurring_data(user, selected_month, selected_year))
         context.update(self._get_recent_transactions(user))
-        context.update(self._get_expense_distribution(user, current_month, current_year))
+        context.update(self._get_expense_distribution(user, selected_month, selected_year))
         context.update(self._get_monthly_evolution(user, evolution_month, selected_year))
 
         return context

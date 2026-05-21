@@ -9,7 +9,20 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="h3 mb-0">Dashboard</h1>
-        <small class="text-muted">{{ month_name }} {{ current_year }}</small>
+        <div class="d-flex align-items-center gap-2 mt-1">
+            <a href="?month={{ prev_month }}&year={{ prev_nav_year }}" class="btn btn-outline-secondary btn-sm py-0 px-1" title="Mes anterior">
+                <i class="bi bi-chevron-left"></i>
+            </a>
+            <small class="text-muted fw-semibold">{{ month_name }} {{ current_year }}</small>
+            {% if not is_current_period %}
+            <a href="?month={{ next_month }}&year={{ next_nav_year }}" class="btn btn-outline-secondary btn-sm py-0 px-1" title="Mes siguiente">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+            <a href="{% url 'reports:dashboard' %}" class="btn btn-outline-primary btn-sm py-0 px-2" title="Volver al mes actual">
+                <i class="bi bi-house me-1"></i>Hoy
+            </a>
+            {% endif %}
+        </div>
     </div>
     <div class="btn-group">
         <a href="{% url 'expenses:create' %}" class="btn btn-danger">
@@ -395,6 +408,7 @@
                 <span><i class="bi bi-graph-up me-2"></i>Evolución Mensual</span>
                 {% if year_choices|length > 1 %}
                 <form method="get" class="d-flex align-items-center gap-2 mb-0">
+                    <input type="hidden" name="month" value="{{ current_month }}">
                     <label for="yearSelect" class="text-muted small mb-0">Año:</label>
                     <select id="yearSelect" name="year" class="form-select form-select-sm" style="width:auto;" onchange="this.form.submit()">
                         {% for y in year_choices %}
