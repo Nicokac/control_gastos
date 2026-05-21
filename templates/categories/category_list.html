@@ -15,25 +15,21 @@
     </a>
 </div>
 
-<div class="alert alert-light border mb-4">
-    <p class="mb-1 fw-semibold">Estructura de categorías</p>
-    <ul class="mb-0 small ps-3">
-        <li><strong>Grupos</strong>: agrupadores visuales (ej: "Alimentación"). No se asignan directamente a transacciones.</li>
-        <li><strong>Subcategorías</strong>: las que asignás a cada gasto/ingreso (ej: "Supermercado"). Siempre pertenecen a un grupo.</li>
-    </ul>
-</div>
-
-<div class="row">
+<div class="row" id="category-tree">
     <!-- Gastos -->
     <div class="col-md-6 mb-4">
         <div class="card">
             <div class="card-header bg-danger text-white">
-                <h5 class="mb-0"><i class="bi bi-arrow-up-circle"></i> Gastos</h5>
+                <h5 class="mb-2"><i class="bi bi-arrow-up-circle"></i> Gastos</h5>
+                <div class="input-group input-group-sm">
+                    <input type="search" class="form-control category-search" data-target="expense-sortable" placeholder="Buscar..." autocomplete="off">
+                    <button class="btn btn-outline-light category-search-clear" type="button" tabindex="-1"><i class="bi bi-x-lg"></i></button>
+                </div>
             </div>
             <div id="expense-sortable" data-reorder-url="{% url 'categories:reorder' %}">
                 {% for entry in expense_tree %}
                 {% with pk_str=entry.group.pk|stringformat:"d" %}{% with collapse_id="expense-group-"|add:pk_str %}
-                <div data-group-id="{{ entry.group.pk }}">
+                <div data-group-id="{{ entry.group.pk }}" data-group-name="{{ entry.group.name|lower }}">
                     <!-- Encabezado de grupo colapsable -->
                     <div class="list-group-item list-group-item-action py-2 bg-light border-bottom">
                         <div class="d-flex justify-content-between align-items-center">
@@ -64,7 +60,8 @@
                     <div class="collapse show" id="{{ collapse_id }}">
                         <ul class="list-group list-group-flush">
                             {% for category in entry.subcategories %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center ps-4">
+                            <li class="list-group-item d-flex justify-content-between align-items-center ps-4"
+                                data-sub-name="{{ category.name|lower }}">
                                 <div class="d-flex align-items-center gap-2">
                                     {% if category.icon %}<i class="{{ category.icon }}" data-color="{{ category.color|default:'#6c757d' }}"></i>{% endif %}
                                     <span>{{ category.name }}</span>
@@ -78,7 +75,7 @@
                                 {% endif %}
                             </li>
                             {% endfor %}
-                            <li class="list-group-item ps-4 py-2">
+                            <li class="list-group-item ps-4 py-2 category-add-link">
                                 <a href="{% url 'categories:create' %}?parent={{ entry.group.pk }}" class="text-decoration-none small text-primary">
                                     <i class="bi bi-plus-circle me-1"></i>Agregar subcategoría
                                 </a>
@@ -98,12 +95,16 @@
     <div class="col-md-6 mb-4">
         <div class="card">
             <div class="card-header bg-success text-white">
-                <h5 class="mb-0"><i class="bi bi-arrow-down-circle"></i> Ingresos</h5>
+                <h5 class="mb-2"><i class="bi bi-arrow-down-circle"></i> Ingresos</h5>
+                <div class="input-group input-group-sm">
+                    <input type="search" class="form-control category-search" data-target="income-sortable" placeholder="Buscar..." autocomplete="off">
+                    <button class="btn btn-outline-light category-search-clear" type="button" tabindex="-1"><i class="bi bi-x-lg"></i></button>
+                </div>
             </div>
             <div id="income-sortable" data-reorder-url="{% url 'categories:reorder' %}">
                 {% for entry in income_tree %}
                 {% with pk_str=entry.group.pk|stringformat:"d" %}{% with collapse_id="income-group-"|add:pk_str %}
-                <div data-group-id="{{ entry.group.pk }}">
+                <div data-group-id="{{ entry.group.pk }}" data-group-name="{{ entry.group.name|lower }}">
                     <!-- Encabezado de grupo colapsable -->
                     <div class="list-group-item list-group-item-action py-2 bg-light border-bottom">
                         <div class="d-flex justify-content-between align-items-center">
@@ -134,7 +135,8 @@
                     <div class="collapse show" id="{{ collapse_id }}">
                         <ul class="list-group list-group-flush">
                             {% for category in entry.subcategories %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center ps-4">
+                            <li class="list-group-item d-flex justify-content-between align-items-center ps-4"
+                                data-sub-name="{{ category.name|lower }}">
                                 <div class="d-flex align-items-center gap-2">
                                     {% if category.icon %}<i class="{{ category.icon }}" data-color="{{ category.color|default:'#6c757d' }}"></i>{% endif %}
                                     <span>{{ category.name }}</span>
@@ -148,7 +150,7 @@
                                 {% endif %}
                             </li>
                             {% endfor %}
-                            <li class="list-group-item ps-4 py-2">
+                            <li class="list-group-item ps-4 py-2 category-add-link">
                                 <a href="{% url 'categories:create' %}?parent={{ entry.group.pk }}" class="text-decoration-none small text-success">
                                     <i class="bi bi-plus-circle me-1"></i>Agregar subcategoría
                                 </a>
@@ -164,4 +166,9 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'js/category_list.js' %}"></script>
 {% endblock %}
