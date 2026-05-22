@@ -161,9 +161,20 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "1.4.2"
+APP_VERSION = "1.4.3"
 
 WHATS_NEW = [
+    {
+        "version": "1.4.3",
+        "date": "Mayo 2026",
+        "title": "Mejoras en la lista y formulario de Gastos",
+        "items": [
+            "Gastos: el resumen del período ahora incluye desglose por categoría individual, además de tipo y método de pago",
+            "Gastos: nuevos filtros de monto mínimo y máximo para encontrar gastos grandes o en un rango específico",
+            "Gastos: método de pago y tipo de gasto ahora están siempre visibles en el formulario, sin necesidad de expandir",
+            "Gastos: la vista de detalle muestra siempre método de pago y tipo, con link para completarlos si están vacíos",
+        ],
+    },
     {
         "version": "1.4.2",
         "date": "Mayo 2026",

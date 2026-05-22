@@ -619,15 +619,15 @@ La paginación solo permite avanzar una página a la vez. No hay botones para ir
 
 ### DT-037 — Gastos: panel "Ver resumen" sin desglose por categoría individual
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.4.3)
 
-El panel de resumen muestra desglose por tipo de gasto y método de pago, pero no por categoría individual. El desglose por categoría es la consulta más frecuente. Implementación esperada: top N de categorías con sus totales en el panel de resumen.
+El panel "Ver resumen" ahora incluye tres columnas: Por categoría (ordenado por monto descendente, con nombre del grupo padre), Por tipo de gasto y Por método de pago. La query agrega por `category_id` sobre el queryset ya filtrado, sin query adicional al servidor.
 
 ### DT-038 — Gastos: filtro por rango de monto
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.4.3)
 
-No hay forma de filtrar gastos por monto mínimo o máximo. Útil para auditar gastos atípicos. Implementación esperada: campos "Monto mínimo / Monto máximo" en el panel de "Más filtros".
+Campos "Monto mínimo" y "Monto máximo" en la fila de filtros de la lista de gastos. Filtran sobre `amount_ars`. Se incluyen en la detección de filtros activos para el estado vacío diferenciado.
 
 ### DT-039 — Gastos/Ingresos: paridad de funcionalidad entre secciones
 

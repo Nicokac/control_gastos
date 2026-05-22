@@ -60,6 +60,14 @@
                 <label class="form-label small text-muted">Tipo</label>
                 {{ filter_form.expense_type }}
             </div>
+            <div class="col-md-2">
+                <label class="form-label small text-muted">Monto mínimo</label>
+                {{ filter_form.amount_min }}
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small text-muted">Monto máximo</label>
+                {{ filter_form.amount_max }}
+            </div>
 
             <div class="col-auto ms-auto d-flex gap-2 align-items-end">
                 <button type="submit" class="btn btn-outline-primary btn-sm">
@@ -85,7 +93,7 @@
         <div class="d-flex justify-content-between align-items-center">
             <span class="text-muted">Total del período:</span>
             <div class="d-flex align-items-center gap-3">
-                {% if expense_type_summary or payment_method_summary %}
+                {% if expense_type_summary or payment_method_summary or category_summary %}
                 <a class="text-decoration-none small text-muted"
                    data-bs-toggle="collapse"
                    href="#expenseSummaryDetail"
@@ -96,12 +104,25 @@
                 <span class="h4 mb-0 text-danger">{{ total|currency }}</span>
             </div>
         </div>
-        {% if expense_type_summary or payment_method_summary %}
+        {% if expense_type_summary or payment_method_summary or category_summary %}
         <div class="collapse" id="expenseSummaryDetail">
             <hr class="my-3">
             <div class="row g-3">
+                {% if category_summary %}
+                <div class="col-md-4">
+                    <p class="small text-muted mb-2">Por categoría</p>
+                    {% for item in category_summary %}
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span class="text-truncate me-2" style="max-width:65%">
+                            {% if item.parent %}<span class="text-muted">{{ item.parent }} · </span>{% endif %}{{ item.name }}
+                        </span>
+                        <span class="text-danger flex-shrink-0">{{ item.subtotal|currency }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
                 {% if expense_type_summary %}
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <p class="small text-muted mb-2">Por tipo de gasto</p>
                     {% for item in expense_type_summary %}
                     <div class="d-flex justify-content-between small mb-1">
@@ -112,7 +133,7 @@
                 </div>
                 {% endif %}
                 {% if payment_method_summary %}
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <p class="small text-muted mb-2">Por método de pago</p>
                     {% for item in payment_method_summary %}
                     <div class="d-flex justify-content-between small mb-1">

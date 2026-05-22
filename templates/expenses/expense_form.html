@@ -50,12 +50,12 @@
                 {% if form.errors %}
                 <div class="alert alert-warning">
                     <p class="mb-1 fw-semibold">No pudimos guardar el gasto.</p>
-                    <p class="mb-0 small">Completá monto, categoría y fecha. La descripción, el destino de ahorro y las opciones avanzadas son opcionales.</p>
+                    <p class="mb-0 small">Completá monto, categoría y fecha. La descripción, destino de ahorro, método de pago y tipo son opcionales.</p>
                 </div>
                 {% else %}
                 <div class="alert alert-light border mb-4">
                     <p class="mb-1 fw-semibold">Antes de registrarlo</p>
-                    <p class="mb-0 small">Monto, categoría y fecha son obligatorios. La descripción, el destino de ahorro y las opciones avanzadas son opcionales.</p>
+                    <p class="mb-0 small">Monto, categoría y fecha son obligatorios. La descripción, destino de ahorro, método de pago y tipo son opcionales.</p>
                 </div>
                 {% endif %}
 
@@ -192,45 +192,34 @@
                             {% endif %}
                         </div>
 
-                        <!-- OPCIONES AVANZADAS (colapsadas por defecto) -->
-                        <div class="mb-4">
-                            <a class="text-decoration-none small"
-                            data-bs-toggle="collapse"
-                            href="#advancedFields"
-                            role="button">
-                                <i class="bi bi-chevron-down me-1"></i>Opciones avanzadas
-                            </a>
-                            <div class="collapse {% if form.payment_method.value or form.expense_type.value %}show{% endif %}"
-                                id="advancedFields">
-                                <div class="row mt-3 pt-3 border-top">
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label text-muted">Método de pago</label>
-                                        <select name="payment_method" class="form-select {% if form.payment_method.errors %}is-invalid{% endif %}">
-                                            {% for value, label in form.payment_method.field.choices %}
-                                            <option value="{{ value }}" {% if form.payment_method.value == value %}selected{% endif %}>
-                                                {{ label }}
-                                            </option>
-                                            {% endfor %}
-                                        </select>
-                                        {% if form.payment_method.errors %}
-                                        <div class="invalid-feedback">{{ form.payment_method.errors.0 }}</div>
-                                        {% endif %}
-                                    </div>
+                        <!-- MÉTODO DE PAGO Y TIPO -->
+                        <div class="row mb-4 pt-3 border-top">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label text-muted">Método de pago <span class="fw-normal">(opcional)</span></label>
+                                <select name="payment_method" class="form-select {% if form.payment_method.errors %}is-invalid{% endif %}">
+                                    {% for value, label in form.payment_method.field.choices %}
+                                    <option value="{{ value }}" {% if form.payment_method.value == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                {% if form.payment_method.errors %}
+                                <div class="invalid-feedback">{{ form.payment_method.errors.0 }}</div>
+                                {% endif %}
+                            </div>
 
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label text-muted">Tipo de gasto</label>
-                                        <select name="expense_type" class="form-select {% if form.expense_type.errors %}is-invalid{% endif %}">
-                                            {% for value, label in form.expense_type.field.choices %}
-                                            <option value="{{ value }}" {% if form.expense_type.value == value %}selected{% endif %}>
-                                                {{ label }}
-                                            </option>
-                                            {% endfor %}
-                                        </select>
-                                        {% if form.expense_type.errors %}
-                                        <div class="invalid-feedback">{{ form.expense_type.errors.0 }}</div>
-                                        {% endif %}
-                                    </div>
-                                </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label text-muted">Tipo de gasto <span class="fw-normal">(opcional)</span></label>
+                                <select name="expense_type" class="form-select {% if form.expense_type.errors %}is-invalid{% endif %}">
+                                    {% for value, label in form.expense_type.field.choices %}
+                                    <option value="{{ value }}" {% if form.expense_type.value == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                {% if form.expense_type.errors %}
+                                <div class="invalid-feedback">{{ form.expense_type.errors.0 }}</div>
+                                {% endif %}
                             </div>
                         </div>
 

@@ -5,6 +5,17 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.4.3] — 2026-05-21
+
+### Added
+
+- **Gastos**: desglose por categoría individual en el panel "Ver resumen", ordenado por monto descendente con nombre del grupo padre.
+- **Gastos**: filtros de monto mínimo y máximo en la fila de filtros de la lista.
+- **Gastos**: método de pago y tipo de gasto siempre visibles en el formulario (sin collapse).
+- **Gastos**: vista de detalle muestra siempre método de pago y tipo, con link "Completar" cuando están vacíos.
+
+---
+
 ## [1.4.2] — 2026-05-21
 
 ### Added

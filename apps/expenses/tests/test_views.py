@@ -257,10 +257,7 @@ class TestExpenseCreateView:
         assert "Fecha" in content
         assert "Descripci" in content
 
-        # Bloque de avanzados visible como trigger
-        assert "Opciones avanzadas" in content
-
-        # Campos avanzados renderizados en template
+        # Campos opcionales visibles directamente en el formulario
         assert "M\u00e9todo de pago" in content or "Método de pago" in content
         assert "Tipo de gasto" in content
 

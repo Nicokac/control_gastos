@@ -44,6 +44,8 @@ class ExpenseListView(UserOwnedListView):
                 "date_to",
                 "payment_method",
                 "expense_type",
+                "amount_min",
+                "amount_max",
             ]
         )
 
@@ -98,6 +100,19 @@ class ExpenseListView(UserOwnedListView):
         if expense_type:
             qs = qs.filter(expense_type=expense_type)
 
+        try:
+            amount_min = self.request.GET.get("amount_min")
+            if amount_min:
+                qs = qs.filter(amount_ars__gte=amount_min)
+        except (ValueError, TypeError):
+            pass
+        try:
+            amount_max = self.request.GET.get("amount_max")
+            if amount_max:
+                qs = qs.filter(amount_ars__lte=amount_max)
+        except (ValueError, TypeError):
+            pass
+
         order_by = self.request.GET.get("order_by", "date")
         direction = self.request.GET.get("dir", "desc")
         allowed_fields = {
@@ -138,7 +153,15 @@ class ExpenseListView(UserOwnedListView):
         context["filter_form"] = ExpenseFilterForm(form_data, user=self.request.user)
         context["has_active_filters"] = any(
             self.request.GET.get(key)
-            for key in ["q", "category", "subcategory", "payment_method", "expense_type"]
+            for key in [
+                "q",
+                "category",
+                "subcategory",
+                "payment_method",
+                "expense_type",
+                "amount_min",
+                "amount_max",
+            ]
         )
         context["order_by"] = self.request.GET.get("order_by", "date")
         context["order_dir"] = self.request.GET.get("dir", "desc")
@@ -183,6 +206,20 @@ class ExpenseListView(UserOwnedListView):
                 {"label": "Sin clasificar", "subtotal": method_unclassified}
             )
         context["payment_method_summary"] = payment_method_summary
+
+        category_summary = [
+            {
+                "name": row["category__name"],
+                "parent": row["category__parent__name"] or "",
+                "subtotal": row["subtotal"],
+                "category_pk": row["category_id"],
+            }
+            for row in qs.select_related("category__parent")
+            .values("category_id", "category__name", "category__parent__name")
+            .annotate(subtotal=Sum("amount_ars"))
+            .order_by("-subtotal")
+        ]
+        context["category_summary"] = category_summary
 
         return context
 

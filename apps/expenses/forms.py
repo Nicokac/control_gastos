@@ -208,6 +208,20 @@ class ExpenseForm(CurrencyFormMixin, forms.ModelForm):
 class ExpenseFilterForm(BaseFilterForm):
     """Formulario para filtrar gastos."""
 
+    amount_min = forms.DecimalField(
+        required=False,
+        min_value=0,
+        widget=forms.NumberInput(
+            attrs={"class": "form-control form-select-sm", "placeholder": "Mín"}
+        ),
+    )
+    amount_max = forms.DecimalField(
+        required=False,
+        min_value=0,
+        widget=forms.NumberInput(
+            attrs={"class": "form-control form-select-sm", "placeholder": "Máx"}
+        ),
+    )
     subcategory = forms.ModelChoiceField(
         queryset=Category.objects.none(),
         required=False,
