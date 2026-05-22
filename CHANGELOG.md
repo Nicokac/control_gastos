@@ -5,6 +5,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.4.4] — 2026-05-21
+
+### Added
+
+- **Ingresos**: desglose por categoría en panel "Ver resumen" del período.
+- **Ingresos**: filtros de monto mínimo y máximo en la lista.
+
+---
+
 ## [1.4.3] — 2026-05-21
 
 ### Added

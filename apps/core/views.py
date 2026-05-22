@@ -161,9 +161,18 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "1.4.3"
+APP_VERSION = "1.4.4"
 
 WHATS_NEW = [
+    {
+        "version": "1.4.4",
+        "date": "Mayo 2026",
+        "title": "Ingresos: paridad completa con Gastos",
+        "items": [
+            "Ingresos: el resumen del período ahora incluye desglose por categoría con el botón 'Ver resumen'",
+            "Ingresos: nuevos filtros de monto mínimo y máximo para encontrar ingresos en un rango específico",
+        ],
+    },
     {
         "version": "1.4.3",
         "date": "Mayo 2026",

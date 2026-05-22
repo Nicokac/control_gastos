@@ -126,5 +126,20 @@ class IncomeForm(CurrencyFormMixin, forms.ModelForm):
 class IncomeFilterForm(BaseFilterForm):
     """Formulario para filtrar ingresos."""
 
+    amount_min = forms.DecimalField(
+        required=False,
+        min_value=0,
+        widget=forms.NumberInput(
+            attrs={"class": "form-control form-select-sm", "placeholder": "Mín"}
+        ),
+    )
+    amount_max = forms.DecimalField(
+        required=False,
+        min_value=0,
+        widget=forms.NumberInput(
+            attrs={"class": "form-control form-select-sm", "placeholder": "Máx"}
+        ),
+    )
+
     def get_category_queryset(self, user):
         return Category.get_income_categories(user)
