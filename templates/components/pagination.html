@@ -1,23 +1,52 @@
 {% if page_obj.has_other_pages %}
 <nav class="mt-4">
-    <ul class="pagination justify-content-center">
+    <ul class="pagination justify-content-center align-items-center">
         {% if page_obj.has_previous %}
         <li class="page-item">
             <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
                 <i class="bi bi-chevron-left"></i>
             </a>
         </li>
-        {% endif %}
+        {% else %}
         <li class="page-item disabled">
-            <span class="page-link">
-                Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+            <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+        </li>
+        {% endif %}
+
+        <li class="page-item disabled">
+            <span class="page-link text-muted small">
+                {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
             </span>
         </li>
+
+        {% if page_obj.paginator.num_pages > 2 %}
+        <li class="page-item">
+            <form method="get" class="d-flex align-items-center gap-1 px-1" id="page-jump-form">
+                {% for key, value in request.GET.items %}{% if key != 'page' %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}{% endfor %}
+                <input type="number"
+                       name="page"
+                       min="1"
+                       max="{{ page_obj.paginator.num_pages }}"
+                       class="form-control form-control-sm text-center"
+                       style="width:4rem"
+                       placeholder="Ir a"
+                       aria-label="Ir a página">
+                <button type="submit" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-right"></i>
+                </button>
+            </form>
+        </li>
+        {% endif %}
+
         {% if page_obj.has_next %}
         <li class="page-item">
             <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
                 <i class="bi bi-chevron-right"></i>
             </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link"><i class="bi bi-chevron-right"></i></span>
         </li>
         {% endif %}
     </ul>
