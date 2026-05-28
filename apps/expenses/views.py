@@ -213,13 +213,20 @@ class ExpenseListView(UserOwnedListView):
                 "parent": row["category__parent__name"] or "",
                 "subtotal": row["subtotal"],
                 "category_pk": row["category_id"],
+                "color": row["category__color"] or "#6c757d",
             }
             for row in qs.select_related("category__parent")
-            .values("category_id", "category__name", "category__parent__name")
+            .values("category_id", "category__name", "category__parent__name", "category__color")
             .annotate(subtotal=Sum("amount_ars"))
             .order_by("-subtotal")
         ]
         context["category_summary"] = category_summary
+
+        # Datos para el donut chart (JSON)
+        context["donut_labels"] = [item["name"] for item in category_summary]
+        context["donut_data"] = [float(item["subtotal"]) for item in category_summary]
+        context["donut_colors"] = [item["color"] for item in category_summary]
+        context["donut_pks"] = [item["category_pk"] for item in category_summary]
 
         return context
 

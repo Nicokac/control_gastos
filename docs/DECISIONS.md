@@ -613,9 +613,9 @@ Headers Fecha, Categoría, Descripción y Monto son clickeables en las listas de
 
 ### DT-036 — Gastos: paginación sin salto directo a página
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.4.4)
 
-La paginación solo permite avanzar una página a la vez. No hay botones para ir a la primera/última página ni input de número de página. Baja urgencia dado que el filtro de mes ya acota los resultados.
+Input numérico + botón en el componente `pagination.html` para saltar directamente a cualquier página. Solo visible cuando hay más de 2 páginas. Preserva todos los filtros activos via hidden inputs. Prev/next ahora también muestran estado disabled en los extremos.
 
 ### DT-037 — Gastos: panel "Ver resumen" sin desglose por categoría individual
 
@@ -634,6 +634,30 @@ Campos "Monto mínimo" y "Monto máximo" en la fila de filtros de la lista de ga
 **Estado:** ✅ Resuelto (v1.2.2)
 
 Ingresos recibió: duplicar con `?duplicate=<pk>`, modal de eliminación con confirmación (`income_list.js`), búsqueda por categoría/grupo (Q filter), `has_active_filters` con estado vacío diferenciado, fecha en `d/m/Y`, grupo visible sobre el badge y `select_related("category__parent")`.
+
+### DT-040 — Gastos: donut chart de distribución por categoría
+
+**Estado:** ⏳ Pendiente
+
+Dentro del panel "Ver resumen" de la lista de gastos, agregar un donut chart (Chart.js) que muestre la distribución del período filtrado por categoría. El hueco central muestra el total del período. Los colores reutilizan los mismos que los chips de categoría (`category.color`). Clic en una porción filtra la tabla a esa categoría. Siempre visible cuando hay datos. Chart.js ya está disponible en el proyecto.
+
+### DT-041 — Gastos: barras horizontales de ranking por categoría
+
+**Estado:** ⏳ Pendiente
+
+Convive con el donut (DT-040) dentro del panel "Ver resumen". Barras horizontales ordenadas de mayor a menor gasto por categoría, mostrando monto absoluto y porcentaje sobre el total. Complementa al donut: el donut da la proporción visual, las barras dan el ranking y la magnitud. Mismo dataset que el donut, sin query adicional.
+
+### DT-042 — Gastos: línea de acumulado diario dentro del mes
+
+**Estado:** ⏳ Pendiente
+
+Cuando el filtro tiene un mes específico seleccionado, mostrar un gráfico de línea con el gasto acumulado día a día dentro de ese mes. Permite identificar en qué momento del mes se concentran los gastos. Requiere una query adicional agrupada por día sobre el queryset filtrado. Se oculta cuando no hay filtro de mes específico.
+
+### DT-043 — Gastos: barras apiladas de evolución mensual
+
+**Estado:** ⏳ Pendiente
+
+Cuando el filtro tiene año pero no mes específico, mostrar un gráfico de barras apiladas con los 12 meses del año en el eje X y el monto por categoría apilado en el eje Y. Permite ver cómo evoluciona la composición del gasto mes a mes. Se oculta cuando hay un mes específico seleccionado. Requiere query agrupada por mes y categoría para el año seleccionado.
 
 ---
 
