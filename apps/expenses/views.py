@@ -222,11 +222,38 @@ class ExpenseListView(UserOwnedListView):
         ]
         context["category_summary"] = category_summary
 
-        # Datos para el donut chart (JSON)
-        context["donut_labels"] = [item["name"] for item in category_summary]
-        context["donut_data"] = [float(item["subtotal"]) for item in category_summary]
-        context["donut_colors"] = [item["color"] for item in category_summary]
-        context["donut_pks"] = [item["category_pk"] for item in category_summary]
+        # Donut chart: agrupar por grupo (parent), no por subcategoría
+        group_totals = {}
+        for row in qs.values(
+            "category__parent_id",
+            "category__parent__name",
+            "category__parent__color",
+            "category_id",
+            "category__name",
+            "category__color",
+        ).annotate(subtotal=Sum("amount_ars")):
+            if row["category__parent_id"]:
+                # subcategoría → agrupar en su grupo padre
+                gid = row["category__parent_id"]
+                gname = row["category__parent__name"]
+                gcolor = row["category__parent__color"] or "#6c757d"
+                gpk = row["category__parent_id"]
+            else:
+                # gasto asignado directamente a un grupo
+                gid = row["category_id"]
+                gname = row["category__name"]
+                gcolor = row["category__color"] or "#6c757d"
+                gpk = row["category_id"]
+
+            if gid not in group_totals:
+                group_totals[gid] = {"name": gname, "color": gcolor, "pk": gpk, "subtotal": 0}
+            group_totals[gid]["subtotal"] += row["subtotal"]
+
+        donut_groups = sorted(group_totals.values(), key=lambda x: x["subtotal"], reverse=True)
+        context["donut_labels"] = [g["name"] for g in donut_groups]
+        context["donut_data"] = [float(g["subtotal"]) for g in donut_groups]
+        context["donut_colors"] = [g["color"] for g in donut_groups]
+        context["donut_pks"] = [g["pk"] for g in donut_groups]
 
         return context
 

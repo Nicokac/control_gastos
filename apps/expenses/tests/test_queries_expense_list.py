@@ -33,7 +33,7 @@ def test_expense_list_query_count_is_stable_requestfactory(
     # 5) categorías del filter_form
     # 6) listado paginado
     # 7+) queries adicionales por categorías agrupadas y contexto extra
-    with django_assert_max_num_queries(10):
+    with django_assert_max_num_queries(11):
         response = ExpenseListView.as_view()(request)
         response.render()  # fuerza template + queryset
 
