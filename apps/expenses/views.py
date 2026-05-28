@@ -207,22 +207,7 @@ class ExpenseListView(UserOwnedListView):
             )
         context["payment_method_summary"] = payment_method_summary
 
-        category_summary = [
-            {
-                "name": row["category__name"],
-                "parent": row["category__parent__name"] or "",
-                "subtotal": row["subtotal"],
-                "category_pk": row["category_id"],
-                "color": row["category__color"] or "#6c757d",
-            }
-            for row in qs.select_related("category__parent")
-            .values("category_id", "category__name", "category__parent__name", "category__color")
-            .annotate(subtotal=Sum("amount_ars"))
-            .order_by("-subtotal")
-        ]
-        context["category_summary"] = category_summary
-
-        # Donut chart: agrupar por grupo (parent), no por subcategoría
+        # Agrupar por grupo (parent), no por subcategoría — fuente única para donut y leyenda
         group_totals = {}
         for row in qs.values(
             "category__parent_id",
@@ -233,27 +218,29 @@ class ExpenseListView(UserOwnedListView):
             "category__color",
         ).annotate(subtotal=Sum("amount_ars")):
             if row["category__parent_id"]:
-                # subcategoría → agrupar en su grupo padre
                 gid = row["category__parent_id"]
                 gname = row["category__parent__name"]
                 gcolor = row["category__parent__color"] or "#6c757d"
-                gpk = row["category__parent_id"]
             else:
-                # gasto asignado directamente a un grupo
                 gid = row["category_id"]
                 gname = row["category__name"]
                 gcolor = row["category__color"] or "#6c757d"
-                gpk = row["category_id"]
 
             if gid not in group_totals:
-                group_totals[gid] = {"name": gname, "color": gcolor, "pk": gpk, "subtotal": 0}
+                group_totals[gid] = {"name": gname, "color": gcolor, "pk": gid, "subtotal": 0}
             group_totals[gid]["subtotal"] += row["subtotal"]
 
-        donut_groups = sorted(group_totals.values(), key=lambda x: x["subtotal"], reverse=True)
-        context["donut_labels"] = [g["name"] for g in donut_groups]
-        context["donut_data"] = [float(g["subtotal"]) for g in donut_groups]
-        context["donut_colors"] = [g["color"] for g in donut_groups]
-        context["donut_pks"] = [g["pk"] for g in donut_groups]
+        group_summary = sorted(group_totals.values(), key=lambda x: x["subtotal"], reverse=True)
+        total_nonzero = total or 1
+        for g in group_summary:
+            g["pct"] = round(g["subtotal"] / total_nonzero * 100, 1)
+
+        context["group_summary"] = group_summary
+        context["category_summary"] = group_summary  # compatibilidad con income_list pattern
+        context["donut_labels"] = [g["name"] for g in group_summary]
+        context["donut_data"] = [float(g["subtotal"]) for g in group_summary]
+        context["donut_colors"] = [g["color"] for g in group_summary]
+        context["donut_pks"] = [g["pk"] for g in group_summary]
 
         return context
 

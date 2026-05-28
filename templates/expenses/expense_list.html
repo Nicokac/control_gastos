@@ -104,18 +104,18 @@
                 <span class="h4 mb-0 text-danger">{{ total|currency }}</span>
             </div>
         </div>
-        {% if expense_type_summary or payment_method_summary or category_summary %}
+        {% if group_summary or expense_type_summary or payment_method_summary %}
         {{ donut_labels|json_script:"expense-donut-labels" }}
         {{ donut_data|json_script:"expense-donut-data" }}
         {{ donut_colors|json_script:"expense-donut-colors" }}
         {{ donut_pks|json_script:"expense-donut-pks" }}
         <div class="collapse" id="expenseSummaryDetail">
             <hr class="my-3">
-            {% if category_summary %}
-            <div class="row g-3 mb-3 justify-content-center">
+            {% if group_summary %}
+            <div class="d-flex gap-4 align-items-stretch mb-3" style="min-height:220px">
                 <!-- Donut -->
-                <div class="col-auto d-flex justify-content-center">
-                    <div style="position:relative;width:200px;height:200px;flex-shrink:0">
+                <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="width:200px">
+                    <div style="position:relative;width:200px;height:200px">
                         <canvas id="expenseDonutChart"></canvas>
                         <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;width:110px">
                             <div class="small text-muted" id="expenseDonutLabel">Total</div>
@@ -123,22 +123,19 @@
                         </div>
                     </div>
                 </div>
-                <!-- Leyenda por grupo -->
-                <div class="col-md-7 col-lg-6">
+                <!-- Leyenda por grupo — card scrolleable -->
+                <div class="flex-grow-1 overflow-y-auto" style="max-height:240px">
                     <p class="small text-muted mb-2">Por grupo</p>
-                    <div id="expenseDonutLegend">
-                        {% for item in category_summary %}
-                        <div class="d-flex justify-content-between align-items-center small mb-1 donut-legend-item"
-                             data-pk="{{ item.category_pk }}"
-                             style="cursor:default">
-                            <span class="d-flex align-items-center gap-2 text-truncate me-2" style="max-width:70%">
-                                <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:{{ item.color|default:'#6c757d' }};flex-shrink:0"></span>
-                                {% if item.parent %}<span class="text-muted">{{ item.parent }} · </span>{% endif %}{{ item.name }}
-                            </span>
-                            <span class="text-danger flex-shrink-0">{{ item.subtotal|currency }}</span>
-                        </div>
-                        {% endfor %}
-                    </div>
+                    {% for g in group_summary %}
+                    <a href="?{% for key, value in request.GET.items %}{% if key != 'category' and key != 'subcategory' %}{{ key }}={{ value }}&{% endif %}{% endfor %}category={{ g.pk }}"
+                       class="d-flex align-items-center small mb-2 text-decoration-none text-body donut-legend-row"
+                       title="Filtrar por {{ g.name }}">
+                        <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:{{ g.color }};flex-shrink:0;margin-right:8px"></span>
+                        <span class="text-truncate flex-grow-1 me-2">{{ g.name }}</span>
+                        <span class="text-muted small me-2 flex-shrink-0">{{ g.pct }}%</span>
+                        <span class="text-danger fw-semibold flex-shrink-0">{{ g.subtotal|currency }}</span>
+                    </a>
+                    {% endfor %}
                 </div>
             </div>
             <hr class="my-3">
