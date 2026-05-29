@@ -123,19 +123,22 @@
                         </div>
                     </div>
                 </div>
-                <!-- Leyenda por grupo — card scrolleable -->
-                <div class="flex-grow-1 overflow-y-auto" style="max-height:240px">
-                    <p class="small text-muted mb-2">Por grupo</p>
-                    {% for g in group_summary %}
-                    <a href="?{% for key, value in request.GET.items %}{% if key != 'category' and key != 'subcategory' %}{{ key }}={{ value }}&{% endif %}{% endfor %}category={{ g.pk }}"
-                       class="d-flex align-items-center small mb-2 text-decoration-none text-body donut-legend-row"
-                       title="Filtrar por {{ g.name }}">
-                        <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:{{ g.color }};flex-shrink:0;margin-right:8px"></span>
-                        <span class="text-truncate flex-grow-1 me-2">{{ g.name }}</span>
-                        <span class="text-muted small me-2 flex-shrink-0">{{ g.pct }}%</span>
-                        <span class="text-danger fw-semibold flex-shrink-0">{{ g.subtotal|currency }}</span>
-                    </a>
-                    {% endfor %}
+                <!-- Leyenda por grupo — card scrolleable con fade inferior -->
+                <div class="flex-grow-1 position-relative">
+                    <div class="overflow-y-auto" id="expenseGroupLegend" style="max-height:220px">
+                        <p class="small text-muted mb-2">Por grupo</p>
+                        {% for g in group_summary %}
+                        <a href="?{% for key, value in request.GET.items %}{% if key != 'category' and key != 'subcategory' %}{{ key }}={{ value }}&{% endif %}{% endfor %}category={{ g.pk }}"
+                           class="d-flex align-items-center small mb-2 text-decoration-none text-body donut-legend-row"
+                           title="Filtrar por {{ g.name }}">
+                            <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:{{ g.color }};flex-shrink:0;margin-right:8px"></span>
+                            <span class="text-truncate flex-grow-1 me-2">{{ g.name }}</span>
+                            <span class="text-muted small me-2 flex-shrink-0">{{ g.pct }}%</span>
+                            <span class="text-danger fw-semibold flex-shrink-0">{{ g.subtotal|currency }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    <div id="expenseLegendFade" style="position:absolute;bottom:0;left:0;right:0;height:32px;background:linear-gradient(transparent,#fff);pointer-events:none"></div>
                 </div>
             </div>
             <hr class="my-3">
@@ -145,9 +148,14 @@
                 <div class="col-md-6">
                     <p class="small text-muted mb-2">Por tipo de gasto</p>
                     {% for item in expense_type_summary %}
-                    <div class="d-flex justify-content-between small mb-1">
-                        <span>{{ item.label }}</span>
-                        <span class="text-danger">{{ item.subtotal|currency }}</span>
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span>{{ item.label }}</span>
+                            <span class="text-muted">{{ item.pct }}% · {{ item.subtotal|currency }}</span>
+                        </div>
+                        <div class="progress" style="height:4px">
+                            <div class="progress-bar bg-danger" style="width:{{ item.pct }}%"></div>
+                        </div>
                     </div>
                     {% endfor %}
                 </div>
@@ -156,9 +164,14 @@
                 <div class="col-md-6">
                     <p class="small text-muted mb-2">Por método de pago</p>
                     {% for item in payment_method_summary %}
-                    <div class="d-flex justify-content-between small mb-1">
-                        <span>{{ item.label }}</span>
-                        <span class="text-danger">{{ item.subtotal|currency }}</span>
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span>{{ item.label }}</span>
+                            <span class="text-muted">{{ item.pct }}% · {{ item.subtotal|currency }}</span>
+                        </div>
+                        <div class="progress" style="height:4px">
+                            <div class="progress-bar bg-danger" style="width:{{ item.pct }}%"></div>
+                        </div>
                     </div>
                     {% endfor %}
                 </div>

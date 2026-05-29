@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (collapse) {
         collapse.addEventListener('shown.bs.collapse', function () {
             initExpenseDonut();
+            initLegendFade();
         }, { once: true });
     }
 });
@@ -123,6 +124,20 @@ function initExpenseDonut() {
         if (totalLabel) totalLabel.textContent = 'Total';
         if (totalVal) totalVal.textContent = originalTotal;
     }
+}
+
+function initLegendFade() {
+    const legend = document.getElementById('expenseGroupLegend');
+    const fade = document.getElementById('expenseLegendFade');
+    if (!legend || !fade) return;
+
+    function updateFade() {
+        const atBottom = legend.scrollHeight - legend.scrollTop <= legend.clientHeight + 2;
+        fade.style.display = atBottom ? 'none' : 'block';
+    }
+
+    updateFade();
+    legend.addEventListener('scroll', updateFade);
 }
 
 function formatARS(value) {

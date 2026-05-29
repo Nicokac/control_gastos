@@ -170,6 +170,7 @@ class ExpenseListView(UserOwnedListView):
 
         total = qs.aggregate(total=Sum("amount_ars"))["total"] or 0
         context["total"] = total
+        total_nonzero = total or 1
 
         expense_type_labels = dict(ExpenseType.choices)
         type_classified = qs.exclude(expense_type="").aggregate(s=Sum("amount_ars"))["s"] or 0
@@ -186,6 +187,9 @@ class ExpenseListView(UserOwnedListView):
         ]
         if type_unclassified > 0:
             expense_type_summary.append({"label": "Sin clasificar", "subtotal": type_unclassified})
+        for item in expense_type_summary:
+            item["pct"] = round(item["subtotal"] / total_nonzero * 100, 1)
+        expense_type_summary.sort(key=lambda x: x["subtotal"], reverse=True)
         context["expense_type_summary"] = expense_type_summary
 
         payment_method_labels = dict(PaymentMethod.choices)
@@ -205,6 +209,9 @@ class ExpenseListView(UserOwnedListView):
             payment_method_summary.append(
                 {"label": "Sin clasificar", "subtotal": method_unclassified}
             )
+        for item in payment_method_summary:
+            item["pct"] = round(item["subtotal"] / total_nonzero * 100, 1)
+        payment_method_summary.sort(key=lambda x: x["subtotal"], reverse=True)
         context["payment_method_summary"] = payment_method_summary
 
         # Agrupar por grupo (parent), no por subcategoría — fuente única para donut y leyenda
@@ -231,16 +238,33 @@ class ExpenseListView(UserOwnedListView):
             group_totals[gid]["subtotal"] += row["subtotal"]
 
         group_summary = sorted(group_totals.values(), key=lambda x: x["subtotal"], reverse=True)
-        total_nonzero = total or 1
         for g in group_summary:
             g["pct"] = round(g["subtotal"] / total_nonzero * 100, 1)
 
+        # Agrupar segmentos < 3% en "Otros" para el donut (la card muestra todos)
+        DONUT_MIN_PCT = 3
+        main_groups = [g for g in group_summary if g["pct"] >= DONUT_MIN_PCT]
+        small_groups = [g for g in group_summary if g["pct"] < DONUT_MIN_PCT]
+        donut_groups = main_groups[:]
+        if small_groups:
+            otros_subtotal = sum(g["subtotal"] for g in small_groups)
+            otros_pct = round(otros_subtotal / total_nonzero * 100, 1)
+            donut_groups.append(
+                {
+                    "name": "Otros",
+                    "color": "#adb5bd",
+                    "pk": None,
+                    "subtotal": otros_subtotal,
+                    "pct": otros_pct,
+                }
+            )
+
         context["group_summary"] = group_summary
-        context["category_summary"] = group_summary  # compatibilidad con income_list pattern
-        context["donut_labels"] = [g["name"] for g in group_summary]
-        context["donut_data"] = [float(g["subtotal"]) for g in group_summary]
-        context["donut_colors"] = [g["color"] for g in group_summary]
-        context["donut_pks"] = [g["pk"] for g in group_summary]
+        context["category_summary"] = group_summary
+        context["donut_labels"] = [g["name"] for g in donut_groups]
+        context["donut_data"] = [float(g["subtotal"]) for g in donut_groups]
+        context["donut_colors"] = [g["color"] for g in donut_groups]
+        context["donut_pks"] = [g["pk"] for g in donut_groups]
 
         return context
 
