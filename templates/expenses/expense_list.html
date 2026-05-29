@@ -129,12 +129,16 @@
                         <p class="small text-muted mb-2">Por grupo</p>
                         {% for g in group_summary %}
                         <a href="?{% for key, value in request.GET.items %}{% if key != 'category' and key != 'subcategory' %}{{ key }}={{ value }}&{% endif %}{% endfor %}category={{ g.pk }}"
-                           class="d-flex align-items-center small mb-2 text-decoration-none text-body donut-legend-row"
-                           title="Filtrar por {{ g.name }}">
-                            <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:{{ g.color }};flex-shrink:0;margin-right:8px"></span>
-                            <span class="text-truncate flex-grow-1 me-2">{{ g.name }}</span>
-                            <span class="text-muted small me-2 flex-shrink-0">{{ g.pct }}%</span>
-                            <span class="text-danger fw-semibold flex-shrink-0">{{ g.subtotal|currency }}</span>
+                           class="d-block mb-2 text-decoration-none text-body donut-legend-row">
+                            <div class="d-flex align-items-center small mb-1">
+                                <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:{{ g.color }};flex-shrink:0;margin-right:6px"></span>
+                                <span class="text-truncate flex-grow-1 me-2">{{ g.name }}</span>
+                                <span class="text-muted me-2 flex-shrink-0">{{ g.pct }}%</span>
+                                <span class="text-danger fw-semibold flex-shrink-0">{{ g.subtotal|currency }}</span>
+                            </div>
+                            <div class="progress" style="height:3px;margin-left:14px">
+                                <div class="progress-bar" style="width:{{ g.pct }}%;background:{{ g.color }}"></div>
+                            </div>
                         </a>
                         {% endfor %}
                     </div>
