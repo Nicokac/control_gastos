@@ -136,8 +136,8 @@
                                 <span class="text-muted me-2 flex-shrink-0">{{ g.pct }}%</span>
                                 <span class="text-danger fw-semibold flex-shrink-0">{{ g.subtotal|currency }}</span>
                             </div>
-                            <div style="height:4px;border-radius:2px;background-color:#e9ecef;margin-left:14px;overflow:hidden">
-                                <div style="height:100%;width:{{ g.pct }}%;background-color:{{ g.color }};border-radius:2px"></div>
+                            <div style="height:4px;min-height:4px;max-height:4px;border-radius:2px;background-color:#e9ecef;margin-left:14px;overflow:hidden;line-height:0">
+                                <div style="height:4px;width:{{ g.pct }}%;background-color:{{ g.color }};border-radius:2px"></div>
                             </div>
                         </a>
                         {% endfor %}
