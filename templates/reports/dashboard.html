@@ -121,8 +121,8 @@
                         <div class="progress mb-2" style="height: 12px; border-radius: 6px; background-color: #e9ecef;">
                             <div class="progress-bar {% if expense_percentage < 50 %}bg-success{% elif expense_percentage < 80 %}bg-warning{% else %}bg-danger{% endif %}"
                                 role="progressbar"
-                                style="width: {% if expense_percentage > 100 %}100{% else %}{{ expense_percentage }}{% endif %}%; min-width: 10px; border-radius: 6px;"
-                                aria-valuenow="{{ expense_percentage }}"
+                                style="width: {% if expense_percentage > 100 %}100{% else %}{{ expense_percentage|floatformat:0 }}{% endif %}%; min-width: 10px; border-radius: 6px;"
+                                aria-valuenow="{{ expense_percentage|floatformat:0 }}"
                                 aria-valuemin="0" aria-valuemax="100">
                             </div>
                         </div>
