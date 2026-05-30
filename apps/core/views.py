@@ -161,9 +161,30 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "1.4.4"
+APP_VERSION = "1.4.6"
 
 WHATS_NEW = [
+    {
+        "version": "1.4.6",
+        "date": "Mayo 2026",
+        "title": "Gastos: gráfico de acumulado diario del mes",
+        "items": [
+            "Gastos: el panel 'Ver resumen' ahora incluye un gráfico de línea con el gasto acumulado día a día dentro del mes filtrado",
+            "El gráfico se oculta automáticamente cuando el filtro es solo por año — sin mes específico",
+            "Los JS de la app ahora incluyen versión en la URL para evitar problemas de caché al actualizar",
+        ],
+    },
+    {
+        "version": "1.4.5",
+        "date": "Mayo 2026",
+        "title": "Gastos: gráfico de distribución por grupo",
+        "items": [
+            "Gastos: el panel 'Ver resumen' ahora incluye un donut chart con la distribución del período por grupo de categoría",
+            "Gastos: la leyenda muestra cada grupo con su color, porcentaje y barra de ranking — hacé click para filtrar la tabla a ese grupo",
+            "Gastos: los segmentos pequeños (menos del 3%) se agrupan automáticamente en 'Otros' para mantener el gráfico legible",
+            "Gastos: tipo de gasto y método de pago ahora muestran porcentajes y barras de progreso en el resumen",
+        ],
+    },
     {
         "version": "1.4.4",
         "date": "Mayo 2026",

@@ -147,6 +147,24 @@
             </div>
             <hr class="my-3">
             {% endif %}
+            {% if show_daily_chart %}
+            {{ daily_labels|json_script:"expense-daily-labels" }}
+            {{ daily_data|json_script:"expense-daily-data" }}
+            <p class="small text-muted mb-2">Acumulado del mes</p>
+            <div style="height:140px" class="mb-3">
+                <canvas id="expenseDailyChart"></canvas>
+            </div>
+            <hr class="my-3">
+            {% endif %}
+            {% if show_monthly_chart %}
+            {{ monthly_labels|json_script:"expense-monthly-labels" }}
+            {{ monthly_datasets|json_script:"expense-monthly-datasets" }}
+            <p class="small text-muted mb-2">Evolución mensual por grupo</p>
+            <div style="height:180px" class="mb-3">
+                <canvas id="expenseMonthlyChart"></canvas>
+            </div>
+            <hr class="my-3">
+            {% endif %}
             <div class="row g-3">
                 {% if expense_type_summary %}
                 <div class="col-md-6">
@@ -309,5 +327,5 @@
 
 {% block extra_js %}
 {% load static %}
-<script src="{% static 'js/expense_list.js' %}"></script>
+<script src="{% static 'js/expense_list.js' %}?v={{ APP_VERSION }}"></script>
 {% endblock %}

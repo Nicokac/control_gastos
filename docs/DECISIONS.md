@@ -637,27 +637,27 @@ Ingresos recibió: duplicar con `?duplicate=<pk>`, modal de eliminación con con
 
 ### DT-040 — Gastos: donut chart de distribución por categoría
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.4.5)
 
-Dentro del panel "Ver resumen" de la lista de gastos, agregar un donut chart (Chart.js) que muestre la distribución del período filtrado por categoría. El hueco central muestra el total del período. Los colores reutilizan los mismos que los chips de categoría (`category.color`). Clic en una porción filtra la tabla a esa categoría. Siempre visible cuando hay datos. Chart.js ya está disponible en el proyecto.
+Donut chart (Chart.js) en el panel "Ver resumen" agrupando por grupo de primer nivel (no subcategoría). El hueco central muestra "Total" y el monto; en hover muestra el nombre y monto del grupo activo. Segmentos < 3% se fusionan en "Otros" (gris). Colores sincronizados con los chips de categoría. Click en una porción filtra la tabla al grupo vía `?category=<pk>`. Inicialización lazy al abrir el collapse. Tipo de gasto y método de pago incluyen porcentaje y barra de progreso.
 
 ### DT-041 — Gastos: barras horizontales de ranking por categoría
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.4.5)
 
-Convive con el donut (DT-040) dentro del panel "Ver resumen". Barras horizontales ordenadas de mayor a menor gasto por categoría, mostrando monto absoluto y porcentaje sobre el total. Complementa al donut: el donut da la proporción visual, las barras dan el ranking y la magnitud. Mismo dataset que el donut, sin query adicional.
+Integrado en la leyenda del donut como barra de 4px debajo de cada ítem. Cada fila muestra: dot de color, nombre del grupo, porcentaje y monto. La barra usa `background-color` inline para evitar conflictos con Bootstrap. La card es scrolleable con fade inferior que desaparece al llegar al fondo. Click en cualquier fila filtra la tabla al grupo.
 
 ### DT-042 — Gastos: línea de acumulado diario dentro del mes
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.4.6)
 
-Cuando el filtro tiene un mes específico seleccionado, mostrar un gráfico de línea con el gasto acumulado día a día dentro de ese mes. Permite identificar en qué momento del mes se concentran los gastos. Requiere una query adicional agrupada por día sobre el queryset filtrado. Se oculta cuando no hay filtro de mes específico.
+Gráfico de línea (Chart.js) con el gasto acumulado día a día, visible en "Ver resumen" cuando hay un mes específico filtrado (o el mes actual por default). Se oculta cuando el filtro es solo por año. Query agrupada por `date` sobre el queryset ya filtrado. Tooltip muestra "Día X · $ monto". Inicialización lazy junto al donut al abrir el collapse.
 
 ### DT-043 — Gastos: barras apiladas de evolución mensual
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.4.6)
 
-Cuando el filtro tiene año pero no mes específico, mostrar un gráfico de barras apiladas con los 12 meses del año en el eje X y el monto por categoría apilado en el eje Y. Permite ver cómo evoluciona la composición del gasto mes a mes. Se oculta cuando hay un mes específico seleccionado. Requiere query agrupada por mes y categoría para el año seleccionado.
+Gráfico de barras apiladas (Chart.js) visible en "Ver resumen" cuando el filtro tiene año sin mes específico. Muestra los 12 meses en el eje X con los top 6 grupos apilados; grupos restantes se agrupan en "Otros". Eje Y con formato abreviado (k/M). Tooltip muestra grupo y monto, omite series con $0. Mutuamente excluyente con el acumulado diario (DT-042).
 
 ---
 

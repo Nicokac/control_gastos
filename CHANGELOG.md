@@ -5,6 +5,26 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.4.6] — 2026-05-22
+
+### Added
+
+- **Gastos**: gráfico de línea "Acumulado del mes" en el panel "Ver resumen", visible cuando hay un mes específico filtrado. Muestra el gasto acumulado día a día con tooltip por día.
+- **General**: cache busting en todos los archivos JS estáticos via `?v={{ APP_VERSION }}` — evita que el browser sirva versiones desactualizadas tras un deploy.
+
+---
+
+## [1.4.5] — 2026-05-22
+
+### Added
+
+- **Gastos**: donut chart de distribución por grupo en el panel "Ver resumen". Agrupa por categoría de primer nivel (no subcategoría). Segmentos < 3% se fusionan en "Otros".
+- **Gastos**: leyenda por grupo con dot de color sincronizado, porcentaje, monto y barra de ranking horizontal. Click en un ítem filtra la tabla al grupo.
+- **Gastos**: card de leyenda scrolleable con fade inferior indicador de contenido oculto.
+- **Gastos**: tipo de gasto y método de pago en el resumen ahora muestran porcentaje y barra de progreso, ordenados por monto descendente.
+
+---
+
 ## [1.4.4] — 2026-05-21
 
 ### Added

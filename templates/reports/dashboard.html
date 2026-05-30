@@ -507,7 +507,7 @@
     {{ evolution_savings|json_script:"evolution-savings-data" }}
     {{ evolution_balance|json_script:"evolution-balance-data" }}
     {{ evolution_month_urls|json_script:"evolution-month-urls-data" }}
-    <script src="{% static 'js/dashboard.js' %}"></script>
+    <script src="{% static 'js/dashboard.js' %}?v={{ APP_VERSION }}"></script>
     {% if not request.user.has_seen_tour %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@11.2.0/dist/css/shepherd.css">
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@11.2.0/dist/js/shepherd.min.js"></script>

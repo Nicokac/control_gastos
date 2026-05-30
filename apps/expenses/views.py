@@ -266,6 +266,164 @@ class ExpenseListView(UserOwnedListView):
         context["donut_colors"] = [g["color"] for g in donut_groups]
         context["donut_pks"] = [g["pk"] for g in donut_groups]
 
+        # Acumulado diario — solo cuando hay mes específico (explícito o default)
+        has_filters = any(
+            key in self.request.GET
+            for key in [
+                "q",
+                "month",
+                "year",
+                "category",
+                "subcategory",
+                "date_from",
+                "date_to",
+                "payment_method",
+                "expense_type",
+                "amount_min",
+                "amount_max",
+            ]
+        )
+        if has_filters:
+            month_str = self.request.GET.get("month")
+            year_str = self.request.GET.get("year")
+        else:
+            today = timezone.localdate()
+            month_str = str(today.month)
+            year_str = str(today.year)
+
+        daily_labels = []
+        daily_data = []
+        if month_str and year_str:
+            try:
+                month_int = int(month_str)
+                year_int = int(year_str)
+                if 1 <= month_int <= 12 and 1900 <= year_int <= 2100:
+                    import calendar
+
+                    daily_rows = {
+                        row["date"].day: float(row["subtotal"])
+                        for row in qs.values("date")
+                        .annotate(subtotal=Sum("amount_ars"))
+                        .order_by("date")
+                    }
+                    num_days = calendar.monthrange(year_int, month_int)[1]
+                    acum = 0
+                    for d in range(1, num_days + 1):
+                        acum += daily_rows.get(d, 0)
+                        daily_labels.append(d)
+                        daily_data.append(round(acum, 2))
+                    context["show_daily_chart"] = True
+            except ValueError:
+                pass
+
+        context["daily_labels"] = daily_labels
+        context["daily_data"] = daily_data
+        context.setdefault("show_daily_chart", False)
+
+        # Barras apiladas mensuales — solo cuando hay año sin mes específico
+        context["show_monthly_chart"] = False
+        show_monthly = bool(year_str) and not bool(month_str)
+
+        if show_monthly and year_str:
+            try:
+                year_int = int(year_str)
+                if 1900 <= year_int <= 2100:
+                    from django.db.models.functions import ExtractMonth
+
+                    # Query: todos los gastos del año del usuario (sin otros filtros activos)
+                    qs_year = Expense.objects.filter(
+                        user=self.request.user, date__year=year_int
+                    ).select_related("category", "category__parent")
+
+                    # Totales por grupo para el año — elegir top N grupos
+                    MAX_GROUPS = 6
+                    group_year_totals = {}
+                    for row in qs_year.values(
+                        "category__parent_id",
+                        "category__parent__name",
+                        "category__parent__color",
+                        "category_id",
+                        "category__name",
+                        "category__color",
+                    ).annotate(subtotal=Sum("amount_ars")):
+                        if row["category__parent_id"]:
+                            gid = row["category__parent_id"]
+                            gname = row["category__parent__name"]
+                            gcolor = row["category__parent__color"] or "#6c757d"
+                        else:
+                            gid = row["category_id"]
+                            gname = row["category__name"]
+                            gcolor = row["category__color"] or "#6c757d"
+                        if gid not in group_year_totals:
+                            group_year_totals[gid] = {"name": gname, "color": gcolor, "subtotal": 0}
+                        group_year_totals[gid]["subtotal"] += row["subtotal"]
+
+                    sorted_groups = sorted(
+                        group_year_totals.items(), key=lambda x: x[1]["subtotal"], reverse=True
+                    )
+                    top_groups = dict(sorted_groups[:MAX_GROUPS])
+                    has_others = len(sorted_groups) > MAX_GROUPS
+
+                    # Query: totales por mes y grupo
+                    monthly_rows = (
+                        qs_year.annotate(month=ExtractMonth("date"))
+                        .values(
+                            "month",
+                            "category__parent_id",
+                            "category__parent__color",
+                            "category_id",
+                            "category__color",
+                        )
+                        .annotate(subtotal=Sum("amount_ars"))
+                    )
+
+                    # Construir matriz [grupo][mes]
+                    month_data = {gid: [0] * 12 for gid in top_groups}
+                    others_by_month = [0] * 12
+                    for row in monthly_rows:
+                        m = row["month"] - 1  # 0-indexed
+                        if row["category__parent_id"]:
+                            gid = row["category__parent_id"]
+                        else:
+                            gid = row["category_id"]
+                        if gid in top_groups:
+                            month_data[gid][m] += float(row["subtotal"])
+                        elif has_others:
+                            others_by_month[m] += float(row["subtotal"])
+
+                    month_names = [
+                        "Ene",
+                        "Feb",
+                        "Mar",
+                        "Abr",
+                        "May",
+                        "Jun",
+                        "Jul",
+                        "Ago",
+                        "Sep",
+                        "Oct",
+                        "Nov",
+                        "Dic",
+                    ]
+                    datasets = [
+                        {
+                            "label": top_groups[gid]["name"],
+                            "data": month_data[gid],
+                            "color": top_groups[gid]["color"],
+                        }
+                        for gid in top_groups
+                    ]
+                    if has_others:
+                        datasets.append(
+                            {"label": "Otros", "data": others_by_month, "color": "#adb5bd"}
+                        )
+
+                    context["monthly_labels"] = month_names
+                    context["monthly_datasets"] = datasets
+                    context["show_monthly_chart"] = True
+            except ValueError:
+                pass
+
         return context
 
 

@@ -15,6 +15,8 @@ document.addEventListener('DOMContentLoaded', function () {
         collapse.addEventListener('shown.bs.collapse', function () {
             initExpenseDonut();
             initLegendFade();
+            initExpenseDailyChart();
+            initExpenseMonthlyChart();
         }, { once: true });
     }
 });
@@ -124,6 +126,124 @@ function initExpenseDonut() {
         if (totalLabel) totalLabel.textContent = 'Total';
         if (totalVal) totalVal.textContent = originalTotal;
     }
+}
+
+function initExpenseDailyChart() {
+    const canvas = document.getElementById('expenseDailyChart');
+    if (!canvas) return;
+
+    const labelsEl = document.getElementById('expense-daily-labels');
+    const dataEl = document.getElementById('expense-daily-data');
+    if (!labelsEl || !dataEl) return;
+
+    const labels = JSON.parse(labelsEl.textContent);
+    const data = JSON.parse(dataEl.textContent);
+    if (!data.length) return;
+
+    new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                borderColor: '#dc3545',
+                backgroundColor: 'rgba(220,53,69,0.08)',
+                borderWidth: 2,
+                pointRadius: 0,
+                pointHoverRadius: 4,
+                fill: true,
+                tension: 0.3,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        title: function (ctx) { return 'Día ' + ctx[0].label; },
+                        label: function (ctx) { return ' ' + formatARS(ctx.parsed.y); }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: { font: { size: 11 }, maxTicksLimit: 10 }
+                },
+                y: {
+                    grid: { color: 'rgba(0,0,0,0.05)' },
+                    ticks: {
+                        font: { size: 11 },
+                        callback: function (v) { return '$ ' + Number(v).toLocaleString('es-AR', { maximumFractionDigits: 0 }); }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function initExpenseMonthlyChart() {
+    const canvas = document.getElementById('expenseMonthlyChart');
+    if (!canvas) return;
+
+    const labelsEl = document.getElementById('expense-monthly-labels');
+    const datasetsEl = document.getElementById('expense-monthly-datasets');
+    if (!labelsEl || !datasetsEl) return;
+
+    const labels = JSON.parse(labelsEl.textContent);
+    const rawDatasets = JSON.parse(datasetsEl.textContent);
+    if (!rawDatasets.length) return;
+
+    const datasets = rawDatasets.map(function (ds) {
+        return {
+            label: ds.label,
+            data: ds.data,
+            backgroundColor: ds.color,
+            borderWidth: 0,
+            borderRadius: 2,
+        };
+    });
+
+    new Chart(canvas, {
+        type: 'bar',
+        data: { labels: labels, datasets: datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: { boxWidth: 10, font: { size: 11 }, padding: 8 }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (ctx) {
+                            if (!ctx.parsed.y) return null;
+                            return ' ' + ctx.dataset.label + ': ' + formatARS(ctx.parsed.y);
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: { stacked: true, grid: { display: false }, ticks: { font: { size: 11 } } },
+                y: {
+                    stacked: true,
+                    grid: { color: 'rgba(0,0,0,0.05)' },
+                    ticks: {
+                        font: { size: 11 },
+                        callback: function (v) {
+                            if (v >= 1000000) return '$ ' + (v / 1000000).toFixed(1) + 'M';
+                            if (v >= 1000) return '$ ' + (v / 1000).toFixed(0) + 'k';
+                            return '$ ' + v;
+                        }
+                    }
+                }
+            }
+        }
+    });
 }
 
 function initLegendFade() {
