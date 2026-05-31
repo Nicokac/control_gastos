@@ -161,9 +161,17 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "1.5.1"
+APP_VERSION = "1.5.2"
 
 WHATS_NEW = [
+    {
+        "version": "1.5.2",
+        "date": "Mayo 2026",
+        "title": "El resumen recuerda tu preferencia",
+        "items": [
+            "Gastos e Ingresos: el panel 'Ver resumen' recuerda si lo dejaste abierto o cerrado — no tenés que volver a abrirlo cada vez",
+        ],
+    },
     {
         "version": "1.5.1",
         "date": "Mayo 2026",

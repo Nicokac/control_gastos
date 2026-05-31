@@ -5,6 +5,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.5.2] — 2026-05-31
+
+### Added
+
+- **Gastos / Ingresos**: el panel "Ver resumen" recuerda si estaba abierto o cerrado — la preferencia se persiste en localStorage y sobrevive navegación y recarga.
+
+### Removed
+
+- **Gastos / Ingresos**: eliminados los filtros de monto mínimo y monto máximo por baja utilización.
+
+---
+
 ## [1.5.1] — 2026-05-31
 
 ### Added
