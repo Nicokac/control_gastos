@@ -647,9 +647,9 @@ Integrado en la leyenda del donut como barra de 4px debajo de cada ítem. Cada f
 
 ### DT-042 — Gastos: línea de acumulado diario dentro del mes
 
-**Estado:** ✅ Resuelto (v1.4.6)
+**Estado:** ✅ Resuelto (v1.4.6) — extendido en v1.5.1
 
-Gráfico de línea (Chart.js) con el gasto acumulado día a día, visible en "Ver resumen" cuando hay un mes específico filtrado (o el mes actual por default). Se oculta cuando el filtro es solo por año. Query agrupada por `date` sobre el queryset ya filtrado. Tooltip muestra "Día X · $ monto". Inicialización lazy junto al donut al abrir el collapse.
+Gráfico de línea (Chart.js) con el gasto acumulado día a día, visible en "Ver resumen" cuando hay un mes específico filtrado (o el mes actual por default). Se oculta cuando el filtro es solo por año. Query agrupada por `date` sobre el queryset ya filtrado. Tooltip muestra "Día X · $ monto". Inicialización lazy junto al donut al abrir el collapse. En v1.5.1 se agregó un gráfico de barras paralelo ("Gastos por día") que muestra el gasto individual de cada día — click en una barra filtra la tabla a `?date_from=&date_to=` de ese día exacto. Ambos gráficos conviven en layout de dos columnas.
 
 ### DT-043 — Gastos: barras apiladas de evolución mensual
 

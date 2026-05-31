@@ -5,6 +5,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.5.1] — 2026-05-31
+
+### Added
+
+- **Gastos**: gráfico de barras "Gastos por día" en el panel "Ver resumen" cuando hay un mes seleccionado. Click en una barra filtra la tabla a los gastos de ese día exacto.
+- **Gastos**: donuts de "Por tipo de gasto" y "Por método de pago" con leyenda de colores, reemplazando las listas de progress bars anteriores.
+
+---
+
 ## [1.5.0] — 2026-05-31
 
 ### Added

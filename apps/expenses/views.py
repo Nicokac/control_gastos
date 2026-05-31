@@ -63,8 +63,21 @@ class ExpenseListView(UserOwnedListView):
         payment_method = self.request.GET.get("payment_method")
         expense_type = self.request.GET.get("expense_type")
 
-        # ✅ Mes/año -> rango [start, end)
-        if month and year:
+        # Filtro por fecha exacta (date_from / date_to) — tiene prioridad sobre mes/año
+        date_from = self.request.GET.get("date_from")
+        date_to = self.request.GET.get("date_to")
+        if date_from or date_to:
+            try:
+                from datetime import date as date_cls
+
+                if date_from:
+                    qs = qs.filter(date__gte=date_cls.fromisoformat(date_from))
+                if date_to:
+                    qs = qs.filter(date__lte=date_cls.fromisoformat(date_to))
+            except ValueError:
+                pass
+        elif month and year:
+            # ✅ Mes/año -> rango [start, end)
             try:
                 month_int = int(month)
                 year_int = int(year)
@@ -187,10 +200,15 @@ class ExpenseListView(UserOwnedListView):
         ]
         if type_unclassified > 0:
             expense_type_summary.append({"label": "Sin clasificar", "subtotal": type_unclassified})
+        _type_colors = {"Fijo": "#0d6efd", "Variable": "#20c997", "Sin clasificar": "#adb5bd"}
         for item in expense_type_summary:
             item["pct"] = round(item["subtotal"] / total_nonzero * 100, 1)
+            item["color"] = _type_colors.get(item["label"], "#6c757d")
         expense_type_summary.sort(key=lambda x: x["subtotal"], reverse=True)
         context["expense_type_summary"] = expense_type_summary
+        context["type_donut_labels"] = [i["label"] for i in expense_type_summary]
+        context["type_donut_data"] = [float(i["subtotal"]) for i in expense_type_summary]
+        context["type_donut_colors"] = [i["color"] for i in expense_type_summary]
 
         payment_method_labels = dict(PaymentMethod.choices)
         method_classified = qs.exclude(payment_method="").aggregate(s=Sum("amount_ars"))["s"] or 0
@@ -209,10 +227,21 @@ class ExpenseListView(UserOwnedListView):
             payment_method_summary.append(
                 {"label": "Sin clasificar", "subtotal": method_unclassified}
             )
+        _method_colors = {
+            "Efectivo": "#28a745",
+            "Débito": "#0dcaf0",
+            "Crédito": "#dc3545",
+            "Transferencia": "#6610f2",
+            "Sin clasificar": "#adb5bd",
+        }
         for item in payment_method_summary:
             item["pct"] = round(item["subtotal"] / total_nonzero * 100, 1)
+            item["color"] = _method_colors.get(item["label"], "#6c757d")
         payment_method_summary.sort(key=lambda x: x["subtotal"], reverse=True)
         context["payment_method_summary"] = payment_method_summary
+        context["method_donut_labels"] = [i["label"] for i in payment_method_summary]
+        context["method_donut_data"] = [float(i["subtotal"]) for i in payment_method_summary]
+        context["method_donut_colors"] = [i["color"] for i in payment_method_summary]
 
         # Agrupar por grupo (parent), no por subcategoría — fuente única para donut y leyenda
         group_totals = {}
@@ -308,17 +337,22 @@ class ExpenseListView(UserOwnedListView):
                     }
                     num_days = calendar.monthrange(year_int, month_int)[1]
                     acum = 0
+                    daily_bar_data = []
                     for d in range(1, num_days + 1):
-                        acum += daily_rows.get(d, 0)
+                        day_amount = daily_rows.get(d, 0)
+                        acum += day_amount
                         daily_labels.append(d)
                         daily_data.append(round(acum, 2))
+                        daily_bar_data.append(round(day_amount, 2))
                     context["show_daily_chart"] = True
+                    context["daily_bar_data"] = daily_bar_data
             except ValueError:
                 pass
 
         context["daily_labels"] = daily_labels
         context["daily_data"] = daily_data
         context.setdefault("show_daily_chart", False)
+        context.setdefault("daily_bar_data", [])
 
         # Barras apiladas mensuales — solo cuando hay año sin mes específico
         context["show_monthly_chart"] = False

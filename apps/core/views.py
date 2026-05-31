@@ -161,9 +161,18 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "1.5.0"
+APP_VERSION = "1.5.1"
 
 WHATS_NEW = [
+    {
+        "version": "1.5.1",
+        "date": "Mayo 2026",
+        "title": "Gastos: más gráficos en el resumen",
+        "items": [
+            "Gastos: gráfico de barras con el gasto de cada día del mes — hacé click en una barra para ver los gastos de ese día",
+            "Gastos: donuts de distribución por tipo de gasto y por método de pago en el panel 'Ver resumen'",
+        ],
+    },
     {
         "version": "1.5.0",
         "date": "Mayo 2026",

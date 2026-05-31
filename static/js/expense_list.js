@@ -16,7 +16,10 @@ document.addEventListener('DOMContentLoaded', function () {
             initExpenseDonut();
             initLegendFade();
             initExpenseDailyChart();
+            initExpenseDailyBarChart();
             initExpenseMonthlyChart();
+            initSmallDonut('expenseTypeDonut', 'expense-type-labels', 'expense-type-data', 'expense-type-colors');
+            initSmallDonut('expenseMethodDonut', 'expense-method-labels', 'expense-method-data', 'expense-method-colors');
         }, { once: true });
     }
 });
@@ -184,6 +187,85 @@ function initExpenseDailyChart() {
     });
 }
 
+function initExpenseDailyBarChart() {
+    const canvas = document.getElementById('expenseDailyBarChart');
+    if (!canvas) return;
+
+    const labelsEl = document.getElementById('expense-daily-labels');
+    const dataEl = document.getElementById('expense-daily-bar-data');
+    if (!labelsEl || !dataEl) return;
+
+    const labels = JSON.parse(labelsEl.textContent);
+    const data = JSON.parse(dataEl.textContent);
+    if (!data.length) return;
+
+    const metaEl = document.getElementById('expense-daily-meta');
+    const meta = metaEl ? JSON.parse(metaEl.textContent) : {};
+    const month = meta.month || 0;
+    const year = meta.year || 0;
+
+    function padTwo(n) { return String(n).padStart(2, '0'); }
+
+    new Chart(canvas, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: 'rgba(220,53,69,0.7)',
+                borderWidth: 0,
+                borderRadius: 2,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        title: function (ctx) { return 'Día ' + ctx[0].label; },
+                        label: function (ctx) {
+                            if (!ctx.parsed.y) return null;
+                            return ' ' + formatARS(ctx.parsed.y);
+                        }
+                    }
+                }
+            },
+            onClick: function (evt, elements) {
+                if (!elements.length || !month || !year) return;
+                const day = labels[elements[0].index];
+                if (!day) return;
+                const dateStr = year + '-' + padTwo(month) + '-' + padTwo(day);
+                const params = new URLSearchParams(window.location.search);
+                params.set('date_from', dateStr);
+                params.set('date_to', dateStr);
+                window.location.search = params.toString();
+            },
+            onHover: function (evt, elements) {
+                evt.native.target.style.cursor = elements.length ? 'pointer' : 'default';
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: { font: { size: 11 }, maxTicksLimit: 10 }
+                },
+                y: {
+                    grid: { color: 'rgba(0,0,0,0.05)' },
+                    ticks: {
+                        font: { size: 11 },
+                        callback: function (v) {
+                            if (v >= 1000000) return '$ ' + (v / 1000000).toFixed(1) + 'M';
+                            if (v >= 1000) return '$ ' + (v / 1000).toFixed(0) + 'k';
+                            return '$ ' + v;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
 function initExpenseMonthlyChart() {
     const canvas = document.getElementById('expenseMonthlyChart');
     if (!canvas) return;
@@ -238,6 +320,49 @@ function initExpenseMonthlyChart() {
                             if (v >= 1000000) return '$ ' + (v / 1000000).toFixed(1) + 'M';
                             if (v >= 1000) return '$ ' + (v / 1000).toFixed(0) + 'k';
                             return '$ ' + v;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function initSmallDonut(canvasId, labelsId, dataId, colorsId) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const labelsEl = document.getElementById(labelsId);
+    const dataEl = document.getElementById(dataId);
+    const colorsEl = document.getElementById(colorsId);
+    if (!labelsEl || !dataEl || !colorsEl) return;
+
+    const labels = JSON.parse(labelsEl.textContent);
+    const data = JSON.parse(dataEl.textContent);
+    const colors = JSON.parse(colorsEl.textContent);
+    if (!data.length) return;
+
+    new Chart(canvas, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: colors,
+                borderWidth: 2,
+                borderColor: '#fff',
+                hoverOffset: 4,
+            }]
+        },
+        options: {
+            cutout: '65%',
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function (ctx) {
+                            const total = ctx.dataset.data.reduce(function (a, b) { return a + b; }, 0);
+                            const pct = total ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
+                            return ' ' + formatARS(ctx.parsed) + ' (' + pct + '%)';
                         }
                     }
                 }

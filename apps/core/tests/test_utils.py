@@ -10,9 +10,12 @@ from apps.core.utils import (
     calculate_percentage,
     format_currency,
     get_current_month_year,
+    get_financial_period,
+    get_month_date_range_exclusive,
     get_month_name,
     get_months_choices,
     get_years_choices,
+    send_brevo_email,
 )
 
 
@@ -208,3 +211,116 @@ class TestGetMonthsChoices:
         result = get_months_choices()
         month_numbers = [item[0] for item in result]
         assert month_numbers == list(range(1, 13))
+
+
+class TestGetMonthDateRangeExclusive:
+    def test_normal_month(self):
+        start, end = get_month_date_range_exclusive(5, 2026)
+        from datetime import date
+
+        assert start == date(2026, 5, 1)
+        assert end == date(2026, 6, 1)
+
+    def test_december_wraps_to_next_year(self):
+        start, end = get_month_date_range_exclusive(12, 2026)
+        from datetime import date
+
+        assert start == date(2026, 12, 1)
+        assert end == date(2027, 1, 1)
+
+    def test_january(self):
+        start, end = get_month_date_range_exclusive(1, 2026)
+        from datetime import date
+
+        assert start == date(2026, 1, 1)
+        assert end == date(2026, 2, 1)
+
+
+class TestGetFinancialPeriod:
+    def test_start_day_1_equals_calendar_month(self):
+        from datetime import date
+
+        start, end = get_financial_period(5, 2026, start_day=1)
+        assert start == date(2026, 5, 1)
+        assert end == date(2026, 6, 1)
+
+    def test_start_day_0_equals_calendar_month(self):
+        from datetime import date
+
+        start, end = get_financial_period(5, 2026, start_day=0)
+        assert start == date(2026, 5, 1)
+        assert end == date(2026, 6, 1)
+
+    def test_custom_start_day(self):
+        from datetime import date
+
+        start, end = get_financial_period(5, 2026, start_day=10)
+        assert start == date(2026, 5, 10)
+        assert end == date(2026, 6, 10)
+
+    def test_december_with_custom_start_day(self):
+        from datetime import date
+
+        start, end = get_financial_period(12, 2026, start_day=15)
+        assert start == date(2026, 12, 15)
+        assert end == date(2027, 1, 15)
+
+    def test_start_day_clamps_to_last_day_of_month(self):
+        from datetime import date
+
+        # Febrero 2026 tiene 28 días, start_day=31 debe clampearse a 28
+        start, end = get_financial_period(2, 2026, start_day=31)
+        assert start == date(2026, 2, 28)
+
+    def test_end_day_clamps_to_last_day_of_next_month(self):
+        from datetime import date
+
+        # start_day=31 en enero → fin en febrero (28 días en 2026)
+        start, end = get_financial_period(1, 2026, start_day=31)
+        assert end == date(2026, 2, 28)
+
+
+class TestSendBrevoEmail:
+    def test_returns_false_without_api_key(self, settings):
+        settings.BREVO_API_KEY = ""
+        result = send_brevo_email("test@example.com", "Asunto", "Cuerpo")
+        assert result is False
+
+    def test_returns_true_on_success(self, settings):
+        from unittest.mock import MagicMock, patch
+
+        settings.BREVO_API_KEY = "fake-key"  # pragma: allowlist secret
+        mock_response = MagicMock()
+        mock_response.raise_for_status.return_value = None
+
+        with patch("apps.core.utils.requests.post", return_value=mock_response) as mock_post:
+            result = send_brevo_email("dest@example.com", "Asunto", "Cuerpo")
+
+        assert result is True
+        mock_post.assert_called_once()
+
+    def test_returns_false_on_exception(self, settings):
+        from unittest.mock import patch
+
+        import requests as req
+
+        settings.BREVO_API_KEY = "fake-key"  # pragma: allowlist secret
+
+        with patch("apps.core.utils.requests.post", side_effect=req.exceptions.ConnectionError):
+            result = send_brevo_email("dest@example.com", "Asunto", "Cuerpo")
+
+        assert result is False
+
+    def test_sends_to_correct_email(self, settings):
+        from unittest.mock import MagicMock, patch
+
+        settings.BREVO_API_KEY = "fake-key"  # pragma: allowlist secret
+        mock_response = MagicMock()
+        mock_response.raise_for_status.return_value = None
+
+        with patch("apps.core.utils.requests.post", return_value=mock_response) as mock_post:
+            send_brevo_email("destino@test.com", "Asunto", "Cuerpo")
+
+        call_kwargs = mock_post.call_args
+        payload = call_kwargs.kwargs.get("json") or call_kwargs[1].get("json")
+        assert payload["to"][0]["email"] == "destino@test.com"
