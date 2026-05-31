@@ -1,3 +1,5 @@
+const EXPENSE_SUMMARY_KEY = 'expense_summary_open';
+
 document.addEventListener('DOMContentLoaded', function () {
     // Modal eliminar
     const modal = document.getElementById('deleteExpenseModal');
@@ -9,10 +11,13 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // El donut se inicializa cuando el collapse se abre por primera vez
     const collapse = document.getElementById('expenseSummaryDetail');
     if (collapse) {
-        collapse.addEventListener('shown.bs.collapse', function () {
+        // Inicializar gráficos la primera vez que se abre (o al restaurar desde localStorage)
+        let chartsInitialized = false;
+        function initCharts() {
+            if (chartsInitialized) return;
+            chartsInitialized = true;
             initExpenseDonut();
             initLegendFade();
             initExpenseDailyChart();
@@ -20,7 +25,32 @@ document.addEventListener('DOMContentLoaded', function () {
             initExpenseMonthlyChart();
             initSmallDonut('expenseTypeDonut', 'expense-type-labels', 'expense-type-data', 'expense-type-colors');
             initSmallDonut('expenseMethodDonut', 'expense-method-labels', 'expense-method-data', 'expense-method-colors');
-        }, { once: true });
+        }
+
+        // Restaurar estado desde localStorage
+        if (localStorage.getItem(EXPENSE_SUMMARY_KEY) === 'true') {
+            collapse.classList.add('show');
+            initCharts();
+        }
+
+        const chevron = document.querySelector('.expense-summary-toggle .summary-chevron');
+        function setChevron(open) {
+            if (chevron) chevron.style.transform = open ? 'rotate(180deg)' : '';
+        }
+
+        // Estado inicial del chevron
+        setChevron(localStorage.getItem(EXPENSE_SUMMARY_KEY) === 'true');
+
+        // Persistir estado al toggle
+        collapse.addEventListener('shown.bs.collapse', function () {
+            localStorage.setItem(EXPENSE_SUMMARY_KEY, 'true');
+            setChevron(true);
+            initCharts();
+        });
+        collapse.addEventListener('hidden.bs.collapse', function () {
+            localStorage.setItem(EXPENSE_SUMMARY_KEY, 'false');
+            setChevron(false);
+        });
     }
 });
 
