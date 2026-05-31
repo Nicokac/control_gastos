@@ -39,8 +39,6 @@ class IncomeListView(UserOwnedListView):
                 "category",
                 "date_from",
                 "date_to",
-                "amount_min",
-                "amount_max",
             ]
         )
 
@@ -86,19 +84,6 @@ class IncomeListView(UserOwnedListView):
             except ValueError:
                 pass
 
-        try:
-            amount_min = self.request.GET.get("amount_min")
-            if amount_min:
-                qs = qs.filter(amount_ars__gte=amount_min)
-        except (ValueError, TypeError):
-            pass
-        try:
-            amount_max = self.request.GET.get("amount_max")
-            if amount_max:
-                qs = qs.filter(amount_ars__lte=amount_max)
-        except (ValueError, TypeError):
-            pass
-
         order_by = self.request.GET.get("order_by", "date")
         direction = self.request.GET.get("dir", "desc")
         allowed_fields = {
@@ -128,9 +113,7 @@ class IncomeListView(UserOwnedListView):
             form_data = {"month": today.month, "year": today.year}
 
         context["filter_form"] = IncomeFilterForm(form_data, user=self.request.user)
-        context["has_active_filters"] = any(
-            self.request.GET.get(key) for key in ["q", "category", "amount_min", "amount_max"]
-        )
+        context["has_active_filters"] = any(self.request.GET.get(key) for key in ["q", "category"])
         context["order_by"] = self.request.GET.get("order_by", "date")
         context["order_dir"] = self.request.GET.get("dir", "desc")
 

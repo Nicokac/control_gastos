@@ -44,8 +44,6 @@ class ExpenseListView(UserOwnedListView):
                 "date_to",
                 "payment_method",
                 "expense_type",
-                "amount_min",
-                "amount_max",
             ]
         )
 
@@ -113,19 +111,6 @@ class ExpenseListView(UserOwnedListView):
         if expense_type:
             qs = qs.filter(expense_type=expense_type)
 
-        try:
-            amount_min = self.request.GET.get("amount_min")
-            if amount_min:
-                qs = qs.filter(amount_ars__gte=amount_min)
-        except (ValueError, TypeError):
-            pass
-        try:
-            amount_max = self.request.GET.get("amount_max")
-            if amount_max:
-                qs = qs.filter(amount_ars__lte=amount_max)
-        except (ValueError, TypeError):
-            pass
-
         order_by = self.request.GET.get("order_by", "date")
         direction = self.request.GET.get("dir", "desc")
         allowed_fields = {
@@ -172,8 +157,6 @@ class ExpenseListView(UserOwnedListView):
                 "subcategory",
                 "payment_method",
                 "expense_type",
-                "amount_min",
-                "amount_max",
             ]
         )
         context["order_by"] = self.request.GET.get("order_by", "date")
@@ -308,8 +291,6 @@ class ExpenseListView(UserOwnedListView):
                 "date_to",
                 "payment_method",
                 "expense_type",
-                "amount_min",
-                "amount_max",
             ]
         )
         if has_filters:

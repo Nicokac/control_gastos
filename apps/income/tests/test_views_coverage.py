@@ -67,52 +67,6 @@ class TestIncomeListViewFilters:
         response = authenticated_client.get(url, {"category": "nonum"})
         assert response.status_code == 200
 
-    def test_filter_amount_min(self, authenticated_client, user, income_category, income_factory):
-        income_factory(
-            user,
-            income_category,
-            description="Bajo",
-            amount=Decimal("100.00"),
-            date=timezone.localdate(),
-        )
-        income_factory(
-            user,
-            income_category,
-            description="Alto",
-            amount=Decimal("50000.00"),
-            date=timezone.localdate(),
-        )
-
-        url = reverse("income:list")
-        response = authenticated_client.get(url, {"amount_min": "10000"})
-
-        content = response.content.decode()
-        assert "Alto" in content
-        assert "Bajo" not in content
-
-    def test_filter_amount_max(self, authenticated_client, user, income_category, income_factory):
-        income_factory(
-            user,
-            income_category,
-            description="Bajo",
-            amount=Decimal("100.00"),
-            date=timezone.localdate(),
-        )
-        income_factory(
-            user,
-            income_category,
-            description="Alto",
-            amount=Decimal("50000.00"),
-            date=timezone.localdate(),
-        )
-
-        url = reverse("income:list")
-        response = authenticated_client.get(url, {"amount_max": "500"})
-
-        content = response.content.decode()
-        assert "Bajo" in content
-        assert "Alto" not in content
-
 
 # =============================================================================
 # IncomeCreateView — flujo desde recurring_income
