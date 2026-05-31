@@ -169,8 +169,37 @@ class IncomeCreateView(UserOwnedCreateView):
         )
         return super().form_invalid(form)
 
+    def get_success_url(self):
+        if self.request.GET.get("recurring"):
+            return reverse_lazy("recurring_income:list")
+        return super().get_success_url()
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        recurring_pk = self.request.GET.get("recurring")
+        if recurring_pk:
+            try:
+                from apps.recurring_income.models import RecurringIncome
+
+                rec = RecurringIncome.objects.get(pk=recurring_pk, user=self.request.user)
+                self.object.recurring = rec
+                self.object.save(update_fields=["recurring"])
+            except (RecurringIncome.DoesNotExist, ValueError):
+                pass
+        return response
+
     def get_initial(self):
         initial = super().get_initial()
+        recurring_pk = self.request.GET.get("recurring")
+        if recurring_pk:
+            try:
+                from apps.recurring_income.models import RecurringIncome
+
+                rec = RecurringIncome.objects.get(pk=recurring_pk, user=self.request.user)
+                initial["category"] = rec.category
+                initial["description"] = rec.name
+            except (RecurringIncome.DoesNotExist, ValueError):
+                pass
         duplicate_pk = self.request.GET.get("duplicate")
         if duplicate_pk:
             try:
@@ -182,6 +211,18 @@ class IncomeCreateView(UserOwnedCreateView):
                 initial["exchange_rate"] = source.exchange_rate
             except (Income.DoesNotExist, ValueError):
                 pass
+
+        # Precargar última cotización USD usada por el usuario
+        if not initial.get("exchange_rate"):
+            last_usd = (
+                Income.objects.filter(user=self.request.user, currency="USD")
+                .order_by("-date", "-created_at")
+                .values_list("exchange_rate", flat=True)
+                .first()
+            )
+            if last_usd:
+                initial["exchange_rate"] = last_usd
+
         return initial
 
     def get_context_data(self, **kwargs):
@@ -189,6 +230,16 @@ class IncomeCreateView(UserOwnedCreateView):
         context["categories_by_group"] = Category.get_categories_by_group(
             self.request.user, "INCOME"
         )
+        recurring_pk = self.request.GET.get("recurring")
+        if recurring_pk:
+            try:
+                from apps.recurring_income.models import RecurringIncome
+
+                context["linked_recurring"] = RecurringIncome.objects.get(
+                    pk=recurring_pk, user=self.request.user
+                )
+            except (RecurringIncome.DoesNotExist, ValueError):
+                pass
         return context
 
 

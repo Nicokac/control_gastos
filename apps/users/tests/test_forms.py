@@ -203,6 +203,8 @@ class TestProfileForm:
                 "last_name": "K",
                 "email": "nico_new@test.com",
                 "default_currency": getattr(active_user, "default_currency", "ARS"),
+                "alert_threshold": 80,
+                "financial_month_start_day": 1,
             },
         )
         assert form.is_valid(), form.errors
@@ -231,6 +233,6 @@ class TestProfileForm:
         assert "email" in form.errors
         assert "Este mail ya está en uso por otra cuenta." in form.errors["email"][0]
 
-    def test_profile_form_does_not_expose_alert_threshold(self, active_user):
+    def test_profile_form_exposes_alert_threshold(self, active_user):
         form = ProfileForm(instance=active_user)
-        assert "alert_threshold" not in form.fields
+        assert "alert_threshold" in form.fields

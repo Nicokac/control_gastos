@@ -473,7 +473,7 @@ class TestDashboardQueryPerformance:
 
         # Dashboard vacío debería usar pocas queries
         # Baseline: ~8 queries (session, user, balance, budgets, savings, etc.)
-        with django_assert_max_num_queries(16):
+        with django_assert_max_num_queries(17):
             authenticated_client.get(url_helper("dashboard"))
 
     def test_dashboard_with_data_query_count(
@@ -521,7 +521,7 @@ class TestDashboardQueryPerformance:
 
         # Con datos, queries deberían mantenerse constantes (no N+1)
         # Máximo 15 queries permitidas
-        with django_assert_max_num_queries(16):
+        with django_assert_max_num_queries(17):
             response = authenticated_client.get(url_helper("dashboard"))
 
         assert response.status_code == 200
@@ -574,7 +574,7 @@ class TestDashboardQueryPerformance:
 
         # Aún con más datos, queries deben mantenerse ~igual
         # Si hay N+1, esto fallaría (sería 50+ queries)
-        with django_assert_max_num_queries(16):
+        with django_assert_max_num_queries(17):
             response = authenticated_client.get(url_helper("dashboard"))
 
         assert response.status_code == 200

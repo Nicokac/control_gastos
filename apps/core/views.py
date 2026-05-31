@@ -161,9 +161,50 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "1.4.6"
+APP_VERSION = "1.5.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.5.0",
+        "date": "Mayo 2026",
+        "title": "Período financiero personalizado",
+        "items": [
+            "Mi cuenta: configurá el día en que empieza tu mes financiero — ideal si cobrás el sueldo a mediados de mes",
+            "Dashboard: los totales de gastos e ingresos reflejan tu período financiero real, no el mes calendario",
+            "El texto 'Día X de Y' es clickeable y lleva directamente a la configuración",
+        ],
+    },
+    {
+        "version": "1.4.9",
+        "date": "Mayo 2026",
+        "title": "Alerta de presupuesto y cotización USD inteligente",
+        "items": [
+            "Dashboard: alerta visual cuando tus gastos superan el umbral configurado — la barra cambia a rojo y aparece un aviso",
+            "Mi cuenta: nuevo campo 'Umbral de alerta (%)' — configurá a partir de qué porcentaje querés recibir la alerta",
+            "Formulario de gastos e ingresos: al seleccionar USD, el campo cotización se pre-completa con el último valor que usaste",
+        ],
+    },
+    {
+        "version": "1.4.8",
+        "date": "Mayo 2026",
+        "title": "Ingresos Fijos: nuevo módulo para ingresos recurrentes",
+        "items": [
+            "Nueva sección 'Ingresos Fijos' en el menú — modelá tu sueldo, alquiler cobrado o cualquier ingreso que se repite cada mes",
+            "Registrá el cobro con un click — el formulario se pre-completa con la categoría y descripción del ingreso fijo",
+            "Estado del mes: verde cuando está cobrado, amarillo cuando está pendiente",
+            "Los ingresos fijos inactivos se ocultan por defecto para mantener la lista limpia",
+        ],
+    },
+    {
+        "version": "1.4.7",
+        "date": "Mayo 2026",
+        "title": "Gastos Fijos: cuotas y organización de inactivos",
+        "items": [
+            "Gastos Fijos: podés indicar que un gasto es en cuotas — al pagar la última, se desactiva automáticamente",
+            "Gastos Fijos: el badge muestra el progreso de cuotas (ej: 'cuota 3/12') directamente en la lista",
+            "Gastos Fijos: los gastos inactivos se ocultan por defecto — usá el botón 'Mostrar inactivos' para verlos",
+        ],
+    },
     {
         "version": "1.4.6",
         "date": "Mayo 2026",

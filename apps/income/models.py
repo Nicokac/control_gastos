@@ -33,6 +33,14 @@ class Income(TimestampMixin, CurrencyMixin, models.Model):
         verbose_name="Categoría",
     )
     description = models.CharField(max_length=255, verbose_name="Descripción")
+    recurring = models.ForeignKey(
+        "recurring_income.RecurringIncome",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="incomes",
+        verbose_name="Ingreso recurrente",
+    )
 
     class Meta:
         verbose_name = "Ingreso"

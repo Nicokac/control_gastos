@@ -118,8 +118,19 @@
                     </div>
                     <div class="col-md-8">
                         {% if income_total > 0 %}
+                        {% if expense_percentage >= alert_threshold %}
+                        <div class="alert alert-{% if expense_percentage >= 100 %}danger{% else %}warning{% endif %} py-2 px-3 mb-2 d-flex align-items-center gap-2" style="font-size:0.875rem">
+                            <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
+                            {% if expense_percentage >= 100 %}
+                            Superaste el 100% de tus ingresos este mes.
+                            {% else %}
+                            Superaste el {{ alert_threshold }}% de alerta de tus ingresos.
+                            {% endif %}
+                            <a href="{% url 'users:profile' %}" class="ms-auto text-decoration-none small">Cambiar umbral</a>
+                        </div>
+                        {% endif %}
                         <div class="progress mb-2" style="height: 12px; border-radius: 6px; background-color: #e9ecef;">
-                            <div class="progress-bar {% if expense_percentage < 50 %}bg-success{% elif expense_percentage < 80 %}bg-warning{% else %}bg-danger{% endif %}"
+                            <div class="progress-bar {% if expense_percentage >= alert_threshold %}bg-danger{% else %}bg-success{% endif %}"
                                 role="progressbar"
                                 style="width: {% if expense_percentage > 100 %}100{% else %}{{ expense_percentage|floatformat:0 }}{% endif %}%; min-width: 10px; border-radius: 6px;"
                                 aria-valuenow="{{ expense_percentage|floatformat:0 }}"
@@ -127,10 +138,13 @@
                             </div>
                         </div>
                         <div class="d-flex justify-content-between align-items-center">
-                            <small class="{% if expense_percentage < 50 %}text-success{% elif expense_percentage < 80 %}text-warning{% else %}text-danger{% endif %} fw-semibold">
+                            <small class="{% if expense_percentage >= alert_threshold %}text-danger{% else %}text-success{% endif %} fw-semibold">
                                 Gastaste el {{ expense_percentage|floatformat:1 }}% de tus ingresos este mes
                             </small>
-                            <small class="text-muted">Día {{ today.day }} de {{ today|date:"t" }} · Te quedan {{ balance|currency }}</small>
+                            <small class="text-muted">
+                                <a href="{% url 'users:profile' %}" class="text-muted text-decoration-underline" style="text-underline-offset:2px" title="Configurar período financiero">Día {{ period_day }} de {{ period_total_days }}{% if financial_start_day > 1 %} (período financiero){% endif %}</a>
+                                · Te quedan {{ balance|currency }}
+                            </small>
                         </div>
                         {% else %}
                         <p class="text-muted mb-0 small">Sin ingresos registrados este mes. El balance refleja solo los gastos.</p>
@@ -280,6 +294,52 @@
                     {% for item in recurring_pending %}
                     <span class="badge {% if item.overdue %}bg-danger{% else %}bg-light text-dark border{% endif %} fw-normal">
                         <i class="bi bi-clock me-1"></i>{{ item.rec.name }} — día {{ item.rec.due_day }}
+                    </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if recurring_income_total > 0 %}
+<!-- Ingresos Fijos -->
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="card {% if recurring_income_overdue > 0 %}border-warning{% elif recurring_income_collected == recurring_income_total %}border-success{% else %}border-success{% endif %}">
+            <div class="card-body" style="padding: 1rem 1.5rem;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="{% if recurring_income_overdue > 0 %}bg-warning{% else %}bg-success{% endif %} bg-opacity-10 rounded p-2">
+                            <i class="bi bi-arrow-repeat {% if recurring_income_overdue > 0 %}text-warning{% else %}text-success{% endif %} fs-4"></i>
+                        </div>
+                        <div>
+                            <p class="text-muted mb-0 small">Ingresos Fijos — {{ month_name }}</p>
+                            <span class="fw-semibold">
+                                <span class="{% if recurring_income_collected == recurring_income_total %}text-success{% else %}text-dark{% endif %}">{{ recurring_income_collected }}</span>
+                                <span class="text-muted"> / {{ recurring_income_total }} cobrados</span>
+                                {% if recurring_income_overdue > 0 %}
+                                <span class="badge bg-warning text-dark ms-2">{{ recurring_income_overdue }} pendiente{{ recurring_income_overdue|pluralize }}</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <a href="{% url 'recurring_income:list' %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-arrow-right me-1"></i>Ver detalle
+                    </a>
+                </div>
+                <div class="progress mt-2" style="height: 6px;">
+                    <div class="progress-bar {% if recurring_income_collected == recurring_income_total %}bg-success{% else %}bg-success{% endif %}"
+                         style="width: {% if recurring_income_total %}{% widthratio recurring_income_collected recurring_income_total 100 %}{% else %}0{% endif %}%">
+                    </div>
+                </div>
+                {% if recurring_income_pending %}
+                <div class="mt-2 d-flex flex-wrap gap-2">
+                    {% for item in recurring_income_pending %}
+                    <span class="badge {% if item.overdue %}bg-warning text-dark{% else %}bg-light text-dark border{% endif %} fw-normal">
+                        <i class="bi bi-clock me-1"></i>{{ item.rec.name }} — día {{ item.rec.expected_day }}
                     </span>
                     {% endfor %}
                 </div>

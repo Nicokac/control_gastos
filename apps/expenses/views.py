@@ -438,6 +438,19 @@ class ExpenseCreateView(UserOwnedCreateView):
             return reverse_lazy("recurring:list")
         return super().get_success_url()
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        recurring_pk = self.request.GET.get("recurring") or self.request.POST.get("recurring")
+        if recurring_pk:
+            try:
+                from apps.recurring.models import RecurringExpense
+
+                rec = RecurringExpense.objects.get(pk=recurring_pk, user=self.request.user)
+                rec.auto_deactivate_if_complete()
+            except (RecurringExpense.DoesNotExist, ValueError):
+                pass
+        return response
+
     def get_success_message(self):
         obj = self.object
         return f"Gasto registrado: {obj.description} - {obj.formatted_amount}"
@@ -476,6 +489,17 @@ class ExpenseCreateView(UserOwnedCreateView):
                 initial["expense_type"] = source.expense_type
             except (Expense.DoesNotExist, ValueError):
                 pass
+
+        # Precargar última cotización USD usada por el usuario
+        if not initial.get("exchange_rate"):
+            last_usd = (
+                Expense.objects.filter(user=self.request.user, currency="USD")
+                .order_by("-date", "-created_at")
+                .values_list("exchange_rate", flat=True)
+                .first()
+            )
+            if last_usd:
+                initial["exchange_rate"] = last_usd
 
         return initial
 

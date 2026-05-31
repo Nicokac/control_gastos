@@ -10,7 +10,7 @@ from django.db.models import Count, Q, Sum
 from django.utils import timezone
 from django.views.generic import TemplateView
 
-from apps.core.utils import get_month_date_range_exclusive, get_month_name
+from apps.core.utils import get_financial_period, get_month_date_range_exclusive, get_month_name
 from apps.expenses.models import Expense
 from apps.income.models import Income
 from apps.savings.models import MovementType, Saving, SavingMovement, SavingStatus
@@ -75,11 +75,31 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context["next_nav_year"] = next_nav_year
         context["selected_year"] = selected_year
         context["year_choices"] = year_choices
+        context["alert_threshold"] = user.alert_threshold
+
+        # Período financiero del usuario
+        start_day = getattr(user, "financial_month_start_day", 1)
+        fin_start, fin_end = get_financial_period(selected_month, selected_year, start_day)
+        context["financial_period_start"] = fin_start
+        context["financial_period_end"] = fin_end
+        context["financial_start_day"] = start_day
+
+        # Días transcurridos y totales del período financiero (para "Día X de Y")
+        period_total_days = (fin_end - fin_start).days
+        if is_current_period and fin_start <= today < fin_end:
+            period_day = (today - fin_start).days + 1
+        else:
+            period_day = period_total_days
+        context["period_day"] = period_day
+        context["period_total_days"] = period_total_days
 
         # Obtener datos de cada módulo
-        context.update(self._get_balance_data(user, selected_month, selected_year))
+        context.update(
+            self._get_balance_data(user, selected_month, selected_year, fin_start, fin_end)
+        )
         context.update(self._get_savings_data(user))
         context.update(self._get_recurring_data(user, selected_month, selected_year))
+        context.update(self._get_recurring_income_data(user, selected_month, selected_year))
         context.update(self._get_recent_transactions(user))
         context.update(self._get_expense_distribution(user, selected_month, selected_year))
         context.update(self._get_monthly_evolution(user, evolution_month, selected_year))
@@ -103,23 +123,29 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         candidates = [y for y in [expense_year, income_year] if y]
         return min(candidates) if candidates else current_year
 
-    def _get_balance_data(self, user, month, year):
+    def _get_balance_data(self, user, month, year, cur_start=None, cur_end=None):
         """
         Obtiene datos de balance: ingresos vs gastos.
 
         Optimizado: 2 queries en lugar de 6.
+        Usa el período financiero del usuario si se provee cur_start/cur_end.
         """
 
-        # Rango mes actual
-        cur_start, cur_end = get_month_date_range_exclusive(month, year)
+        # Rango mes actual (financiero o calendario)
+        if cur_start is None or cur_end is None:
+            cur_start, cur_end = get_month_date_range_exclusive(month, year)
 
-        # Calcular mes anterior
+        # Mes anterior: mismo start_day pero mes previo
         if month == 1:
             prev_month, prev_year = 12, year - 1
         else:
             prev_month, prev_year = month - 1, year
 
-        prev_start, prev_end = get_month_date_range_exclusive(prev_month, prev_year)
+        # Para el mes anterior usamos el mismo start_day para consistencia
+        start_day = cur_start.day if cur_start.day != 1 else 1
+        from apps.core.utils import get_financial_period as _gfp
+
+        prev_start, prev_end = _gfp(prev_month, prev_year, start_day)
 
         # Query 1: Gastos (mes actual + anterior)
         expense_data = (
@@ -284,6 +310,33 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             "recurring_paid": total_paid,
             "recurring_overdue": overdue,
             "recurring_pending": pending,
+        }
+
+    def _get_recurring_income_data(self, user, month, year):
+        """Obtiene el estado de ingresos fijos del mes actual."""
+        from apps.recurring_income.models import RecurringIncome
+
+        recurrents = RecurringIncome.objects.filter(user=user, is_active=True).prefetch_related(
+            "incomes"
+        )
+        total_active = len(recurrents)
+        total_collected = sum(1 for r in recurrents if r.is_collected_in(month, year))
+        overdue = sum(
+            1
+            for r in recurrents
+            if not r.is_collected_in(month, year) and r.status_for(month, year) == "overdue"
+        )
+        pending = [
+            {"rec": r, "overdue": r.status_for(month, year) == "overdue"}
+            for r in recurrents
+            if not r.is_collected_in(month, year)
+        ]
+
+        return {
+            "recurring_income_total": total_active,
+            "recurring_income_collected": total_collected,
+            "recurring_income_overdue": overdue,
+            "recurring_income_pending": pending,
         }
 
     def _get_recent_transactions(self, user):

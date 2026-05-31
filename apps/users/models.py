@@ -21,6 +21,12 @@ class User(AbstractUser):
         validators=[MinValueValidator(1), MaxValueValidator(100)],
         verbose_name="Umbral de alerta (%)",
     )
+    financial_month_start_day = models.PositiveSmallIntegerField(
+        default=1,
+        validators=[MinValueValidator(1), MaxValueValidator(28)],
+        verbose_name="Inicio del mes financiero",
+        help_text="Día del mes en que empieza tu período financiero (ej: día que cobrás el sueldo). Rango: 1-28.",
+    )
     email_verified = models.BooleanField(default=False, verbose_name="Email verificado")
     has_seen_tour = models.BooleanField(default=False, verbose_name="Tour visto")
 

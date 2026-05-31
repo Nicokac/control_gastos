@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     "apps.core",
     "apps.categories",
     "apps.recurring",
+    "apps.recurring_income",
 ]
 
 AUTH_USER_MODEL = "users.User"

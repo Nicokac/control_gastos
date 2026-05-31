@@ -5,6 +5,47 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.5.0] — 2026-05-31
+
+### Added
+
+- **Mi cuenta**: campo "Inicio del mes financiero (día)" — configurá el día en que empieza tu período (1-28, default 1).
+- **Dashboard**: gastos e ingresos del período se calculan sobre el rango financiero configurado (ej: del 10/05 al 09/06 si el inicio es día 10).
+- **Dashboard**: el texto "Día X de Y" debajo de la barra de progreso es clickeable y lleva a Mi Perfil. Muestra "(período financiero)" cuando el inicio es distinto al día 1.
+
+---
+
+## [1.4.9] — 2026-05-30
+
+### Added
+
+- **Dashboard**: alerta visual (amarilla/roja) cuando los gastos superan el umbral configurado por el usuario. La barra de progreso cambia de color según el umbral.
+- **Mi cuenta**: campo "Umbral de alerta (%)" en preferencias (default 80). Configurable entre 1 y 100.
+- **Gastos / Ingresos**: el campo cotización USD se pre-completa con el último valor usado por el usuario al seleccionar USD en el formulario.
+
+---
+
+## [1.4.8] — 2026-05-30
+
+### Added
+
+- **Ingresos Fijos**: nuevo módulo `apps/recurring_income` para modelar ingresos periódicos (sueldo, alquiler, freelance mensual). CRUD completo con estados por mes (cobrado/pendiente/vencido).
+- **Ingresos Fijos**: botón "Registrar cobro" pre-completa el formulario de ingreso con categoría y descripción. El cobro queda vinculado al ingreso fijo via FK.
+- **Ingresos Fijos**: toggle para ocultar/mostrar inactivos, igual que Gastos Fijos.
+- **Sidebar**: nueva entrada "Ingresos Fijos" bajo PLANIFICACIÓN.
+
+---
+
+## [1.4.7] — 2026-05-30
+
+### Added
+
+- **Gastos Fijos**: soporte para gastos en cuotas — campos opcionales "Cantidad de cuotas" y "Mes de inicio". Al registrar el último pago, el gasto se desactiva automáticamente.
+- **Gastos Fijos**: badge de progreso en la lista ("cuota 3/12") visible en gastos con cuotas definidas.
+- **Gastos Fijos**: inactivos ocultos por defecto con toggle "Mostrar inactivos (N)" en el header de la tabla.
+
+---
+
 ## [1.4.6] — 2026-05-22
 
 ### Added

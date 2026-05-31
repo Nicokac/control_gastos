@@ -447,9 +447,9 @@ Los íconos de estado usan `data-bs-toggle="tooltip"` + `data-bs-title` en lugar
 
 ### DT-011 — Ingresos recurrentes
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.4.8)
 
-Mismo concepto que Gastos Fijos pero para ingresos periódicos (sueldos, alquileres cobrados, freelance mensual, etc.). Requiere nuevo modelo `RecurringIncome`, sección dedicada en el sidebar, y flujo de "registrar cobro" similar al de gastos fijos.
+Nuevo módulo `apps/recurring_income` con modelo `RecurringIncome` (nombre, categoría, día esperado de cobro, notas, activo). CRUD completo, lista con toggle de inactivos, estado por mes (cobrado/pendiente/vencido). Botón "Registrar cobro" pre-completa el formulario de Ingreso con categoría y descripción. El cobro queda vinculado via FK `Income.recurring`. Sección "Ingresos Fijos" en sidebar bajo PLANIFICACIÓN. Ver DT-047 para widget pendiente en dashboard.
 
 ### DT-012 — Reportes anuales
 
@@ -465,15 +465,13 @@ Vista de reporte anual con comparativa mes a mes: gastos, ingresos y balance par
 
 ### DT-014 — `alert_threshold` en User sin funcionalidad activa
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.4.9)
 
-El campo `alert_threshold` (IntegerField 1-100, default 80) existe en el modelo `User` y aparece en el formulario de perfil, pero no tiene ningún efecto en la app. Fue diseñado para alertas de presupuesto cuando existía el módulo de budgets, que fue removido en D-007. Opciones: (a) implementar alertas visuales en el dashboard cuando el gasto mensual supera el umbral sobre el total de ingresos, o (b) remover el campo si no se va a implementar. Dejarlo visible en el perfil sin efecto es confuso para el usuario.
+Campo `alert_threshold` expuesto en `ProfileForm` y en el template de perfil bajo "Preferencias", junto a moneda principal. En el dashboard, cuando `expense_percentage >= alert_threshold`, aparece una alerta amarilla/roja con link "Cambiar umbral". La barra de progreso cambia a `bg-danger` al superar el umbral y vuelve a `bg-success` cuando está por debajo. El umbral se pasa al contexto del dashboard desde `DashboardView.get_context_data()`.
 
 ### DT-015 — Ingresos recurrentes
 
-**Estado:** ⏳ Pendiente
-
-Los gastos fijos/recurrentes tienen su propio módulo (`apps/recurring`) con CRUD, estados (pagado/pendiente/vencido) y registro de pagos. Los ingresos periódicos (sueldos, alquileres cobrados, freelance mensual) no tienen equivalente. Un usuario que cobra mensualmente no tiene forma de modelar eso sin crear el ingreso manualmente cada mes. Implementación esperada: similar a `recurring` pero para ingresos, reutilizando los mismos patrones de modelo y vistas.
+**Estado:** ✅ Resuelto (v1.4.8) — ver DT-011.
 
 ---
 
@@ -503,9 +501,9 @@ Los formularios de depósito y movimiento de ahorro usaban mensajes genéricos o
 
 ### DT-020 — Campo "Cotización del dólar" sin valor sugerido al seleccionar USD
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.4.9)
 
-Al cambiar la moneda a USD en los formularios de Gasto e Ingreso, el campo "Cotización del dólar" aparece con valor `0,00` por defecto. No hay cotización referencial precargada. Opciones: (a) integrar una API pública de cotización del dólar (ej: dolarapi.com) para precargar el valor al seleccionar USD, o (b) persistir la última cotización ingresada por el usuario para reutilizarla como sugerencia. No se implementa ahora por scope y dependencia de API externa.
+Opción B implementada: el `get_initial()` de `ExpenseCreateView` e `IncomeCreateView` busca el último gasto/ingreso en USD del usuario y usa su `exchange_rate` como valor inicial. El campo renderiza el valor en el atributo HTML `value`. En `transaction_form.js`, `toggleExchangeRate()` lee `exchangeRateInput.defaultValue` al habilitar el campo USD y lo copia a `value` si no hay valor actual. El fix es puramente client-side; el backend ya enviaba el dato correctamente.
 
 ---
 
@@ -565,9 +563,9 @@ La barra de balance muestra "Gastaste el X% de tus ingresos" sin indicar en qué
 
 ### DT-029 — Mes financiero personalizado por fecha de cobro
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.5.0)
 
-El dashboard calcula el período del mes en base al mes calendario (1 al último día). Pero el "mes financiero" real de cada usuario empieza el día que cobra su sueldo (ej: día 1, día 5, día 10). Implementación esperada: campo configurable en el perfil del usuario ("Día de inicio de mes financiero", rango 1-28) que ajuste el período de cálculo del dashboard y la barra de progreso de balance. El "Día X de Y" en la barra reflejaría días transcurridos dentro del período financiero, no del mes calendario.
+Campo `financial_month_start_day` (1-28, default 1) en el modelo `User`, expuesto en `ProfileForm` y en el template de perfil. Nueva función `get_financial_period(month, year, start_day)` en `core/utils.py` que calcula el rango [start_day del mes, start_day del mes siguiente). El dashboard usa ese rango para calcular gastos, ingresos y balance. El texto "Día X de Y" refleja los días transcurridos dentro del período financiero y muestra "(período financiero)" cuando el inicio es distinto a 1. El texto es clickeable y navega a Mi Perfil.
 
 ### DT-030 — Gastos: búsqueda dentro del picker de categorías
 
@@ -658,6 +656,78 @@ Gráfico de línea (Chart.js) con el gasto acumulado día a día, visible en "Ve
 **Estado:** ✅ Resuelto (v1.4.6)
 
 Gráfico de barras apiladas (Chart.js) visible en "Ver resumen" cuando el filtro tiene año sin mes específico. Muestra los 12 meses en el eje X con los top 6 grupos apilados; grupos restantes se agrupan en "Otros". Eje Y con formato abreviado (k/M). Tooltip muestra grupo y monto, omite series con $0. Mutuamente excluyente con el acumulado diario (DT-042).
+
+### DT-047 — Dashboard: widget de Ingresos Fijos pendientes
+
+**Estado:** ✅ Resuelto (v1.4.8)
+
+Widget de Ingresos Fijos en el dashboard, idéntico en estructura al de Gastos Fijos. Muestra cobrados/total con barra de progreso verde y badges amarillos para los pendientes. Solo visible cuando el usuario tiene al menos un ingreso fijo activo. Implementado via `_get_recurring_income_data()` en `DashboardView`.
+
+### DT-046 — Landing: demo visual con screenshots reales de la app
+
+**Estado:** ⏳ Pendiente
+
+La landing actual (`templates/core/landing.html`) tiene solo texto e íconos — sin ninguna visualización real de la app. Se decidió agregar screenshots reales integradas en un layout estilo "feature showcase" (imagen + texto alternados). No se eligió demo en vivo (Opción C) por riesgo de corrupción de datos sin workers disponibles en Render Free.
+
+**Pantallas a capturar** (con datos de ejemplo del usuario Nicolas en dev):
+
+| Pantalla | Qué mostrar |
+|---|---|
+| Dashboard | Balance, barra de progreso, KPIs, donut de distribución, widget de gastos fijos |
+| Gastos | Lista con "Ver resumen" abierto mostrando el donut y acumulado diario |
+| Ingresos | Lista del mes con dos registros |
+| Metas de ahorro | Meta "Vacaciones 2026" con barra de progreso al 24% |
+| Gastos Fijos | Lista con estados pagado/pendiente/vencido |
+
+**Datos de ejemplo cargados en dev (usuario Nicolas):**
+
+Gastos Mayo 2026:
+- Supermercado Coto $28.500 · Alimentación · Débito · Variable
+- Delivery Pedidos Ya $4.200 · Alimentación · Crédito · Variable
+- Carnicería $12.000 · Alimentación · Efectivo · Variable
+- Verdulería $3.800 · Alimentación · Efectivo · Variable
+- SUBE $5.000 · Transporte · Débito · Fijo
+- Uber/Cabify $8.600 · Transporte · Crédito · Variable
+- Nafta $22.000 · Transporte · Efectivo · Variable
+- Luz (Edesur) $18.500 · Hogar · Débito · Fijo
+- Gas $9.200 · Hogar · Débito · Fijo
+- Expensas $45.000 · Hogar · Transferencia · Fijo
+- Farmacia $6.800 · Salud · Crédito · Variable
+- Médico clínico $15.000 · Salud · Efectivo · Variable
+- Obra social $28.000 · Salud · Débito · Fijo
+- Netflix $8.500 · Streaming · Crédito · Fijo
+- Spotify $4.200 · Entretenimiento · Crédito · Fijo
+- Cine $7.500 · Entretenimiento · Efectivo · Variable
+- Librería $5.600 · Educación · Efectivo · Variable
+- Ropa $35.000 · Varios · Crédito · Variable
+- Regalo cumpleaños $12.000 · Varios · Efectivo · Variable
+- Restaurante $18.900 · Alimentación · Crédito · Variable
+
+Ingresos Mayo 2026:
+- Sueldo Mayo $500.000 · Sueldos
+- Ingreso Proyecto $85.000 · Freelance
+
+Gastos Fijos:
+- Internet Fibertel $12.500 · vence día 5 · Pagado
+- Gimnasio $18.000 · vence día 10 · Pendiente
+- Netflix $8.500 · vence día 15 · Pendiente
+
+Meta de ahorro:
+- Vacaciones 2026 · Objetivo $500.000 · Ahorrado $120.000 (24%)
+
+**Implementación:** las imágenes van en `static/img/landing/`. El layout alterna imagen (derecha/izquierda) con texto descriptivo por sección.
+
+### DT-044 — Gastos Fijos: soporte para gastos temporales (cuotas)
+
+**Estado:** ✅ Resuelto (v1.4.7)
+
+Campos opcionales `total_installments` y `start_date` en `RecurringExpense`. Propiedades `installments_paid`, `installments_remaining` y `auto_deactivate_if_complete()`. Al registrar el último pago, el gasto se desactiva automáticamente. Badge en la lista: "6 cuotas" sin pagos, "cuota 3/6" con pagos. Validación cruzada en el formulario: ambos campos son requeridos juntos o ninguno.
+
+### DT-045 — Gastos Fijos: lista sin filtro de inactivos
+
+**Estado:** ✅ Resuelto (v1.4.7)
+
+Inactivos ocultos por defecto. Cuando existen, aparece el botón "Mostrar inactivos (N)" en el header de la tabla. Al activarlo muestra todos y el botón cambia a "Ocultar inactivos (N)". Toggle via query param `?inactive=1`.
 
 ---
 

@@ -130,3 +130,38 @@ def get_month_date_range_exclusive(month: int, year: int):
     else:
         end_date = date(year, month + 1, 1)
     return start_date, end_date
+
+
+def get_financial_period(month: int, year: int, start_day: int = 1):
+    """
+    Retorna (inicio, fin_exclusivo) del período financiero del usuario.
+
+    Si start_day == 1, equivale a get_month_date_range_exclusive (mes calendario).
+    Si start_day > 1, el período va del día start_day del mes seleccionado
+    al día start_day del mes siguiente.
+
+    Ejemplo: month=5, year=2026, start_day=10
+    → inicio: 2026-05-10, fin: 2026-06-10
+
+    El navegador selecciona el mes "Mayo" y el período real es 10/05 al 09/06.
+    """
+    import calendar as cal_module
+
+    if start_day <= 1:
+        return get_month_date_range_exclusive(month, year)
+
+    # Inicio: día start_day del mes seleccionado (clamp al último día del mes)
+    last_day = cal_module.monthrange(year, month)[1]
+    actual_start_day = min(start_day, last_day)
+    start_date = date(year, month, actual_start_day)
+
+    # Fin: día start_day del mes siguiente
+    if month == 12:
+        next_month, next_year = 1, year + 1
+    else:
+        next_month, next_year = month + 1, year
+    last_day_next = cal_module.monthrange(next_year, next_month)[1]
+    actual_end_day = min(start_day, last_day_next)
+    end_date = date(next_year, next_month, actual_end_day)
+
+    return start_date, end_date

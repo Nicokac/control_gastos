@@ -42,6 +42,18 @@ class RecurringExpense(TimestampMixin, models.Model):
         verbose_name="Notas",
         help_text="Referencia opcional (ej: número de cuenta, proveedor).",
     )
+    total_installments = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        verbose_name="Cantidad de cuotas",
+        help_text="Dejá vacío si el gasto no tiene fecha de fin (servicios, alquiler, etc.).",
+    )
+    start_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Mes de inicio",
+        help_text="Primer mes en que aplica este gasto (para el conteo de cuotas).",
+    )
 
     class Meta:
         verbose_name = "Gasto recurrente"
@@ -53,6 +65,31 @@ class RecurringExpense(TimestampMixin, models.Model):
 
     def __str__(self):
         return f"{self.name} (día {self.due_day})"
+
+    @property
+    def is_installment(self):
+        return self.total_installments is not None
+
+    @property
+    def installments_paid(self):
+        if not self.is_installment or not self.start_date:
+            return None
+        return self.expenses.count()
+
+    @property
+    def installments_remaining(self):
+        if not self.is_installment:
+            return None
+        paid = self.installments_paid or 0
+        return max(self.total_installments - paid, 0)
+
+    def auto_deactivate_if_complete(self):
+        """Desactiva el gasto si ya se pagaron todas las cuotas."""
+        if self.is_installment and self.is_active:
+            paid = self.installments_paid or 0
+            if paid >= self.total_installments:
+                self.is_active = False
+                self.save(update_fields=["is_active"])
 
     @property
     def last_expense(self):

@@ -144,7 +144,14 @@ class ProfileForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ["first_name", "last_name", "email", "default_currency"]
+        fields = [
+            "first_name",
+            "last_name",
+            "email",
+            "default_currency",
+            "alert_threshold",
+            "financial_month_start_day",
+        ]
         widgets = {
             "first_name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Nombre"}),
             "last_name": forms.TextInput(
@@ -152,12 +159,20 @@ class ProfileForm(forms.ModelForm):
             ),
             "email": forms.EmailInput(attrs={"class": "form-control", "placeholder": "Email"}),
             "default_currency": forms.Select(attrs={"class": "form-select"}),
+            "alert_threshold": forms.NumberInput(
+                attrs={"class": "form-control", "min": 1, "max": 100}
+            ),
+            "financial_month_start_day": forms.NumberInput(
+                attrs={"class": "form-control", "min": 1, "max": 28}
+            ),
         }
         labels = {
             "first_name": "Nombre",
             "last_name": "Apellido",
             "email": "Email",
             "default_currency": "Moneda principal",
+            "alert_threshold": "Umbral de alerta (%)",
+            "financial_month_start_day": "Inicio del mes financiero (día)",
         }
 
     def clean_email(self):

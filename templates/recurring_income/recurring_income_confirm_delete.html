@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Ingreso Fijo - Control de Gastos{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <i class="bi bi-trash me-2"></i>Eliminar ingreso fijo
+            </div>
+            <div class="card-body">
+                <p class="mb-0">¿Eliminás <strong>{{ object.name }}</strong>? Esta acción no se puede deshacer.</p>
+                <p class="text-muted small mt-2 mb-0">Los cobros ya registrados no se verán afectados.</p>
+            </div>
+            <div class="card-footer d-flex justify-content-between">
+                <a href="{% url 'recurring_income:list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-lg"></i> Cancelar
+                </a>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>Eliminar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

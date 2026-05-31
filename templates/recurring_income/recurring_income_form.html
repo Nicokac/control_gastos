@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if is_edit %}Editar{% else %}Nuevo{% endif %} Ingreso Fijo - Control de Gastos{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+
+        <div class="d-flex align-items-center gap-2 mb-4">
+            <i class="bi bi-arrow-repeat fs-4 text-success"></i>
+            <h1 class="h4 mb-0">{% if is_edit %}Editar{% else %}Nuevo{% endif %} ingreso fijo</h1>
+        </div>
+
+        <div class="card">
+            <div class="card-body p-4">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label for="{{ form.name.id_for_label }}" class="form-label fw-semibold">Nombre</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}<div class="invalid-feedback d-block">{{ form.name.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.category.id_for_label }}" class="form-label fw-semibold">Categoría</label>
+                        {{ form.category }}
+                        {% if form.category.errors %}<div class="invalid-feedback d-block">{{ form.category.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.expected_day.id_for_label }}" class="form-label fw-semibold">Día esperado de cobro</label>
+                        {{ form.expected_day }}
+                        <div class="form-text">Día del mes en que solés cobrar este ingreso (1-31).</div>
+                        {% if form.expected_day.errors %}<div class="invalid-feedback d-block">{{ form.expected_day.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.notes.id_for_label }}" class="form-label fw-semibold">Notas <span class="text-muted fw-normal">(opcional)</span></label>
+                        {{ form.notes }}
+                        {% if form.notes.errors %}<div class="invalid-feedback d-block">{{ form.notes.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="form-check">
+                            {{ form.is_active }}
+                            <label class="form-check-label" for="{{ form.is_active.id_for_label }}">Activo</label>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'recurring_income:list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-lg"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-lg me-1"></i>{% if is_edit %}Guardar cambios{% else %}Crear{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

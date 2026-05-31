@@ -61,6 +61,22 @@
                                         <div class="text-danger small mt-1">{{ form.default_currency.errors.0 }}</div>
                                         {% endif %}
                                     </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id_alert_threshold" class="form-label">Umbral de alerta (%)</label>
+                                        {{ form.alert_threshold }}
+                                        <div class="form-text">Alerta en el dashboard cuando tus gastos superan este porcentaje de tus ingresos.</div>
+                                        {% if form.alert_threshold.errors %}
+                                        <div class="text-danger small mt-1">{{ form.alert_threshold.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="id_financial_month_start_day" class="form-label">Inicio del mes financiero (día)</label>
+                                        {{ form.financial_month_start_day }}
+                                        <div class="form-text">Día del mes en que empieza tu período financiero — por ejemplo, el día que cobrás el sueldo (1-28).</div>
+                                        {% if form.financial_month_start_day.errors %}
+                                        <div class="text-danger small mt-1">{{ form.financial_month_start_day.errors.0 }}</div>
+                                        {% endif %}
+                                    </div>
                                 </div>
 
                                 <div class="d-flex gap-2 mt-4">

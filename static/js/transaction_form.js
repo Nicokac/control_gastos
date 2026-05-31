@@ -77,22 +77,27 @@ function initExchangeRateToggle() {
 
     if (!currencySelect || !exchangeRateField || !exchangeRateInput) return;
 
+    // Preservar el valor sugerido del servidor (leer del atributo, no del .value que puede estar vacío si disabled)
+    const serverSuggestedRate = exchangeRateInput.getAttribute('value') || exchangeRateInput.value;
+
     function toggleExchangeRate() {
         const isUSD = currencySelect.value === 'USD';
 
-        // Toggle visibilidad con d-none de Bootstrap
         exchangeRateField.classList.toggle('d-none', !isUSD);
-
-        // Deshabilitar input cuando es ARS (no se envía al servidor)
         exchangeRateInput.disabled = !isUSD;
 
-        // Limpiar valor cuando cambia a ARS
         if (!isUSD) {
             exchangeRateInput.value = '';
+        } else if (!exchangeRateInput.value && serverSuggestedRate) {
+            // Restaurar el valor sugerido del servidor al cambiar a USD
+            exchangeRateInput.value = serverSuggestedRate;
         }
 
-        // Focus en el campo si es USD y está vacío
         if (isUSD && !exchangeRateInput.value) {
+            const serverValue = exchangeRateInput.defaultValue;
+            if (serverValue && serverValue !== '0' && serverValue !== '0,00') {
+                exchangeRateInput.value = serverValue;
+            }
             exchangeRateInput.focus();
         }
     }

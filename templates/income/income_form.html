@@ -22,6 +22,13 @@
                 </h1>
             </div>
 
+            {% if linked_recurring %}
+            <div class="alert alert-success d-flex align-items-center gap-2 mb-3">
+                <i class="bi bi-arrow-repeat"></i>
+                <span>Registrando cobro de <strong>{{ linked_recurring.name }}</strong></span>
+            </div>
+            {% endif %}
+
             <form method="post" novalidate id="incomeForm">
                 {% csrf_token %}
 

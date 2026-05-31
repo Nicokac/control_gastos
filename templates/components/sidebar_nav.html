@@ -44,10 +44,18 @@
   </li>
   <li class="nav-item">
     <a href="{% url 'recurring:list' %}"
-       class="nav-link sidebar-link {% if 'recurring' in request.path %}active{% endif %}"
+       class="nav-link sidebar-link {% if 'recurring' in request.path and 'recurring-income' not in request.path %}active{% endif %}"
        title="Gastos Fijos">
       <i class="bi bi-arrow-repeat text-primary" aria-hidden="true"></i>
       <span>Gastos Fijos</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a href="{% url 'recurring_income:list' %}"
+       class="nav-link sidebar-link {% if 'recurring-income' in request.path %}active{% endif %}"
+       title="Ingresos Fijos">
+      <i class="bi bi-arrow-repeat text-success" aria-hidden="true"></i>
+      <span>Ingresos Fijos</span>
     </a>
   </li>
   <li class="nav-item">

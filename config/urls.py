@@ -60,6 +60,7 @@ urlpatterns = [
     path("income/", include("apps.income.urls")),
     path("savings/", include("apps.savings.urls")),
     path("recurring/", include("apps.recurring.urls")),
+    path("recurring-income/", include("apps.recurring_income.urls")),
     path("", include("apps.core.urls")),
     path("dashboard/", include("apps.reports.urls")),
     # path("boom/", boom),

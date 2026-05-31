@@ -1,4 +1,4 @@
-"""Vistas para gastos recurrentes."""
+"""Vistas para ingresos recurrentes."""
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -9,20 +9,20 @@ from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from apps.core.utils import get_month_name
 from apps.core.views import UserFormKwargsMixin
 
-from .forms import RecurringExpenseForm
-from .models import RecurringExpense
+from .forms import RecurringIncomeForm
+from .models import RecurringIncome
 
 
-class RecurringExpenseListView(LoginRequiredMixin, ListView):
-    model = RecurringExpense
-    template_name = "recurring/recurring_list.html"
+class RecurringIncomeListView(LoginRequiredMixin, ListView):
+    model = RecurringIncome
+    template_name = "recurring_income/recurring_income_list.html"
     context_object_name = "recurrents"
 
     def get_queryset(self):
         return (
-            RecurringExpense.objects.filter(user=self.request.user)
+            RecurringIncome.objects.filter(user=self.request.user)
             .select_related("category", "category__parent")
-            .order_by("due_day", "name")
+            .order_by("expected_day", "name")
         )
 
     def get_context_data(self, **kwargs):
@@ -33,12 +33,12 @@ class RecurringExpenseListView(LoginRequiredMixin, ListView):
 
         all_items = []
         for rec in context["recurrents"]:
-            last = rec.last_expense
+            last = rec.last_income
             all_items.append(
                 {
                     "rec": rec,
                     "status": rec.status_for(month, year),
-                    "last_expense": last,
+                    "last_income": last,
                 }
             )
 
@@ -50,15 +50,15 @@ class RecurringExpenseListView(LoginRequiredMixin, ListView):
         context["show_inactive"] = show_inactive
         context["current_month"] = f"{get_month_name(today.month)} {today.year}"
         context["total_active"] = len(active_items)
-        context["total_paid"] = sum(1 for i in active_items if i["status"] == "paid")
+        context["total_collected"] = sum(1 for i in active_items if i["status"] == "collected")
         return context
 
 
-class RecurringExpenseCreateView(LoginRequiredMixin, UserFormKwargsMixin, CreateView):
-    model = RecurringExpense
-    form_class = RecurringExpenseForm
-    template_name = "recurring/recurring_form.html"
-    success_url = reverse_lazy("recurring:list")
+class RecurringIncomeCreateView(LoginRequiredMixin, UserFormKwargsMixin, CreateView):
+    model = RecurringIncome
+    form_class = RecurringIncomeForm
+    template_name = "recurring_income/recurring_income_form.html"
+    success_url = reverse_lazy("recurring_income:list")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -69,25 +69,25 @@ class RecurringExpenseCreateView(LoginRequiredMixin, UserFormKwargsMixin, Create
         form.instance.user = self.request.user
         response = super().form_valid(form)
         messages.success(
-            self.request, f"Gasto recurrente '{self.object.name}' creado correctamente."
+            self.request, f"Ingreso recurrente '{self.object.name}' creado correctamente."
         )
         return response
 
     def form_invalid(self, form):
         messages.error(
-            self.request, "No pudimos guardar el gasto recurrente. Revisá los campos marcados."
+            self.request, "No pudimos guardar el ingreso recurrente. Revisá los campos marcados."
         )
         return super().form_invalid(form)
 
 
-class RecurringExpenseUpdateView(LoginRequiredMixin, UserFormKwargsMixin, UpdateView):
-    model = RecurringExpense
-    form_class = RecurringExpenseForm
-    template_name = "recurring/recurring_form.html"
-    success_url = reverse_lazy("recurring:list")
+class RecurringIncomeUpdateView(LoginRequiredMixin, UserFormKwargsMixin, UpdateView):
+    model = RecurringIncome
+    form_class = RecurringIncomeForm
+    template_name = "recurring_income/recurring_income_form.html"
+    success_url = reverse_lazy("recurring_income:list")
 
     def get_queryset(self):
-        return RecurringExpense.objects.filter(user=self.request.user)
+        return RecurringIncome.objects.filter(user=self.request.user)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -97,27 +97,27 @@ class RecurringExpenseUpdateView(LoginRequiredMixin, UserFormKwargsMixin, Update
     def form_valid(self, form):
         response = super().form_valid(form)
         messages.success(
-            self.request, f"Gasto recurrente '{self.object.name}' actualizado correctamente."
+            self.request, f"Ingreso recurrente '{self.object.name}' actualizado correctamente."
         )
         return response
 
     def form_invalid(self, form):
         messages.error(
-            self.request, "No pudimos guardar el gasto recurrente. Revisá los campos marcados."
+            self.request, "No pudimos guardar el ingreso recurrente. Revisá los campos marcados."
         )
         return super().form_invalid(form)
 
 
-class RecurringExpenseDeleteView(LoginRequiredMixin, DeleteView):
-    model = RecurringExpense
-    template_name = "recurring/recurring_confirm_delete.html"
-    success_url = reverse_lazy("recurring:list")
+class RecurringIncomeDeleteView(LoginRequiredMixin, DeleteView):
+    model = RecurringIncome
+    template_name = "recurring_income/recurring_income_confirm_delete.html"
+    success_url = reverse_lazy("recurring_income:list")
 
     def get_queryset(self):
-        return RecurringExpense.objects.filter(user=self.request.user)
+        return RecurringIncome.objects.filter(user=self.request.user)
 
     def form_valid(self, form):
         name = self.get_object().name
         response = super().form_valid(form)
-        messages.success(self.request, f"Gasto recurrente '{name}' eliminado correctamente.")
+        messages.success(self.request, f"Ingreso recurrente '{name}' eliminado correctamente.")
         return response

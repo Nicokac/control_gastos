@@ -271,6 +271,8 @@ class TestProfileView:
                 "last_name": "Kachuk",
                 "email": user.email,
                 "default_currency": "ARS",
+                "alert_threshold": 80,
+                "financial_month_start_day": 1,
             },
         )
 

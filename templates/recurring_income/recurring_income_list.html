@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load currency_filters %}
 
-{% block title %}Gastos Fijos - Control de Gastos{% endblock %}
+{% block title %}Ingresos Fijos - Control de Gastos{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -10,28 +10,28 @@
             <i class="bi bi-arrow-left"></i> Volver
         </button>
         <h1 class="h3 mb-0">
-            <i class="bi bi-arrow-repeat text-primary me-2"></i>Gastos Fijos
+            <i class="bi bi-arrow-repeat text-success me-2"></i>Ingresos Fijos
         </h1>
     </div>
-    <a href="{% url 'recurring:create' %}" class="btn btn-primary">
+    <a href="{% url 'recurring_income:create' %}" class="btn btn-success">
         <i class="bi bi-plus-lg me-1"></i>Nuevo
     </a>
 </div>
 
 <!-- Resumen del mes -->
-<div class="card mb-4 border-primary">
+<div class="card mb-4 border-success">
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center">
             <span class="text-muted">{{ current_month|capfirst }}</span>
             <span class="fw-semibold">
-                <span class="text-success">{{ total_paid }}</span>
-                <span class="text-muted"> / {{ total_active }} pagados</span>
+                <span class="text-success">{{ total_collected }}</span>
+                <span class="text-muted"> / {{ total_active }} cobrados</span>
             </span>
         </div>
         {% if total_active > 0 %}
         <div class="progress mt-2" style="height: 6px;">
             <div class="progress-bar bg-success"
-                 style="width: {% widthratio total_paid total_active 100 %}%">
+                 style="width: {% widthratio total_collected total_active 100 %}%">
             </div>
         </div>
         {% endif %}
@@ -43,7 +43,7 @@
     {% if inactive_count > 0 %}
     <div class="card-header d-flex justify-content-end py-2">
         {% if show_inactive %}
-        <a href="{% url 'recurring:list' %}" class="btn btn-outline-secondary btn-sm">
+        <a href="{% url 'recurring_income:list' %}" class="btn btn-outline-secondary btn-sm">
             <i class="bi bi-eye-slash me-1"></i>Ocultar inactivos ({{ inactive_count }})
         </a>
         {% else %}
@@ -60,8 +60,8 @@
                     <th>Estado</th>
                     <th>Nombre</th>
                     <th>Categoría</th>
-                    <th class="text-center">Vence</th>
-                    <th class="text-end">Último pago</th>
+                    <th class="text-center">Día esperado</th>
+                    <th class="text-end">Último cobro</th>
                     <th class="text-center col-actions">Acciones</th>
                 </tr>
             </thead>
@@ -71,21 +71,16 @@
                     <td class="text-center" style="width:40px">
                         {% if not item.rec.is_active %}
                             <i class="bi bi-pause-circle text-secondary" data-bs-toggle="tooltip" data-bs-title="Inactivo"></i>
-                        {% elif item.status == 'paid' %}
-                            <i class="bi bi-check-circle-fill text-success" data-bs-toggle="tooltip" data-bs-title="Pagado este mes"></i>
+                        {% elif item.status == 'collected' %}
+                            <i class="bi bi-check-circle-fill text-success" data-bs-toggle="tooltip" data-bs-title="Cobrado este mes"></i>
                         {% elif item.status == 'overdue' %}
-                            <i class="bi bi-exclamation-circle-fill text-danger" data-bs-toggle="tooltip" data-bs-title="Vencido"></i>
+                            <i class="bi bi-exclamation-circle-fill text-warning" data-bs-toggle="tooltip" data-bs-title="Pendiente de cobro"></i>
                         {% else %}
-                            <i class="bi bi-clock text-warning" data-bs-toggle="tooltip" data-bs-title="Pendiente"></i>
+                            <i class="bi bi-clock text-secondary" data-bs-toggle="tooltip" data-bs-title="Próximo a cobrar"></i>
                         {% endif %}
                     </td>
                     <td>
                         <span class="fw-semibold">{{ item.rec.name }}</span>
-                        {% if item.rec.is_installment %}
-                        <span class="badge bg-info bg-opacity-10 text-info ms-1" style="font-size:0.7rem">
-                            {% if item.rec.installments_paid %}cuota {{ item.rec.installments_paid }}/{{ item.rec.total_installments }}{% else %}{{ item.rec.total_installments }} cuotas{% endif %}
-                        </span>
-                        {% endif %}
                         {% if item.rec.notes %}
                         <br><small class="text-muted">{{ item.rec.notes }}</small>
                         {% endif %}
@@ -101,31 +96,31 @@
                         </span>
                     </td>
                     <td class="text-center">
-                        <span class="badge bg-light text-dark border">día {{ item.rec.due_day }}</span>
+                        <span class="badge bg-light text-dark border">día {{ item.rec.expected_day }}</span>
                     </td>
                     <td class="text-end text-nowrap">
-                        {% if item.last_expense %}
-                            <strong>{{ item.last_expense.formatted_amount }}</strong>
-                            <br><small class="text-muted">{{ item.last_expense.date|date:"d/m/Y" }}</small>
+                        {% if item.last_income %}
+                            <strong class="text-success">{{ item.last_income.formatted_amount }}</strong>
+                            <br><small class="text-muted">{{ item.last_income.date|date:"d/m/Y" }}</small>
                         {% else %}
-                            <small class="text-muted">Sin pagos</small>
+                            <small class="text-muted">Sin cobros</small>
                         {% endif %}
                     </td>
                     <td class="text-center">
                         <div class="btn-group btn-group-sm">
-                            {% if item.rec.is_active and item.status != 'paid' %}
-                            <a href="{% url 'expenses:create' %}?recurring={{ item.rec.pk }}"
+                            {% if item.rec.is_active and item.status != 'collected' %}
+                            <a href="{% url 'income:create' %}?recurring={{ item.rec.pk }}"
                                class="btn btn-outline-success"
-                               title="Registrar pago">
+                               title="Registrar cobro">
                                 <i class="bi bi-cash-coin"></i>
                             </a>
                             {% endif %}
-                            <a href="{% url 'recurring:update' item.rec.pk %}"
+                            <a href="{% url 'recurring_income:update' item.rec.pk %}"
                                class="btn btn-outline-primary"
                                title="Editar">
                                 <i class="bi bi-pencil"></i>
                             </a>
-                            <a href="{% url 'recurring:delete' item.rec.pk %}"
+                            <a href="{% url 'recurring_income:delete' item.rec.pk %}"
                                class="btn btn-outline-danger"
                                title="Eliminar">
                                 <i class="bi bi-trash"></i>
@@ -137,8 +132,8 @@
                 <tr>
                     <td colspan="6" class="text-center py-5">
                         <i class="bi bi-arrow-repeat display-4 text-muted"></i>
-                        <p class="text-muted mt-2 mb-0">No tenés gastos fijos registrados.</p>
-                        <a href="{% url 'recurring:create' %}" class="btn btn-primary btn-sm mt-3">
+                        <p class="text-muted mt-2 mb-0">No tenés ingresos fijos registrados.</p>
+                        <a href="{% url 'recurring_income:create' %}" class="btn btn-success btn-sm mt-3">
                             <i class="bi bi-plus-lg me-1"></i>Agregar el primero
                         </a>
                     </td>
