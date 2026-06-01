@@ -166,10 +166,12 @@ APP_VERSION = "1.5.2"
 WHATS_NEW = [
     {
         "version": "1.5.2",
-        "date": "Mayo 2026",
-        "title": "El resumen recuerda tu preferencia",
+        "date": "Junio 2026",
+        "title": "Landing renovada y resumen con memoria",
         "items": [
             "Gastos e Ingresos: el panel 'Ver resumen' recuerda si lo dejaste abierto o cerrado — no tenés que volver a abrirlo cada vez",
+            "Landing: nueva sección con screenshots reales de la app — mirá el dashboard, gastos, ahorros y gastos fijos antes de registrarte",
+            "Landing: hacé click en cualquier screenshot para verlo a pantalla completa",
         ],
     },
     {

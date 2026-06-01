@@ -665,7 +665,7 @@ Widget de Ingresos Fijos en el dashboard, idéntico en estructura al de Gastos F
 
 ### DT-046 — Landing: demo visual con screenshots reales de la app
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.5.2)
 
 La landing actual (`templates/core/landing.html`) tiene solo texto e íconos — sin ninguna visualización real de la app. Se decidió agregar screenshots reales integradas en un layout estilo "feature showcase" (imagen + texto alternados). No se eligió demo en vivo (Opción C) por riesgo de corrupción de datos sin workers disponibles en Render Free.
 

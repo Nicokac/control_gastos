@@ -5,11 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
-## [1.5.2] — 2026-05-31
+## [1.5.2] — 2026-06-01
 
 ### Added
 
 - **Gastos / Ingresos**: el panel "Ver resumen" recuerda si estaba abierto o cerrado — la preferencia se persiste en localStorage y sobrevive navegación y recarga.
+- **Landing**: sección "Mirá cómo funciona" con screenshots reales de la app (Dashboard, Gastos, Metas de Ahorro, Gastos Fijos) en layout imagen + texto alternado.
+- **Landing**: lightbox al hacer click en cada screenshot — se abre a pantalla completa sobre fondo oscuro, se cierra con click, fondo o Escape.
+- **Login**: enlace "¿Querés ver cómo funciona?" debajo de "Crear cuenta" para usuarios no registrados.
 
 ### Removed
 
