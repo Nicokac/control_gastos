@@ -36,6 +36,101 @@
         border-bottom: 1px solid #dee2e6;
         padding: 1rem 0;
     }
+
+    /* Showcase */
+    .showcase-section {
+        padding: 4rem 0;
+    }
+    .showcase-section:nth-child(even) {
+        background: #f8f9fa;
+    }
+    .showcase-img-wrapper {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0,0,0,.12);
+        background: #e9ecef;
+        aspect-ratio: 16/9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: zoom-in;
+        transition: box-shadow .25s ease;
+    }
+    .showcase-img-wrapper:hover {
+        box-shadow: 0 12px 40px rgba(0,0,0,.2);
+    }
+    .showcase-img-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: top left;
+        display: block;
+    }
+
+    /* Lightbox */
+    .lightbox-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.88);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+        cursor: zoom-out;
+    }
+    .lightbox-overlay.active {
+        display: flex;
+    }
+    .lightbox-overlay img {
+        max-width: 100%;
+        max-height: 90vh;
+        border-radius: 8px;
+        box-shadow: 0 24px 80px rgba(0,0,0,.6);
+        object-fit: contain;
+    }
+    .lightbox-close {
+        position: fixed;
+        top: 1rem;
+        right: 1.25rem;
+        color: white;
+        font-size: 2rem;
+        line-height: 1;
+        cursor: pointer;
+        opacity: .8;
+        background: none;
+        border: none;
+        padding: 0;
+    }
+    .lightbox-close:hover { opacity: 1; }
+    .showcase-img-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        color: #adb5bd;
+        font-size: .85rem;
+        width: 100%;
+        height: 100%;
+        min-height: 220px;
+        padding: 2rem;
+    }
+    .showcase-img-placeholder i {
+        font-size: 2.5rem;
+    }
+    .showcase-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        font-size: .8rem;
+        font-weight: 600;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        padding: .3rem .75rem;
+        border-radius: 999px;
+        margin-bottom: .75rem;
+    }
 </style>
 {% endblock %}
 
@@ -73,80 +168,222 @@
     </div>
 </section>
 
-<!-- Features -->
-<section class="py-5">
+<!-- Showcase intro -->
+<div class="py-5 text-center">
     <div class="container">
-        <h2 class="text-center fw-bold mb-5">Todo lo que necesitás en un solo lugar</h2>
-        <div class="row g-4">
+        <h2 class="fw-bold mb-2">Mirá cómo funciona</h2>
+        <p class="text-muted">Todo lo que necesitás para entender tus finanzas, en una sola app.</p>
+    </div>
+</div>
 
-            <div class="col-md-6">
-                <div class="d-flex gap-3">
-                    <div class="feature-icon bg-danger bg-opacity-10 text-danger">
-                        <i class="bi bi-cart3"></i>
-                    </div>
-                    <div>
-                        <h5 class="fw-semibold mb-1">Gastos</h5>
-                        <p class="text-muted mb-0">Registrá cada gasto con categoría, tipo y método de pago. Filtrá por período y exportá a CSV.</p>
+<!-- Showcase 1: Dashboard -->
+<section class="showcase-section">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <div class="showcase-img-wrapper">
+                    <img src="{% static 'img/landing/dashboard.jpg' %}"
+                         alt="Dashboard"
+                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                    <div class="showcase-img-placeholder" style="display:none">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>dashboard.jpg</span>
                     </div>
                 </div>
             </div>
+            <div class="col-lg-6">
+                <div class="showcase-badge bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </div>
+                <h3 class="fw-bold mb-3">Tu panorama financiero de un vistazo</h3>
+                <p class="text-muted mb-3">
+                    Vé tu balance del mes, cuánto gastaste vs. cuánto ingresaste, y si estás en camino a cerrar el mes en positivo.
+                </p>
+                <ul class="list-unstyled text-muted">
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i>Barra de progreso de gastos vs. ingresos</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i>Evolución mensual con gráfico interactivo</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i>Ranking de categorías por gasto</li>
+                    <li><i class="bi bi-check-circle-fill text-primary me-2"></i>Estado de gastos fijos e ingresos del mes</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
 
-            <div class="col-md-6">
+<!-- Showcase 2: Gastos -->
+<section class="showcase-section">
+    <div class="container">
+        <div class="row align-items-center g-5 flex-lg-row-reverse">
+            <div class="col-lg-6">
+                <div class="showcase-img-wrapper">
+                    <img src="{% static 'img/landing/gastos.jpg' %}"
+                         alt="Gastos"
+                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                    <div class="showcase-img-placeholder" style="display:none">
+                        <i class="bi bi-cart3"></i>
+                        <span>gastos.jpg</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="showcase-badge bg-danger bg-opacity-10 text-danger">
+                    <i class="bi bi-cart3"></i> Gastos
+                </div>
+                <h3 class="fw-bold mb-3">Cada peso registrado, cada categoría visible</h3>
+                <p class="text-muted mb-3">
+                    Registrá gastos con categoría, método de pago y tipo. Filtrá por mes, buscá por descripción y exportá a CSV.
+                </p>
+                <ul class="list-unstyled text-muted">
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-danger me-2"></i>Donut de distribución por categoría</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-danger me-2"></i>Gráfico de acumulado diario del mes</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-danger me-2"></i>Filtros por grupo, tipo y método de pago</li>
+                    <li><i class="bi bi-check-circle-fill text-danger me-2"></i>Exportación a CSV con los filtros activos</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Showcase 3: Metas de ahorro -->
+<section class="showcase-section">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <div class="showcase-img-wrapper">
+                    <img src="{% static 'img/landing/ahorros.jpg' %}"
+                         alt="Metas de ahorro"
+                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                    <div class="showcase-img-placeholder" style="display:none">
+                        <i class="bi bi-piggy-bank"></i>
+                        <span>ahorros.jpg</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="showcase-badge bg-warning bg-opacity-10 text-warning">
+                    <i class="bi bi-piggy-bank"></i> Ahorros
+                </div>
+                <h3 class="fw-bold mb-3">Metas claras, progreso visible</h3>
+                <p class="text-muted mb-3">
+                    Creá metas con un objetivo y fecha límite. Cada gasto puede depositar directamente en una meta, vinculando el consumo con el ahorro.
+                </p>
+                <ul class="list-unstyled text-muted">
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-warning me-2"></i>Barra de progreso hacia el objetivo</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-warning me-2"></i>Depósitos y retiros con historial</li>
+                    <li><i class="bi bi-check-circle-fill text-warning me-2"></i>Vinculación directa desde un gasto</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Showcase 4: Gastos fijos -->
+<section class="showcase-section">
+    <div class="container">
+        <div class="row align-items-center g-5 flex-lg-row-reverse">
+            <div class="col-lg-6">
+                <div class="showcase-img-wrapper">
+                    <img src="{% static 'img/landing/gastos_fijos.jpg' %}"
+                         alt="Gastos fijos"
+                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                    <div class="showcase-img-placeholder" style="display:none">
+                        <i class="bi bi-arrow-repeat"></i>
+                        <span>gastos_fijos.jpg</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="showcase-badge bg-info bg-opacity-10 text-info">
+                    <i class="bi bi-arrow-repeat"></i> Gastos fijos
+                </div>
+                <h3 class="fw-bold mb-3">Nunca más olvidés un vencimiento</h3>
+                <p class="text-muted mb-3">
+                    Registrá servicios, impuestos y cuotas. La app te muestra cuáles pagaste este mes y cuáles están vencidos.
+                </p>
+                <ul class="list-unstyled text-muted">
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-info me-2"></i>Estados: pagado, pendiente y vencido</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-info me-2"></i>Soporte para gastos en cuotas</li>
+                    <li><i class="bi bi-check-circle-fill text-info me-2"></i>Widget en el dashboard con resumen del mes</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features secundarias (grid) -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center fw-bold mb-5">Y además…</h2>
+        <div class="row g-4 justify-content-center">
+
+            <div class="col-md-4">
                 <div class="d-flex gap-3">
                     <div class="feature-icon bg-success bg-opacity-10 text-success">
                         <i class="bi bi-cash-stack"></i>
                     </div>
                     <div>
-                        <h5 class="fw-semibold mb-1">Ingresos</h5>
-                        <p class="text-muted mb-0">Llevá el registro de tus fuentes de ingreso y comparalas con tus gastos mes a mes.</p>
+                        <h6 class="fw-semibold mb-1">Ingresos</h6>
+                        <p class="text-muted small mb-0">Registrá sueldos, freelance y otros ingresos. Soporte para USD con cotización.</p>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="d-flex gap-3">
-                    <div class="feature-icon bg-warning bg-opacity-10 text-warning">
-                        <i class="bi bi-piggy-bank"></i>
+                    <div class="feature-icon" style="background-color:rgba(102,16,242,.12)">
+                        <i class="bi bi-tags" style="color:#6610f2"></i>
                     </div>
                     <div>
-                        <h5 class="fw-semibold mb-1">Metas de ahorro</h5>
-                        <p class="text-muted mb-0">Creá metas con objetivo y fecha límite. Cada gasto puede depositar directamente en una meta.</p>
+                        <h6 class="fw-semibold mb-1">Categorías personalizadas</h6>
+                        <p class="text-muted small mb-0">Grupos y subcategorías con íconos y colores a tu gusto.</p>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="d-flex gap-3">
                     <div class="feature-icon bg-primary bg-opacity-10 text-primary">
-                        <i class="bi bi-graph-up-arrow"></i>
+                        <i class="bi bi-calendar3"></i>
                     </div>
                     <div>
-                        <h5 class="fw-semibold mb-1">Dashboard</h5>
-                        <p class="text-muted mb-0">Visualizá tu balance, evolución mensual, ranking de categorías y el estado de tus gastos fijos.</p>
+                        <h6 class="fw-semibold mb-1">Período financiero</h6>
+                        <p class="text-muted small mb-0">Configurá el día de inicio de tu mes según tu fecha de cobro.</p>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-4">
+                <div class="d-flex gap-3">
+                    <div class="feature-icon bg-danger bg-opacity-10 text-danger">
+                        <i class="bi bi-download"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-semibold mb-1">Exportación CSV</h6>
+                        <p class="text-muted small mb-0">Descargá tus gastos e ingresos filtrados para analizarlos en Excel.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="d-flex gap-3">
+                    <div class="feature-icon bg-warning bg-opacity-10 text-warning">
+                        <i class="bi bi-bell"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-semibold mb-1">Alertas de presupuesto</h6>
+                        <p class="text-muted small mb-0">Recibí una alerta visual cuando tus gastos superan el umbral que configuraste.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
                 <div class="d-flex gap-3">
                     <div class="feature-icon bg-info bg-opacity-10 text-info">
-                        <i class="bi bi-arrow-repeat"></i>
+                        <i class="bi bi-phone"></i>
                     </div>
                     <div>
-                        <h5 class="fw-semibold mb-1">Gastos fijos</h5>
-                        <p class="text-muted mb-0">Registrá servicios, impuestos y cuotas. Seguí cuáles pagaste este mes y cuáles están vencidos.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <div class="d-flex gap-3">
-                    <div class="feature-icon bg-secondary bg-opacity-10 text-secondary">
-                        <i class="bi bi-tags"></i>
-                    </div>
-                    <div>
-                        <h5 class="fw-semibold mb-1">Categorías personalizadas</h5>
-                        <p class="text-muted mb-0">Organizá tus gastos en grupos y subcategorías con íconos y colores a tu gusto.</p>
+                        <h6 class="fw-semibold mb-1">Responsive</h6>
+                        <p class="text-muted small mb-0">Funciona en celular, tablet y desktop sin instalar nada.</p>
                     </div>
                 </div>
             </div>
@@ -156,15 +393,21 @@
 </section>
 
 <!-- CTA final -->
-<section class="py-5 bg-light text-center">
+<section class="py-5 bg-primary text-white text-center">
     <div class="container">
         <h2 class="fw-bold mb-3">Empezá hoy, es gratis</h2>
-        <p class="text-muted mb-4">No necesitás tarjeta de crédito. Creá tu cuenta y empezá a registrar tus finanzas en minutos.</p>
-        <a href="{% url 'users:register' %}" class="btn btn-primary btn-lg px-5">
+        <p class="mb-4 opacity-90">No necesitás tarjeta de crédito. Creá tu cuenta y empezá a registrar tus finanzas en minutos.</p>
+        <a href="{% url 'users:register' %}" class="btn btn-light btn-lg fw-semibold px-5">
             <i class="bi bi-person-plus me-2"></i>Crear cuenta gratis
         </a>
     </div>
 </section>
+
+<!-- Lightbox overlay -->
+<div class="lightbox-overlay" id="lightbox">
+    <button class="lightbox-close" id="lightboxClose">&times;</button>
+    <img id="lightboxImg" src="" alt="">
+</div>
 
 <!-- Footer -->
 <footer class="landing-footer">
@@ -178,5 +421,7 @@
         </div>
     </div>
 </footer>
+
+<script src="{% static 'js/landing.js' %}"></script>
 
 {% endblock %}
