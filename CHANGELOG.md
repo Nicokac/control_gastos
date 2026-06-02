@@ -5,6 +5,21 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.6.0] — 2026-06-01
+
+### Added
+
+- **Gastos Compartidos**: nueva sección para registrar quién pagó qué en el hogar. CRUD completo con descripción, categoría, monto (ARS/USD) y pagador.
+- **Gastos Compartidos**: tabla estilo planilla con columnas dinámicas por persona — ícono `—` cuando no pagó, monto en rojo cuando sí.
+- **Gastos Compartidos**: agrupación por categoría con subtotales por grupo y fila de total general del período.
+- **Gastos Compartidos**: panel de resumen superior con total gastado por cada persona en el período.
+- **Gastos Compartidos**: filtro por mes y año operativo.
+- **Gastos Compartidos**: exportación a `.xlsx` con formato planilla (header, grupos, subtotales, total general en azul oscuro).
+- **Gastos Compartidos**: CRUD de miembros del hogar (sin cuenta propia en la app).
+- **Sidebar**: nueva entrada "Gastos Compartidos" bajo PLANIFICACIÓN.
+
+---
+
 ## [1.5.2] — 2026-06-01
 
 ### Added

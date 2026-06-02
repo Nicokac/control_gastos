@@ -964,3 +964,24 @@ Semana 3:      RL-007 Email de bienvenida
 - [ ] Probar envío real de email (verificación + reset password) — requiere acceso a bandeja real
 - [ ] Probar registro completo como usuario nuevo (email verificación + bienvenida)
 - [ ] Probar en mobile (tour + navegación general)
+
+---
+
+## D-018 — Gastos Compartidos: modelo sin cuenta para el miembro
+
+**Fecha:** 2026-06-01
+**Estado:** ✅ Implementado (v1.6.0)
+
+### Contexto
+Se necesitaba un módulo para que una persona registre gastos del hogar indicando quién pagó cada cosa (ej: Nico pagó la luz, Nati pagó el super).
+
+### Decisión
+Implementar `HouseholdMember` como un modelo simple de nombre, sin cuenta en la app. El dueño de la cuenta registra todos los gastos y asigna el pagador.
+
+### Justificación
+- Cubre el 90% del caso de uso sin la complejidad de invitaciones, tokens de aceptación y permisos multi-usuario.
+- El miembro no necesita cuenta para que el registro sea útil — la app es una herramienta de registro personal, no colaborativa.
+- Si en el futuro hay demanda de que el miembro cargue sus propios gastos, el modelo `HouseholdMember` puede evolucionar a un sistema de invitación por email vinculando a un `User`.
+
+### Riesgo aceptado
+El miembro no puede cargar gastos por su cuenta ni ver el historial. Si el dueño de la cuenta borra un miembro, los gastos quedan sin pagador asignado (campo `paid_by` en NULL). Aceptable para el MVP.

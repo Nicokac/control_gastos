@@ -161,9 +161,21 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "1.5.2"
+APP_VERSION = "1.6.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.6.0",
+        "date": "Junio 2026",
+        "title": "Gastos Compartidos del hogar",
+        "items": [
+            "Nueva sección 'Gastos Compartidos' — registrá quién pagó qué en el hogar y llevá el control mes a mes",
+            "Tabla estilo planilla con columnas por persona: ves de un vistazo cuánto gastó cada uno y en qué categoría",
+            "Panel de resumen con el total de cada persona en el período",
+            "Exportación a Excel (.xlsx) con grupos, subtotales y totales por persona",
+            "Agregá los miembros de tu hogar desde la sección de Miembros",
+        ],
+    },
     {
         "version": "1.5.2",
         "date": "Junio 2026",

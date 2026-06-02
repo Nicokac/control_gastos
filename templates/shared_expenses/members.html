@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Miembros del Hogar - Control de Gastos{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-person-gear fs-4 text-secondary"></i>
+        <h1 class="h4 mb-0">Miembros del hogar</h1>
+    </div>
+    <a href="{% url 'shared_expenses:member_create' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-person-plus me-1"></i>Agregar miembro
+    </a>
+</div>
+
+{% if members %}
+<div class="card">
+    <ul class="list-group list-group-flush">
+        {% for member in members %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-person-circle text-secondary fs-5"></i>
+                <span class="fw-medium">{{ member.name }}</span>
+            </div>
+            <form method="post" action="{% url 'shared_expenses:member_delete' member.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2"
+                        onclick="return confirm('¿Eliminar a {{ member.name }}?')">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-people fs-1 d-block mb-3 opacity-25"></i>
+    <p>Todavía no agregaste ningún miembro.</p>
+    <a href="{% url 'shared_expenses:member_create' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-person-plus me-1"></i>Agregar miembro
+    </a>
+</div>
+{% endif %}
+
+<div class="mt-3">
+    <a href="{% url 'shared_expenses:list' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>Volver a gastos compartidos
+    </a>
+</div>
+{% endblock %}

@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+{% load currency_filters static %}
+
+{% block title %}Gastos Compartidos - Control de Gastos{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-people fs-4 text-primary"></i>
+        <h1 class="h4 mb-0">Gastos Compartidos</h1>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'shared_expenses:members' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-person-gear me-1"></i>Miembros
+        </a>
+        {% if has_members %}
+        <a href="{% url 'shared_expenses:export' %}?month={{ current_month }}&year={{ current_year }}"
+           class="btn btn-outline-success btn-sm" title="Exportar a Excel">
+            <i class="bi bi-file-earmark-excel me-1"></i>Excel
+        </a>
+        {% endif %}
+        <a href="{% url 'shared_expenses:create' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i>Nuevo gasto
+        </a>
+    </div>
+</div>
+
+{% if not has_members %}
+<div class="alert alert-info d-flex gap-3 align-items-start">
+    <i class="bi bi-info-circle-fill fs-5 mt-1"></i>
+    <div>
+        <strong>Primero agregá un miembro a tu hogar.</strong>
+        <p class="mb-2">Necesitás al menos una persona para registrar gastos compartidos.</p>
+        <a href="{% url 'shared_expenses:member_create' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-person-plus me-1"></i>Agregar miembro
+        </a>
+    </div>
+</div>
+{% else %}
+
+<!-- Filtro mes/año -->
+<form method="get" class="d-flex gap-2 align-items-center mb-4 flex-wrap">
+    <select name="month" class="form-select form-select-sm" style="width:auto">
+        {% for m_num, m_name in months %}
+        <option value="{{ m_num }}" {% if m_num == current_month %}selected{% endif %}>{{ m_name }}</option>
+        {% endfor %}
+    </select>
+    <select name="year" class="form-select form-select-sm" style="width:auto">
+        {% for y in years %}
+        <option value="{{ y }}" {% if y == current_year %}selected{% endif %}>{{ y }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-outline-primary btn-sm"><i class="bi bi-funnel"></i></button>
+    <a href="{% url 'shared_expenses:list' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-x-lg"></i></a>
+</form>
+
+<!-- Panel resumen por persona -->
+<div class="card mb-4 border-0 bg-light">
+    <div class="card-body py-3">
+        <div class="row g-3 text-center">
+            <div class="col">
+                <div class="text-muted small mb-1">Yo</div>
+                <div class="fw-bold fs-5">{{ owner_total|currency }}</div>
+            </div>
+            {% for mt in member_totals %}
+            <div class="col">
+                <div class="text-muted small mb-1">{{ mt.member.name }}</div>
+                <div class="fw-bold fs-5">{{ mt.total|currency }}</div>
+            </div>
+            {% endfor %}
+            <div class="col border-start">
+                <div class="text-muted small mb-1">Total</div>
+                <div class="fw-bold fs-5 text-danger">{{ grand_total|currency }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla estilo planilla — una sola tabla con tbody por grupo -->
+{% if grouped_expenses %}
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <colgroup>
+                <col>
+                <col style="width:130px">
+                {% for mt in member_totals %}<col style="width:130px">{% endfor %}
+                <col style="width:80px">
+            </colgroup>
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">Descripción</th>
+                    <th class="text-end">Yo</th>
+                    {% for mt in member_totals %}
+                    <th class="text-end">{{ mt.member.name }}</th>
+                    {% endfor %}
+                    <th></th>
+                </tr>
+            </thead>
+
+            {% for group in grouped_expenses %}
+            <!-- Header de grupo -->
+            <tbody>
+                <tr class="table-secondary">
+                    <td class="ps-3 fw-semibold small text-uppercase" colspan="{{ member_totals|length|add:3 }}">
+                        <i class="{{ group.group.icon }} me-1"></i>{{ group.group.name }}
+                    </td>
+                </tr>
+            </tbody>
+            <!-- Filas del grupo -->
+            <tbody>
+                {% for expense in group.expenses %}
+                <tr>
+                    <td class="ps-3">
+                        {{ expense.description }}
+                        <span class="text-muted small ms-1">{{ expense.date|date:"d/m" }}</span>
+                    </td>
+                    <td class="text-end fw-semibold">
+                        {% if not expense.paid_by %}
+                        <span class="text-danger">{{ expense.amount_ars|currency }}</span>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    {% for mt in member_totals %}
+                    <td class="text-end fw-semibold">
+                        {% if expense.paid_by and expense.paid_by.pk == mt.member.pk %}
+                        <span class="text-danger">{{ expense.amount_ars|currency }}</span>
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                    <td class="text-end pe-2 text-nowrap">
+                        <a href="{% url 'shared_expenses:update' expense.pk %}"
+                           class="btn btn-sm btn-outline-secondary py-0 px-1 me-1">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <button type="button"
+                                class="btn btn-sm btn-outline-danger py-0 px-1"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteModal"
+                                data-description="{{ expense.description }}"
+                                data-delete-url="{% url 'shared_expenses:delete' expense.pk %}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <!-- Subtotal del grupo -->
+            <tbody class="table-light fw-semibold">
+                <tr>
+                    <td class="ps-3 text-muted small">Subtotal {{ group.group.name }}</td>
+                    <td class="text-end text-danger">
+                        {% if group.subtotal_owner %}{{ group.subtotal_owner|currency }}{% else %}<span class="text-muted fw-normal">—</span>{% endif %}
+                    </td>
+                    {% for s in group.subtotals_by_member %}
+                    <td class="text-end text-danger">
+                        {% if s.subtotal %}{{ s.subtotal|currency }}{% else %}<span class="text-muted fw-normal">—</span>{% endif %}
+                    </td>
+                    {% endfor %}
+                    <td></td>
+                </tr>
+            </tbody>
+            {% endfor %}
+
+            <!-- Total general -->
+            <tfoot class="table-light fw-bold border-top border-2">
+                <tr>
+                    <td class="ps-3">Total {{ current_month_name }} {{ current_year }}</td>
+                    <td class="text-end text-danger">{{ owner_total|currency }}</td>
+                    {% for mt in member_totals %}
+                    <td class="text-end text-danger">{{ mt.total|currency }}</td>
+                    {% endfor %}
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+{% else %}
+<div class="text-center py-5 text-muted">
+    <i class="bi bi-people fs-1 d-block mb-3 opacity-25"></i>
+    <p>No hay gastos compartidos en {{ current_month_name }} {{ current_year }}.</p>
+    <a href="{% url 'shared_expenses:create' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-lg me-1"></i>Registrar gasto
+    </a>
+</div>
+{% endif %}
+{% endif %}
+
+<!-- Modal eliminar -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h6 class="modal-title">Eliminar gasto</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <p class="text-muted small">¿Eliminar "<span id="deleteDescription"></span>"?</p>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/shared_expenses.js' %}"></script>
+{% endblock %}
