@@ -5,6 +5,19 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.7.1] — 2026-06-03
+
+### Added
+
+- **Tour**: ampliado con dos pasos nuevos — Ingresos y Gastos Fijos.
+- **Tour**: textos de todos los pasos actualizados con más detalle.
+
+### Fixed
+
+- **Tour**: cache busting en `tour.js` para evitar que el navegador sirva una versión desactualizada tras el reset.
+
+---
+
 ## [1.7.0] — 2026-06-03
 
 ### Added

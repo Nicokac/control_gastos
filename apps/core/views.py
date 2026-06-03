@@ -161,9 +161,19 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "1.7.0"
+APP_VERSION = "1.7.1"
 
 WHATS_NEW = [
+    {
+        "version": "1.7.1",
+        "date": "Junio 2026",
+        "title": "Tour inicial mejorado",
+        "items": [
+            "Tour de bienvenida ampliado: ahora incluye los pasos de Ingresos y Gastos Fijos",
+            "Textos del tour actualizados con más detalle sobre cada sección",
+            "Podés volver a ver el tour desde Mi cuenta en cualquier momento",
+        ],
+    },
     {
         "version": "1.7.0",
         "date": "Junio 2026",
