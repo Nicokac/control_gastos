@@ -575,7 +575,7 @@
     {% if not request.user.has_seen_tour %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@11.2.0/dist/css/shepherd.css">
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@11.2.0/dist/js/shepherd.min.js"></script>
-    <script src="{% static 'js/tour.js' %}"></script>
+    <script src="{% static 'js/tour.js' %}?v={{ APP_VERSION }}"></script>
     <div id="tour-data"
          data-tour-done-url="{% url 'users:tour_done' %}"
          data-csrf-token="{{ csrf_token }}"

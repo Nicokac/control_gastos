@@ -16,44 +16,48 @@ document.addEventListener('DOMContentLoaded', function () {
         return window.innerWidth < 768 ? null : { element: elementId, on: 'right' };
     }
 
+    const btnAnterior = { text: 'Anterior', action: function () { this.back(); }, secondary: true };
+    const btnSiguiente = { text: 'Siguiente', action: function () { this.next(); } };
+
     const tour = new Shepherd.Tour({
         useModalOverlay: true,
         defaultStepOptions: {
             cancelIcon: { enabled: true },
             scrollTo: { behavior: 'smooth', block: 'center' },
             classes: 'shepherd-theme-arrows',
-            buttons: [
-                {
-                    text: 'Anterior',
-                    action: function () { this.back(); },
-                    secondary: true,
-                },
-                {
-                    text: 'Siguiente',
-                    action: function () { this.next(); },
-                },
-            ],
+            buttons: [btnAnterior, btnSiguiente],
         },
     });
 
+    // 1 — Dashboard
     tour.addStep({
         id: 'dashboard',
         attachTo: sidebarAttach('#tour-nav-dashboard'),
         title: 'Dashboard',
-        text: 'Acá vas a ver un resumen de tus finanzas del mes: balance, gastos por categoría y evolución histórica.',
+        text: 'Tu panorama financiero del mes: balance, distribución de gastos por categoría y evolución mensual. También podés ver el Reporte Anual para comparar todos los meses del año.',
         buttons: [
             { text: 'Saltar tour', action: function () { tour.cancel(); }, secondary: true },
-            { text: 'Siguiente', action: function () { this.next(); } },
+            btnSiguiente,
         ],
     });
 
+    // 2 — Gastos
     tour.addStep({
         id: 'expenses',
         attachTo: sidebarAttach('#tour-nav-expenses'),
         title: 'Gastos',
-        text: 'Registrá y filtrá todos tus gastos. Podés organizarlos por categoría, método de pago o tipo (fijo/variable).',
+        text: 'Registrá cada gasto con categoría, método de pago y tipo (fijo/variable). Filtrá por mes, buscá por descripción y exportá a Excel.',
     });
 
+    // 3 — Ingresos
+    tour.addStep({
+        id: 'income',
+        attachTo: sidebarAttach('#tour-nav-income'),
+        title: 'Ingresos',
+        text: 'Llevá el registro de tus fuentes de ingreso — sueldo, freelance, alquileres. Soporte para pesos y dólares.',
+    });
+
+    // 4 — FAB
     tour.addStep({
         id: 'fab',
         attachTo: { element: '#tour-fab', on: 'left' },
@@ -61,28 +65,31 @@ document.addEventListener('DOMContentLoaded', function () {
         text: 'Este botón rojo siempre está visible. También podés usar <kbd>Ctrl+N</kbd> desde cualquier pantalla.',
     });
 
+    // 5 — Ahorro
     tour.addStep({
         id: 'savings',
         attachTo: sidebarAttach('#tour-nav-savings'),
-        title: 'Ahorro',
-        text: 'Creá metas de ahorro con un objetivo y fecha límite. Cada depósito te acerca más a la meta.',
+        title: 'Metas de Ahorro',
+        text: 'Creá metas con un objetivo y fecha límite. Podés depositar directamente desde un gasto para ir acumulando sin esfuerzo.',
     });
 
+    // 6 — Gastos Fijos
+    tour.addStep({
+        id: 'recurring',
+        attachTo: sidebarAttach('#tour-nav-recurring'),
+        title: 'Gastos Fijos',
+        text: 'Registrá servicios, impuestos y cuotas. La app te muestra cuáles pagaste este mes y cuáles están vencidos. Soporta gastos en cuotas con conteo automático.',
+    });
+
+    // 7 — Categorías
     tour.addStep({
         id: 'categories',
         attachTo: sidebarAttach('#tour-nav-categories'),
         title: 'Categorías',
-        text: 'Personalizá tus categorías con íconos y colores. Las podés organizar en grupos para ver subtotales en el dashboard.',
+        text: 'Personalizá tus categorías con íconos y colores. Organizalas en grupos para ver subtotales en el dashboard y en los reportes.',
         buttons: [
-            {
-                text: 'Anterior',
-                action: function () { this.back(); },
-                secondary: true,
-            },
-            {
-                text: 'Finalizar',
-                action: function () { this.complete(); },
-            },
+            btnAnterior,
+            { text: 'Finalizar', action: function () { this.complete(); } },
         ],
     });
 
