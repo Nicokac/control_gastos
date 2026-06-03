@@ -104,11 +104,17 @@
                                        value="{{ value }}"
                                        {% if form.icon.value == value %}checked{% endif %}>
                                 {% if value %}
-                                <div class="btn btn-outline-secondary" title="{{ label }}">
+                                <div class="btn btn-outline-secondary"
+                                     data-bs-toggle="tooltip"
+                                     data-bs-placement="top"
+                                     title="{{ label }}">
                                     <i class="{{ value }}"></i>
                                 </div>
                                 {% else %}
-                                <div class="btn btn-outline-secondary" title="{{ label }}">
+                                <div class="btn btn-outline-secondary"
+                                     data-bs-toggle="tooltip"
+                                     data-bs-placement="top"
+                                     title="Sin ícono">
                                     <i class="bi bi-x-lg text-muted"></i>
                                 </div>
                                 {% endif %}
@@ -120,19 +126,45 @@
                         {% endif %}
                     </div>
 
+                    <!-- Preview ícono + color -->
+                    <div class="mb-3 d-flex align-items-center gap-3 p-3 border rounded bg-light">
+                        <div id="icon-color-preview"
+                             style="width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;background-color:{{ form.color.value|default:'#6c757d' }}20;border:2px solid {{ form.color.value|default:'#6c757d' }}">
+                            <i id="preview-icon"
+                               class="{{ form.icon.value|default:'bi-tag' }}"
+                               style="font-size:1.25rem;color:{{ form.color.value|default:'#6c757d' }}"></i>
+                        </div>
+                        <div>
+                            <div class="small text-muted">Vista previa</div>
+                            <div id="preview-name" class="fw-semibold">{{ form.name.value|default:'Nombre de la categoría' }}</div>
+                        </div>
+                    </div>
+
                     <!-- Color -->
                     <div class="mb-4">
                         <label class="form-label fw-semibold">Color</label>
-                        <div class="color-grid">
-                            {% for value, label in form.color.field.choices %}
-                            <label class="color-option">
-                                <input type="radio"
-                                       name="color"
-                                       value="{{ value }}"
-                                       {% if form.color.value == value %}checked{% endif %}>
-                                <div class="color-btn" data-color-bg="{{ value }}" title="{{ label }}"></div>
-                            </label>
+                        {{ form.color }}
+                        <input type="color"
+                               id="color-picker-native"
+                               value="{{ form.color.value|default:'#6c757d' }}"
+                               style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            {% for hex, label in color_palette %}
+                            <button type="button"
+                                    class="color-swatch"
+                                    data-color="{{ hex }}"
+                                    title="{{ label }}"
+                                    style="background-color:{{ hex }}"></button>
                             {% endfor %}
+                            <button type="button"
+                                    class="color-swatch color-swatch--custom"
+                                    id="color-picker-btn"
+                                    title="Color personalizado">
+                                <i class="bi bi-eyedropper"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2">
+                            <code id="color-hex-label" class="small text-muted">{{ form.color.value|default:'#6c757d' }}</code>
                         </div>
                         {% if form.color.errors %}
                         <div class="text-danger small mt-1">{{ form.color.errors.0 }}</div>

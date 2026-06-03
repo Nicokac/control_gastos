@@ -41,7 +41,8 @@
                                     aria-controls="{{ collapse_id }}">
                                 {% if not entry.group.is_system %}<i class="bi bi-grip-vertical text-muted sortable-handle me-1" style="cursor:grab" title="Arrastrar para reordenar"></i>{% endif %}
                                 <i class="bi bi-chevron-down category-chevron text-muted" style="font-size:0.75rem; transition: transform 0.2s;"></i>
-                                <i class="{{ entry.group.icon|default:'bi-folder' }} text-muted small"></i>
+                                <i class="{{ entry.group.icon|default:'bi-folder' }} small"
+                                   {% if entry.group.color %}data-color="{{ entry.group.color }}" style="visibility:hidden"{% else %}style="color:#6c757d"{% endif %}></i>
                                 <span class="fw-semibold small text-uppercase text-muted">{{ entry.group.name }}</span>
                                 <span class="text-muted small fw-normal">({{ entry.subcategories|length }})</span>
                                 {% if entry.group.is_system %}
@@ -63,7 +64,7 @@
                             <li class="list-group-item d-flex justify-content-between align-items-center ps-4"
                                 data-sub-name="{{ category.name|lower }}">
                                 <div class="d-flex align-items-center gap-2">
-                                    {% if category.icon %}<i class="{{ category.icon }}" data-color="{{ category.color|default:'#6c757d' }}"></i>{% endif %}
+                                    {% if category.icon %}<i class="{{ category.icon }}" data-color="{{ category.color|default:'#6c757d' }}" style="visibility:hidden"></i>{% endif %}
                                     <span>{{ category.name }}</span>
                                     {% if category.is_system %}<span class="badge bg-secondary" style="font-size:0.65rem">Sistema</span>{% endif %}
                                 </div>
@@ -116,7 +117,8 @@
                                     aria-controls="{{ collapse_id }}">
                                 {% if not entry.group.is_system %}<i class="bi bi-grip-vertical text-muted sortable-handle me-1" style="cursor:grab" title="Arrastrar para reordenar"></i>{% endif %}
                                 <i class="bi bi-chevron-down category-chevron text-muted" style="font-size:0.75rem; transition: transform 0.2s;"></i>
-                                <i class="{{ entry.group.icon|default:'bi-folder' }} text-muted small"></i>
+                                <i class="{{ entry.group.icon|default:'bi-folder' }} small"
+                                   {% if entry.group.color %}data-color="{{ entry.group.color }}" style="visibility:hidden"{% else %}style="color:#6c757d"{% endif %}></i>
                                 <span class="fw-semibold small text-uppercase text-muted">{{ entry.group.name }}</span>
                                 <span class="text-muted small fw-normal">({{ entry.subcategories|length }})</span>
                                 {% if entry.group.is_system %}
@@ -138,7 +140,7 @@
                             <li class="list-group-item d-flex justify-content-between align-items-center ps-4"
                                 data-sub-name="{{ category.name|lower }}">
                                 <div class="d-flex align-items-center gap-2">
-                                    {% if category.icon %}<i class="{{ category.icon }}" data-color="{{ category.color|default:'#6c757d' }}"></i>{% endif %}
+                                    {% if category.icon %}<i class="{{ category.icon }}" data-color="{{ category.color|default:'#6c757d' }}" style="visibility:hidden"></i>{% endif %}
                                     <span>{{ category.name }}</span>
                                     {% if category.is_system %}<span class="badge bg-secondary" style="font-size:0.65rem">Sistema</span>{% endif %}
                                 </div>

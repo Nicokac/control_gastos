@@ -7,11 +7,13 @@ import json
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
+from django.db.models.deletion import ProtectedError
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
+from apps.core.constants import CATEGORY_COLOR_CHOICES
 from apps.core.views import UserFormKwargsMixin
 
 from .forms import CategoryForm
@@ -97,6 +99,7 @@ class CategoryCreateView(LoginRequiredMixin, UserFormKwargsMixin, CreateView):
         context = super().get_context_data(**kwargs)
         context["is_edit"] = False
         context["preset_parent"] = self._get_preset_parent()
+        context["color_palette"] = CATEGORY_COLOR_CHOICES
         return context
 
     def form_valid(self, form):
@@ -128,6 +131,7 @@ class CategoryUpdateView(LoginRequiredMixin, UserFormKwargsMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         context["is_edit"] = True
         context["is_subcategory"] = self.object.is_subcategory
+        context["color_palette"] = CATEGORY_COLOR_CHOICES
         return context
 
     def form_valid(self, form):
@@ -155,13 +159,25 @@ class CategoryDeleteView(LoginRequiredMixin, DeleteView):
         """Solo permite eliminar categorías propias (no del sistema)."""
         return Category.objects.filter(user=self.request.user, is_system=False)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["children"] = list(Category.objects.filter(parent=self.object).order_by("name"))
+        return context
+
     def form_valid(self, form):
-        """Elimina la categoría."""
+        """Elimina la categoría, bloqueando si tiene subcategorías hijas."""
         self.object = self.get_object()
-        success_url = self.get_success_url()
-        self.object.delete()
+        try:
+            self.object.delete()
+        except ProtectedError:
+            messages.error(
+                self.request,
+                f"No podés eliminar '{self.object.name}' porque tiene subcategorías. "
+                "Eliminá o mové las subcategorías primero.",
+            )
+            return HttpResponseRedirect(self.get_success_url())
         messages.success(self.request, f"Categoría '{self.object.name}' eliminada correctamente.")
-        return HttpResponseRedirect(success_url)
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class CategoryReorderView(LoginRequiredMixin, View):

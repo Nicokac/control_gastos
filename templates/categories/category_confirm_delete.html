@@ -12,6 +12,23 @@
                 </h4>
             </div>
             <div class="card-body">
+                {% if children %}
+                <p class="lead">
+                    No podés eliminar el grupo <strong>{{ object.name }}</strong> porque tiene
+                    {{ children|length }} subcategoría{% if children|length != 1 %}s{% endif %}:
+                </p>
+                <ul class="mb-3">
+                    {% for child in children %}
+                    <li>{{ child.name }}</li>
+                    {% endfor %}
+                </ul>
+                <p class="text-muted small">
+                    Eliminá o mové las subcategorías primero y luego podrás eliminar el grupo.
+                </p>
+                <a href="{% url 'categories:list' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Volver a categorías
+                </a>
+                {% else %}
                 <p class="lead">
                     ¿Estás seguro de que querés eliminar la categoría
                     <strong>{{ object.name }}</strong>?
@@ -19,7 +36,6 @@
                 <p class="text-muted">
                     Esta acción no eliminará los gastos o ingresos asociados a esta categoría.
                 </p>
-
                 <form method="post">
                     {% csrf_token %}
                     <div class="d-flex gap-2 mt-4">
@@ -31,6 +47,7 @@
                         </a>
                     </div>
                 </form>
+                {% endif %}
             </div>
         </div>
     </div>

@@ -225,6 +225,61 @@ class TestCategoryDeleteView:
 
         assert response.status_code == 200
 
+    def test_delete_group_with_children_shows_warning(
+        self, authenticated_client, user, expense_category_factory
+    ):
+        """GET a un grupo con subcategorías muestra advertencia, no formulario de confirmación."""
+        group = Category.objects.create(
+            name="Grupo con hijos",
+            type=CategoryType.EXPENSE,
+            user=user,
+            parent=None,
+            icon="bi-tag",
+            color="#dc3545",
+        )
+        expense_category_factory(user=user, parent=group, name="SubA")
+        url = reverse("categories:delete", kwargs={"pk": group.pk})
+        response = authenticated_client.get(url)
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "SubA" in content
+        assert "Sí, eliminar" not in content
+
+    def test_delete_group_with_children_post_redirects_with_error(
+        self, authenticated_client, user, expense_category_factory
+    ):
+        """POST a un grupo con subcategorías no elimina y redirige con mensaje de error."""
+        group = Category.objects.create(
+            name="Grupo protegido",
+            type=CategoryType.EXPENSE,
+            user=user,
+            parent=None,
+            icon="bi-tag",
+            color="#dc3545",
+        )
+        expense_category_factory(user=user, parent=group, name="SubB")
+        url = reverse("categories:delete", kwargs={"pk": group.pk})
+        response = authenticated_client.post(url, follow=True)
+
+        assert Category.objects.filter(pk=group.pk).exists()
+        msgs = [m.message for m in response.context["messages"]]
+        assert any("subcategoría" in m.lower() for m in msgs)
+
+    def test_delete_group_without_children_succeeds(self, authenticated_client, user):
+        """Un grupo vacío se puede eliminar sin problemas."""
+        group = Category.objects.create(
+            name="Grupo vacío",
+            type=CategoryType.EXPENSE,
+            user=user,
+            parent=None,
+            icon="bi-tag",
+            color="#dc3545",
+        )
+        url = reverse("categories:delete", kwargs={"pk": group.pk})
+        authenticated_client.post(url)
+        assert not Category.objects.filter(pk=group.pk).exists()
+
 
 @pytest.mark.django_db
 class TestCategoryViewRedirects:

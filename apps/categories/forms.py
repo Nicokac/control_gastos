@@ -2,10 +2,11 @@
 Formularios para categorías.
 """
 
+import re
+
 from django import forms
 
 from apps.core.constants import (
-    CATEGORY_COLOR_CHOICES,
     CATEGORY_ICON_CHOICES,
     DEFAULT_CATEGORY_COLOR,
 )
@@ -28,11 +29,11 @@ class CategoryTypeSelect(forms.Select):
 class CategoryForm(forms.ModelForm):
     """Formulario para crear/editar categorías de usuario."""
 
-    color = forms.ChoiceField(
-        choices=CATEGORY_COLOR_CHOICES,
-        widget=forms.RadioSelect(attrs={"class": "color-radio"}),
+    color = forms.CharField(
+        max_length=7,
         initial=DEFAULT_CATEGORY_COLOR,
         required=False,
+        widget=forms.HiddenInput(),
     )
 
     class Meta:
@@ -79,6 +80,8 @@ class CategoryForm(forms.ModelForm):
         color = cleaned.get("color")
         if not color:
             cleaned["color"] = DEFAULT_CATEGORY_COLOR
+        elif not re.fullmatch(r"#[0-9a-fA-F]{6}", color):
+            self.add_error("color", "Color inválido. Usá formato hexadecimal (#rrggbb).")
 
         return cleaned
 

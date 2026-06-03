@@ -79,7 +79,7 @@ CATEGORY_ICON_CHOICES = [
     ("bi-box-seam", "Suscripciones"),
     ("bi-stars", "Ocio"),
     ("bi-tag", "General"),
-    ("bi-three-dots", "Otros"),
+    ("bi-three-dots", "Misceláneos"),
 ]
 
 

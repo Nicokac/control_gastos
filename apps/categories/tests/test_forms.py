@@ -92,6 +92,32 @@ class TestCategoryForm:
 
         assert form.is_valid()
 
+    def test_custom_color_outside_palette_is_valid(self, user):
+        """Cualquier hex válido es aceptado, no solo los de la paleta."""
+        form = CategoryForm(
+            data={
+                "name": "Test custom color",
+                "type": CategoryType.EXPENSE,
+                "color": "#1a2b3c",
+            }
+        )
+        form.instance.user = user
+        assert form.is_valid()
+        assert form.cleaned_data["color"] == "#1a2b3c"
+
+    def test_invalid_color_format_is_rejected(self, user):
+        """Un valor que no sea hex de 6 dígitos es rechazado."""
+        form = CategoryForm(
+            data={
+                "name": "Test bad color",
+                "type": CategoryType.EXPENSE,
+                "color": "rojo",
+            }
+        )
+        form.instance.user = user
+        assert not form.is_valid()
+        assert "color" in form.errors
+
     def test_default_icon(self, user):
         """Verifica ícono por defecto."""
         form = CategoryForm(
