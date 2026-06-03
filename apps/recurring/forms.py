@@ -18,6 +18,7 @@ class RecurringExpenseForm(forms.ModelForm):
             "notes",
             "is_active",
             "total_installments",
+            "starting_installment",
             "start_date",
         ]
         widgets = {
@@ -28,6 +29,9 @@ class RecurringExpenseForm(forms.ModelForm):
             "total_installments": forms.NumberInput(
                 attrs={"class": "form-control", "min": 1, "placeholder": "Ej: 12"}
             ),
+            "starting_installment": forms.NumberInput(
+                attrs={"class": "form-control", "min": 1, "placeholder": "Ej: 4"}
+            ),
             "start_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
         }
 
@@ -37,16 +41,25 @@ class RecurringExpenseForm(forms.ModelForm):
         self.fields["category"].widget.attrs["class"] = "form-select"
         self.fields["category"].empty_label = "Seleccioná una categoría"
         self.fields["total_installments"].required = False
+        self.fields["starting_installment"].required = False
         self.fields["start_date"].required = False
 
     def clean(self):
         cleaned_data = super().clean()
         installments = cleaned_data.get("total_installments")
         start_date = cleaned_data.get("start_date")
+        starting = cleaned_data.get("starting_installment")
         if installments and not start_date:
             self.add_error(
                 "start_date", "Indicá el mes de inicio para calcular el progreso de cuotas."
             )
         if start_date and not installments:
             self.add_error("total_installments", "Indicá la cantidad total de cuotas.")
+        if starting and not installments:
+            self.add_error("starting_installment", "Indicá primero la cantidad total de cuotas.")
+        if starting and installments and starting >= installments:
+            self.add_error(
+                "starting_installment",
+                f"La cuota de inicio debe ser menor que el total ({installments}).",
+            )
         return cleaned_data

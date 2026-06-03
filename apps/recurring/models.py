@@ -48,6 +48,12 @@ class RecurringExpense(TimestampMixin, models.Model):
         verbose_name="Cantidad de cuotas",
         help_text="Dejá vacío si el gasto no tiene fecha de fin (servicios, alquiler, etc.).",
     )
+    starting_installment = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        verbose_name="Cuota de inicio",
+        help_text="Número de cuota desde la que empezás a registrar (por defecto 1).",
+    )
     start_date = models.DateField(
         null=True,
         blank=True,
@@ -74,7 +80,8 @@ class RecurringExpense(TimestampMixin, models.Model):
     def installments_paid(self):
         if not self.is_installment or not self.start_date:
             return None
-        return self.expenses.count()
+        offset = (self.starting_installment or 1) - 1
+        return offset + self.expenses.count()
 
     @property
     def installments_remaining(self):

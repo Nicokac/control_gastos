@@ -185,3 +185,64 @@ class TestRecurringExpenseModel:
         rec.auto_deactivate_if_complete()
         rec.refresh_from_db()
         assert rec.is_active is True
+
+    # --- starting_installment (cuota de inicio) ---
+
+    def test_installments_paid_with_offset(self, user, expense_category, expense_factory):
+        rec = RecurringExpense.objects.create(
+            user=user,
+            name="Cuotas TV offset",
+            category=expense_category,
+            due_day=5,
+            total_installments=12,
+            start_date=date(2026, 4, 1),
+            starting_installment=4,
+        )
+        exp = expense_factory(user, expense_category, date=date(2026, 4, 5))
+        exp.recurring = rec
+        exp.save()
+        assert rec.installments_paid == 4
+
+    def test_installments_paid_offset_without_expenses(self, user, expense_category):
+        rec = RecurringExpense.objects.create(
+            user=user,
+            name="Cuotas TV sin pago",
+            category=expense_category,
+            due_day=5,
+            total_installments=12,
+            start_date=date(2026, 4, 1),
+            starting_installment=4,
+        )
+        assert rec.installments_paid == 3
+
+    def test_installments_remaining_with_offset(self, user, expense_category, expense_factory):
+        rec = RecurringExpense.objects.create(
+            user=user,
+            name="Cuotas con offset",
+            category=expense_category,
+            due_day=5,
+            total_installments=12,
+            start_date=date(2026, 4, 1),
+            starting_installment=4,
+        )
+        exp = expense_factory(user, expense_category, date=date(2026, 4, 5))
+        exp.recurring = rec
+        exp.save()
+        assert rec.installments_remaining == 8
+
+    def test_auto_deactivate_respects_offset(self, user, expense_category, expense_factory):
+        rec = RecurringExpense.objects.create(
+            user=user,
+            name="Cuota final con offset",
+            category=expense_category,
+            due_day=5,
+            total_installments=4,
+            start_date=date(2026, 4, 1),
+            starting_installment=4,
+        )
+        exp = expense_factory(user, expense_category, date=date(2026, 4, 5))
+        exp.recurring = rec
+        exp.save()
+        rec.auto_deactivate_if_complete()
+        rec.refresh_from_db()
+        assert rec.is_active is False

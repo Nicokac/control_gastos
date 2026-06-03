@@ -161,3 +161,52 @@ class TestRecurringDeleteView:
             reverse("recurring:delete", kwargs={"pk": other_rec.pk})
         )
         assert response.status_code in [403, 404]
+
+
+@pytest.mark.django_db
+class TestRecurringFormStartingInstallment:
+    def test_create_with_starting_installment(self, authenticated_client, user, expense_category):
+        data = {
+            "name": "Tarjeta cuotas",
+            "category": expense_category.pk,
+            "due_day": 10,
+            "notes": "",
+            "is_active": True,
+            "total_installments": 12,
+            "starting_installment": 4,
+            "start_date": "2026-04-01",
+        }
+        authenticated_client.post(reverse("recurring:create"), data)
+        rec = RecurringExpense.objects.get(name="Tarjeta cuotas", user=user)
+        assert rec.starting_installment == 4
+        assert rec.installments_paid == 3
+
+    def test_starting_installment_equal_to_total_is_invalid(
+        self, authenticated_client, expense_category
+    ):
+        data = {
+            "name": "Cuota mala",
+            "category": expense_category.pk,
+            "due_day": 10,
+            "notes": "",
+            "total_installments": 4,
+            "starting_installment": 4,
+            "start_date": "2026-04-01",
+        }
+        response = authenticated_client.post(reverse("recurring:create"), data)
+        assert response.status_code == 200
+        assert not RecurringExpense.objects.filter(name="Cuota mala").exists()
+
+    def test_starting_installment_without_total_is_invalid(
+        self, authenticated_client, expense_category
+    ):
+        data = {
+            "name": "Cuota sin total",
+            "category": expense_category.pk,
+            "due_day": 10,
+            "notes": "",
+            "starting_installment": 4,
+        }
+        response = authenticated_client.post(reverse("recurring:create"), data)
+        assert response.status_code == 200
+        assert not RecurringExpense.objects.filter(name="Cuota sin total").exists()
