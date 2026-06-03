@@ -5,6 +5,22 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.7.0] — 2026-06-03
+
+### Added
+
+- **Dashboard**: botón "Excel" que exporta el resumen del período activo — balance, gastos por categoría e ingresos por categoría en formato `.xlsx`.
+- **Reporte Anual**: nueva sección accesible desde el sidebar con tabla comparativa de los 12 meses del año (Ingresos / Gastos / Ahorro / Balance / % Gastado).
+- **Reporte Anual**: cada mes con datos es clickeable y navega al dashboard de ese mes.
+- **Reporte Anual**: exportación a `.xlsx` con colores diferenciados por balance positivo/negativo y meses sin datos.
+- **Reporte Anual**: selector de año dinámico basado en el primer año con datos del usuario.
+
+### Fixed
+
+- **Gastos / Ingresos**: ícono del botón de exportación unificado a `bi-file-earmark-excel` para consistencia con el resto de la app.
+
+---
+
 ## [1.6.0] — 2026-06-01
 
 ### Added

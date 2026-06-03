@@ -7,6 +7,7 @@ from decimal import Decimal
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count, Q, Sum
+from django.http import HttpResponse
 from django.utils import timezone
 from django.views.generic import TemplateView
 
@@ -547,3 +548,387 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             "top_category": top_category,
             "expense_distribution": ranking,
         }
+
+
+class DashboardExportView(DashboardView):
+    """Exporta el resumen del período activo como .xlsx."""
+
+    def get(self, request, *args, **kwargs):
+        import contextlib
+        import io
+
+        from openpyxl import Workbook
+        from openpyxl.styles import Alignment, Font, PatternFill
+
+        user = request.user
+        today = timezone.localdate()
+
+        with contextlib.suppress(ValueError, TypeError):
+            selected_month = int(request.GET.get("month", today.month))
+            selected_year = int(request.GET.get("year", today.year))
+
+        if "selected_month" not in dir():
+            selected_month, selected_year = today.month, today.year
+
+        month_name = get_month_name(selected_month)
+        start_day = getattr(user, "financial_month_start_day", 1)
+        fin_start, fin_end = get_financial_period(selected_month, selected_year, start_day)
+
+        # Datos
+        balance = self._get_balance_data(user, selected_month, selected_year, fin_start, fin_end)
+        distribution = self._get_expense_distribution(user, selected_month, selected_year)
+
+        income_by_cat = (
+            Income.objects.filter(user=user, date__gte=fin_start, date__lt=fin_end)
+            .select_related("category__parent")
+            .values("category__parent__name", "category__name")
+            .annotate(total=Sum("amount_ars"))
+            .order_by("-total")
+        )
+
+        # Estilos
+        wb = Workbook()
+        ws = wb.active
+        ws.title = f"{month_name} {selected_year}"
+
+        dark_blue = "1F4E79"
+        mid_blue = "2E75B6"
+        light_blue = "D6E4F0"
+        light_gray = "F2F2F2"
+        green_fill = "E2EFDA"
+
+        def header_style(cell, bg=dark_blue):
+            cell.font = Font(bold=True, color="FFFFFF")
+            cell.fill = PatternFill("solid", fgColor=bg)
+            cell.alignment = Alignment(horizontal="center")
+
+        def section_style(cell, bg=mid_blue):
+            cell.font = Font(bold=True, color="FFFFFF")
+            cell.fill = PatternFill("solid", fgColor=bg)
+
+        def subtotal_style(cell, bg=light_blue):
+            cell.font = Font(bold=True)
+            cell.fill = PatternFill("solid", fgColor=bg)
+
+        right = Alignment(horizontal="right")
+        center = Alignment(horizontal="center")
+
+        row = 1
+
+        # ── Título ──────────────────────────────────────────────────────────
+        title = ws.cell(
+            row=row, column=1, value=f"Resumen financiero — {month_name} {selected_year}"
+        )
+        title.font = Font(bold=True, size=13)
+        ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=3)
+        row += 2
+
+        # ── Sección 1: Balance del período ──────────────────────────────────
+        sec = ws.cell(row=row, column=1, value="Balance del período")
+        section_style(sec)
+        ws.cell(row=row, column=2).fill = PatternFill("solid", fgColor=mid_blue)
+        ws.cell(row=row, column=3).fill = PatternFill("solid", fgColor=mid_blue)
+        ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=3)
+        row += 1
+
+        balance_rows = [
+            ("Ingresos", balance["income_total"]),
+            ("Gastos", balance["expense_total"]),
+            ("Ahorro depositado", balance["savings_deposits_total"]),
+            ("Balance", balance["balance"]),
+            ("% gastado sobre ingresos", f"{balance['expense_percentage']}%"),
+        ]
+        for label, value in balance_rows:
+            ws.cell(row=row, column=1, value=label)
+            val_cell = ws.cell(
+                row=row, column=2, value=float(value) if not isinstance(value, str) else value
+            )
+            val_cell.alignment = right
+            if label == "Balance":
+                subtotal_style(ws.cell(row=row, column=1), bg=light_blue)
+                subtotal_style(val_cell, bg=light_blue)
+            elif label == "% gastado sobre ingresos":
+                ws.cell(row=row, column=1).fill = PatternFill("solid", fgColor=light_gray)
+                val_cell.fill = PatternFill("solid", fgColor=light_gray)
+            row += 1
+
+        row += 1
+
+        # ── Sección 2: Gastos por categoría ─────────────────────────────────
+        sec = ws.cell(row=row, column=1, value="Gastos por categoría")
+        section_style(sec)
+        ws.cell(row=row, column=2).fill = PatternFill("solid", fgColor=mid_blue)
+        ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=3)
+        row += 1
+
+        h1 = ws.cell(row=row, column=1, value="Grupo")
+        h2 = ws.cell(row=row, column=2, value="Monto")
+        h3 = ws.cell(row=row, column=3, value="%")
+        for h in [h1, h2, h3]:
+            header_style(h, bg="404040")
+        row += 1
+
+        for group in distribution["ranking_distribution"]:
+            ws.cell(row=row, column=1, value=group["name"])
+            ws.cell(row=row, column=2, value=float(group["total"])).alignment = right
+            ws.cell(row=row, column=3, value=f"{group['percentage']}%").alignment = center
+            row += 1
+
+        # Subtotal gastos
+        sub = ws.cell(row=row, column=1, value="Total gastos")
+        subtotal_style(sub, light_blue)
+        sub_val = ws.cell(row=row, column=2, value=float(balance["expense_total"]))
+        subtotal_style(sub_val, light_blue)
+        sub_val.alignment = right
+        ws.cell(row=row, column=3).fill = PatternFill("solid", fgColor=light_blue)
+        row += 2
+
+        # ── Sección 3: Ingresos por categoría ───────────────────────────────
+        sec = ws.cell(row=row, column=1, value="Ingresos por categoría")
+        section_style(sec, bg="375623")
+        ws.cell(row=row, column=2).fill = PatternFill("solid", fgColor="375623")
+        ws.merge_cells(start_row=row, start_column=1, end_row=row, end_column=3)
+        row += 1
+
+        h1 = ws.cell(row=row, column=1, value="Categoría")
+        h2 = ws.cell(row=row, column=2, value="Monto")
+        for h in [h1, h2]:
+            header_style(h, bg="404040")
+        ws.cell(row=row, column=3).fill = PatternFill("solid", fgColor="404040")
+        row += 1
+
+        for inc_row in income_by_cat:
+            cat_name = inc_row["category__parent__name"] or inc_row["category__name"]
+            ws.cell(row=row, column=1, value=cat_name)
+            ws.cell(row=row, column=2, value=float(inc_row["total"])).alignment = right
+            row += 1
+
+        sub = ws.cell(row=row, column=1, value="Total ingresos")
+        sub.font = Font(bold=True)
+        sub.fill = PatternFill("solid", fgColor=green_fill)
+        sub_val = ws.cell(row=row, column=2, value=float(balance["income_total"]))
+        sub_val.font = Font(bold=True)
+        sub_val.fill = PatternFill("solid", fgColor=green_fill)
+        sub_val.alignment = right
+
+        # Anchos de columna
+        ws.column_dimensions["A"].width = 32
+        ws.column_dimensions["B"].width = 18
+        ws.column_dimensions["C"].width = 10
+
+        # Respuesta
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+
+        filename = f"resumen_{month_name.lower()}_{selected_year}.xlsx"
+        response = HttpResponse(
+            output.read(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        return response
+
+
+def _build_annual_data(user, year):
+    """
+    Construye los datos del reporte anual para un año dado.
+    Retorna lista de 12 dicts con totales por mes + totales anuales.
+    3 queries totales independientemente del año.
+    """
+    from decimal import Decimal as D
+
+    year_start, year_end = get_month_date_range_exclusive(1, year)
+    _, year_end = get_month_date_range_exclusive(12, year)
+
+    expenses_qs = (
+        Expense.objects.filter(user=user, date__year=year)
+        .values("date__month")
+        .annotate(total=Sum("amount_ars"))
+    )
+    incomes_qs = (
+        Income.objects.filter(user=user, date__year=year)
+        .values("date__month")
+        .annotate(total=Sum("amount_ars"))
+    )
+    savings_qs = (
+        SavingMovement.objects.filter(saving__user=user, type=MovementType.DEPOSIT, date__year=year)
+        .values("date__month")
+        .annotate(total=Sum("amount"))
+    )
+
+    expense_by_month = {row["date__month"]: D(str(row["total"])) for row in expenses_qs}
+    income_by_month = {row["date__month"]: D(str(row["total"])) for row in incomes_qs}
+    savings_by_month = {row["date__month"]: D(str(row["total"])) for row in savings_qs}
+
+    rows = []
+    for m in range(1, 13):
+        inc = income_by_month.get(m, D("0"))
+        exp = expense_by_month.get(m, D("0"))
+        sav = savings_by_month.get(m, D("0"))
+        bal = inc - exp - sav
+        rate = round((exp / inc * 100), 1) if inc > 0 else D("0")
+        rows.append(
+            {
+                "month": m,
+                "month_name": get_month_name(m),
+                "income": inc,
+                "expense": exp,
+                "savings": sav,
+                "balance": bal,
+                "expense_rate": rate,
+                "has_data": inc > 0 or exp > 0 or sav > 0,
+            }
+        )
+
+    total_income = sum(r["income"] for r in rows)
+    total_expense = sum(r["expense"] for r in rows)
+    total_savings = sum(r["savings"] for r in rows)
+    total_balance = total_income - total_expense - total_savings
+    total_rate = round((total_expense / total_income * 100), 1) if total_income > 0 else D("0")
+
+    totals = {
+        "income": total_income,
+        "expense": total_expense,
+        "savings": total_savings,
+        "balance": total_balance,
+        "expense_rate": total_rate,
+    }
+    return rows, totals
+
+
+class AnnualReportView(LoginRequiredMixin, TemplateView):
+    """Reporte anual — tabla comparativa mes a mes."""
+
+    template_name = "reports/annual_report.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        today = timezone.localdate()
+
+        try:
+            year = int(self.request.GET.get("year", today.year))
+        except (ValueError, TypeError):
+            year = today.year
+
+        year = max(2020, min(year, today.year))
+
+        first_year = (
+            Expense.objects.filter(user=user)
+            .order_by("date")
+            .values_list("date__year", flat=True)
+            .first()
+            or today.year
+        )
+        year_choices = list(range(min(first_year, today.year), today.year + 1))
+
+        rows, totals = _build_annual_data(user, year)
+
+        context["year"] = year
+        context["year_choices"] = year_choices
+        context["rows"] = rows
+        context["totals"] = totals
+        context["today"] = today
+        return context
+
+
+class AnnualReportExportView(LoginRequiredMixin, TemplateView):
+    """Exporta el reporte anual como .xlsx."""
+
+    def get(self, request, *args, **kwargs):
+        import contextlib
+        import io
+
+        from openpyxl import Workbook
+        from openpyxl.styles import Alignment, Font, PatternFill
+
+        user = request.user
+        today = timezone.localdate()
+
+        with contextlib.suppress(ValueError, TypeError):
+            year = int(request.GET.get("year", today.year))
+        if "year" not in dir():
+            year = today.year
+
+        rows, totals = _build_annual_data(user, year)
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = str(year)
+
+        dark_blue = "1F4E79"
+        light_gray = "F2F2F2"
+        green = "E2EFDA"
+        red = "FCE4D6"
+
+        def hdr(cell):
+            cell.font = Font(bold=True, color="FFFFFF")
+            cell.fill = PatternFill("solid", fgColor=dark_blue)
+            cell.alignment = Alignment(horizontal="center")
+
+        right = Alignment(horizontal="right")
+        center = Alignment(horizontal="center")
+
+        # Título
+        t = ws.cell(row=1, column=1, value=f"Reporte anual {year}")
+        t.font = Font(bold=True, size=13)
+        ws.merge_cells("A1:F1")
+        ws.row_dimensions[1].height = 20
+
+        # Header de columnas
+        headers = ["Mes", "Ingresos", "Gastos", "Ahorro", "Balance", "% Gastado"]
+        for col, h in enumerate(headers, start=1):
+            hdr(ws.cell(row=2, column=col, value=h))
+
+        # Filas de datos
+        for i, row in enumerate(rows, start=3):
+            ws.cell(row=i, column=1, value=row["month_name"])
+            ws.cell(row=i, column=2, value=float(row["income"])).alignment = right
+            ws.cell(row=i, column=3, value=float(row["expense"])).alignment = right
+            ws.cell(row=i, column=4, value=float(row["savings"])).alignment = right
+
+            bal_cell = ws.cell(row=i, column=5, value=float(row["balance"]))
+            bal_cell.alignment = right
+            if row["balance"] < 0:
+                bal_cell.fill = PatternFill("solid", fgColor=red)
+            elif row["balance"] > 0:
+                bal_cell.fill = PatternFill("solid", fgColor=green)
+
+            ws.cell(row=i, column=6, value=f"{row['expense_rate']}%").alignment = center
+
+            if not row["has_data"]:
+                for col in range(1, 7):
+                    ws.cell(row=i, column=col).fill = PatternFill("solid", fgColor=light_gray)
+
+        # Fila de totales
+        total_row = 15
+        for col in range(1, 7):
+            ws.cell(row=total_row, column=col).fill = PatternFill("solid", fgColor=dark_blue)
+            ws.cell(row=total_row, column=col).font = Font(bold=True, color="FFFFFF")
+
+        ws.cell(row=total_row, column=1, value="TOTAL").font = Font(bold=True, color="FFFFFF")
+        ws.cell(row=total_row, column=2, value=float(totals["income"])).alignment = right
+        ws.cell(row=total_row, column=3, value=float(totals["expense"])).alignment = right
+        ws.cell(row=total_row, column=4, value=float(totals["savings"])).alignment = right
+        ws.cell(row=total_row, column=5, value=float(totals["balance"])).alignment = right
+        ws.cell(row=total_row, column=6, value=f"{totals['expense_rate']}%").alignment = center
+        for col in range(1, 7):
+            ws.cell(row=total_row, column=col).font = Font(bold=True, color="FFFFFF")
+
+        # Anchos
+        ws.column_dimensions["A"].width = 14
+        for col in ["B", "C", "D", "E"]:
+            ws.column_dimensions[col].width = 18
+        ws.column_dimensions["F"].width = 12
+
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+
+        response = HttpResponse(
+            output.read(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = f'attachment; filename="reporte_anual_{year}.xlsx"'
+        return response

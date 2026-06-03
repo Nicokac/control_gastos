@@ -453,9 +453,9 @@ Nuevo módulo `apps/recurring_income` con modelo `RecurringIncome` (nombre, cate
 
 ### DT-012 — Reportes anuales
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.7.0)
 
-Vista de reporte anual con comparativa mes a mes: gastos, ingresos y balance para cada mes del año. Posiblemente exportable a CSV. Complementa el gráfico de evolución mensual del dashboard con una tabla detallada y filtros por año.
+Vista de reporte anual con comparativa mes a mes: gastos, ingresos, ahorro y balance para cada mes del año. Exportable a xlsx. Complementa el gráfico de evolución mensual del dashboard con una tabla detallada y selector de año. Adicionalmente se agregó exportación xlsx del resumen mensual desde el dashboard.
 
 ### DT-013 — Emails transaccionales síncronos en request path
 

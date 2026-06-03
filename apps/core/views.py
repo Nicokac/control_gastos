@@ -161,9 +161,20 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "1.6.0"
+APP_VERSION = "1.7.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.7.0",
+        "date": "Junio 2026",
+        "title": "Reportes — resumen mensual y reporte anual",
+        "items": [
+            "Dashboard: nuevo botón 'Excel' que descarga el resumen del mes — balance, gastos por categoría e ingresos por categoría",
+            "Nuevo Reporte Anual: tabla comparativa con los 12 meses del año — ingresos, gastos, ahorro y balance de cada mes",
+            "Reporte Anual: hacé click en cualquier mes para ver el detalle en el dashboard",
+            "Reporte Anual: exportable a Excel con colores por balance positivo/negativo",
+        ],
+    },
     {
         "version": "1.6.0",
         "date": "Junio 2026",
