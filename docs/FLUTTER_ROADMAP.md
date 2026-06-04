@@ -14,33 +14,33 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 ---
 
 ## FASE 0 — Preparar el Backend para API
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Completa (2026-06-04)
 
 ### 0.1 Instalar y configurar DRF + JWT
-- [ ] Instalar `djangorestframework`, `djangorestframework-simplejwt`, `django-cors-headers`
-- [ ] Configurar `REST_FRAMEWORK` con autenticación JWT en settings
-- [ ] Configurar `CORS_ALLOWED_ORIGINS` para Flutter en desarrollo
-- [ ] Agregar a `INSTALLED_APPS`: `rest_framework`, `corsheaders`
+- [x] Instalar `djangorestframework`, `djangorestframework-simplejwt`, `django-cors-headers`
+- [x] Configurar `REST_FRAMEWORK` con autenticación JWT en settings
+- [x] Configurar `CORS_ALLOWED_ORIGINS` para Flutter en desarrollo
+- [x] Agregar a `INSTALLED_APPS`: `rest_framework`, `corsheaders`
 
 ### 0.2 Endpoints de Auth
-- [ ] `POST /api/v1/auth/token/` — obtener access + refresh token
-- [ ] `POST /api/v1/auth/token/refresh/` — renovar access token
-- [ ] `POST /api/v1/auth/register/` — crear cuenta
-- [ ] `GET  /api/v1/auth/me/` — perfil del usuario autenticado
-- [ ] `PUT  /api/v1/auth/me/` — actualizar perfil
+- [x] `POST /api/v1/auth/token/` — obtener access + refresh token
+- [x] `POST /api/v1/auth/token/refresh/` — renovar access token
+- [x] `POST /api/v1/auth/register/` — crear cuenta
+- [x] `GET  /api/v1/auth/me/` — perfil del usuario autenticado
+- [x] `PUT  /api/v1/auth/me/` — actualizar perfil
 
 ### 0.3 Endpoints base
-- [ ] `CategoryViewSet` — CRUD, solo propias + sistema
-- [ ] `ExpenseViewSet` — CRUD, filtros mes/año/categoría
-- [ ] `IncomeViewSet` — CRUD, filtros mes/año
-- [ ] `SavingViewSet` — CRUD + depósitos/retiros
+- [x] `CategoryViewSet` — CRUD, solo propias + sistema
+- [x] `ExpenseViewSet` — CRUD, filtros mes/año/categoría
+- [x] `IncomeViewSet` — CRUD, filtros mes/año
+- [x] `SavingViewSet` — CRUD + depósitos/retiros
 
 ### 0.4 Tests de Fase 0
-- [ ] `apps/api/tests/test_auth.py`
-- [ ] `apps/api/tests/test_categories.py`
-- [ ] `apps/api/tests/test_expenses.py`
-- [ ] `apps/api/tests/test_income.py`
-- [ ] `apps/api/tests/test_savings.py`
+- [x] `apps/api/tests/test_auth.py`
+- [x] `apps/api/tests/test_categories.py`
+- [x] `apps/api/tests/test_expenses.py`
+- [x] `apps/api/tests/test_income.py`
+- [x] `apps/api/tests/test_savings.py`
 
 ---
 
@@ -243,4 +243,7 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 
 | Fecha | Fase | Tarea completada |
 |---|---|---|
-| — | — | — |
+| 2026-06-04 | Fase 0 | DRF + JWT + CORS instalados y configurados |
+| 2026-06-04 | Fase 0 | Endpoints auth: token, refresh, register, me |
+| 2026-06-04 | Fase 0 | Endpoints base: categories, expenses, income, savings |
+| 2026-06-04 | Fase 0 | 40 tests pasando (auth, categories, expenses, income, savings) |

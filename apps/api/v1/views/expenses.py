@@ -1,0 +1,28 @@
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+
+from apps.api.v1.serializers.expenses import ExpenseSerializer
+from apps.expenses.models import Expense
+
+
+class ExpenseViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ExpenseSerializer
+
+    def get_queryset(self):
+        qs = (
+            Expense.objects.filter(user=self.request.user)
+            .select_related("category", "category__parent")
+            .order_by("-date", "-created_at")
+        )
+        month = self.request.query_params.get("month")
+        year = self.request.query_params.get("year")
+        category = self.request.query_params.get("category")
+
+        if month:
+            qs = qs.filter(date__month=month)
+        if year:
+            qs = qs.filter(date__year=year)
+        if category:
+            qs = qs.filter(category__pk=category)
+        return qs

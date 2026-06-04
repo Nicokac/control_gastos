@@ -52,6 +52,8 @@ def healthz(request):
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    # API
+    path("api/v1/", include("apps.api.v1.urls")),
     # Apps
     path("healthz/", healthz),
     path("users/", include("apps.users.urls")),
