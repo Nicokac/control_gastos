@@ -5,6 +5,24 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.8.0] — 2026-06-03
+
+### Added
+
+- **Gastos Fijos**: campo "¿En qué cuota estás?" para declarar cuotas ya pagadas antes de empezar a registrar en la app — el badge de progreso parte desde el número correcto.
+- **Gastos Fijos**: selector de categoría con búsqueda en tiempo real (Tom Select).
+- **Categorías**: selector de color libre — paleta de 10 colores rápidos + picker nativo del browser para cualquier color hex.
+- **Categorías**: preview en tiempo real de ícono, color y nombre en el formulario de creación y edición.
+- **Categorías**: íconos de grupos y subcategorías en el listado muestran el color asignado a cada categoría.
+- **Categorías**: tooltips con el nombre de cada ícono al hacer hover en la grilla de selección.
+
+### Fixed
+
+- **Categorías**: eliminar un grupo con subcategorías hijas mostraba un `ProtectedError` técnico al usuario — ahora muestra un mensaje claro con la lista de subcategorías y bloquea la acción antes de confirmar.
+- **Categorías**: eliminar una subcategoría con gastos u otros registros asociados mostraba un mensaje incorrecto ("tiene subcategorías") — ahora el mensaje es preciso ("tiene gastos, ingresos u otros registros asociados").
+
+---
+
 ## [1.7.1] — 2026-06-03
 
 ### Added

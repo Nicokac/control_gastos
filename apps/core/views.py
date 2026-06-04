@@ -161,9 +161,22 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "1.7.1"
+APP_VERSION = "1.8.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.8.0",
+        "date": "Junio 2026",
+        "title": "Categorías y Gastos Fijos mejorados",
+        "items": [
+            "Gastos Fijos: nuevo campo 'En qué cuota estás' para registrar cuotas ya avanzadas antes de usar la app",
+            "Gastos Fijos: el selector de categoría ahora tiene búsqueda en tiempo real — escribí para filtrar",
+            "Categorías: elegí cualquier color con el selector libre — paleta rápida o color personalizado con el picker del browser",
+            "Categorías: vista previa en tiempo real del ícono, color y nombre mientras editás",
+            "Categorías: los íconos de la lista ahora muestran el color asignado a cada categoría",
+            "Categorías: al intentar eliminar un grupo con subcategorías, la app lo avisa claramente antes de confirmar",
+        ],
+    },
     {
         "version": "1.7.1",
         "date": "Junio 2026",
