@@ -280,6 +280,19 @@ class TestCategoryDeleteView:
         authenticated_client.post(url)
         assert not Category.objects.filter(pk=group.pk).exists()
 
+    def test_delete_subcategory_with_expenses_shows_correct_error(
+        self, authenticated_client, user, expense_category, expense_factory
+    ):
+        """Eliminar subcategoría con gastos asociados muestra error sobre registros, no subcategorías."""
+        expense = expense_factory(user, expense_category)
+        expense.save()
+        url = reverse("categories:delete", kwargs={"pk": expense_category.pk})
+        response = authenticated_client.post(url, follow=True)
+        assert Category.objects.filter(pk=expense_category.pk).exists()
+        msgs = [m.message for m in response.context["messages"]]
+        assert any("registros" in m.lower() for m in msgs)
+        assert not any("subcategoría" in m.lower() for m in msgs)
+
 
 @pytest.mark.django_db
 class TestCategoryViewRedirects:

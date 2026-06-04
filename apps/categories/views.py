@@ -165,16 +165,22 @@ class CategoryDeleteView(LoginRequiredMixin, DeleteView):
         return context
 
     def form_valid(self, form):
-        """Elimina la categoría, bloqueando si tiene subcategorías hijas."""
+        """Elimina la categoría, bloqueando si tiene referencias protegidas."""
         self.object = self.get_object()
         try:
             self.object.delete()
         except ProtectedError:
-            messages.error(
-                self.request,
-                f"No podés eliminar '{self.object.name}' porque tiene subcategorías. "
-                "Eliminá o mové las subcategorías primero.",
-            )
+            if self.object.is_group:
+                msg = (
+                    f"No podés eliminar '{self.object.name}' porque tiene subcategorías. "
+                    "Eliminá o mové las subcategorías primero."
+                )
+            else:
+                msg = (
+                    f"No podés eliminar '{self.object.name}' porque tiene gastos, ingresos "
+                    "u otros registros asociados."
+                )
+            messages.error(self.request, msg)
             return HttpResponseRedirect(self.get_success_url())
         messages.success(self.request, f"Categoría '{self.object.name}' eliminada correctamente.")
         return HttpResponseRedirect(self.get_success_url())
