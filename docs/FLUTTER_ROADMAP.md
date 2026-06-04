@@ -45,43 +45,43 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 ---
 
 ## FASE 1 — Completar API REST
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Completa (2026-06-04)
 
 ### 1.1 Endpoints de Gastos Recurrentes
-- [ ] `RecurringExpenseSerializer` — nota: el modelo no tiene `amount`, se deriva de `last_expense`
-- [ ] `RecurringExpenseViewSet` — CRUD
-- [ ] Action `mark_paid` — crea un `Expense` vinculado
-- [ ] Action `pending` — lista pendientes del mes actual
-- [ ] Registrar en `urls.py`
+- [x] `RecurringExpenseSerializer` — nota: el modelo no tiene `amount`, se deriva de `last_expense`
+- [x] `RecurringExpenseViewSet` — CRUD
+- [x] Action `mark_paid` — crea un `Expense` vinculado
+- [x] Action `pending` — lista pendientes del mes actual
+- [x] Registrar en `urls.py`
 
 ### 1.2 Endpoints de Ingresos Recurrentes
-- [ ] `RecurringIncomeSerializer`
-- [ ] `RecurringIncomeViewSet` — CRUD
-- [ ] Action `mark_received` — crea un `Income` vinculado
-- [ ] Action `pending` — lista pendientes del mes actual
-- [ ] Registrar en `urls.py`
+- [x] `RecurringIncomeSerializer`
+- [x] `RecurringIncomeViewSet` — CRUD
+- [x] Action `mark_received` — crea un `Income` vinculado
+- [x] Action `pending` — lista pendientes del mes actual
+- [x] Registrar en `urls.py`
 
 ### 1.3 Endpoints de Gastos Compartidos
-- [ ] `SharedExpenseSerializer`
-- [ ] `HouseholdMemberSerializer`
-- [ ] `SharedExpenseViewSet` — CRUD
-- [ ] `HouseholdMemberViewSet` — CRUD
-- [ ] Registrar en `urls.py`
+- [x] `SharedExpenseSerializer`
+- [x] `HouseholdMemberSerializer`
+- [x] `SharedExpenseViewSet` — CRUD
+- [x] `HouseholdMemberViewSet` — CRUD
+- [x] Registrar en `urls.py`
 
 ### 1.4 Endpoint de Dashboard
-- [ ] `DashboardView` (APIView) — `GET /api/v1/dashboard/?month=6&year=2026`
-- [ ] Response incluye: `total_expenses`, `total_income`, `balance`, `expenses_by_category`, `income_by_category`, `savings_progress`, `pending_recurring`, `recent_transactions`
+- [x] `DashboardView` (APIView) — `GET /api/v1/dashboard/?month=6&year=2026`
+- [x] Response incluye: `total_expenses`, `total_income`, `balance`, `expenses_by_category`, `income_by_category`, `savings_progress`, `pending_recurring`, `recent_transactions`
 
 ### 1.5 Tests de Fase 1
-- [ ] `apps/api/tests/test_recurring.py`
-- [ ] `apps/api/tests/test_recurring_income.py`
-- [ ] `apps/api/tests/test_shared_expenses.py`
-- [ ] `apps/api/tests/test_dashboard.py`
+- [x] `apps/api/tests/test_recurring.py`
+- [x] `apps/api/tests/test_recurring_income.py`
+- [x] `apps/api/tests/test_shared_expenses.py`
+- [x] `apps/api/tests/test_dashboard.py`
 
 ### 1.6 Documentación API
-- [ ] Instalar `drf-spectacular`
-- [ ] Configurar `DEFAULT_SCHEMA_CLASS` en settings
-- [ ] Exponer `GET /api/schema/` y `GET /api/docs/` (Swagger UI)
+- [x] Instalar `drf-spectacular`
+- [x] Configurar `DEFAULT_SCHEMA_CLASS` en settings
+- [x] Exponer `GET /api/schema/` y `GET /api/docs/` (Swagger UI)
 
 ---
 
@@ -247,3 +247,6 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-06-04 | Fase 0 | Endpoints auth: token, refresh, register, me |
 | 2026-06-04 | Fase 0 | Endpoints base: categories, expenses, income, savings |
 | 2026-06-04 | Fase 0 | 40 tests pasando (auth, categories, expenses, income, savings) |
+| 2026-06-04 | Fase 1 | Endpoints recurring, recurring-income, shared-expenses, household-members, dashboard |
+| 2026-06-04 | Fase 1 | drf-spectacular instalado — Swagger UI en /api/v1/docs/ |
+| 2026-06-04 | Fase 1 | 68 tests pasando en total (28 nuevos) |

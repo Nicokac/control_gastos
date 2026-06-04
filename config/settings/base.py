@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     "axes",
     "rest_framework",
     "corsheaders",
+    "drf_spectacular",
     # Local apps
     "apps.users",
     "apps.expenses",
@@ -364,10 +365,18 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticated",
+        "rest_framework.permissions.AllowAny",
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 50,
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Control de Gastos API",
+    "DESCRIPTION": "API REST para la app mobile de Control de Gastos.",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
 
 # =============================================================================

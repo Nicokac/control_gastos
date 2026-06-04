@@ -82,6 +82,49 @@ class TestCategoryCreateEndpoint:
 
 
 @pytest.mark.django_db
+class TestCategoryValidations:
+    url = "/api/v1/categories/"
+
+    def test_tipo_distinto_al_grupo_padre_rechazado(
+        self, client, user, system_expense_group, system_income_group
+    ):
+        headers = auth_header(client, user)
+        data = {
+            "name": "Sub tipo incorrecto",
+            "type": CategoryType.INCOME,
+            "parent": system_expense_group.pk,
+            "icon": "bi-tag",
+            "color": "#dc3545",
+        }
+        response = client.post(self.url, data, content_type="application/json", **headers)
+        assert response.status_code == 400
+
+    def test_anidar_mas_de_dos_niveles_rechazado(self, client, user, expense_category):
+        headers = auth_header(client, user)
+        data = {
+            "name": "Sub de sub",
+            "type": CategoryType.EXPENSE,
+            "parent": expense_category.pk,
+            "icon": "bi-tag",
+            "color": "#dc3545",
+        }
+        response = client.post(self.url, data, content_type="application/json", **headers)
+        assert response.status_code == 400
+
+    def test_nombre_duplicado_rechazado(self, client, user, expense_category, system_expense_group):
+        headers = auth_header(client, user)
+        data = {
+            "name": expense_category.name,
+            "type": CategoryType.EXPENSE,
+            "parent": system_expense_group.pk,
+            "icon": "bi-tag",
+            "color": "#dc3545",
+        }
+        response = client.post(self.url, data, content_type="application/json", **headers)
+        assert response.status_code == 400
+
+
+@pytest.mark.django_db
 class TestCategoryDeleteEndpoint:
     def test_eliminar_categoria_propia(self, client, user, expense_category):
         headers = auth_header(client, user)
