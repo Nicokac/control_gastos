@@ -19,13 +19,27 @@ class AuthNotifier extends AsyncNotifier<Map<String, dynamic>?> {
     return repo.getProfile();
   }
 
-  Future<void> login({required String email, required String password}) async {
+  Future<String?> login({required String email, required String password}) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
+    try {
       final repo = ref.read(authRepositoryProvider);
       await repo.login(email: email, password: password);
-      return repo.getProfile();
-    });
+      final profile = await repo.getProfile();
+      state = AsyncData(profile);
+      return null;
+    } catch (e) {
+      state = const AsyncData(null);
+      final msg = e.toString();
+      if (msg.contains('400') || msg.contains('401')) {
+        return 'Email o contraseña incorrectos';
+      } else if (msg.contains('SocketException') ||
+          msg.contains('connection') ||
+          msg.contains('timeout') ||
+          msg.contains('timed out')) {
+        return 'No se pudo conectar al servidor. Intentá de nuevo en unos segundos.';
+      }
+      return 'Error inesperado: $msg';
+    }
   }
 
   Future<bool> updateProfile(Map<String, dynamic> data) async {

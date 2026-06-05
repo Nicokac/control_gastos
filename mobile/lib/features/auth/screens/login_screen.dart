@@ -25,15 +25,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    await ref.read(authProvider.notifier).login(
+    final error = await ref.read(authProvider.notifier).login(
           email: _emailController.text.trim(),
           password: _passwordController.text,
         );
     if (!mounted) return;
-    final error = ref.read(authProvider).error;
     if (error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Email o contraseña incorrectos')),
+        SnackBar(
+          content: Text(error),
+          backgroundColor: Colors.red[700],
+          duration: const Duration(seconds: 6),
+        ),
       );
     }
   }
@@ -44,7 +47,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Form(
             key: _formKey,
