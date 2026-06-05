@@ -12,7 +12,7 @@ from apps.shared_expenses.models import HouseholdMember, SharedExpense
 
 @pytest.fixture
 def member(user):
-    return HouseholdMember.objects.create(user=user, name="Nati")
+    return HouseholdMember.objects.create(user=user, name="Pedro")
 
 
 @pytest.fixture
@@ -44,20 +44,20 @@ class TestHouseholdMemberForm:
     def test_duplicate_name_rejected(self, user, member):
         from apps.shared_expenses.forms import HouseholdMemberForm
 
-        form = HouseholdMemberForm(data={"name": "Nati"}, user=user)
+        form = HouseholdMemberForm(data={"name": "Pedro"}, user=user)
         assert not form.is_valid()
         assert "name" in form.errors
 
     def test_duplicate_name_case_insensitive(self, user, member):
         from apps.shared_expenses.forms import HouseholdMemberForm
 
-        form = HouseholdMemberForm(data={"name": "nati"}, user=user)
+        form = HouseholdMemberForm(data={"name": "pedro"}, user=user)
         assert not form.is_valid()
 
     def test_edit_same_name_allowed(self, user, member):
         from apps.shared_expenses.forms import HouseholdMemberForm
 
-        form = HouseholdMemberForm(data={"name": "Nati"}, user=user, instance=member)
+        form = HouseholdMemberForm(data={"name": "Pedro"}, user=user, instance=member)
         assert form.is_valid()
 
     def test_save_assigns_user(self, user):
@@ -286,7 +286,7 @@ class TestHouseholdMemberViews:
     def test_lista_miembros(self, authenticated_client, member):
         response = authenticated_client.get(reverse("shared_expenses:members"))
         assert response.status_code == 200
-        assert "Nati" in response.content.decode()
+        assert "Pedro" in response.content.decode()
 
     def test_crear_miembro(self, authenticated_client, user):
         response = authenticated_client.post(

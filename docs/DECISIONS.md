@@ -973,7 +973,7 @@ Semana 3:      RL-007 Email de bienvenida
 **Estado:** ✅ Implementado (v1.6.0)
 
 ### Contexto
-Se necesitaba un módulo para que una persona registre gastos del hogar indicando quién pagó cada cosa (ej: Nico pagó la luz, Nati pagó el super).
+Se necesitaba un módulo para que una persona registre gastos del hogar indicando quién pagó cada cosa (ej: Nico pagó la luz, Pedro pagó el super).
 
 ### Decisión
 Implementar `HouseholdMember` como un modelo simple de nombre, sin cuenta en la app. El dueño de la cuenta registra todos los gastos y asigna el pagador.

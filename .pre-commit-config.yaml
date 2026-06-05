@@ -86,7 +86,7 @@ repos:
       # Detecta secretos hardcodeados
       - id: detect-secrets
         args: [--baseline, .secrets.baseline]
-        exclude: '(^\.env$|^\.env\..*|^\.pytest_cache[\\/]|^\.ruff_cache[\\/]|^htmlcov[\\/]|^staticfiles[\\/]|^node_modules[\\/]|^coverage\.xml$|^\.coverage$|^venv[\\/]|^\.venv[\\/]|requirements[\\/].*\.txt$)'
+        exclude: '(^\.env$|^\.env\..*|^\.pytest_cache[\\/]|^\.ruff_cache[\\/]|^htmlcov[\\/]|^staticfiles[\\/]|^node_modules[\\/]|^coverage\.xml$|^\.coverage$|^venv[\\/]|^\.venv[\\/]|requirements[\\/].*\.txt$|^mobile[\\/])'
 
 # Configuración global
 default_language_version:

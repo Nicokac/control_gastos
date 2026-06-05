@@ -18,7 +18,7 @@ class HouseholdMemberForm(forms.ModelForm):
         fields = ["name"]
         widgets = {
             "name": forms.TextInput(
-                attrs={"class": "form-control", "placeholder": "Ej: Nati, Mamá, Compañero..."}
+                attrs={"class": "form-control", "placeholder": "Ej: Pedro, Mamá, Compañero..."}
             ),
         }
 

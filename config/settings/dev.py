@@ -6,7 +6,7 @@ from .email_backend import apply_email_settings
 # =============================================================================
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "10.0.2.2"]
 
 # CORS: permite Flutter en desarrollo (emulador Android usa 10.0.2.2)
 CORS_ALLOWED_ORIGINS = [

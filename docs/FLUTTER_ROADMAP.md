@@ -8,8 +8,8 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 ## Estado Actual
 
 - ✅ Backend Django completo (web app funcional en producción — v1.8.0)
-- ❌ API REST no existe — hay que construirla desde cero
-- ❌ App Flutter no existe
+- ✅ API REST completa (DRF + JWT, todos los endpoints)
+- ✅ App Flutter en progreso — Auth, Dashboard, Gastos, Ingresos, Gastos Compartidos funcionando
 
 ---
 
@@ -86,95 +86,87 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 ---
 
 ## FASE 2 — Setup Proyecto Flutter
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Completa (2026-06-04)
 
 ### 2.1 Crear proyecto
-- [ ] `flutter create --org com.tudominio control_gastos_app`
+- [x] `flutter create --org com.tudominio control_gastos_app`
 
 ### 2.2 Dependencias (pubspec.yaml)
-- [ ] `flutter_riverpod`, `riverpod_annotation`
-- [ ] `dio`, `retrofit`
-- [ ] `flutter_secure_storage`, `shared_preferences`
-- [ ] `go_router`
-- [ ] `intl`
-- [ ] `freezed_annotation`, `json_annotation`
-- [ ] `hive_flutter` (offline support)
-- [ ] Dev: `build_runner`, `freezed`, `json_serializable`, `retrofit_generator`, `riverpod_generator`, `hive_generator`
+- [x] `flutter_riverpod`, `riverpod_annotation`
+- [x] `dio`
+- [x] `flutter_secure_storage`, `shared_preferences`
+- [x] `go_router`
+- [x] `intl`
+- [x] `freezed_annotation`, `json_annotation`
+- [x] Dev: `build_runner`, `freezed`, `json_serializable`, `riverpod_generator`
 
 ### 2.3 Estructura de carpetas
-- [ ] Crear estructura `lib/` con `core/`, `data/`, `features/`, `routing/`
-- [ ] Features: `auth`, `dashboard`, `expenses`, `income`, `savings`, `recurring`, `settings`
+- [x] Crear estructura `lib/` con `core/`, `data/`, `features/`, `routing/`
+- [x] Features: `auth`, `dashboard`, `expenses`, `income`, `shared_expenses`
 
 ---
 
 ## FASE 3 — Implementar Core Flutter
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Completa (2026-06-04)
 
 ### 3.1 Configuración de API
-- [ ] `api_service.dart` con Dio + interceptors (Bearer token, refresh automático, manejo de errores, logging)
+- [x] `api_service.dart` con Dio + interceptors (Bearer token, refresh automático)
 
-### 3.2 Modelos con Freezed
-- [ ] `user.dart`
-- [ ] `category.dart`
-- [ ] `expense.dart`
-- [ ] `income.dart`
-- [ ] `saving.dart`
-- [ ] `recurring_expense.dart`
-- [ ] `api_response.dart` (wrapper genérico)
-- [ ] Ejecutar `flutter pub run build_runner build`
+### 3.2 Repositorios
+- [x] `auth_repository.dart`
+- [x] `expense_repository.dart`
+- [x] `income_repository.dart`
+- [x] `shared_expense_repository.dart`
+- [x] `dashboard_repository.dart`
 
-### 3.3 Repositorios con Retrofit
-- [ ] `auth_repository.dart`
-- [ ] `category_repository.dart`
-- [ ] `expense_repository.dart`
-- [ ] `income_repository.dart`
-- [ ] `saving_repository.dart`
-- [ ] `recurring_repository.dart`
-- [ ] Ejecutar `flutter pub run build_runner build`
+### 3.3 Providers con Riverpod
+- [x] `auth_provider.dart`
+- [x] `expense_provider.dart`
+- [x] `income_provider.dart`
+- [x] `shared_expense_provider.dart`
+- [x] `dashboard_provider.dart`
 
-### 3.4 Providers con Riverpod
-- [ ] `auth_provider.dart`
-- [ ] `expense_provider.dart`
-- [ ] `income_provider.dart`
-- [ ] `saving_provider.dart`
-- [ ] `recurring_provider.dart`
-
-### 3.5 Router
-- [ ] `app_router.dart` con GoRouter
-- [ ] Redirect a `/login` si no autenticado
-- [ ] Rutas: `/login`, `/register`, `/dashboard`, `/expenses`, `/income`, `/savings`, `/recurring`, `/settings`
-- [ ] Bottom navigation bar
+### 3.4 Router
+- [x] `app_router.dart` con GoRouter
+- [x] Redirect a `/login` si no autenticado
+- [x] Rutas: `/splash`, `/login`, `/register`, `/dashboard`, `/expenses`, `/income`, `/shared-expenses`
+- [x] Helper `formatters.dart` para montos ARS
 
 ---
 
 ## FASE 4 — Implementar Features Flutter
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Completa (MVP — 2026-06-05)
 
 ### 4.1 Auth
-- [ ] `splash_screen.dart` (check token, redirect)
-- [ ] `login_screen.dart`
-- [ ] `register_screen.dart`
+- [x] `splash_screen.dart` (check token, redirect)
+- [x] `login_screen.dart`
+- [x] `register_screen.dart`
 
 ### 4.2 Dashboard
-- [ ] `dashboard_screen.dart`
-- [ ] Widget `balance_card.dart`
-- [ ] Widget `expense_chart.dart` (pie chart por categoría)
-- [ ] Widget `recent_transactions_list.dart`
-- [ ] Widget `pending_recurring_card.dart`
+- [x] `dashboard_screen.dart`
+- [x] Widget `balance_card.dart`
+- [x] Widget `expense_chart.dart` (pie chart por categoría)
+- [x] Widget `recent_transactions_list.dart`
+- [x] Widget `pending_recurring_card.dart`
 
 ### 4.3 Expenses
-- [ ] `expense_list_screen.dart` (con filtros mes/año)
-- [ ] `expense_form_screen.dart` (crear/editar)
-- [ ] Widget `expense_tile.dart`
-- [ ] Widget `category_selector.dart` (grid visual)
-- [ ] Widget `amount_input.dart` (con selector de moneda)
+- [x] `expense_list_screen.dart` (con filtros mes/año)
+- [x] `expense_form_screen.dart` (crear/editar)
+- [x] Widget `expense_tile.dart`
+- [x] Widget `category_selector.dart` (reemplazado por bottom sheets anidados)
 
 ### 4.4 Income
-- [ ] `income_list_screen.dart`
-- [ ] `income_form_screen.dart`
-- [ ] Widget `income_tile.dart`
+- [x] `income_list_screen.dart`
+- [x] `income_form_screen.dart`
+- [x] Widget `income_tile.dart`
 
-### 4.5 Savings
+### 4.5 Shared Expenses
+- [x] `shared_expense_list_screen.dart` (filtros mes/año, totales por persona)
+- [x] `shared_expense_form_screen.dart` (crear/editar — quién pagó)
+- [x] `household_members_screen.dart` (ver, agregar, eliminar miembros)
+- [x] Widget `shared_expense_tile.dart`
+
+### 4.6 Savings
 - [ ] `savings_list_screen.dart`
 - [ ] `saving_detail_screen.dart` (con historial de movimientos)
 - [ ] `saving_form_screen.dart`
@@ -182,14 +174,14 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 - [ ] Widget `deposit_dialog.dart`
 - [ ] Widget `withdraw_dialog.dart`
 
-### 4.6 Recurring
+### 4.7 Recurring
 - [ ] `recurring_list_screen.dart`
 - [ ] `recurring_form_screen.dart`
 - [ ] Widget `recurring_tile.dart` (con estado pagado/pendiente/vencido)
 
-### 4.7 Settings
-- [ ] `settings_screen.dart`
-- [ ] Editar perfil, moneda default, día inicio mes, cerrar sesión
+### 4.8 Settings
+- [x] `settings_screen.dart`
+- [x] Editar perfil, moneda default, día inicio mes, cerrar sesión
 
 ---
 
@@ -250,3 +242,13 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-06-04 | Fase 1 | Endpoints recurring, recurring-income, shared-expenses, household-members, dashboard |
 | 2026-06-04 | Fase 1 | drf-spectacular instalado — Swagger UI en /api/v1/docs/ |
 | 2026-06-04 | Fase 1 | 68 tests pasando en total (28 nuevos) |
+| 2026-06-04 | Fase 2 | Proyecto Flutter creado en mobile/, dependencias instaladas |
+| 2026-06-04 | Fase 3 | API service, auth repository, router, splash/login/register/dashboard screens |
+| 2026-06-04 | Fase 3 | Login screen funcionando en emulador Android (API 37) |
+| 2026-06-04 | Fase 4 | Dashboard completo: balance, pie chart, recurrentes pendientes, últimos movimientos |
+| 2026-06-04 | Fase 4 | Expenses: lista con filtros, formulario crear/editar/eliminar con bottom sheets de categoría |
+| 2026-06-04 | Fase 4 | Income: lista con filtros, formulario crear/editar/eliminar |
+| 2026-06-04 | Fase 4 | Dashboard invalida automáticamente al mutar gastos o ingresos |
+| 2026-06-05 | Fase 4 | Shared Expenses: lista con totales por persona, form crear/editar, miembros del hogar |
+| 2026-06-05 | Fase 4 | Colores alineados con web: danger=gastos, success=ingresos, primary=#0d6efd=compartidos |
+| 2026-06-05 | Fase 4 | Settings: editar perfil, moneda, día de inicio, cerrar sesión |
