@@ -1,12 +1,12 @@
 # Control de Gastos
 
 ![CI](https://github.com/Nicokac/control_gastos/actions/workflows/ci.yml/badge.svg)
-![Coverage](https://img.shields.io/badge/coverage-95%25-green)
+![Coverage](https://img.shields.io/badge/coverage-88%25-green)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![Django](https://img.shields.io/badge/django-5.2-green)
 ![License](https://img.shields.io/badge/license-private-lightgrey)
 
-> Aplicación web para el control y seguimiento de finanzas personales desarrollada con Django.
+> Aplicación web y móvil para el control y seguimiento de finanzas personales. Backend Django + API REST. App Flutter para Android.
 
 ---
 
@@ -36,8 +36,8 @@
 
 | Métrica | Valor |
 |---------|-------|
-| Tests | 687 |
-| Coverage | ≥80% (enforced) |
+| Tests | 924 |
+| Coverage | 88.53% (mín. 80% enforced) |
 | Python | 3.12+ |
 | Django | 5.2 |
 | CI Jobs | 6 (+ smoke tests) |
@@ -115,13 +115,17 @@
 | Componente | Tecnología |
 |------------|------------|
 | **Backend** | Python 3.12+ / Django 5.2 |
-| **Frontend** | Django Templates + Bootstrap 5 |
+| **API REST** | Django REST Framework + JWT (SimpleJWT) |
+| **Frontend web** | Django Templates + Bootstrap 5 |
+| **App móvil** | Flutter 3.44 (Android) |
+| **State management** | Riverpod |
+| **Navegación mobile** | GoRouter |
 | **Base de datos** | SQLite (dev) / PostgreSQL (prod) |
-| **Gráficos** | Chart.js |
-| **Iconos** | Bootstrap Icons |
+| **Gráficos** | Chart.js (web) / CustomPainter (mobile) |
+| **Iconos** | Bootstrap Icons (web) / Material Icons (mobile) |
 | **Tour interactivo** | Shepherd.js |
 | **CI/CD** | GitHub Actions |
-| **Linting** | Ruff |
+| **Linting** | Ruff (Python) / flutter analyze (Dart) |
 | **Testing** | pytest + pytest-cov |
 | **Pre-commit** | pre-commit hooks |
 | **Rate Limiting** | django-axes |
@@ -310,21 +314,21 @@ pytest --cov=apps --cov-fail-under=80
 
 | Ítem | Valor |
 |-----|------|
-| Fecha | **2026-05-13** |
-| Entorno | Local (Windows) + Producción (Render) |
+| Fecha | **2026-06-05** |
+| Entorno | Local (Windows) |
 | Python | 3.12.0 |
 | Django | 5.2 |
 | Settings | `config.settings.dev` |
-| Commit | main (v1.1.0) |
+| Commit | develop (post Fase 1 API) |
 
 Resultado:
 
 | Ítem | Valor |
 |-----|------|
-| ✅ | 687 tests recolectados |
+| ✅ | 924 tests recolectados |
 | ⏭️ | 2 skipped |
 | ❌ | 0 fallos |
-| ⏱️ | Duración total: ~3m 30s |
+| ⏱️ | Duración total: ~6m 30s |
 
 📈 Coverage
 
@@ -644,6 +648,11 @@ control_gastos/
 │   └── workflows/
 │       └── ci.yml              # GitHub Actions CI
 ├── apps/                       # Aplicaciones Django
+│   ├── api/                   # API REST v1 (DRF + JWT)
+│   │   └── v1/
+│   │       ├── views/         # ViewSets y APIViews
+│   │       ├── serializers/   # Serializers DRF
+│   │       └── urls.py
 │   ├── categories/            # Gestión de categorías
 │   ├── core/                  # Mixins, constantes, utilidades
 │   │   ├── management/commands/
@@ -653,9 +662,18 @@ control_gastos/
 │   │   └── logging.py         # Utilidades de logging
 │   ├── expenses/              # Registro de gastos
 │   ├── income/                # Registro de ingresos
+│   ├── recurring/             # Gastos fijos recurrentes
+│   ├── recurring_income/      # Ingresos fijos recurrentes
 │   ├── reports/               # Dashboard y reportes
 │   ├── savings/               # Metas de ahorro
+│   ├── shared_expenses/       # Gastos compartidos del hogar
 │   └── users/                 # Autenticación y perfiles
+├── mobile/                    # App Flutter (Android)
+│   └── lib/
+│       ├── core/              # Utilidades, constantes, formatters
+│       ├── data/              # Repositories, API service
+│       ├── features/          # Screens, providers, widgets por feature
+│       └── routing/           # GoRouter
 ├── config/                    # Configuración del proyecto
 │   └── settings/
 │       ├── base.py            # Configuración común
@@ -834,8 +852,10 @@ ci: add GitHub Actions pipeline
 - [x] Dashboard rediseñado: balance hero, donut + ranking, formato ARS en formularios
 - [x] Formulario de feedback (bugs/mejoras) con envío por email al administrador
 - [x] Jerarquía de categorías: grupos → subcategorías con selector visual y filtro por grupo
-- [ ] Exportación a Excel/PDF
-- [ ] Transacciones recurrentes
+- [x] API REST v1 con autenticación JWT (DRF + SimpleJWT)
+- [x] App móvil Flutter — MVP funcional (Android)
+- [ ] App móvil — Savings y Recurring (v2)
+- [ ] Ícono representativo de la app (DT-048)
 - [ ] PWA (Progressive Web App)
 - [ ] Notificaciones por email
 - [ ] Caching con Redis
@@ -856,6 +876,10 @@ ci: add GitHub Actions pipeline
 | `income` | CRUD ingresos, multimoneda | ✅ |
 | `savings` | Metas de ahorro, movimientos | ✅ |
 | `reports` | Dashboard, gráficos | ✅ |
+| `recurring` | Gastos fijos recurrentes | ✅ |
+| `recurring_income` | Ingresos fijos recurrentes | ✅ |
+| `shared_expenses` | Gastos compartidos del hogar | ✅ |
+| `api` | API REST v1 (DRF + JWT) | ✅ |
 
 ### Modelos Principales
 

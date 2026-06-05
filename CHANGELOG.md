@@ -5,6 +5,21 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.9.0] — 2026-06-05
+
+### Added
+
+- **API REST v1**: nueva capa de API construida con Django REST Framework y autenticación JWT (SimpleJWT).
+- **Auth API**: endpoints `POST /api/v1/auth/token/`, `POST /api/v1/auth/token/refresh/`, `POST /api/v1/auth/register/`, `GET/PUT /api/v1/auth/me/`.
+- **Endpoints base**: `CategoryViewSet`, `ExpenseViewSet`, `IncomeViewSet`, `SavingViewSet` — CRUD completo con filtros por mes/año.
+- **Endpoints avanzados**: `RecurringExpenseViewSet` (con actions `mark_paid` y `pending`), `RecurringIncomeViewSet` (con actions `mark_received` y `pending`), `SharedExpenseViewSet`, `HouseholdMemberViewSet`.
+- **Dashboard API**: `GET /api/v1/dashboard/?month=M&year=Y` — retorna balance, totales, gastos por categoría, ahorros, recurrentes pendientes y últimas transacciones.
+- **Documentación API**: Swagger UI disponible en `/api/v1/docs/` via drf-spectacular.
+- **CORS**: `django-cors-headers` configurado para desarrollo mobile (emulador Android `10.0.2.2`).
+- **App móvil Flutter**: MVP funcional para Android con Dashboard, Gastos, Ingresos, Gastos Compartidos y Settings.
+
+---
+
 ## [1.8.0] — 2026-06-03
 
 ### Added

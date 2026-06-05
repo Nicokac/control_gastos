@@ -729,6 +729,16 @@ Campos opcionales `total_installments` y `start_date` en `RecurringExpense`. Pro
 
 Inactivos ocultos por defecto. Cuando existen, aparece el botón "Mostrar inactivos (N)" en el header de la tabla. Al activarlo muestra todos y el botón cambia a "Ocultar inactivos (N)". Toggle via query param `?inactive=1`.
 
+### DT-048 — Ícono representativo de la app
+
+**Estado:** ⏳ Pendiente
+
+La app web usa el ícono genérico de Bootstrap Icons (`bi-wallet2`) y no tiene favicon personalizado. La app mobile usa `Icons.account_balance_wallet` de Material Design en la pantalla de login. Ninguna de las dos tiene un ícono propio que identifique la marca.
+
+**Why:** se detectó al desarrollar la app mobile que la identidad visual carece de un ícono propio. El ícono del sistema es funcional pero no diferencia la app.
+
+**Camino de resolución:** diseñar o elegir un ícono SVG representativo, usarlo como favicon en la web (`staticfiles/`), reemplazar el ícono en la pantalla de login de la web y en la pantalla de login de Flutter, y generarlo en los tamaños necesarios para el launcher de Android/iOS (`flutter_launcher_icons`).
+
 ---
 
 ## D-015 — Deudas técnicas descartadas

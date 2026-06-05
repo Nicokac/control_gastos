@@ -161,9 +161,20 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "1.8.0"
+APP_VERSION = "1.9.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.9.0",
+        "date": "Junio 2026",
+        "title": "App móvil para Android",
+        "items": [
+            "Ya podés usar Control de Gastos desde tu celular Android — descargá el APK",
+            "Registrá gastos, ingresos y gastos compartidos desde la app",
+            "Dashboard con balance del mes, gráfico de categorías y movimientos recientes",
+            "Configurá tu perfil, moneda y día de inicio del mes desde la app",
+        ],
+    },
     {
         "version": "1.8.0",
         "date": "Junio 2026",
