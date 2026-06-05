@@ -1,5 +1,5 @@
 class ApiConstants {
-  static const String baseUrl = 'http://10.0.2.2:8000/api/v1';
+  static const String baseUrl = 'https://control-gastos-fr8z.onrender.com/api/v1';
 
   static const String tokenObtain = '/auth/token/';
   static const String tokenRefresh = '/auth/token/refresh/';
