@@ -298,3 +298,6 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-06-06 | Fase 5 | Animaciones de transición: fade + slide en todas las rutas |
 | 2026-06-06 | Fase 5 | Skeleton loaders en dashboard |
 | 2026-06-06 | Fase 6 | Definida fase de testing: unit, widget e integration tests |
+| 2026-06-06 | Fase 5 | Dashboard: indicador "Actualizado hace X minutos" + confirmación al refrescar |
+| 2026-06-06 | Fase 5 | Formularios de gasto/ingreso rediseñados: monto destacado, íconos, secciones, color de categoría |
+| 2026-06-06 | Fix | API categorías: page_size ignorado truncaba el listado a 50 — agregada paginación configurable |

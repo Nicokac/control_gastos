@@ -9,15 +9,18 @@ class DashboardNotifier
     extends AsyncNotifier<Map<String, dynamic>> {
   int _month = DateTime.now().month;
   int _year = DateTime.now().year;
+  DateTime? _lastUpdated;
 
   @override
   Future<Map<String, dynamic>> build() async {
     return _fetch();
   }
 
-  Future<Map<String, dynamic>> _fetch() {
+  Future<Map<String, dynamic>> _fetch() async {
     final repo = ref.read(dashboardRepositoryProvider);
-    return repo.getDashboard(month: _month, year: _year);
+    final data = await repo.getDashboard(month: _month, year: _year);
+    _lastUpdated = DateTime.now();
+    return data;
   }
 
   Future<void> reload() async {
@@ -34,6 +37,7 @@ class DashboardNotifier
 
   int get currentMonth => _month;
   int get currentYear => _year;
+  DateTime? get lastUpdated => _lastUpdated;
 }
 
 final dashboardProvider =

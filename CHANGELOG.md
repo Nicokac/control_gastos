@@ -5,6 +5,27 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.10.0] — 2026-06-06
+
+### Added
+
+- **App móvil — Gastos Fijos**: pantalla completa con lista (activos/inactivos), estados por color, marcar como pagado, crear/editar/eliminar.
+- **App móvil — Categorías**: CRUD completo desde la app — crear grupos y subcategorías con selector de color e ícono, eliminar con confirmación.
+- **App móvil — Tema**: modo claro/oscuro/automático con persistencia en `SharedPreferences`, configurable desde Ajustes.
+- **App móvil — Animaciones**: transiciones fade + slide entre pantallas (GoRouter `pageBuilder` + `CustomTransitionPage`).
+- **App móvil — Skeleton loaders**: el dashboard reemplaza el spinner de carga por una vista previa animada de su layout.
+- **App móvil — Empty states**: pantallas de gastos, ingresos y compartidos muestran estados vacíos con ilustración y acción para crear el primer registro.
+- **App móvil — Indicador de actualización**: el dashboard muestra "Actualizado hace X minutos" y confirma con un mensaje al refrescar manualmente (pull-to-refresh).
+- **App móvil — Formularios de gasto/ingreso**: rediseño visual — monto destacado, íconos por campo, secciones agrupadas y color real de cada categoría en los selectores.
+- **App móvil — Login**: aclaración de que el campo de usuario acepta tanto el email como el nombre de usuario.
+
+### Fixed
+
+- **App móvil — Conexión a producción**: el APK release no podía conectarse a la API por falta del permiso `INTERNET` en `AndroidManifest.xml` (Flutter lo agrega automáticamente solo en builds debug).
+- **API — Categorías**: el endpoint ignoraba el parámetro `page_size`, devolviendo siempre las primeras 50 categorías y ocultando grupos y subcategorías en la app móvil cuando el usuario tenía más de 50.
+
+---
+
 ## [1.9.0] — 2026-06-05
 
 ### Added

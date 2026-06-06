@@ -8,6 +8,7 @@ import '../widgets/expense_chart.dart';
 import '../widgets/recent_transactions_list.dart';
 import '../widgets/pending_recurring_card.dart';
 import '../widgets/dashboard_skeleton.dart';
+import '../widgets/last_updated_label.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -60,7 +61,17 @@ class DashboardScreen extends ConsumerWidget {
           ),
         ),
         data: (data) => RefreshIndicator(
-          onRefresh: notifier.reload,
+          onRefresh: () async {
+            await notifier.reload();
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Datos actualizados'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            }
+          },
           child: _DashboardContent(data: data, notifier: notifier),
         ),
       ),
@@ -95,6 +106,8 @@ class _DashboardContent extends StatelessWidget {
           year: data['year'] as int,
           onChanged: notifier.setMonth,
         ),
+        const SizedBox(height: 4),
+        LastUpdatedLabel(lastUpdated: notifier.lastUpdated),
         const SizedBox(height: 12),
         BalanceCard(
           totalIncome: data['total_income'] as String,

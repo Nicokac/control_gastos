@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/expense_provider.dart';
+import '../../../core/widgets/section_label.dart';
 
 class ExpenseFormScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic>? existing;
@@ -133,6 +134,11 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
     if (picked != null) setState(() => _date = picked);
   }
 
+  Color _parseColor(String? hex) {
+    final clean = (hex ?? '#6c757d').replaceFirst('#', '');
+    return Color(int.parse('FF$clean', radix: 16));
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_categoryId == null) {
@@ -180,38 +186,26 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEditing ? 'Editar gasto' : 'Nuevo gasto'),
-        actions: [
-          if (_loading)
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Center(
-                  child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2))),
-            )
-          else
-            TextButton(
-              onPressed: _submit,
-              child: const Text('Guardar',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-        ],
       ),
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
           children: [
-            // Monto
+            // Monto destacado
             TextFormField(
               controller: _amountCtrl,
               keyboardType:
                   const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
+              style: const TextStyle(
+                  fontSize: 28, fontWeight: FontWeight.bold),
+              decoration: InputDecoration(
                 labelText: 'Monto *',
+                prefixIcon: const Icon(Icons.payments_outlined),
                 prefixText: '\$ ',
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
+                filled: true,
+                fillColor: Colors.red.withValues(alpha: 0.05),
               ),
               validator: (v) {
                 if (v == null || v.isEmpty) return 'Ingresá el monto';
@@ -223,11 +217,11 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Moneda
             DropdownButtonFormField<String>(
               value: _currency,
               decoration: const InputDecoration(
                 labelText: 'Moneda',
+                prefixIcon: Icon(Icons.attach_money),
                 border: OutlineInputBorder(),
               ),
               items: const [
@@ -239,14 +233,14 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Fecha
             InkWell(
               onTap: _pickDate,
               child: InputDecorator(
                 decoration: const InputDecoration(
                   labelText: 'Fecha',
+                  prefixIcon: Icon(Icons.calendar_today_outlined),
                   border: OutlineInputBorder(),
-                  suffixIcon: Icon(Icons.calendar_today, size: 18),
+                  suffixIcon: Icon(Icons.arrow_drop_down),
                 ),
                 child: Text(
                   '${_date.day.toString().padLeft(2, '0')}/'
@@ -255,57 +249,10 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
 
-            // Descripción
-            TextFormField(
-              controller: _descCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Descripción',
-                border: OutlineInputBorder(),
-              ),
-              maxLength: 255,
-            ),
+            const SectionLabel('Categoría'),
             const SizedBox(height: 8),
-
-            // Método de pago
-            DropdownButtonFormField<String>(
-              value: _paymentMethod.isEmpty ? null : _paymentMethod,
-              decoration: const InputDecoration(
-                labelText: 'Método de pago',
-                border: OutlineInputBorder(),
-              ),
-              items: const [
-                DropdownMenuItem(value: null, child: Text('Sin especificar')),
-                DropdownMenuItem(value: 'CASH', child: Text('Efectivo')),
-                DropdownMenuItem(value: 'DEBIT', child: Text('Débito')),
-                DropdownMenuItem(value: 'CREDIT', child: Text('Crédito')),
-                DropdownMenuItem(
-                    value: 'TRANSFER', child: Text('Transferencia')),
-              ],
-              onChanged: (v) =>
-                  setState(() => _paymentMethod = v ?? ''),
-            ),
-            const SizedBox(height: 16),
-
-            // Tipo de gasto
-            DropdownButtonFormField<String>(
-              value: _expenseType.isEmpty ? null : _expenseType,
-              decoration: const InputDecoration(
-                labelText: 'Tipo de gasto',
-                border: OutlineInputBorder(),
-              ),
-              items: const [
-                DropdownMenuItem(value: null, child: Text('Sin especificar')),
-                DropdownMenuItem(value: 'FIXED', child: Text('Fijo')),
-                DropdownMenuItem(value: 'VARIABLE', child: Text('Variable')),
-              ],
-              onChanged: (v) =>
-                  setState(() => _expenseType = v ?? ''),
-            ),
-            const SizedBox(height: 16),
-
-            // Categoría
             categoriesAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Text('Error cargando categorías: $e',
@@ -321,62 +268,62 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
                     ? <dynamic>[]
                     : cats.where((c) => c['parent'] == _groupId).toList();
 
-                final groupName = _groupId == null
+                final group = _groupId == null
                     ? null
-                    : (groups.firstWhere((g) => g['id'] == _groupId,
-                            orElse: () => {})['name'] as String?);
-                final catName = _categoryId == null
+                    : groups.firstWhere((g) => g['id'] == _groupId,
+                        orElse: () => {});
+                final cat = _categoryId == null
                     ? null
-                    : (cats.firstWhere((c) => c['id'] == _categoryId,
-                            orElse: () => {})['name'] as String?);
+                    : cats.firstWhere((c) => c['id'] == _categoryId,
+                        orElse: () => {});
+                final groupName = group?['name'] as String?;
+                final catName = cat?['name'] as String?;
+                final groupColor = _parseColor(group?['color'] as String?);
+                final catColor = _parseColor(cat?['color'] as String?);
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Grupo
                     FormField<int>(
                       initialValue: _groupId,
                       validator: (_) => _categoryId == null
                           ? 'Seleccioná una categoría'
                           : null,
-                      builder: (field) => Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          InkWell(
-                            onTap: () => _pickFromBottomSheet(
-                              context: context,
-                              title: 'Grupo de categoría',
-                              items: groups,
-                              selectedId: _groupId,
-                              onSelected: (id) => setState(() {
-                                _groupId = id;
-                                _categoryId = null;
-                              }),
-                            ),
-                            child: InputDecorator(
-                              decoration: InputDecoration(
-                                labelText: 'Grupo de categoría *',
-                                border: const OutlineInputBorder(),
-                                errorText: field.errorText,
-                                suffixIcon:
-                                    const Icon(Icons.arrow_drop_down),
-                              ),
-                              child: Text(
-                                groupName ?? 'Seleccioná un grupo',
-                                style: TextStyle(
-                                  color: groupName == null
-                                      ? Colors.grey[500]
-                                      : null,
-                                ),
-                              ),
+                      builder: (field) => InkWell(
+                        onTap: () => _pickFromBottomSheet(
+                          context: context,
+                          title: 'Grupo de categoría',
+                          items: groups,
+                          selectedId: _groupId,
+                          onSelected: (id) => setState(() {
+                            _groupId = id;
+                            _categoryId = null;
+                          }),
+                        ),
+                        child: InputDecorator(
+                          decoration: InputDecoration(
+                            labelText: 'Grupo de categoría *',
+                            border: const OutlineInputBorder(),
+                            errorText: field.errorText,
+                            prefixIcon: Icon(Icons.folder_outlined,
+                                color: groupName == null
+                                    ? Colors.grey[500]
+                                    : groupColor),
+                            suffixIcon: const Icon(Icons.arrow_drop_down),
+                          ),
+                          child: Text(
+                            groupName ?? 'Seleccioná un grupo',
+                            style: TextStyle(
+                              color: groupName == null
+                                  ? Colors.grey[500]
+                                  : null,
                             ),
                           ),
-                        ],
+                        ),
                       ),
                     ),
                     if (_groupId != null) ...[
                       const SizedBox(height: 16),
-                      // Subcategoría
                       InkWell(
                         onTap: () => _pickFromBottomSheet(
                           context: context,
@@ -387,10 +334,14 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
                               setState(() => _categoryId = id),
                         ),
                         child: InputDecorator(
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             labelText: 'Categoría *',
-                            border: OutlineInputBorder(),
-                            suffixIcon: Icon(Icons.arrow_drop_down),
+                            border: const OutlineInputBorder(),
+                            prefixIcon: Icon(Icons.label_outline,
+                                color: catName == null
+                                    ? Colors.grey[500]
+                                    : catColor),
+                            suffixIcon: const Icon(Icons.arrow_drop_down),
                           ),
                           child: Text(
                             catName ?? 'Seleccioná una categoría',
@@ -407,7 +358,76 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
               },
             ),
             const SizedBox(height: 24),
+
+            const SectionLabel('Detalles opcionales'),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _descCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Descripción',
+                prefixIcon: Icon(Icons.notes_outlined),
+                border: OutlineInputBorder(),
+              ),
+              maxLength: 255,
+            ),
+            const SizedBox(height: 8),
+
+            DropdownButtonFormField<String>(
+              value: _paymentMethod.isEmpty ? null : _paymentMethod,
+              decoration: const InputDecoration(
+                labelText: 'Método de pago',
+                prefixIcon: Icon(Icons.credit_card_outlined),
+                border: OutlineInputBorder(),
+              ),
+              items: const [
+                DropdownMenuItem(value: null, child: Text('Sin especificar')),
+                DropdownMenuItem(value: 'CASH', child: Text('Efectivo')),
+                DropdownMenuItem(value: 'DEBIT', child: Text('Débito')),
+                DropdownMenuItem(value: 'CREDIT', child: Text('Crédito')),
+                DropdownMenuItem(
+                    value: 'TRANSFER', child: Text('Transferencia')),
+              ],
+              onChanged: (v) =>
+                  setState(() => _paymentMethod = v ?? ''),
+            ),
+            const SizedBox(height: 16),
+
+            DropdownButtonFormField<String>(
+              value: _expenseType.isEmpty ? null : _expenseType,
+              decoration: const InputDecoration(
+                labelText: 'Tipo de gasto',
+                prefixIcon: Icon(Icons.category_outlined),
+                border: OutlineInputBorder(),
+              ),
+              items: const [
+                DropdownMenuItem(value: null, child: Text('Sin especificar')),
+                DropdownMenuItem(value: 'FIXED', child: Text('Fijo')),
+                DropdownMenuItem(value: 'VARIABLE', child: Text('Variable')),
+              ],
+              onChanged: (v) =>
+                  setState(() => _expenseType = v ?? ''),
+            ),
           ],
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.all(16),
+        child: FilledButton.icon(
+          onPressed: _loading ? null : _submit,
+          icon: _loading
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: Colors.white),
+                )
+              : const Icon(Icons.check),
+          label: Text(_isEditing ? 'Guardar cambios' : 'Guardar gasto'),
+          style: FilledButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12)),
+          ),
         ),
       ),
     );

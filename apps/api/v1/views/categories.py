@@ -1,5 +1,6 @@
 from rest_framework import viewsets
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 
 from apps.api.v1.serializers.categories import CategorySerializer
@@ -7,9 +8,15 @@ from apps.categories.models import Category
 from apps.core.constants import CategoryType
 
 
+class CategoryPagination(PageNumberPagination):
+    page_size_query_param = "page_size"
+    max_page_size = 500
+
+
 class CategoryViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = CategorySerializer
+    pagination_class = CategoryPagination
 
     def get_queryset(self):
         from django.db import models as db_models

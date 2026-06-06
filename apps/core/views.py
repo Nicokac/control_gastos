@@ -161,15 +161,26 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "1.9.0"
+APP_VERSION = "1.10.0"
 
 WHATS_NEW = [
     {
+        "version": "1.10.0",
+        "date": "Junio 2026",
+        "title": "App móvil: Gastos Fijos, Categorías y modo oscuro",
+        "items": [
+            "App móvil: nueva sección de Gastos Fijos — listá, marcá como pagado, creá y editá tus gastos recurrentes",
+            "App móvil: gestión de Categorías directamente desde el celular",
+            "App móvil: tema claro, oscuro o automático, con animaciones de transición entre pantallas",
+            "App móvil: el dashboard ahora indica cuándo se actualizaron los datos por última vez",
+            "App móvil: formularios de gastos e ingresos con mejor diseño — destacan el monto y el color de cada categoría",
+        ],
+    },
+    {
         "version": "1.9.0",
         "date": "Junio 2026",
-        "title": "App móvil para Android",
+        "title": "Dashboard y Mi perfil mejorados",
         "items": [
-            "Ya podés usar Control de Gastos desde tu celular Android — descargá el APK",
             "Registrá gastos, ingresos y gastos compartidos desde la app",
             "Dashboard con balance del mes, gráfico de categorías y movimientos recientes",
             "Configurá tu perfil, moneda y día de inicio del mes desde la app",
