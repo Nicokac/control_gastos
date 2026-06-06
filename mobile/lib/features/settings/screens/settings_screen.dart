@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../../core/providers/theme_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -210,6 +211,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   onChanged: (v) =>
                       setState(() => _monthStartDay = v ?? 1),
                 ),
+                const SizedBox(height: 24),
+
+                _SectionLabel('Apariencia'),
+                const SizedBox(height: 8),
+                _ThemeSelector(),
                 const SizedBox(height: 32),
 
                 // Cerrar sesión
@@ -229,6 +235,36 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           );
         },
       ),
+    );
+  }
+}
+
+class _ThemeSelector extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeProvider);
+    final notifier = ref.read(themeProvider.notifier);
+
+    return SegmentedButton<ThemeMode>(
+      segments: const [
+        ButtonSegment(
+          value: ThemeMode.light,
+          icon: Icon(Icons.light_mode_outlined),
+          label: Text('Claro'),
+        ),
+        ButtonSegment(
+          value: ThemeMode.system,
+          icon: Icon(Icons.brightness_auto_outlined),
+          label: Text('Auto'),
+        ),
+        ButtonSegment(
+          value: ThemeMode.dark,
+          icon: Icon(Icons.dark_mode_outlined),
+          label: Text('Oscuro'),
+        ),
+      ],
+      selected: {themeMode},
+      onSelectionChanged: (s) => notifier.setTheme(s.first),
     );
   }
 }

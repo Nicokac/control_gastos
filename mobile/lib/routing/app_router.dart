@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../features/auth/screens/splash_screen.dart';
@@ -16,6 +17,34 @@ import '../features/categories/screens/categories_screen.dart';
 import '../features/recurring/screens/recurring_list_screen.dart';
 import '../features/recurring/screens/recurring_form_screen.dart';
 import '../features/auth/providers/auth_provider.dart';
+
+CustomTransitionPage<T> _buildPage<T>({
+  required BuildContext context,
+  required GoRouterState state,
+  required Widget child,
+}) {
+  return CustomTransitionPage<T>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 220),
+    reverseTransitionDuration: const Duration(milliseconds: 180),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final fadeAnim = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOut,
+      );
+      final slideAnim = Tween<Offset>(
+        begin: const Offset(0.04, 0),
+        end: Offset.zero,
+      ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut));
+
+      return FadeTransition(
+        opacity: fadeAnim,
+        child: SlideTransition(position: slideAnim, child: child),
+      );
+    },
+  );
+}
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -38,76 +67,92 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(path: '/splash', builder: (_, s) => const SplashScreen()),
-      GoRoute(path: '/login', builder: (_, s) => const LoginScreen()),
-      GoRoute(path: '/register', builder: (_, s) => const RegisterScreen()),
-      GoRoute(path: '/dashboard', builder: (_, s) => const DashboardScreen()),
+      GoRoute(
+        path: '/splash',
+        pageBuilder: (c, s) => _buildPage(context: c, state: s, child: const SplashScreen()),
+      ),
+      GoRoute(
+        path: '/login',
+        pageBuilder: (c, s) => _buildPage(context: c, state: s, child: const LoginScreen()),
+      ),
+      GoRoute(
+        path: '/register',
+        pageBuilder: (c, s) => _buildPage(context: c, state: s, child: const RegisterScreen()),
+      ),
+      GoRoute(
+        path: '/dashboard',
+        pageBuilder: (c, s) => _buildPage(context: c, state: s, child: const DashboardScreen()),
+      ),
       GoRoute(
         path: '/expenses',
-        builder: (_, s) => const ExpenseListScreen(),
+        pageBuilder: (c, s) => _buildPage(context: c, state: s, child: const ExpenseListScreen()),
       ),
       GoRoute(
         path: '/expenses/new',
-        builder: (_, s) => const ExpenseFormScreen(),
+        pageBuilder: (c, s) => _buildPage(context: c, state: s, child: const ExpenseFormScreen()),
       ),
       GoRoute(
         path: '/expenses/edit/:id',
-        builder: (_, state) => ExpenseFormScreen(
-          existing: state.extra as Map<String, dynamic>?,
+        pageBuilder: (c, s) => _buildPage(
+          context: c, state: s,
+          child: ExpenseFormScreen(existing: s.extra as Map<String, dynamic>?),
         ),
       ),
       GoRoute(
         path: '/income',
-        builder: (_, s) => const IncomeListScreen(),
+        pageBuilder: (c, s) => _buildPage(context: c, state: s, child: const IncomeListScreen()),
       ),
       GoRoute(
         path: '/income/new',
-        builder: (_, s) => const IncomeFormScreen(),
+        pageBuilder: (c, s) => _buildPage(context: c, state: s, child: const IncomeFormScreen()),
       ),
       GoRoute(
         path: '/income/edit/:id',
-        builder: (_, state) => IncomeFormScreen(
-          existing: state.extra as Map<String, dynamic>?,
+        pageBuilder: (c, s) => _buildPage(
+          context: c, state: s,
+          child: IncomeFormScreen(existing: s.extra as Map<String, dynamic>?),
         ),
       ),
       GoRoute(
         path: '/shared-expenses',
-        builder: (_, s) => const SharedExpenseListScreen(),
+        pageBuilder: (c, s) => _buildPage(context: c, state: s, child: const SharedExpenseListScreen()),
       ),
       GoRoute(
         path: '/shared-expenses/new',
-        builder: (_, s) => const SharedExpenseFormScreen(),
+        pageBuilder: (c, s) => _buildPage(context: c, state: s, child: const SharedExpenseFormScreen()),
       ),
       GoRoute(
         path: '/shared-expenses/edit/:id',
-        builder: (_, state) => SharedExpenseFormScreen(
-          existing: state.extra as Map<String, dynamic>?,
+        pageBuilder: (c, s) => _buildPage(
+          context: c, state: s,
+          child: SharedExpenseFormScreen(existing: s.extra as Map<String, dynamic>?),
         ),
       ),
       GoRoute(
         path: '/shared-expenses/members',
-        builder: (_, s) => const HouseholdMembersScreen(),
+        pageBuilder: (c, s) => _buildPage(context: c, state: s, child: const HouseholdMembersScreen()),
       ),
       GoRoute(
         path: '/settings',
-        builder: (_, s) => const SettingsScreen(),
+        pageBuilder: (c, s) => _buildPage(context: c, state: s, child: const SettingsScreen()),
       ),
       GoRoute(
         path: '/categories',
-        builder: (_, s) => const CategoriesScreen(),
+        pageBuilder: (c, s) => _buildPage(context: c, state: s, child: const CategoriesScreen()),
       ),
       GoRoute(
         path: '/recurring',
-        builder: (_, s) => const RecurringListScreen(),
+        pageBuilder: (c, s) => _buildPage(context: c, state: s, child: const RecurringListScreen()),
       ),
       GoRoute(
         path: '/recurring/new',
-        builder: (_, s) => const RecurringFormScreen(),
+        pageBuilder: (c, s) => _buildPage(context: c, state: s, child: const RecurringFormScreen()),
       ),
       GoRoute(
         path: '/recurring/edit/:id',
-        builder: (_, state) => RecurringFormScreen(
-          existing: state.extra as Map<String, dynamic>?,
+        pageBuilder: (c, s) => _buildPage(
+          context: c, state: s,
+          child: RecurringFormScreen(existing: s.extra as Map<String, dynamic>?),
         ),
       ),
     ],

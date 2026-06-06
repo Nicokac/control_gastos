@@ -7,6 +7,7 @@ import '../widgets/balance_card.dart';
 import '../widgets/expense_chart.dart';
 import '../widgets/recent_transactions_list.dart';
 import '../widgets/pending_recurring_card.dart';
+import '../widgets/dashboard_skeleton.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -33,7 +34,7 @@ class DashboardScreen extends ConsumerWidget {
         ],
       ),
       body: dashboardAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const DashboardSkeleton(),
         error: (e, _) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

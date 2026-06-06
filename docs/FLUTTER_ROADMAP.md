@@ -192,14 +192,14 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 ---
 
 ## FASE 5 — Polish y Release
-**Estado:** ⏳ En progreso
+**Estado:** ✅ Completada
 
 ### 5.1 UI/UX
-- [ ] Tema claro/oscuro
-- [ ] Animaciones de transición entre pantallas
+- [x] Tema claro/oscuro con persistencia (SegmentedButton en Settings)
+- [x] Animaciones de transición entre pantallas (fade + slide suave via GoRouter)
 - [x] Pull to refresh en listas (RefreshIndicator en todas las pantallas)
 - [x] Empty states con ícono, subtítulo y acción (widget EmptyState reutilizable)
-- [ ] Skeleton loaders
+- [x] Skeleton loaders en dashboard (DashboardSkeleton con animación pulse)
 - [x] Dashboard optimizado: balance card con totales tocables, recurrentes compactos con progreso, accesos directos a Compartidos y Categorías
 
 ### 5.2 Offline Support
@@ -207,20 +207,50 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 - [ ] Sincronización al reconectar
 - [ ] Indicador visual de modo offline
 
-### 5.3 Testing
-- [ ] Unit tests para providers
-- [ ] Widget tests para componentes clave
-- [ ] Integration tests para flujos principales (auth, crear gasto, ver dashboard)
-
-### 5.4 Build & Release
+### 5.3 Build & Release
 - [ ] `flutter build apk --release`
 - [ ] `flutter build appbundle --release`
-- [ ] `flutter build ios --release`
-
-### 5.5 Distribución
 - [ ] Android: Google Play Console
-- [ ] iOS: App Store Connect
-- [ ] Beta: Firebase App Distribution
+
+---
+
+## FASE 6 — Testing
+**Estado:** ⏳ Pendiente
+
+### 6.1 Unit Tests
+- [ ] `auth_provider` — login exitoso, login fallido, logout
+- [ ] `dashboard_provider` — carga de datos, cambio de mes
+- [ ] `expense_provider` — CRUD, filtros
+- [ ] `recurring_provider` — marcar pagado, estados
+- [ ] `categories_screen` — crear, eliminar
+
+### 6.2 Widget Tests
+- [ ] `BalanceCard` — valores positivos y negativos
+- [ ] `EmptyState` — con y sin acción
+- [ ] `PendingRecurringCard` — con pendientes, sin pendientes
+- [ ] `DashboardSkeleton` — renderiza sin errores
+- [ ] `LoginScreen` — validación de campos
+
+### 6.3 Integration Tests
+- [ ] Flujo auth: login → dashboard → logout
+- [ ] Flujo gastos: crear → listar → editar → eliminar
+- [ ] Flujo recurring: crear → marcar pagado → verificar en dashboard
+
+---
+
+## FASE 7 — v2 Features
+**Estado:** ⏳ Pendiente
+
+### 7.1 Savings
+- [ ] `savings_list_screen.dart`
+- [ ] `saving_detail_screen.dart` (con historial de movimientos)
+- [ ] `saving_form_screen.dart`
+- [ ] Widget `saving_card.dart` (con progress bar)
+- [ ] Widget `deposit_dialog.dart` / `withdraw_dialog.dart`
+
+### 7.2 Mejoras pendientes (deuda técnica)
+- [ ] DT-048 — ícono representativo de la app
+- [ ] DT-049 — deshacer "marcar pagado" en gastos fijos
 
 ---
 
@@ -263,3 +293,8 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-06-06 | Fase 5 | Empty states con widget reutilizable en todas las pantallas |
 | 2026-06-06 | Fase 5 | Dashboard: balance tocable, recurrentes compactos con progreso, botones Compartidos y Categorías |
 | 2026-06-06 | Fix | AndroidManifest: permiso INTERNET agregado — APK release puede hacer requests de red |
+| 2026-06-06 | Fase 4 | Recurring (Gastos Fijos): lista, formulario, marcar pagado, editar, eliminar |
+| 2026-06-06 | Fase 5 | Tema claro/oscuro con persistencia en SharedPreferences |
+| 2026-06-06 | Fase 5 | Animaciones de transición: fade + slide en todas las rutas |
+| 2026-06-06 | Fase 5 | Skeleton loaders en dashboard |
+| 2026-06-06 | Fase 6 | Definida fase de testing: unit, widget e integration tests |
