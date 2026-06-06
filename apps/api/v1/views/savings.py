@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from apps.api.v1.pagination import ConfigurablePageNumberPagination
 from apps.api.v1.serializers.savings import (
     DepositWithdrawSerializer,
     SavingMovementSerializer,
@@ -14,6 +15,7 @@ from apps.savings.models import Saving, SavingMovement
 class SavingViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = SavingSerializer
+    pagination_class = ConfigurablePageNumberPagination
 
     def get_queryset(self):
         return Saving.objects.filter(user=self.request.user).order_by("-created_at")

@@ -5,6 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from apps.api.v1.pagination import ConfigurablePageNumberPagination
 from apps.api.v1.serializers.recurring import RecurringExpenseSerializer
 from apps.recurring.models import RecurringExpense
 
@@ -12,6 +13,7 @@ from apps.recurring.models import RecurringExpense
 class RecurringExpenseViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = RecurringExpenseSerializer
+    pagination_class = ConfigurablePageNumberPagination
 
     def get_queryset(self):
         return (

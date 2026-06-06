@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
+from apps.api.v1.pagination import ConfigurablePageNumberPagination
 from apps.api.v1.serializers.shared_expenses import (
     HouseholdMemberSerializer,
     SharedExpenseSerializer,
@@ -11,6 +12,7 @@ from apps.shared_expenses.models import HouseholdMember, SharedExpense
 class HouseholdMemberViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = HouseholdMemberSerializer
+    pagination_class = ConfigurablePageNumberPagination
 
     def get_queryset(self):
         return HouseholdMember.objects.filter(user=self.request.user)
@@ -19,6 +21,7 @@ class HouseholdMemberViewSet(viewsets.ModelViewSet):
 class SharedExpenseViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = SharedExpenseSerializer
+    pagination_class = ConfigurablePageNumberPagination
 
     def get_queryset(self):
         qs = (

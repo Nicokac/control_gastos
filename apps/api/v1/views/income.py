@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
+from apps.api.v1.pagination import ConfigurablePageNumberPagination
 from apps.api.v1.serializers.income import IncomeSerializer
 from apps.income.models import Income
 
@@ -8,6 +9,7 @@ from apps.income.models import Income
 class IncomeViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = IncomeSerializer
+    pagination_class = ConfigurablePageNumberPagination
 
     def get_queryset(self):
         qs = (

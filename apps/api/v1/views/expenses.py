@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
+from apps.api.v1.pagination import ConfigurablePageNumberPagination
 from apps.api.v1.serializers.expenses import ExpenseSerializer
 from apps.expenses.models import Expense
 
@@ -8,6 +9,7 @@ from apps.expenses.models import Expense
 class ExpenseViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = ExpenseSerializer
+    pagination_class = ConfigurablePageNumberPagination
 
     def get_queryset(self):
         qs = (

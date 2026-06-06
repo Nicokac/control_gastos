@@ -5,6 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from apps.api.v1.pagination import ConfigurablePageNumberPagination
 from apps.api.v1.serializers.recurring_income import RecurringIncomeSerializer
 from apps.recurring_income.models import RecurringIncome
 
@@ -12,6 +13,7 @@ from apps.recurring_income.models import RecurringIncome
 class RecurringIncomeViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = RecurringIncomeSerializer
+    pagination_class = ConfigurablePageNumberPagination
 
     def get_queryset(self):
         return (
