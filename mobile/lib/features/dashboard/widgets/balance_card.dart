@@ -1,27 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../../../core/utils/formatters.dart';
 
 class BalanceCard extends StatelessWidget {
   final String totalIncome;
   final String totalExpenses;
   final String balance;
-  final int month;
-  final int year;
+  final VoidCallback? onTapIncome;
+  final VoidCallback? onTapExpenses;
 
   const BalanceCard({
     super.key,
     required this.totalIncome,
     required this.totalExpenses,
     required this.balance,
-    required this.month,
-    required this.year,
+    this.onTapIncome,
+    this.onTapExpenses,
   });
-
-  String get _monthLabel {
-    final date = DateTime(year, month);
-    return DateFormat('MMMM yyyy', 'es').format(date);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,14 +30,6 @@ class BalanceCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              _monthLabel,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: Colors.grey[600],
-                    letterSpacing: 0.5,
-                  ),
-            ),
-            const SizedBox(height: 8),
             Text(
               'Balance',
               style: Theme.of(context).textTheme.titleMedium,
@@ -65,6 +51,7 @@ class BalanceCard extends StatelessWidget {
                     amount: formatArsString(totalIncome),
                     color: Colors.green[700]!,
                     icon: Icons.arrow_upward,
+                    onTap: onTapIncome,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -74,6 +61,7 @@ class BalanceCard extends StatelessWidget {
                     amount: formatArsString(totalExpenses),
                     color: Colors.red[700]!,
                     icon: Icons.arrow_downward,
+                    onTap: onTapExpenses,
                   ),
                 ),
               ],
@@ -90,50 +78,58 @@ class _StatItem extends StatelessWidget {
   final String amount;
   final Color color;
   final IconData icon;
+  final VoidCallback? onTap;
 
   const _StatItem({
     required this.label,
     required this.amount,
     required this.color,
     required this.icon,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 18),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey[600],
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(12),
+          border: onTap != null
+              ? Border.all(color: color.withValues(alpha: 0.2))
+              : null,
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 18),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                   ),
-                ),
-                Text(
-                  amount,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: color,
+                  Text(
+                    amount,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+            if (onTap != null)
+              Icon(Icons.chevron_right, color: color, size: 16),
+          ],
+        ),
       ),
     );
   }

@@ -12,6 +12,9 @@ import '../features/shared_expenses/screens/shared_expense_list_screen.dart';
 import '../features/shared_expenses/screens/shared_expense_form_screen.dart';
 import '../features/shared_expenses/screens/household_members_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
+import '../features/categories/screens/categories_screen.dart';
+import '../features/recurring/screens/recurring_list_screen.dart';
+import '../features/recurring/screens/recurring_form_screen.dart';
 import '../features/auth/providers/auth_provider.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -88,6 +91,24 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/settings',
         builder: (_, s) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: '/categories',
+        builder: (_, s) => const CategoriesScreen(),
+      ),
+      GoRoute(
+        path: '/recurring',
+        builder: (_, s) => const RecurringListScreen(),
+      ),
+      GoRoute(
+        path: '/recurring/new',
+        builder: (_, s) => const RecurringFormScreen(),
+      ),
+      GoRoute(
+        path: '/recurring/edit/:id',
+        builder: (_, state) => RecurringFormScreen(
+          existing: state.extra as Map<String, dynamic>?,
+        ),
       ),
     ],
   );

@@ -68,6 +68,10 @@ class DashboardView(APIView):
             for s in savings
         ]
 
+        all_recurring = list(
+            RecurringExpense.objects.filter(user=user, is_active=True).select_related("category")
+        )
+        total_recurring = len(all_recurring)
         pending_recurring = [
             {
                 "id": rec.pk,
@@ -76,9 +80,7 @@ class DashboardView(APIView):
                 "status": rec.status_for(month, year),
                 "last_amount": str(rec.last_expense.amount_ars) if rec.last_expense else None,
             }
-            for rec in RecurringExpense.objects.filter(user=user, is_active=True).select_related(
-                "category"
-            )
+            for rec in all_recurring
             if rec.status_for(month, year) in ("pending", "overdue")
         ]
 
@@ -139,6 +141,7 @@ class DashboardView(APIView):
                     for e in income_by_category
                 ],
                 "savings_progress": savings_progress,
+                "total_recurring": total_recurring,
                 "pending_recurring": pending_recurring,
                 "recent_transactions": {
                     "expenses": recent_expenses,

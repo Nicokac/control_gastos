@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/shared_expense_provider.dart';
 import '../widgets/shared_expense_tile.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/empty_state.dart';
 
 class SharedExpenseListScreen extends ConsumerWidget {
   const SharedExpenseListScreen({super.key});
@@ -107,16 +108,13 @@ class _SharedExpenseContent extends StatelessWidget {
         ),
         Expanded(
           child: expenses.isEmpty
-              ? const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.people_outline, size: 64, color: Colors.grey),
-                      SizedBox(height: 12),
-                      Text('Sin gastos compartidos este mes',
-                          style: TextStyle(color: Colors.grey)),
-                    ],
-                  ),
+              ? EmptyState(
+                  icon: Icons.people_outline,
+                  title: 'Sin gastos compartidos este mes',
+                  subtitle: 'Tocá + para registrar un gasto del hogar',
+                  actionLabel: 'Nuevo gasto compartido',
+                  onAction: () => context.push('/shared-expenses/new'),
+                  color: const Color(0xFF0d6efd),
                 )
               : ListView.separated(
                   itemCount: expenses.length,

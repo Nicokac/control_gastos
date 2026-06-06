@@ -99,14 +99,50 @@ class _DashboardContent extends StatelessWidget {
           totalIncome: data['total_income'] as String,
           totalExpenses: data['total_expenses'] as String,
           balance: data['balance'] as String,
-          month: data['month'] as int,
-          year: data['year'] as int,
+          onTapIncome: () => context.push('/income'),
+          onTapExpenses: () => context.push('/expenses'),
         ),
         const SizedBox(height: 12),
-        _QuickActions(),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () => context.push('/shared-expenses'),
+                icon: const Icon(Icons.people, size: 16),
+                label: const Text('Compartidos'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF0d6efd),
+                  side: const BorderSide(color: Color(0xFF0d6efd)),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () => context.push('/categories'),
+                icon: const Icon(Icons.label_outline, size: 16),
+                label: const Text('Categorías'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.grey[700],
+                  side: BorderSide(color: Colors.grey[400]!),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 12),
         if (pendingRecurring.isNotEmpty) ...[
-          PendingRecurringCard(pending: pendingRecurring),
+          PendingRecurringCard(
+            pending: pendingRecurring,
+            totalRecurring: (data['total_recurring'] as int?) ?? pendingRecurring.length,
+            onViewAll: () => context.push('/recurring'),
+          ),
           const SizedBox(height: 12),
         ],
         ExpenseChart(expensesByCategory: expensesByCategory),
@@ -179,89 +215,6 @@ class _MonthSelector extends StatelessWidget {
           color: _canGoNext ? null : Colors.grey[300],
         ),
       ],
-    );
-  }
-}
-
-class _QuickActions extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        _ActionButton(
-          label: 'Gastos',
-          icon: Icons.arrow_downward,
-          color: Colors.red[700]!,
-          onTap: () => context.push('/expenses'),
-        ),
-        const SizedBox(width: 8),
-        _ActionButton(
-          label: 'Ingresos',
-          icon: Icons.arrow_upward,
-          color: Colors.green[700]!,
-          onTap: () => context.push('/income'),
-        ),
-        const SizedBox(width: 8),
-        _ActionButton(
-          label: 'Compartidos',
-          icon: Icons.people,
-          color: const Color(0xFF0d6efd),
-          onTap: () => context.push('/shared-expenses'),
-        ),
-      ],
-    );
-  }
-}
-
-class _ActionButton extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final Color color;
-  final VoidCallback? onTap;
-
-  const _ActionButton({
-    required this.label,
-    required this.icon,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final enabled = onTap != null;
-    return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            color: enabled
-                ? color.withValues(alpha: 0.08)
-                : Colors.grey.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: enabled
-                  ? color.withValues(alpha: 0.25)
-                  : Colors.grey.withValues(alpha: 0.15),
-            ),
-          ),
-          child: Column(
-            children: [
-              Icon(icon, color: enabled ? color : Colors.grey[400], size: 22),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: enabled ? color : Colors.grey[400],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

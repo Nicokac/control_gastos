@@ -37,11 +37,18 @@ class RecentTransactionsList extends StatelessWidget {
             const SizedBox(height: 12),
             if (items.isEmpty)
               const Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
+                padding: EdgeInsets.symmetric(vertical: 20),
                 child: Center(
-                  child: Text(
-                    'Sin movimientos recientes',
-                    style: TextStyle(color: Colors.grey),
+                  child: Column(
+                    children: [
+                      Icon(Icons.swap_vert_outlined,
+                          size: 40, color: Colors.black12),
+                      SizedBox(height: 8),
+                      Text(
+                        'Sin movimientos recientes',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ],
                   ),
                 ),
               )

@@ -739,6 +739,16 @@ La app web usa el ícono genérico de Bootstrap Icons (`bi-wallet2`) y no tiene 
 
 **Camino de resolución:** diseñar o elegir un ícono SVG representativo, usarlo como favicon en la web (`staticfiles/`), reemplazar el ícono en la pantalla de login de la web y en la pantalla de login de Flutter, y generarlo en los tamaños necesarios para el launcher de Android/iOS (`flutter_launcher_icons`).
 
+### DT-049 — Mobile: deshacer "marcar pagado" en gastos fijos
+
+**Estado:** ⏳ Pendiente
+
+Al marcar un gasto fijo como pagado desde la app mobile, se crea un `Expense` vinculado al recurrente. No existe forma de revertir esta acción desde la app — el usuario debe ir a la lista de Gastos y eliminar el registro manualmente.
+
+**Why:** acción detectada durante el desarrollo de `recurring_list_screen.dart`. No hay endpoint `unmark-paid` en la API.
+
+**Camino de resolución:** agregar endpoint `POST /api/v1/recurring/{id}/unmark-paid/` en `RecurringExpenseViewSet` que elimine el último `Expense` del mes actual vinculado al recurrente. Exponer el botón en la app mobile solo cuando el estado del recurrente es `paid` en el mes actual.
+
 ---
 
 ## D-015 — Deudas técnicas descartadas

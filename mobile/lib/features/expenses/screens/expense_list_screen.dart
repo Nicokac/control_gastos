@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/expense_provider.dart';
 import '../widgets/expense_tile.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/empty_state.dart';
 
 class ExpenseListScreen extends ConsumerWidget {
   const ExpenseListScreen({super.key});
@@ -106,17 +107,13 @@ class _ExpenseListContent extends StatelessWidget {
           ),
         Expanded(
           child: expenses.isEmpty
-              ? const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.receipt_long_outlined,
-                          size: 64, color: Colors.grey),
-                      SizedBox(height: 12),
-                      Text('Sin gastos este mes',
-                          style: TextStyle(color: Colors.grey)),
-                    ],
-                  ),
+              ? EmptyState(
+                  icon: Icons.receipt_long_outlined,
+                  title: 'Sin gastos este mes',
+                  subtitle: 'Tocá + para registrar tu primer gasto',
+                  actionLabel: 'Nuevo gasto',
+                  onAction: () => context.push('/expenses/new'),
+                  color: Colors.red[700],
                 )
               : ListView.separated(
                   itemCount: expenses.length,

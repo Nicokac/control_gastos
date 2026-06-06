@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/income_provider.dart';
 import '../widgets/income_tile.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/empty_state.dart';
 
 class IncomeListScreen extends ConsumerWidget {
   const IncomeListScreen({super.key});
@@ -107,16 +108,13 @@ class _IncomeListContent extends StatelessWidget {
           ),
         Expanded(
           child: incomeList.isEmpty
-              ? const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.savings_outlined, size: 64, color: Colors.grey),
-                      SizedBox(height: 12),
-                      Text('Sin ingresos este mes',
-                          style: TextStyle(color: Colors.grey)),
-                    ],
-                  ),
+              ? EmptyState(
+                  icon: Icons.savings_outlined,
+                  title: 'Sin ingresos este mes',
+                  subtitle: 'Tocá + para registrar tu primer ingreso',
+                  actionLabel: 'Nuevo ingreso',
+                  onAction: () => context.push('/income/new'),
+                  color: Colors.green[700],
                 )
               : ListView.separated(
                   itemCount: incomeList.length,

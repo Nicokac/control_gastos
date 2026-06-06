@@ -166,7 +166,12 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 - [x] `household_members_screen.dart` (ver, agregar, eliminar miembros)
 - [x] Widget `shared_expense_tile.dart`
 
-### 4.6 Savings
+### 4.6 Categories
+- [x] `categories_screen.dart` (lista agrupada por tipo y grupo)
+- [x] Crear grupo y subcategoría con selector de color
+- [x] Eliminar subcategorías propias (protege las del sistema)
+
+### 4.7 Savings
 - [ ] `savings_list_screen.dart`
 - [ ] `saving_detail_screen.dart` (con historial de movimientos)
 - [ ] `saving_form_screen.dart`
@@ -174,26 +179,28 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 - [ ] Widget `deposit_dialog.dart`
 - [ ] Widget `withdraw_dialog.dart`
 
-### 4.7 Recurring
-- [ ] `recurring_list_screen.dart`
-- [ ] `recurring_form_screen.dart`
-- [ ] Widget `recurring_tile.dart` (con estado pagado/pendiente/vencido)
+### 4.8 Recurring (Gastos Fijos)
+- [ ] `recurring_list_screen.dart` (con estados pagado/pendiente/vencido)
+- [ ] `recurring_form_screen.dart` (crear/editar)
+- [ ] Widget `recurring_tile.dart`
+- [ ] Action "Marcar como pagado" desde la lista
 
-### 4.8 Settings
+### 4.9 Settings
 - [x] `settings_screen.dart`
 - [x] Editar perfil, moneda default, día inicio mes, cerrar sesión
 
 ---
 
 ## FASE 5 — Polish y Release
-**Estado:** ⏳ Pendiente
+**Estado:** ⏳ En progreso
 
 ### 5.1 UI/UX
 - [ ] Tema claro/oscuro
 - [ ] Animaciones de transición entre pantallas
-- [ ] Pull to refresh en listas
-- [ ] Empty states con ilustraciones
+- [x] Pull to refresh en listas (RefreshIndicator en todas las pantallas)
+- [x] Empty states con ícono, subtítulo y acción (widget EmptyState reutilizable)
 - [ ] Skeleton loaders
+- [x] Dashboard optimizado: balance card con totales tocables, recurrentes compactos con progreso, accesos directos a Compartidos y Categorías
 
 ### 5.2 Offline Support
 - [ ] Cache local con Hive
@@ -252,3 +259,7 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-06-05 | Fase 4 | Shared Expenses: lista con totales por persona, form crear/editar, miembros del hogar |
 | 2026-06-05 | Fase 4 | Colores alineados con web: danger=gastos, success=ingresos, primary=#0d6efd=compartidos |
 | 2026-06-05 | Fase 4 | Settings: editar perfil, moneda, día de inicio, cerrar sesión |
+| 2026-06-06 | Fase 4 | Categories: lista agrupada, crear grupos/subcategorías, eliminar propias |
+| 2026-06-06 | Fase 5 | Empty states con widget reutilizable en todas las pantallas |
+| 2026-06-06 | Fase 5 | Dashboard: balance tocable, recurrentes compactos con progreso, botones Compartidos y Categorías |
+| 2026-06-06 | Fix | AndroidManifest: permiso INTERNET agregado — APK release puede hacer requests de red |

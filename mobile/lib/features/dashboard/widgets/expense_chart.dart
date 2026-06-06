@@ -11,14 +11,40 @@ class ExpenseChart extends StatelessWidget {
   Widget build(BuildContext context) {
     if (expensesByCategory.isEmpty) {
       return Card(
+        elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: const Padding(
-          padding: EdgeInsets.all(24),
-          child: Center(
-            child: Text(
-              'Sin gastos este mes',
-              style: TextStyle(color: Colors.grey),
-            ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Gastos por categoría',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Column(
+                  children: [
+                    Icon(Icons.pie_chart_outline,
+                        size: 48, color: Colors.black12),
+                    SizedBox(height: 8),
+                    Text(
+                      'Sin gastos registrados',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       );

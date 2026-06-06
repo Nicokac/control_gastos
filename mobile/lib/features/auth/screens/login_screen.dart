@@ -70,12 +70,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   decoration: const InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: Icon(Icons.email_outlined),
+                    labelText: 'Email o usuario',
+                    prefixIcon: Icon(Icons.person_outline),
                     border: OutlineInputBorder(),
                   ),
                   validator: (v) =>
-                      v == null || v.isEmpty ? 'Ingresá tu email' : null,
+                      v == null || v.isEmpty ? 'Ingresá tu email o usuario' : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
