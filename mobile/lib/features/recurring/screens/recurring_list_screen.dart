@@ -245,6 +245,39 @@ class _RecurringTile extends StatelessWidget {
     }
   }
 
+  Future<void> _unmarkPaid(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Revertir pago'),
+        content: Text(
+            '¿Revertir el pago de "${item['name']}" de este mes? El gasto registrado será eliminado.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.orange),
+            child: const Text('Revertir'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    final error = await notifier.unmarkPaid(item['id'] as int);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error ?? 'Pago revertido'),
+          backgroundColor: error == null ? Colors.orange[700] : Colors.red[700],
+        ),
+      );
+    }
+  }
+
   Future<void> _confirmDelete(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -333,6 +366,7 @@ class _RecurringTile extends StatelessWidget {
             icon: const Icon(Icons.more_vert, size: 18),
             onSelected: (v) {
               if (v == 'pay') _markPaid(context);
+              if (v == 'unmark') _unmarkPaid(context);
               if (v == 'edit') onEdit();
               if (v == 'delete') _confirmDelete(context);
             },
@@ -345,6 +379,16 @@ class _RecurringTile extends StatelessWidget {
                     leading: Icon(Icons.check_circle_outline,
                         color: Colors.green),
                     title: Text('Marcar pagado'),
+                  ),
+                ),
+              if (isPaid)
+                const PopupMenuItem(
+                  value: 'unmark',
+                  child: ListTile(
+                    dense: true,
+                    leading: Icon(Icons.undo, color: Colors.orange),
+                    title: Text('Revertir pago',
+                        style: TextStyle(color: Colors.orange)),
                   ),
                 ),
               const PopupMenuItem(

@@ -100,6 +100,89 @@ class TestRecurringMarkPaidEndpoint:
 
 
 @pytest.mark.django_db
+class TestRecurringUnmarkPaidEndpoint:
+    def test_unmark_paid_elimina_expense(self, client, user, recurring):
+        headers = auth_header(client, user)
+        client.post(
+            f"/api/v1/recurring/{recurring.pk}/mark-paid/",
+            {"amount": "5000.00"},
+            content_type="application/json",
+            **headers,
+        )
+        assert recurring.expenses.count() == 1
+
+        response = client.post(
+            f"/api/v1/recurring/{recurring.pk}/unmark-paid/",
+            content_type="application/json",
+            **headers,
+        )
+        assert response.status_code == 200
+        assert recurring.expenses.count() == 0
+
+    def test_unmark_paid_sin_pago_este_mes(self, client, user, recurring):
+        headers = auth_header(client, user)
+        response = client.post(
+            f"/api/v1/recurring/{recurring.pk}/unmark-paid/",
+            content_type="application/json",
+            **headers,
+        )
+        assert response.status_code == 400
+        assert "No hay pago" in response.json()["detail"]
+
+    def test_unmark_paid_reactiva_cuota_completada(self, client, user, expense_category):
+        from datetime import date
+
+        headers = auth_header(client, user)
+        rec = RecurringExpense.objects.create(
+            user=user,
+            name="TV cuotas",
+            category=expense_category,
+            due_day=10,
+            total_installments=1,
+            start_date=date.today().replace(day=1),
+        )
+        client.post(
+            f"/api/v1/recurring/{rec.pk}/mark-paid/",
+            {"amount": "1000.00"},
+            content_type="application/json",
+            **headers,
+        )
+        rec.refresh_from_db()
+        assert not rec.is_active
+
+        client.post(
+            f"/api/v1/recurring/{rec.pk}/unmark-paid/",
+            content_type="application/json",
+            **headers,
+        )
+        rec.refresh_from_db()
+        assert rec.is_active
+
+    def test_unmark_paid_no_accede_ajeno(self, client, user, other_user, expense_category_factory):
+        other_cat = expense_category_factory(other_user, name="Otra")
+        rec = RecurringExpense.objects.create(
+            user=other_user, name="Ajena", category=other_cat, due_day=5
+        )
+        other_headers = {
+            "HTTP_AUTHORIZATION": f"Bearer {client.post('/api/v1/auth/token/', {'username': other_user.email, 'password': 'otherpass123'}, content_type='application/json').json()['access']}"  # pragma: allowlist secret
+        }
+        client.post(
+            f"/api/v1/recurring/{rec.pk}/mark-paid/",
+            {"amount": "500.00"},
+            content_type="application/json",
+            **other_headers,
+        )
+
+        user_headers = auth_header(client, user)
+        response = client.post(
+            f"/api/v1/recurring/{rec.pk}/unmark-paid/",
+            content_type="application/json",
+            **user_headers,
+        )
+        assert response.status_code == 404
+
+
+@pytest.mark.django_db
 class TestRecurringPendingEndpoint:
     def test_pending_retorna_no_pagados(self, client, user, recurring):
         headers = auth_header(client, user)

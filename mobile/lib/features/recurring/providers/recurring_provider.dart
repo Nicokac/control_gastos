@@ -52,6 +52,19 @@ class RecurringListNotifier extends AsyncNotifier<List<dynamic>> {
     }
   }
 
+  Future<String?> unmarkPaid(int id) async {
+    try {
+      await ref.read(recurringRepositoryProvider).unmarkPaid(id);
+      await reload();
+      ref.invalidate(dashboardProvider);
+      return null;
+    } catch (e) {
+      final msg = e.toString();
+      if (msg.contains('No hay pago')) return 'No hay pago registrado este mes';
+      return 'Error al revertir el pago';
+    }
+  }
+
   Future<String?> markPaid(int id, {double? amount}) async {
     try {
       await ref.read(recurringRepositoryProvider).markPaid(id, amount: amount);

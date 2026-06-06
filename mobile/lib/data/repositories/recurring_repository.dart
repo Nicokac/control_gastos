@@ -35,6 +35,10 @@ class RecurringRepository {
     return response.data as Map<String, dynamic>;
   }
 
+  Future<void> unmarkPaid(int id) async {
+    await ApiService.dio.post('${ApiConstants.recurring}$id/unmark-paid/');
+  }
+
   Future<List<dynamic>> getCategories() async {
     final response = await ApiService.dio.get(
       ApiConstants.categories,

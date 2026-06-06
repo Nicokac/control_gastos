@@ -741,13 +741,13 @@ La app web usa el ícono genérico de Bootstrap Icons (`bi-wallet2`) y no tiene 
 
 ### DT-049 — Mobile: deshacer "marcar pagado" en gastos fijos
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.12.0)
 
 Al marcar un gasto fijo como pagado desde la app mobile, se crea un `Expense` vinculado al recurrente. No existe forma de revertir esta acción desde la app — el usuario debe ir a la lista de Gastos y eliminar el registro manualmente.
 
 **Why:** acción detectada durante el desarrollo de `recurring_list_screen.dart`. No hay endpoint `unmark-paid` en la API.
 
-**Camino de resolución:** agregar endpoint `POST /api/v1/recurring/{id}/unmark-paid/` en `RecurringExpenseViewSet` que elimine el último `Expense` del mes actual vinculado al recurrente. Exponer el botón en la app mobile solo cuando el estado del recurrente es `paid` en el mes actual.
+**Resolución:** se agregó `POST /api/v1/recurring/{id}/unmark-paid/` en `RecurringExpenseViewSet`. Elimina el `Expense` del mes actual vinculado al recurrente y reactiva el recurrente si se había desactivado por completar la última cuota. La opción "Revertir pago" aparece en el menú contextual de la app mobile solo cuando el estado es `paid`.
 
 ---
 

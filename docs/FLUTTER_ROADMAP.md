@@ -246,7 +246,7 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 
 ### 7.1 Mejoras pendientes (deuda técnica)
 - [ ] DT-048 — ícono representativo de la app
-- [ ] DT-049 — deshacer "marcar pagado" en gastos fijos
+- [x] DT-049 — deshacer "marcar pagado" en gastos fijos
 
 ---
 
