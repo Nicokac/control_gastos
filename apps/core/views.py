@@ -161,9 +161,20 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "1.10.0"
+APP_VERSION = "1.11.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.11.0",
+        "date": "Junio 2026",
+        "title": "App móvil: nueva sección de Ahorros",
+        "items": [
+            "App móvil: gestioná tus metas de ahorro — creá objetivos, registrá depósitos y retiros, y seguí el progreso con barras visuales",
+            "App móvil: cada meta tiene su propio detalle con historial completo de movimientos",
+            "App móvil: personalizá cada meta con un ícono y color propios",
+            "App móvil: acceso directo a Ahorros desde el dashboard",
+        ],
+    },
     {
         "version": "1.10.0",
         "date": "Junio 2026",

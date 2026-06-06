@@ -5,6 +5,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.11.0] — 2026-06-06
+
+### Added
+
+- **App móvil — Ahorros**: nueva sección completa — lista de metas con barra de progreso, detalle con historial de movimientos, formulario de creación/edición con selector de ícono y color, y registro de depósitos/retiros desde diálogos rápidos. Acceso directo desde el dashboard junto a Compartidos y Categorías.
+- **API — Paginación**: se aplicó la clase de paginación configurable (`page_size` real) a `ExpenseViewSet`, `IncomeViewSet`, `RecurringExpenseViewSet`, `RecurringIncomeViewSet`, `HouseholdMemberViewSet`, `SharedExpenseViewSet` y `SavingViewSet`, extendiendo el fix aplicado a `CategoryViewSet` para evitar truncar resultados a 50 ítems en cualquier endpoint.
+
+---
+
 ## [1.10.0] — 2026-06-06
 
 ### Added

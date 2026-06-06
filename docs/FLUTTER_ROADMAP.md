@@ -172,18 +172,16 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 - [x] Eliminar subcategorías propias (protege las del sistema)
 
 ### 4.7 Savings
-- [ ] `savings_list_screen.dart`
-- [ ] `saving_detail_screen.dart` (con historial de movimientos)
-- [ ] `saving_form_screen.dart`
-- [ ] Widget `saving_card.dart` (con progress bar)
-- [ ] Widget `deposit_dialog.dart`
-- [ ] Widget `withdraw_dialog.dart`
+- [x] `savings_list_screen.dart` (cards con progreso, depósito/retiro/editar/eliminar)
+- [x] `saving_detail_screen.dart` (resumen + historial de movimientos)
+- [x] `saving_form_screen.dart` (crear/editar, selector de ícono y color)
+- [x] Card de meta con progress bar (`_SavingCard`, inline en la lista)
+- [x] Diálogos de depósito/retiro (`_showMovementDialog`, inline en la lista)
 
 ### 4.8 Recurring (Gastos Fijos)
-- [ ] `recurring_list_screen.dart` (con estados pagado/pendiente/vencido)
-- [ ] `recurring_form_screen.dart` (crear/editar)
-- [ ] Widget `recurring_tile.dart`
-- [ ] Action "Marcar como pagado" desde la lista
+- [x] `recurring_list_screen.dart` (con estados pagado/pendiente/vencido)
+- [x] `recurring_form_screen.dart` (crear/editar)
+- [x] Action "Marcar como pagado" desde la lista (menú contextual)
 
 ### 4.9 Settings
 - [x] `settings_screen.dart`
@@ -241,14 +239,7 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 ## FASE 7 — v2 Features
 **Estado:** ⏳ Pendiente
 
-### 7.1 Savings
-- [ ] `savings_list_screen.dart`
-- [ ] `saving_detail_screen.dart` (con historial de movimientos)
-- [ ] `saving_form_screen.dart`
-- [ ] Widget `saving_card.dart` (con progress bar)
-- [ ] Widget `deposit_dialog.dart` / `withdraw_dialog.dart`
-
-### 7.2 Mejoras pendientes (deuda técnica)
+### 7.1 Mejoras pendientes (deuda técnica)
 - [ ] DT-048 — ícono representativo de la app
 - [ ] DT-049 — deshacer "marcar pagado" en gastos fijos
 
@@ -292,8 +283,10 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-06-06 | Fase 4 | Categories: lista agrupada, crear grupos/subcategorías, eliminar propias |
 | 2026-06-06 | Fase 5 | Empty states con widget reutilizable en todas las pantallas |
 | 2026-06-06 | Fase 5 | Dashboard: balance tocable, recurrentes compactos con progreso, botones Compartidos y Categorías |
+| 2026-06-06 | Fase 4 | Recurring (Gastos Fijos): lista con estados pagado/pendiente/vencido, form crear/editar, acción "Marcar como pagado" — verificado completo, roadmap actualizado |
 | 2026-06-06 | Fix | AndroidManifest: permiso INTERNET agregado — APK release puede hacer requests de red |
 | 2026-06-06 | Fase 4 | Recurring (Gastos Fijos): lista, formulario, marcar pagado, editar, eliminar |
+| 2026-06-06 | Fase 4 | Savings: lista con cards de progreso, detalle con historial de movimientos, form con selector de ícono/color, depósito/retiro/editar/eliminar, acceso desde dashboard |
 | 2026-06-06 | Fase 5 | Tema claro/oscuro con persistencia en SharedPreferences |
 | 2026-06-06 | Fase 5 | Animaciones de transición: fade + slide en todas las rutas |
 | 2026-06-06 | Fase 5 | Skeleton loaders en dashboard |

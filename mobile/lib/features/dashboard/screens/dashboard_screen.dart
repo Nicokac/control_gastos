@@ -91,12 +91,10 @@ class _DashboardContent extends StatelessWidget {
         data['recent_transactions'] as Map<String, dynamic>? ?? {};
     final recentExpenses =
         recentTransactions['expenses'] as List<dynamic>? ?? [];
-    final recentIncome =
-        recentTransactions['income'] as List<dynamic>? ?? [];
+    final recentIncome = recentTransactions['income'] as List<dynamic>? ?? [];
     final expensesByCategory =
         data['expenses_by_category'] as List<dynamic>? ?? [];
-    final pendingRecurring =
-        data['pending_recurring'] as List<dynamic>? ?? [];
+    final pendingRecurring = data['pending_recurring'] as List<dynamic>? ?? [];
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -129,7 +127,8 @@ class _DashboardContent extends StatelessWidget {
                   side: const BorderSide(color: Color(0xFF0d6efd)),
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ),
@@ -144,7 +143,24 @@ class _DashboardContent extends StatelessWidget {
                   side: BorderSide(color: Colors.grey[400]!),
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () => context.push('/savings'),
+                icon: const Icon(Icons.savings_outlined, size: 16),
+                label: const Text('Ahorros'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF28a745),
+                  side: const BorderSide(color: Color(0xFF28a745)),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ),
@@ -154,17 +170,15 @@ class _DashboardContent extends StatelessWidget {
         if (pendingRecurring.isNotEmpty) ...[
           PendingRecurringCard(
             pending: pendingRecurring,
-            totalRecurring: (data['total_recurring'] as int?) ?? pendingRecurring.length,
+            totalRecurring:
+                (data['total_recurring'] as int?) ?? pendingRecurring.length,
             onViewAll: () => context.push('/recurring'),
           ),
           const SizedBox(height: 12),
         ],
         ExpenseChart(expensesByCategory: expensesByCategory),
         const SizedBox(height: 12),
-        RecentTransactionsList(
-          expenses: recentExpenses,
-          income: recentIncome,
-        ),
+        RecentTransactionsList(expenses: recentExpenses, income: recentIncome),
         const SizedBox(height: 16),
       ],
     );
@@ -202,8 +216,19 @@ class _MonthSelector extends StatelessWidget {
 
   String get _label {
     final months = [
-      '', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+      '',
+      'Enero',
+      'Febrero',
+      'Marzo',
+      'Abril',
+      'Mayo',
+      'Junio',
+      'Julio',
+      'Agosto',
+      'Septiembre',
+      'Octubre',
+      'Noviembre',
+      'Diciembre',
     ];
     return '${months[month]} $year';
   }
@@ -213,15 +238,12 @@ class _MonthSelector extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        IconButton(
-          icon: const Icon(Icons.chevron_left),
-          onPressed: _prev,
-        ),
+        IconButton(icon: const Icon(Icons.chevron_left), onPressed: _prev),
         Text(
           _label,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
         ),
         IconButton(
           icon: const Icon(Icons.chevron_right),
