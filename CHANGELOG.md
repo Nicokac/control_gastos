@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.12.0] — 2026-06-06
+
+### Added
+
+- **Sección "Acerca de"**: nueva sección con la versión de la app, el sitio web y los datos de contacto del desarrollador (Nicolás Kachuk). Disponible en la web (tarjeta en "Mi perfil") y en la app móvil (pantalla propia accesible desde Configuración).
+
+---
+
 ## [1.11.0] — 2026-06-06
 
 ### Added

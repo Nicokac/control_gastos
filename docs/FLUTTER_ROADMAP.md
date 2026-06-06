@@ -187,6 +187,11 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 - [x] `settings_screen.dart`
 - [x] Editar perfil, moneda default, día inicio mes, cerrar sesión
 
+### 4.10 Acerca de
+- [x] `about_screen.dart` — versión de la app, sitio web, desarrollador y contacto por email
+- [x] Acceso desde Settings (`ListTile` en sección "Información")
+- [x] Web: tarjeta "Acerca de" en `templates/users/profile.html` con la misma información
+
 ---
 
 ## FASE 5 — Polish y Release
@@ -294,3 +299,4 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-06-06 | Fase 5 | Dashboard: indicador "Actualizado hace X minutos" + confirmación al refrescar |
 | 2026-06-06 | Fase 5 | Formularios de gasto/ingreso rediseñados: monto destacado, íconos, secciones, color de categoría |
 | 2026-06-06 | Fix | API categorías: page_size ignorado truncaba el listado a 50 — agregada paginación configurable |
+| 2026-06-06 | Fase 4 | Acerca de: pantalla móvil propia (versión, sitio web, desarrollador, contacto) accesible desde Settings + tarjeta equivalente en "Mi perfil" en la web |

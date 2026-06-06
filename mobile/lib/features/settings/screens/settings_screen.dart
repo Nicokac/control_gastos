@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/providers/theme_provider.dart';
 
@@ -99,16 +100,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Center(
-                  child: SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2))),
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
             )
           else
             TextButton(
               onPressed: _submit,
-              child: const Text('Guardar',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Guardar',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
         ],
       ),
@@ -167,10 +172,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     labelText: 'Nombre de usuario',
                     border: OutlineInputBorder(),
                   ),
-                  validator: (v) =>
-                      (v == null || v.trim().isEmpty)
-                          ? 'El usuario no puede estar vacío'
-                          : null,
+                  validator: (v) => (v == null || v.trim().isEmpty)
+                      ? 'El usuario no puede estar vacío'
+                      : null,
                 ),
                 const SizedBox(height: 24),
 
@@ -186,9 +190,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   items: const [
                     DropdownMenuItem(
-                        value: 'ARS', child: Text('Peso Argentino')),
+                      value: 'ARS',
+                      child: Text('Peso Argentino'),
+                    ),
                     DropdownMenuItem(
-                        value: 'USD', child: Text('Dólar Estadounidense')),
+                      value: 'USD',
+                      child: Text('Dólar Estadounidense'),
+                    ),
                   ],
                   onChanged: (v) =>
                       setState(() => _defaultCurrency = v ?? 'ARS'),
@@ -203,27 +211,40 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     border: OutlineInputBorder(),
                   ),
                   items: List.generate(28, (i) => i + 1)
-                      .map((d) => DropdownMenuItem(
-                            value: d,
-                            child: Text('Día $d'),
-                          ))
+                      .map(
+                        (d) =>
+                            DropdownMenuItem(value: d, child: Text('Día $d')),
+                      )
                       .toList(),
-                  onChanged: (v) =>
-                      setState(() => _monthStartDay = v ?? 1),
+                  onChanged: (v) => setState(() => _monthStartDay = v ?? 1),
                 ),
                 const SizedBox(height: 24),
 
                 _SectionLabel('Apariencia'),
                 const SizedBox(height: 8),
                 _ThemeSelector(),
+                const SizedBox(height: 24),
+
+                _SectionLabel('Información'),
+                const SizedBox(height: 8),
+                Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.info_outline),
+                    title: const Text('Acerca de'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => context.push('/about'),
+                  ),
+                ),
                 const SizedBox(height: 32),
 
                 // Cerrar sesión
                 OutlinedButton.icon(
                   onPressed: _confirmLogout,
                   icon: const Icon(Icons.logout, color: Colors.red),
-                  label: const Text('Cerrar sesión',
-                      style: TextStyle(color: Colors.red)),
+                  label: const Text(
+                    'Cerrar sesión',
+                    style: TextStyle(color: Colors.red),
+                  ),
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Colors.red),
                     padding: const EdgeInsets.symmetric(vertical: 14),

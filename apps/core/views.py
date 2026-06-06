@@ -161,9 +161,18 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "1.11.0"
+APP_VERSION = "1.12.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.12.0",
+        "date": "Junio 2026",
+        "title": 'Nueva sección "Acerca de"',
+        "items": [
+            "Conocé la versión de la app, el sitio web y los datos de contacto del desarrollador",
+            "Disponible tanto en la versión web (Mi perfil) como en la app móvil (Configuración)",
+        ],
+    },
     {
         "version": "1.11.0",
         "date": "Junio 2026",
