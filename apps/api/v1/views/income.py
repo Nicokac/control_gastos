@@ -12,6 +12,9 @@ class IncomeViewSet(viewsets.ModelViewSet):
     pagination_class = ConfigurablePageNumberPagination
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return Income.objects.none()
+
         qs = (
             Income.objects.filter(user=self.request.user)
             .select_related("category", "category__parent")

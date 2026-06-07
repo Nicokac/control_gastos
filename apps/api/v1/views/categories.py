@@ -14,6 +14,9 @@ class CategoryViewSet(viewsets.ModelViewSet):
     pagination_class = ConfigurablePageNumberPagination
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return Category.objects.none()
+
         from django.db import models as db_models
 
         qs = (

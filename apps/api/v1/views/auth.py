@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -10,8 +11,10 @@ from apps.api.v1.serializers.auth import RegisterSerializer, UserProfileSerializ
 User = get_user_model()
 
 
+@extend_schema(tags=["auth"])
 class RegisterView(APIView):
     permission_classes = [AllowAny]
+    serializer_class = RegisterSerializer
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -24,8 +27,10 @@ class RegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@extend_schema(tags=["auth"])
 class MeView(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = UserProfileSerializer
 
     def get(self, request):
         serializer = UserProfileSerializer(request.user)

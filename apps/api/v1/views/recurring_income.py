@@ -16,6 +16,9 @@ class RecurringIncomeViewSet(viewsets.ModelViewSet):
     pagination_class = ConfigurablePageNumberPagination
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return RecurringIncome.objects.none()
+
         return (
             RecurringIncome.objects.filter(user=self.request.user)
             .select_related("category", "category__parent")

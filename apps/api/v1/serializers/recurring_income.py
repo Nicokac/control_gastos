@@ -36,15 +36,15 @@ class RecurringIncomeSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
-    def get_last_income_amount(self, obj):
+    def get_last_income_amount(self, obj) -> str | None:
         last = obj.last_income
         return str(last.amount_ars) if last else None
 
-    def get_last_income_date(self, obj):
+    def get_last_income_date(self, obj) -> str | None:
         last = obj.last_income
         return str(last.date) if last else None
 
-    def get_status(self, obj):
+    def get_status(self, obj) -> str:
         from django.utils import timezone
 
         today = timezone.localdate()

@@ -377,6 +377,9 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "API REST para la app mobile de Control de Gastos.",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    "ENUM_NAME_OVERRIDES": {
+        "CurrencyEnum": "apps.core.constants.Currency",
+    },
 }
 
 # =============================================================================

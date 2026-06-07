@@ -18,6 +18,8 @@ class SavingViewSet(viewsets.ModelViewSet):
     pagination_class = ConfigurablePageNumberPagination
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return Saving.objects.none()
         return Saving.objects.filter(user=self.request.user).order_by("-created_at")
 
     @action(detail=True, methods=["post"])

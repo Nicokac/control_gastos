@@ -3,6 +3,8 @@ from decimal import Decimal
 from django.db.models import Sum
 from django.utils import timezone
 
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -13,6 +15,7 @@ from apps.recurring.models import RecurringExpense
 from apps.savings.models import Saving, SavingStatus
 
 
+@extend_schema(tags=["dashboard"], responses={(200, "application/json"): OpenApiTypes.OBJECT})
 class DashboardView(APIView):
     permission_classes = [IsAuthenticated]
 

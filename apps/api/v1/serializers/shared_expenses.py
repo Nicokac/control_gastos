@@ -50,7 +50,7 @@ class SharedExpenseSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "amount_ars", "created_at"]
 
-    def get_paid_by_name(self, obj):
+    def get_paid_by_name(self, obj) -> str | None:
         return obj.paid_by.name if obj.paid_by else None
 
     def validate_category(self, category):

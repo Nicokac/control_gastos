@@ -15,6 +15,8 @@ class HouseholdMemberViewSet(viewsets.ModelViewSet):
     pagination_class = ConfigurablePageNumberPagination
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return HouseholdMember.objects.none()
         return HouseholdMember.objects.filter(user=self.request.user)
 
 
@@ -24,6 +26,9 @@ class SharedExpenseViewSet(viewsets.ModelViewSet):
     pagination_class = ConfigurablePageNumberPagination
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return SharedExpense.objects.none()
+
         qs = (
             SharedExpense.objects.filter(user=self.request.user)
             .select_related("category", "paid_by")

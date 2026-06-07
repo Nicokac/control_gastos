@@ -12,6 +12,9 @@ class ExpenseViewSet(viewsets.ModelViewSet):
     pagination_class = ConfigurablePageNumberPagination
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return Expense.objects.none()
+
         qs = (
             Expense.objects.filter(user=self.request.user)
             .select_related("category", "category__parent")
