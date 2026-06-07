@@ -14,6 +14,39 @@ class SharedExpenseListScreen extends ConsumerWidget {
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
   ];
 
+  Future<void> _goToNewExpense(BuildContext context, WidgetRef ref) async {
+    final members = await ref.read(householdMembersProvider.future);
+    if (!context.mounted) return;
+
+    if (members.isEmpty) {
+      await showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Sin miembros del hogar'),
+          content: const Text(
+            'Antes de registrar un gasto compartido necesitás agregar al menos una persona al hogar.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                context.push('/shared-expenses/members');
+              },
+              child: const Text('Agregar persona'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    context.push('/shared-expenses/new');
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final expensesAsync = ref.watch(sharedExpenseListProvider);
@@ -30,7 +63,7 @@ class SharedExpenseListScreen extends ConsumerWidget {
           ),
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => context.push('/shared-expenses/new'),
+            onPressed: () => _goToNewExpense(context, ref),
           ),
         ],
       ),
@@ -56,11 +89,12 @@ class SharedExpenseListScreen extends ConsumerWidget {
             expenses: expenses,
             notifier: notifier,
             months: _months,
+            onNew: () => _goToNewExpense(context, ref),
           ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/shared-expenses/new'),
+        onPressed: () => _goToNewExpense(context, ref),
         backgroundColor: const Color(0xFF0d6efd),
         child: const Icon(Icons.add),
       ),
@@ -72,11 +106,13 @@ class _SharedExpenseContent extends StatelessWidget {
   final List<dynamic> expenses;
   final SharedExpenseListNotifier notifier;
   final List<String> months;
+  final VoidCallback onNew;
 
   const _SharedExpenseContent({
     required this.expenses,
     required this.notifier,
     required this.months,
+    required this.onNew,
   });
 
   @override
@@ -113,7 +149,7 @@ class _SharedExpenseContent extends StatelessWidget {
                   title: 'Sin gastos compartidos este mes',
                   subtitle: 'Tocá + para registrar un gasto del hogar',
                   actionLabel: 'Nuevo gasto compartido',
-                  onAction: () => context.push('/shared-expenses/new'),
+                  onAction: onNew,
                   color: const Color(0xFF0d6efd),
                 )
               : ListView.separated(
