@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="control_gastos_app"
+        android:label="Control de Gastos"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

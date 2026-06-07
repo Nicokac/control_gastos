@@ -1,4 +1,4 @@
-package com.controlGastos.control_gastos_app
+package app.controlgastos
 
 import io.flutter.embedding.android.FlutterActivity
 
