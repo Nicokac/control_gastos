@@ -9,6 +9,7 @@ import '../widgets/recent_transactions_list.dart';
 import '../widgets/pending_recurring_card.dart';
 import '../widgets/dashboard_skeleton.dart';
 import '../widgets/last_updated_label.dart';
+import '../../../core/widgets/offline_banner.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -34,7 +35,11 @@ class DashboardScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: dashboardAsync.when(
+      body: Column(
+        children: [
+          const OfflineBanner(),
+          Expanded(
+            child: dashboardAsync.when(
         loading: () => const DashboardSkeleton(),
         error: (e, _) => Center(
           child: Column(
@@ -74,6 +79,9 @@ class DashboardScreen extends ConsumerWidget {
           },
           child: _DashboardContent(data: data, notifier: notifier),
         ),
+      ),
+          ),
+        ],
       ),
     );
   }
