@@ -48,6 +48,9 @@ backups/
 # Agent instructions (local only)
 CLAUDE.md
 
+# Documentos privados de negocio
+docs/MONETIZACION.md
+
 # Flutter mobile app (versionado en su propio repo o ignorado)
 mobile/build/
 mobile/.dart_tool/

@@ -749,6 +749,31 @@ Al marcar un gasto fijo como pagado desde la app mobile, se crea un `Expense` vi
 
 **Resolución:** se agregó `POST /api/v1/recurring/{id}/unmark-paid/` en `RecurringExpenseViewSet`. Elimina el `Expense` del mes actual vinculado al recurrente y reactiva el recurrente si se había desactivado por completar la última cuota. La opción "Revertir pago" aparece en el menú contextual de la app mobile solo cuando el estado es `paid`.
 
+### DT-050 — Integración Cafecito (donaciones)
+
+**Estado:** ✅ Resuelto (v1.13.0)
+
+La app no tiene ningún mecanismo para que los usuarios apoyen económicamente el proyecto. Cafecito.app es la plataforma de donaciones más usada en Argentina y es apropiada como primer paso antes de implementar un modelo de suscripción completo.
+
+**Why:** se quiere validar la disposición a pagar de los usuarios antes de invertir en la infraestructura de pagos recurrentes (Stripe + modelo freemium). Cafecito es cero fricción técnica y permite recibir apoyo voluntario de forma inmediata.
+
+**Resolución:** botón "Invitame un café" agregado en el sidebar web (pie), en la tarjeta "Acerca de" del perfil web, y en la pantalla "Acerca de" de la app móvil. URL: [cafecito.app/niicok](https://cafecito.app/niicok)
+
+### DT-051 — Modelo de suscripción freemium
+
+**Estado:** ⏳ Pendiente
+
+La app no tiene diferenciación entre usuarios gratuitos y de pago. Todo el contenido es accesible para todos los usuarios registrados. No hay modelo de ingresos recurrentes implementado.
+
+**Why:** el proyecto apunta a generar ingresos pasivos como SaaS. El modelo freemium está definido en `docs/MONETIZACION.md` pero no está implementado técnicamente.
+
+**Camino de resolución (ver MONETIZACION.md para detalle completo):**
+1. Fase M-1: definir features Free vs Premium, diseñar modales de upgrade, registrar cuenta Stripe
+2. Fase M-2: modelo `Subscription` en Django + integración Stripe + guards en API
+3. Fase M-3: página de precios y billing en web
+4. Fase M-4: paywall en Flutter + RevenueCat
+5. Fase M-5: trial 14 días + lanzamiento
+
 ---
 
 ## D-015 — Deudas técnicas descartadas

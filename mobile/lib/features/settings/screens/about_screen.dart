@@ -13,6 +13,11 @@ class AboutScreen extends StatelessWidget {
   Future<void> _sendEmail() =>
       launchUrl(Uri(scheme: 'mailto', path: ApiConstants.developerEmail));
 
+  Future<void> _openCafecito() => launchUrl(
+    Uri.parse(ApiConstants.cafesitoUrl),
+    mode: LaunchMode.externalApplication,
+  );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,6 +82,16 @@ class AboutScreen extends StatelessWidget {
                   onTap: _sendEmail,
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            onPressed: _openCafecito,
+            icon: const Icon(Icons.coffee_outlined),
+            label: const Text('Invitame un café'),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFFF5C00),
+              minimumSize: const Size(double.infinity, 48),
             ),
           ),
         ],

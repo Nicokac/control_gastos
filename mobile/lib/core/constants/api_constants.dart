@@ -8,6 +8,7 @@ class ApiConstants {
   static const String websiteUrl = 'https://control-gastos-fr8z.onrender.com';
   static const String developerName = 'Nicolás Kachuk';
   static const String developerEmail = 'kachuknm@gmail.com';
+  static const String cafesitoUrl = 'https://cafecito.app/niicok';
 
   static const String tokenObtain = '/auth/token/';
   static const String tokenRefresh = '/auth/token/refresh/';
