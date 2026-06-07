@@ -95,6 +95,7 @@ class _DashboardContent extends StatelessWidget {
     final expensesByCategory =
         data['expenses_by_category'] as List<dynamic>? ?? [];
     final pendingRecurring = data['pending_recurring'] as List<dynamic>? ?? [];
+    final totalRecurring = (data['total_recurring'] as int?) ?? 0;
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -187,11 +188,10 @@ class _DashboardContent extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 12),
-        if (pendingRecurring.isNotEmpty) ...[
+        if (totalRecurring > 0) ...[
           PendingRecurringCard(
             pending: pendingRecurring,
-            totalRecurring:
-                (data['total_recurring'] as int?) ?? pendingRecurring.length,
+            totalRecurring: totalRecurring,
             onViewAll: () => context.push('/recurring'),
           ),
           const SizedBox(height: 12),

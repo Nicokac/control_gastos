@@ -15,11 +15,10 @@ class PendingRecurringCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (pending.isEmpty) return const SizedBox.shrink();
-
     final overdueCount = pending.where((r) => r['status'] == 'overdue').length;
     final pendingCount = pending.where((r) => r['status'] == 'pending').length;
     final paid = totalRecurring - pending.length;
+    final allPaid = pending.isEmpty;
 
     return Card(
       elevation: 2,
@@ -30,8 +29,11 @@ class PendingRecurringCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.warning_amber_rounded,
-                    color: Colors.orange, size: 20),
+                Icon(
+                  allPaid ? Icons.check_circle_outline : Icons.warning_amber_rounded,
+                  color: allPaid ? Colors.green[600] : Colors.orange,
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
