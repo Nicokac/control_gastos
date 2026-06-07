@@ -149,26 +149,6 @@ class _DashboardContent extends StatelessWidget {
                 ),
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () => context.push('/recurring'),
-                icon: const Icon(Icons.repeat, size: 16),
-                label: const Text('Gastos Fijos'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.orange[700],
-                  side: BorderSide(color: Colors.orange[700]!),
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ),
             const SizedBox(width: 8),
             Expanded(
               child: OutlinedButton.icon(
