@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/repositories/auth_repository.dart';
 
@@ -29,16 +30,18 @@ class AuthNotifier extends AsyncNotifier<Map<String, dynamic>?> {
       return null;
     } catch (e) {
       state = const AsyncData(null);
-      final msg = e.toString();
-      if (msg.contains('400') || msg.contains('401')) {
-        return 'Email o contraseña incorrectos';
-      } else if (msg.contains('SocketException') ||
-          msg.contains('connection') ||
-          msg.contains('timeout') ||
-          msg.contains('timed out')) {
-        return 'No se pudo conectar al servidor. Intentá de nuevo en unos segundos.';
+      if (e is DioException) {
+        final status = e.response?.statusCode;
+        if (status == 400 || status == 401) {
+          return 'Email o contraseña incorrectos';
+        }
+        if (e.type == DioExceptionType.connectionTimeout ||
+            e.type == DioExceptionType.receiveTimeout ||
+            e.type == DioExceptionType.connectionError) {
+          return 'No se pudo conectar al servidor. Intentá de nuevo en unos segundos.';
+        }
       }
-      return 'Error inesperado: $msg';
+      return 'Error inesperado: $e';
     }
   }
 
