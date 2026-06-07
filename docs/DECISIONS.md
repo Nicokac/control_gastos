@@ -731,13 +731,13 @@ Inactivos ocultos por defecto. Cuando existen, aparece el botón "Mostrar inacti
 
 ### DT-048 — Ícono representativo de la app
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.12.0)
 
 La app web usa el ícono genérico de Bootstrap Icons (`bi-wallet2`) y no tiene favicon personalizado. La app mobile usa `Icons.account_balance_wallet` de Material Design en la pantalla de login. Ninguna de las dos tiene un ícono propio que identifique la marca.
 
 **Why:** se detectó al desarrollar la app mobile que la identidad visual carece de un ícono propio. El ícono del sistema es funcional pero no diferencia la app.
 
-**Camino de resolución:** diseñar o elegir un ícono SVG representativo, usarlo como favicon en la web (`staticfiles/`), reemplazar el ícono en la pantalla de login de la web y en la pantalla de login de Flutter, y generarlo en los tamaños necesarios para el launcher de Android/iOS (`flutter_launcher_icons`).
+**Resolución:** se diseñó un ícono personalizado (billetera azul con íconos de casa, personas, dinero y tendencia alcista). Se configuró `flutter_launcher_icons` en `pubspec.yaml` y se generaron todos los tamaños para Android (mdpi→xxxhdpi + adaptive icon API 26+) e iOS. Ícono fuente en `assets/icons/app_icon.png`.
 
 ### DT-049 — Mobile: deshacer "marcar pagado" en gastos fijos
 
