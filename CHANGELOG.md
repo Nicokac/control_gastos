@@ -5,6 +5,24 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.13.0] — 2026-06-07
+
+### Added
+
+- **App móvil — Soporte offline**: el dashboard y los gastos sirven datos cacheados cuando no hay conexión. Un banner visible indica al usuario que está viendo datos guardados.
+- **App móvil — Testing**: suite de 51 tests — unit tests de providers (auth, dashboard, expenses, recurring) y widget tests (BalanceCard, EmptyState, PendingRecurringCard, DashboardSkeleton, LoginScreen).
+
+### Fixed
+
+- **App móvil — Gastos Fijos**: la card del dashboard ahora se muestra siempre, con ícono verde cuando todos los gastos están pagados y naranja cuando hay pendientes o vencidos.
+- **App móvil — Gastos Compartidos**: se verifica que existan miembros del hogar antes de permitir crear un gasto compartido.
+
+### Chore
+
+- **App móvil — Release**: application ID `app.controlgastos`, nombre "Control de Gastos", versión `1.12.0+1`, keystore configurado, App Bundle generado listo para Play Store.
+
+---
+
 ## [1.12.0] — 2026-06-06
 
 ### Added

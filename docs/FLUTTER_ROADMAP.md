@@ -206,14 +206,15 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 - [x] Dashboard optimizado: balance card con totales tocables, recurrentes compactos con progreso, accesos directos a Compartidos y Categorías
 
 ### 5.2 Offline Support
-- [ ] Cache local con Hive
-- [ ] Sincronización al reconectar
-- [ ] Indicador visual de modo offline
+- [x] Cache local con shared_preferences (dashboard y gastos)
+- [ ] Sincronización automática al reconectar (diferido)
+- [x] Indicador visual de modo offline (OfflineBanner en dashboard)
 
 ### 5.3 Build & Release
-- [ ] `flutter build apk --release`
-- [ ] `flutter build appbundle --release`
-- [ ] Android: Google Play Console
+- [x] `flutter build appbundle --release` — app-release.aab generado (54 MB)
+- [x] Application ID: `app.controlgastos`, nombre: "Control de Gastos", versión: 1.12.0+1
+- [x] Keystore de firma configurado
+- [ ] Android: Google Play Console — cuenta creada, verificación de identidad pendiente
 
 ---
 
@@ -297,3 +298,8 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-06-06 | Fase 5 | Formularios de gasto/ingreso rediseñados: monto destacado, íconos, secciones, color de categoría |
 | 2026-06-06 | Fix | API categorías: page_size ignorado truncaba el listado a 50 — agregada paginación configurable |
 | 2026-06-06 | Fase 4 | Acerca de: pantalla móvil propia (versión, sitio web, desarrollador, contacto) accesible desde Settings + tarjeta equivalente en "Mi perfil" en la web |
+| 2026-06-07 | Fix | Dashboard: card de gastos fijos siempre visible — ícono verde cuando todos pagados, naranja cuando hay pendientes |
+| 2026-06-07 | Fix | Gastos compartidos: chequeo de miembros del hogar antes de permitir nuevo gasto |
+| 2026-06-07 | Fase 5 | Offline support: cache local en dashboard y gastos, banner visual cuando no hay conexión |
+| 2026-06-07 | Fase 5 | Build & Release: application ID app.controlgastos, keystore configurado, appbundle generado |
+| 2026-06-07 | Fase 6 | Testing completo: 51 tests pasando — 4 unit providers + 5 widget tests |
