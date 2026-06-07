@@ -50,12 +50,24 @@ CustomTransitionPage<T> _buildPage<T>({
   );
 }
 
+// Listenable que notifica al router cuando cambia el estado de auth,
+// sin recrear el GoRouter en cada cambio.
+class _AuthNotifier extends ChangeNotifier {
+  _AuthNotifier(this._ref) {
+    _ref.listen(authProvider, (_, _) => notifyListeners());
+  }
+
+  final Ref _ref;
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
+  final authNotifier = _AuthNotifier(ref);
 
   return GoRouter(
     initialLocation: '/splash',
+    refreshListenable: authNotifier,
     redirect: (context, state) {
+      final authState = ref.read(authProvider);
       if (authState.isLoading) return null;
 
       final isLoggedIn = authState.valueOrNull != null;

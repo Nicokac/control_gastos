@@ -8,7 +8,7 @@ class App extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final router = ref.watch(routerProvider);
+    final router = ref.read(routerProvider);
     final themeMode = ref.watch(themeProvider);
 
     return MaterialApp.router(
