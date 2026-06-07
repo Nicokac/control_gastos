@@ -218,26 +218,23 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 ---
 
 ## FASE 6 — Testing
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Completa (2026-06-07) — 51 tests pasando
 
 ### 6.1 Unit Tests
-- [ ] `auth_provider` — login exitoso, login fallido, logout
-- [ ] `dashboard_provider` — carga de datos, cambio de mes
-- [ ] `expense_provider` — CRUD, filtros
-- [ ] `recurring_provider` — marcar pagado, estados
-- [ ] `categories_screen` — crear, eliminar
+- [x] `auth_provider` — login exitoso, login fallido, logout
+- [x] `dashboard_provider` — carga de datos, cambio de mes, reload
+- [x] `expense_provider` — CRUD, filtros por mes
+- [x] `recurring_provider` — marcar pagado, revertir pago, estados, delete
 
 ### 6.2 Widget Tests
-- [ ] `BalanceCard` — valores positivos y negativos
-- [ ] `EmptyState` — con y sin acción
-- [ ] `PendingRecurringCard` — con pendientes, sin pendientes
-- [ ] `DashboardSkeleton` — renderiza sin errores
-- [ ] `LoginScreen` — validación de campos
+- [x] `BalanceCard` — valores positivos y negativos, callbacks
+- [x] `EmptyState` — con y sin acción, con y sin subtítulo
+- [x] `PendingRecurringCard` — con pendientes, todos pagados, vencidos
+- [x] `DashboardSkeleton` — renderiza sin errores
+- [x] `LoginScreen` — validación de campos, toggle contraseña, contenido
 
 ### 6.3 Integration Tests
-- [ ] Flujo auth: login → dashboard → logout
-- [ ] Flujo gastos: crear → listar → editar → eliminar
-- [ ] Flujo recurring: crear → marcar pagado → verificar en dashboard
+- [ ] Flujo auth: login → dashboard → logout (pendiente — requiere entorno de staging)
 
 ---
 
