@@ -78,10 +78,25 @@ class CustomLoginView(LoginView):
 
     def form_invalid(self, form):
         """Login fallido."""
-        # Obtener username del intento fallido
         username = form.cleaned_data.get("username", "unknown")
-
         log_login_attempt(username=username, ip_address=get_client_ip(self.request), success=False)
+
+        from django.conf import settings
+
+        from axes.models import AccessFailureLog
+
+        failure_limit = getattr(settings, "AXES_FAILURE_LIMIT", 5)
+        failures = AccessFailureLog.objects.filter(username=username).count()
+        remaining = max(0, failure_limit - failures)
+
+        if failures >= 2 and remaining > 0:
+            form.errors["__all__"] = form.error_class(
+                [
+                    f"Credenciales incorrectas. Te quedan {remaining} intento{'s' if remaining != 1 else ''} antes de que se bloquee tu cuenta."
+                ]
+            )
+        elif remaining == 0:
+            pass  # Axes ya maneja la redirección al template de bloqueo
 
         return super().form_invalid(form)
 

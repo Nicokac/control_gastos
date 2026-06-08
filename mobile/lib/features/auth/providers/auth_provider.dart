@@ -12,6 +12,9 @@ final isLoggedInProvider = FutureProvider<bool>((ref) async {
 });
 
 class AuthNotifier extends AsyncNotifier<Map<String, dynamic>?> {
+  static const int _failureLimit = 5;
+  int _failureCount = 0;
+
   @override
   Future<Map<String, dynamic>?> build() async {
     final repo = ref.read(authRepositoryProvider);
@@ -25,6 +28,7 @@ class AuthNotifier extends AsyncNotifier<Map<String, dynamic>?> {
     try {
       final repo = ref.read(authRepositoryProvider);
       await repo.login(email: email, password: password);
+      _failureCount = 0;
       final profile = await repo.getProfile();
       state = AsyncData(profile);
       return null;
@@ -32,7 +36,16 @@ class AuthNotifier extends AsyncNotifier<Map<String, dynamic>?> {
       state = const AsyncData(null);
       if (e is DioException) {
         final status = e.response?.statusCode;
+        if (status == 429) {
+          _failureCount = _failureLimit;
+          return 'Tu cuenta fue bloqueada temporalmente por demasiados intentos fallidos. Intentá de nuevo en 1 hora.';
+        }
         if (status == 400 || status == 401) {
+          _failureCount++;
+          final remaining = _failureLimit - _failureCount;
+          if (_failureCount >= 2 && remaining > 0) {
+            return 'Email o contraseña incorrectos. Te quedan $remaining intento${remaining != 1 ? 's' : ''} antes de que se bloquee tu cuenta.';
+          }
           return 'Email o contraseña incorrectos';
         }
         if (e.type == DioExceptionType.connectionTimeout ||
