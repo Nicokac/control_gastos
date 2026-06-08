@@ -38,6 +38,8 @@ class RecurringExpenseViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        from decimal import ROUND_HALF_UP, Decimal
+
         amount = request.data.get("amount")
         if not amount:
             last = rec.last_expense
@@ -47,6 +49,7 @@ class RecurringExpenseViewSet(viewsets.ModelViewSet):
                 {"detail": "Indicá el monto del pago."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        amount = Decimal(str(amount)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
         expense = Expense.objects.create(
             user=request.user,

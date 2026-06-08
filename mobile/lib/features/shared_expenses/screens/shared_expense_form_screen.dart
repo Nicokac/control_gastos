@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/shared_expense_provider.dart';
+import '../../../core/utils/formatters.dart';
 
 class SharedExpenseFormScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic>? existing;
@@ -151,7 +152,7 @@ class _SharedExpenseFormScreenState
     setState(() => _loading = true);
 
     final data = <String, dynamic>{
-      'amount': double.parse(_amountCtrl.text.replaceAll(',', '.')),
+      'amount': parseArgentineAmount(_amountCtrl.text) ?? 0.0,
       'currency': _currency,
       'date': _date.toIso8601String().substring(0, 10),
       'description': _descCtrl.text.trim(),
@@ -220,7 +221,7 @@ class _SharedExpenseFormScreenState
               ),
               validator: (v) {
                 if (v == null || v.isEmpty) return 'Ingresá el monto';
-                if (double.tryParse(v.replaceAll(',', '.')) == null) {
+                if (parseArgentineAmount(v) == null) {
                   return 'Monto inválido';
                 }
                 return null;

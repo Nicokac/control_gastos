@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/income_provider.dart';
+import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/section_label.dart';
 
 class IncomeFormScreen extends ConsumerStatefulWidget {
@@ -141,7 +142,7 @@ class _IncomeFormScreenState extends ConsumerState<IncomeFormScreen> {
     setState(() => _loading = true);
 
     final data = {
-      'amount': double.parse(_amountCtrl.text.replaceAll(',', '.')),
+      'amount': parseArgentineAmount(_amountCtrl.text) ?? 0.0,
       'currency': _currency,
       'date': _date.toIso8601String().substring(0, 10),
       'description': _descCtrl.text.trim(),
@@ -196,7 +197,7 @@ class _IncomeFormScreenState extends ConsumerState<IncomeFormScreen> {
               ),
               validator: (v) {
                 if (v == null || v.isEmpty) return 'Ingresá el monto';
-                if (double.tryParse(v.replaceAll(',', '.')) == null) {
+                if (parseArgentineAmount(v) == null) {
                   return 'Monto inválido';
                 }
                 return null;

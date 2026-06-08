@@ -198,8 +198,7 @@ class _RecurringTile extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
-                final v = double.tryParse(
-                    ctrl.text.replaceAll(',', '.'));
+                final v = parseArgentineAmount(ctrl.text);
                 if (v != null) Navigator.pop(ctx, v);
               },
               child: const Text('Confirmar'),

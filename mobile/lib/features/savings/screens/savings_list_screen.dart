@@ -149,7 +149,7 @@ class _SavingCard extends StatelessWidget {
                 ),
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'Ingresá el monto';
-                  final parsed = double.tryParse(v.replaceAll(',', '.'));
+                  final parsed = parseArgentineAmount(v);
                   if (parsed == null || parsed <= 0) return 'Monto inválido';
                   return null;
                 },
@@ -183,7 +183,7 @@ class _SavingCard extends StatelessWidget {
 
     if (result != true) return;
 
-    final amount = double.parse(amountCtrl.text.replaceAll(',', '.'));
+    final amount = parseArgentineAmount(amountCtrl.text) ?? 0.0;
     final description = descCtrl.text.trim();
     final id = item['id'] as int;
 

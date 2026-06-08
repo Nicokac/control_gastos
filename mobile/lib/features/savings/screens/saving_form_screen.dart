@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/savings_provider.dart';
 import 'savings_list_screen.dart';
+import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/section_label.dart';
 
 const _iconChoices = [
@@ -80,7 +81,7 @@ class _SavingFormScreenState extends ConsumerState<SavingFormScreen> {
 
     final data = <String, dynamic>{
       'name': _nameCtrl.text.trim(),
-      'target_amount': double.parse(_targetCtrl.text.replaceAll(',', '.')),
+      'target_amount': parseArgentineAmount(_targetCtrl.text) ?? 0.0,
       'currency': _currency,
       'icon': _icon,
       'color': _color,
@@ -150,7 +151,7 @@ class _SavingFormScreenState extends ConsumerState<SavingFormScreen> {
               ),
               validator: (v) {
                 if (v == null || v.isEmpty) return 'Ingresá el monto objetivo';
-                final parsed = double.tryParse(v.replaceAll(',', '.'));
+                final parsed = parseArgentineAmount(v);
                 if (parsed == null || parsed <= 0) return 'Monto inválido';
                 return null;
               },
