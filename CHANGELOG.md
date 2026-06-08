@@ -5,6 +5,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.13.2] — 2026-06-08
+
+### Changed
+
+- **Web — Sidebar**: se eliminó el ítem "Novedades" del sidebar y se movió a la sección de "Mi Perfil" como card independiente.
+
+### Fixed
+
+- **Web — Favicon**: la pestaña del browser ahora muestra el ícono de la app en lugar del ícono genérico del browser.
+
+---
+
 ## [1.13.1] — 2026-06-08
 
 ### Fixed

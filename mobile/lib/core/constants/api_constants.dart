@@ -4,7 +4,7 @@ class ApiConstants {
     defaultValue: 'https://control-gastos-fr8z.onrender.com/api/v1',
   );
 
-  static const String appVersion = '1.12.0';
+  static const String appVersion = '1.13.0';
   static const String websiteUrl = 'https://control-gastos-fr8z.onrender.com';
   static const String developerName = 'Nicolás Kachuk';
   static const String developerEmail = 'kachuknm@gmail.com';
