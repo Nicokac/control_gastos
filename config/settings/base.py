@@ -204,7 +204,7 @@ AXES_COOLOFF_TIME = 1  # 1 hora
 # 'ip_address' = solo IP
 # 'username' = solo usuario
 # 'ip_address,username' = combinación (más seguro)
-AXES_LOCKOUT_PARAMETERS = ["ip_address", "username"]
+AXES_LOCKOUT_PARAMETERS = ["username"]
 
 # Reset de intentos después de login exitoso
 AXES_RESET_ON_SUCCESS = True
