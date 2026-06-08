@@ -242,6 +242,10 @@ AXES_IPWARE_META_PRECEDENCE_ORDER = (
     "REMOTE_ADDR",
 )
 
+# W006: bloqueo solo por username es intencional — Render proxy hace que todas las
+# IPs lleguen como 127.0.0.1, bloqueando a todos los usuarios si se incluye ip_address.
+SILENCED_SYSTEM_CHECKS = ["axes.W006"]
+
 # Logging de intentos
 AXES_VERBOSE = True
 
