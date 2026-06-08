@@ -5,6 +5,21 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.13.1] — 2026-06-08
+
+### Fixed
+
+- **CI**: resueltos 18 warnings de `drf_spectacular` que rompían el check `--deploy` — type hints en serializers, guard `swagger_fake_view` en ViewSets, `@extend_schema` en APIViews, `ENUM_NAME_OVERRIDES` para `Currency`.
+- **App móvil — Login**: pantalla negra al ingresar credenciales incorrectas — el router ahora usa `refreshListenable` en lugar de recrear el `GoRouter` en cada cambio de estado de auth.
+- **App móvil — Login**: detección de errores 401/429 mejorada — se chequea `DioException.response.statusCode` directamente en lugar de parsear strings.
+- **Auth — Axes**: bloqueo cambiado de `[ip_address, username]` a solo `[username]` para evitar que el proxy de Render (que pasa todas las IPs como `127.0.0.1`) bloquee a todos los usuarios al mismo tiempo.
+
+### Added
+
+- **Auth**: aviso de intentos restantes antes del bloqueo — a partir del segundo intento fallido se muestra cuántos intentos quedan antes de que la cuenta se bloquee, tanto en la web como en la app móvil.
+
+---
+
 ## [1.13.0] — 2026-06-07
 
 ### Added
