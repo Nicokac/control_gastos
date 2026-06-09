@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.13.3] — 2026-06-08
+
+### Fixed
+
+- **CI — Django Checks**: silenciado el warning `axes.W006` en producción. El bloqueo por username sin IP es intencional en Render (el proxy envía `127.0.0.1` para todos los usuarios). El check `--fail-level WARNING` lo trataba como error y rompía el pipeline.
+
+---
+
 ## [1.13.2] — 2026-06-08
 
 ### Changed
