@@ -22,6 +22,31 @@ from django.core.cache import cache
 from django.http import HttpResponse
 from django.urls import include, path
 
+SITE_URL = "https://control-gastos-fr8z.onrender.com"
+
+
+def robots_txt(request):
+    lines = [
+        "User-agent: *",
+        "Allow: /$",
+        "Allow: /terms/",
+        "Allow: /privacy/",
+        "Disallow: /",
+        f"Sitemap: {SITE_URL}/sitemap.xml",
+    ]
+    return HttpResponse("\n".join(lines), content_type="text/plain")
+
+
+def sitemap_xml(request):
+    content = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>{SITE_URL}/</loc><changefreq>monthly</changefreq><priority>1.0</priority></url>
+  <url><loc>{SITE_URL}/terms/</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>{SITE_URL}/privacy/</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+</urlset>"""
+    return HttpResponse(content, content_type="application/xml")
+
+
 _HEALTHZ_LIMIT = 30  # máx requests por IP en la ventana
 _HEALTHZ_WINDOW = 60  # segundos
 
@@ -56,6 +81,8 @@ urlpatterns = [
     path("api/v1/", include("apps.api.v1.urls")),
     # Apps
     path("healthz/", healthz),
+    path("robots.txt", robots_txt),
+    path("sitemap.xml", sitemap_xml),
     path("users/", include("apps.users.urls")),
     path("categories/", include("apps.categories.urls")),
     path("expenses/", include("apps.expenses.urls")),

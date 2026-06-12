@@ -5,6 +5,18 @@
 
 {% block title %}Control de Gastos — Organizá tus finanzas personales{% endblock %}
 
+{% block extra_head %}
+<meta name="description" content="Registrá tus gastos, ingresos y metas de ahorro en un solo lugar. Gratis, sin publicidad y con app móvil incluida.">
+<meta property="og:title" content="Control de Gastos — Organizá tus finanzas personales">
+<meta property="og:description" content="Registrá tus gastos, ingresos y metas de ahorro en un solo lugar. Gratis, sin publicidad y con app móvil incluida.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://control-gastos-fr8z.onrender.com">
+<meta property="og:image" content="{% static 'img/icon/favicon-192.png' %}">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Control de Gastos — Organizá tus finanzas personales">
+<meta name="twitter:description" content="Registrá tus gastos, ingresos y metas de ahorro en un solo lugar. Gratis, sin publicidad y con app móvil incluida.">
+{% endblock %}
+
 {% block extra_css %}
 <style>
     .landing-hero {
@@ -197,7 +209,7 @@
                 </div>
                 <h3 class="fw-bold mb-3">Tu panorama financiero de un vistazo</h3>
                 <p class="text-muted mb-3">
-                    Vé tu balance del mes, cuánto gastaste vs. cuánto ingresaste, y si estás en camino a cerrar el mes en positivo.
+                    Ve tu balance del mes, cuánto gastaste vs. cuánto ingresaste, y si estás en camino a cerrar el mes en positivo.
                 </p>
                 <ul class="list-unstyled text-muted">
                     <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i>Barra de progreso de gastos vs. ingresos</li>
@@ -231,7 +243,7 @@
                 </div>
                 <h3 class="fw-bold mb-3">Cada peso registrado, cada categoría visible</h3>
                 <p class="text-muted mb-3">
-                    Registrá gastos con categoría, método de pago y tipo. Filtrá por mes, buscá por descripción y exportá a CSV.
+                    Registrá gastos con categoría, método de pago y tipo. Filtrá por mes, buscá por descripción y exportá a Excel.
                 </p>
                 <ul class="list-unstyled text-muted">
                     <li class="mb-2"><i class="bi bi-check-circle-fill text-danger me-2"></i>Donut de distribución por categoría</li>
@@ -296,7 +308,7 @@
                 <div class="showcase-badge bg-info bg-opacity-10 text-info">
                     <i class="bi bi-arrow-repeat"></i> Gastos fijos
                 </div>
-                <h3 class="fw-bold mb-3">Nunca más olvidés un vencimiento</h3>
+                <h3 class="fw-bold mb-3">Nunca más olvides un vencimiento</h3>
                 <p class="text-muted mb-3">
                     Registrá servicios, impuestos y cuotas. La app te muestra cuáles pagaste este mes y cuáles están vencidos.
                 </p>
