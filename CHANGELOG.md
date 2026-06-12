@@ -5,6 +5,17 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.13.4] — 2026-06-12
+
+### Fixed
+
+- **Web — Performance**: favicon reducido de 632 KB a 1.5 KB (versión 32×32 px). Se agrega además `apple-touch-icon` de 192×192 px para pantallas de inicio en móvil.
+- **Web — SEO**: agregados `meta description`, Open Graph y Twitter Cards en la landing. Creados `/robots.txt` y `/sitemap.xml` para que Google sepa qué indexar.
+- **Web — UX**: páginas de error `404` y `500` personalizadas en español con diseño de la app y link para volver.
+- **Web — Contenido**: corregidos errores ortográficos en la landing — "Vé" → "Ve", "olvidés" → "olvides", "CSV" → "Excel".
+
+---
+
 ## [1.13.3] — 2026-06-08
 
 ### Fixed
