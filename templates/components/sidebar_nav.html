@@ -2,7 +2,7 @@
   <li class="nav-item">
     <a class="nav-link sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
        href="{% url 'reports:dashboard' %}"
-       id="tour-nav-dashboard"
+       {% if not nav_prefix %}id="tour-nav-dashboard"{% endif %}
        title="Dashboard">
       <i class="bi bi-speedometer2" aria-hidden="true"></i>
       <span>Dashboard</span>
@@ -23,7 +23,7 @@
   <li class="nav-item">
     <a href="{% url 'expenses:list' %}"
        class="nav-link sidebar-link {% if 'expenses' in request.path %}active{% endif %}"
-       id="tour-nav-expenses"
+       {% if not nav_prefix %}id="tour-nav-expenses"{% endif %}
        title="Gastos">
       <i class="bi bi-arrow-up-circle text-danger" aria-hidden="true"></i>
       <span>Gastos</span>
@@ -32,7 +32,7 @@
   <li class="nav-item">
     <a href="{% url 'income:list' %}"
        class="nav-link sidebar-link {% if 'income' in request.path %}active{% endif %}"
-       id="tour-nav-income"
+       {% if not nav_prefix %}id="tour-nav-income"{% endif %}
        title="Ingresos">
       <i class="bi bi-arrow-down-circle text-success" aria-hidden="true"></i>
       <span>Ingresos</span>
@@ -45,7 +45,7 @@
   <li class="nav-item">
     <a href="{% url 'savings:list' %}"
        class="nav-link sidebar-link {% if 'savings' in request.path %}active{% endif %}"
-       id="tour-nav-savings"
+       {% if not nav_prefix %}id="tour-nav-savings"{% endif %}
        title="Ahorro">
       <i class="bi bi-piggy-bank text-info" aria-hidden="true"></i>
       <span>Ahorro</span>
@@ -54,7 +54,7 @@
   <li class="nav-item">
     <a href="{% url 'recurring:list' %}"
        class="nav-link sidebar-link {% if 'recurring' in request.path and 'recurring-income' not in request.path %}active{% endif %}"
-       id="tour-nav-recurring"
+       {% if not nav_prefix %}id="tour-nav-recurring"{% endif %}
        title="Gastos Fijos">
       <i class="bi bi-arrow-repeat text-primary" aria-hidden="true"></i>
       <span>Gastos Fijos</span>
@@ -79,7 +79,7 @@
   <li class="nav-item">
     <a href="{% url 'categories:list' %}"
        class="nav-link sidebar-link {% if 'categories' in request.path %}active{% endif %}"
-       id="tour-nav-categories"
+       {% if not nav_prefix %}id="tour-nav-categories"{% endif %}
        title="Categorías">
       <i class="bi bi-tags" aria-hidden="true"></i>
       <span>Categorías</span>

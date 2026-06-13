@@ -6,12 +6,13 @@
 {% block title %}Control de Gastos — Organizá tus finanzas personales{% endblock %}
 
 {% block extra_head %}
+<link rel="canonical" href="https://control-gastos-fr8z.onrender.com">
 <meta name="description" content="Registrá tus gastos, ingresos y metas de ahorro en un solo lugar. Gratis, sin publicidad y con app móvil incluida.">
 <meta property="og:title" content="Control de Gastos — Organizá tus finanzas personales">
 <meta property="og:description" content="Registrá tus gastos, ingresos y metas de ahorro en un solo lugar. Gratis, sin publicidad y con app móvil incluida.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://control-gastos-fr8z.onrender.com">
-<meta property="og:image" content="{% static 'img/icon/favicon-192.png' %}">
+<meta property="og:image" content="https://control-gastos-fr8z.onrender.com/static/img/icon/favicon-192.png">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Control de Gastos — Organizá tus finanzas personales">
 <meta name="twitter:description" content="Registrá tus gastos, ingresos y metas de ahorro en un solo lugar. Gratis, sin publicidad y con app móvil incluida.">
@@ -194,9 +195,13 @@
         <div class="row align-items-center g-5">
             <div class="col-lg-6">
                 <div class="showcase-img-wrapper">
-                    <img src="{% static 'img/landing/dashboard.jpg' %}"
-                         alt="Dashboard"
-                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                    <picture>
+                        <source srcset="{% static 'img/landing/dashboard.webp' %}" type="image/webp">
+                        <img src="{% static 'img/landing/dashboard.jpg' %}"
+                             alt="Dashboard"
+                             loading="lazy"
+                             width="600" height="400">
+                    </picture>
                     <div class="showcase-img-placeholder" style="display:none">
                         <i class="bi bi-speedometer2"></i>
                         <span>dashboard.jpg</span>
@@ -228,9 +233,13 @@
         <div class="row align-items-center g-5 flex-lg-row-reverse">
             <div class="col-lg-6">
                 <div class="showcase-img-wrapper">
-                    <img src="{% static 'img/landing/gastos.jpg' %}"
-                         alt="Gastos"
-                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                    <picture>
+                        <source srcset="{% static 'img/landing/gastos.webp' %}" type="image/webp">
+                        <img src="{% static 'img/landing/gastos.jpg' %}"
+                             alt="Gastos"
+                             loading="lazy"
+                             width="600" height="400">
+                    </picture>
                     <div class="showcase-img-placeholder" style="display:none">
                         <i class="bi bi-cart3"></i>
                         <span>gastos.jpg</span>
@@ -262,9 +271,13 @@
         <div class="row align-items-center g-5">
             <div class="col-lg-6">
                 <div class="showcase-img-wrapper">
-                    <img src="{% static 'img/landing/ahorros.jpg' %}"
-                         alt="Metas de ahorro"
-                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                    <picture>
+                        <source srcset="{% static 'img/landing/ahorros.webp' %}" type="image/webp">
+                        <img src="{% static 'img/landing/ahorros.jpg' %}"
+                             alt="Metas de ahorro"
+                             loading="lazy"
+                             width="600" height="400">
+                    </picture>
                     <div class="showcase-img-placeholder" style="display:none">
                         <i class="bi bi-piggy-bank"></i>
                         <span>ahorros.jpg</span>
@@ -295,9 +308,13 @@
         <div class="row align-items-center g-5 flex-lg-row-reverse">
             <div class="col-lg-6">
                 <div class="showcase-img-wrapper">
-                    <img src="{% static 'img/landing/gastos_fijos.jpg' %}"
-                         alt="Gastos fijos"
-                         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                    <picture>
+                        <source srcset="{% static 'img/landing/gastos_fijos.webp' %}" type="image/webp">
+                        <img src="{% static 'img/landing/gastos_fijos.jpg' %}"
+                             alt="Gastos fijos"
+                             loading="lazy"
+                             width="600" height="400">
+                    </picture>
                     <div class="showcase-img-placeholder" style="display:none">
                         <i class="bi bi-arrow-repeat"></i>
                         <span>gastos_fijos.jpg</span>
@@ -334,7 +351,7 @@
                         <i class="bi bi-cash-stack"></i>
                     </div>
                     <div>
-                        <h6 class="fw-semibold mb-1">Ingresos</h6>
+                        <h3 class="h6 fw-semibold mb-1">Ingresos</h3>
                         <p class="text-muted small mb-0">Registrá sueldos, freelance y otros ingresos. Soporte para USD con cotización.</p>
                     </div>
                 </div>
@@ -346,7 +363,7 @@
                         <i class="bi bi-tags" style="color:#6610f2"></i>
                     </div>
                     <div>
-                        <h6 class="fw-semibold mb-1">Categorías personalizadas</h6>
+                        <h3 class="h6 fw-semibold mb-1">Categorías personalizadas</h3>
                         <p class="text-muted small mb-0">Grupos y subcategorías con íconos y colores a tu gusto.</p>
                     </div>
                 </div>
@@ -358,7 +375,7 @@
                         <i class="bi bi-calendar3"></i>
                     </div>
                     <div>
-                        <h6 class="fw-semibold mb-1">Período financiero</h6>
+                        <h3 class="h6 fw-semibold mb-1">Período financiero</h3>
                         <p class="text-muted small mb-0">Configurá el día de inicio de tu mes según tu fecha de cobro.</p>
                     </div>
                 </div>
@@ -370,7 +387,7 @@
                         <i class="bi bi-download"></i>
                     </div>
                     <div>
-                        <h6 class="fw-semibold mb-1">Exportación Excel</h6>
+                        <h3 class="h6 fw-semibold mb-1">Exportación Excel</h3>
                         <p class="text-muted small mb-0">Descargá tus gastos e ingresos filtrados en formato .xlsx para analizarlos en Excel.</p>
                     </div>
                 </div>
@@ -382,7 +399,7 @@
                         <i class="bi bi-bell"></i>
                     </div>
                     <div>
-                        <h6 class="fw-semibold mb-1">Alertas de presupuesto</h6>
+                        <h3 class="h6 fw-semibold mb-1">Alertas de presupuesto</h3>
                         <p class="text-muted small mb-0">Recibí una alerta visual cuando tus gastos superan el umbral que configuraste.</p>
                     </div>
                 </div>
@@ -394,7 +411,7 @@
                         <i class="bi bi-phone"></i>
                     </div>
                     <div>
-                        <h6 class="fw-semibold mb-1">Responsive</h6>
+                        <h3 class="h6 fw-semibold mb-1">Responsive</h3>
                         <p class="text-muted small mb-0">Funciona en celular, tablet y desktop sin instalar nada.</p>
                     </div>
                 </div>

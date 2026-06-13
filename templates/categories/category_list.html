@@ -172,5 +172,8 @@
 
 {% block extra_js %}
 {% load static %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"
+        integrity="sha384-BSxuMLxX+FCbTdYec3TbXlnMGEEM2QXTFdtDaveen71o+jswm2J36+xFqp8k4VHM" <!-- pragma: allowlist secret -->
+        crossorigin="anonymous"></script>
 <script src="{% static 'js/category_list.js' %}?v={{ APP_VERSION }}"></script>
 {% endblock %}

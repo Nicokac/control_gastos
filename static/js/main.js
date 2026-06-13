@@ -56,6 +56,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Back button
     initBackButton();
+
+    // Landing: fallback CSP-safe para imágenes de showcase
+    initShowcaseImageFallback();
 });
 
 /**
@@ -598,4 +601,15 @@ function initFab() {
     }
     fab.title = label;
     new bootstrap.Tooltip(fab);
+}
+
+
+function initShowcaseImageFallback() {
+    document.querySelectorAll('.showcase-img-wrapper img').forEach(function(img) {
+        img.addEventListener('error', function() {
+            this.style.display = 'none';
+            const placeholder = this.nextElementSibling;
+            if (placeholder) placeholder.style.display = 'flex';
+        });
+    });
 }
