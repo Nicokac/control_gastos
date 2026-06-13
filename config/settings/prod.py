@@ -344,3 +344,4 @@ if SENTRY_DSN:
 # MIDDLEWARE DE PERFORMANCE — solo en producción
 # =============================================================================
 MIDDLEWARE.append("apps.core.middleware.RequestTimingMiddleware")
+MIDDLEWARE.append("apps.core.middleware.PermissionsPolicyMiddleware")

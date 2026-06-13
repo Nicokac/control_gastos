@@ -21,6 +21,7 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+    <a href="#appMain" class="skip-link">Saltar al contenido principal</a>
     {% block navbar %}{% include 'components/navbar.html' %}{% endblock %}
 
     {% if user.is_authenticated %}

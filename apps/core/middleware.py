@@ -4,6 +4,23 @@ import time
 logger = logging.getLogger("apps.performance")
 
 
+class PermissionsPolicyMiddleware:
+    """Agrega el header Permissions-Policy desactivando APIs del navegador no usadas."""
+
+    POLICY = (
+        "camera=(), microphone=(), geolocation=(), payment=(), "
+        "usb=(), bluetooth=(), interest-cohort=()"
+    )
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        response["Permissions-Policy"] = self.POLICY
+        return response
+
+
 class RequestTimingMiddleware:
     """Loggea duración de requests en milisegundos."""
 
