@@ -759,6 +759,138 @@ La app no tiene ningún mecanismo para que los usuarios apoyen económicamente e
 
 **Resolución:** botón "Invitame un café" agregado en el sidebar web (pie), en la tarjeta "Acerca de" del perfil web, y en la pantalla "Acerca de" de la app móvil. URL: [cafecito.app/niicok](https://cafecito.app/niicok)
 
+### DT-052 — Cotización del dólar automática
+
+**Estado:** ⏳ Pendiente
+
+Hoy el tipo de cambio se ingresa manualmente al registrar un gasto en USD. No hay integración con ninguna API de cotizaciones.
+
+**Why:** Argentina tiene múltiples tipos de cambio relevantes (oficial, blue, MEP). Ingresar el valor a mano es fricción diaria y genera datos inconsistentes entre usuarios.
+
+**Camino de resolución:** integrar dolarapi.com u equivalente. Guardar la cotización del día en un modelo `ExchangeRate` (moneda, tipo, valor, fecha). El formulario de gasto/ingreso en USD precarga el último valor disponible. Actualización diaria via management command o GitHub Actions cron. Override manual siempre disponible.
+
+---
+
+### DT-053 — Detección de suscripciones encubiertas
+
+**Estado:** ⏳ Pendiente
+
+Si un gasto con la misma descripción y monto similar aparece 2-3 meses consecutivos, la app no lo detecta ni sugiere convertirlo en gasto fijo.
+
+**Why:** muchos gastos recurrentes (Spotify, Netflix, membresías) se cargan manualmente mes a mes sin que el usuario los vincule. Ya existe toda la infraestructura de `recurring`; solo falta la detección.
+
+**Camino de resolución:** query mensual sobre `Expense` agrupada por descripción normalizada. Si aparece ≥3 meses seguidos con monto en rango ±20%, mostrar banner en la lista de gastos: "¿Convertir en gasto fijo?". Un click pre-completa el formulario de `RecurringExpense`.
+
+---
+
+### DT-054 — Proyección de cierre de mes
+
+**Estado:** ⏳ Pendiente
+
+El dashboard muestra el gasto acumulado hasta hoy pero no proyecta cómo cerrará el mes al ritmo actual.
+
+**Why:** los datos pasados informan; la proyección permite actuar. "A este ritmo terminás el mes con −$45.000" convierte la app de registro histórico en herramienta de decisión.
+
+**Camino de resolución:** con el período financiero ya configurable (`financial_month_start_day`), calcular `gasto_diario_promedio * días_restantes` y sumarlo al acumulado. Mostrar como badge en el hero del dashboard. Sin modelo nuevo, solo lógica en `DashboardView`.
+
+---
+
+### DT-055 — Importación de resúmenes bancarios
+
+**Estado:** ⏳ Pendiente
+
+La carga es 100% manual. No existe forma de importar movimientos desde el banco o Mercado Pago.
+
+**Why:** la fricción de carga manual es la principal causa de abandono en apps de finanzas personales. Importar el CSV/Excel del banco y mapear columnas automáticamente es el salto de calidad más grande posible en UX.
+
+**Camino de resolución:** vista de importación que acepta CSV/XLSX. Parser configurable por banco (columnas de fecha, descripción, monto). Sugerencia de categoría por descripción usando reglas simples (contains). Detección de duplicados contra gastos ya cargados. Revisión manual antes de confirmar la importación.
+
+---
+
+### DT-056 — Insights automáticos mensuales
+
+**Estado:** ⏳ Pendiente
+
+La app muestra datos pero no genera observaciones sobre ellos.
+
+**Why:** "gastaste 23% más en Delivery que tu promedio de 6 meses" o "mejor mes de ahorro del año" son frases que generan engagement y valor percibido sin que el usuario tenga que interpretar los gráficos.
+
+**Camino de resolución:** conjunto de reglas sobre queries que ya existen (evolución mensual, distribución por categoría). Renderizar como tarjetas en el dashboard o en una sección "Resumen del mes". Sin ML, solo comparativas sobre datos históricos del usuario.
+
+---
+
+### DT-057 — Calendario de compromisos futuros
+
+**Estado:** ⏳ Pendiente
+
+Ya se soportan gastos en cuotas y gastos fijos, pero no hay vista prospectiva de los próximos meses.
+
+**Why:** saber cuánto del ingreso futuro ya está comprometido en cuotas y vencimientos permite planificar antes de asumir nuevos compromisos.
+
+**Camino de resolución:** vista de timeline (próximos 3-6 meses) que consolida `RecurringExpense` activos y cuotas pendientes. Widget en dashboard con total comprometido del mes siguiente. Alerta cuando los compromisos superan un umbral del ingreso habitual.
+
+---
+
+### DT-058 — Patrimonio neto (cuentas y saldos)
+
+**Estado:** ⏳ Pendiente
+
+La app trackea flujo (gastos e ingresos) pero no el saldo real de cada cuenta del usuario.
+
+**Why:** sin modelo de cuentas, la app no puede responder "¿cuánto tengo en total?". Efectivo, banco, billetera virtual y dólares físicos son realidades cotidianas en Argentina.
+
+**Camino de resolución:** modelo `Account` (nombre, tipo, moneda, saldo inicial). Los gastos e ingresos pueden vincularse opcionalmente a una cuenta para actualizar el saldo. Widget de patrimonio neto en el dashboard. Transformaría la app de tracker de flujo a foto financiera completa.
+
+---
+
+### DT-059 — Gastos compartidos v2: balances y liquidación
+
+**Estado:** ⏳ Pendiente
+
+Hoy `SharedExpense` registra quién pagó pero no calcula quién le debe a quién ni permite liquidar saldos.
+
+**Why:** el paso natural después de registrar gastos compartidos es saber el balance neto entre los miembros del hogar (estilo Splitwise). Es la funcionalidad que hace que otros usuarios de la casa también quieran usar la app.
+
+**Camino de resolución:** calcular balance neto por par de miembros sobre el período seleccionado. Vista de liquidación: "Juan le debe $12.300 a Ana". Botón "Liquidar" que registra un pago de compensación. En el futuro: invitar a otro usuario real de la app al hogar (requiere modelo de invitaciones).
+
+---
+
+### DT-060 — Modo oscuro en la web
+
+**Estado:** ⏳ Pendiente
+
+La app web no tiene modo oscuro. Bootstrap 5.3 ya trae soporte nativo via `data-bs-theme="dark"`.
+
+**Why:** detectado en auditoría UX (−5 puntos). Es una preferencia de una parte significativa de los usuarios y Bootstrap 5.3 lo hace relativamente directo.
+
+**Camino de resolución:** toggle en el perfil/settings que persiste en `localStorage`. Aplicar `data-bs-theme` al `<html>`. Revisar los estilos custom en `main.css` que puedan necesitar ajustes para el tema oscuro (principalmente colores hardcodeados).
+
+---
+
+### DT-061 — Ahorro por reglas automáticas
+
+**Estado:** ⏳ Pendiente
+
+Las metas de ahorro requieren depósito manual. No hay forma de automatizar aportes periódicos.
+
+**Why:** "depositar automáticamente 10% de cada ingreso en la meta Vacaciones" reduce la fricción de ahorro y mejora el cumplimiento de metas. La vinculación gasto→meta ya existe; falta automatizarla.
+
+**Camino de resolución:** modelo `SavingRule` (porcentaje o monto fijo, trigger: al registrar ingreso / mensual, meta destino). Al cumplirse el trigger, crear automáticamente un `SavingMovement`. UI simple en la pantalla de detalle de la meta.
+
+---
+
+### DT-062 — Export/backup completo de datos del usuario
+
+**Estado:** ⏳ Pendiente
+
+La exportación actual cubre solo gastos e ingresos en Excel con filtros. No hay forma de exportar todos los datos ni de importarlos de vuelta.
+
+**Why:** "mis datos son míos" es un argumento de confianza que reduce la fricción de registro. Complementa el delete de cuenta que ya existe. También sirve como mecanismo de migración si el usuario cambia de dispositivo.
+
+**Camino de resolución:** vista de exportación completa que genera un ZIP con JSONs de todas las entidades del usuario (gastos, ingresos, categorías, metas, gastos fijos, compartidos). Opcionalmente, importación desde ese mismo formato para restore o migración.
+
+---
+
 ### DT-051 — Modelo de suscripción freemium
 
 **Estado:** ⏳ Pendiente
