@@ -5,6 +5,16 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.13.5] — 2026-06-13
+
+### Fixed
+
+- **Web — Accesibilidad**: agrega skip-link ("Saltar al contenido principal") visible al foco, para usuarios que navegan con teclado o lectores de pantalla.
+- **Web — Accesibilidad**: reemplaza `<h6>` del offcanvas móvil por `<p class="h6">` para no interrumpir la jerarquía de headings antes del `<h1>` del contenido.
+- **Web — Seguridad**: agrega header `Permissions-Policy` en producción desactivando APIs del navegador no usadas (cámara, micrófono, geolocalización, pagos, USB, Bluetooth, FLoC).
+
+---
+
 ## [1.13.4] — 2026-06-12
 
 ### Fixed

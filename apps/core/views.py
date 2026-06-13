@@ -161,7 +161,7 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "1.13.4"
+APP_VERSION = "1.13.5"
 
 WHATS_NEW = [
     {
