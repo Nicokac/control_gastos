@@ -12,6 +12,13 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 - **Web — Modo oscuro**: toggle en el menú de usuario que persiste entre sesiones vía `localStorage`. Bootstrap 5.3 `data-bs-theme="dark"` maneja el 90% de los colores; el resto (sidebar, card-header, colores hardcodeados) tiene overrides en `main.css`. Script anti-FOUC en `<head>` para que el tema correcto se aplique antes de que el browser pinte el primer frame.
 - **Dashboard — Proyección de cierre de período**: si estás en el período actual y llevás al menos 3 días con gastos, el dashboard muestra una estimación de cuánto gastarás al cierre basada en el ritmo diario promedio. Se muestra junto al balance, en rojo o verde según el resultado proyectado.
 
+### Fixed
+
+- **Web — Dark mode, consistencia visual**: corrección sistemática de colores hardcodeados en 17 templates y 2 archivos JS que no se adaptaban al tema oscuro. Incluye `bg-light` → `bg-body-secondary`, `text-dark` → `text-body`, links de sort de tablas, legend fade en gastos, mini progress bars, y colores de Chart.js (donut border, centerText, grid lines).
+- **Web — Dark mode, tablas**: `table-light` en `thead`/`tbody`/`tfoot` y `table-secondary` en filas de categoría de Gastos Compartidos quedaban con fondo blanco y texto negro en dark mode. Resuelto con overrides CSS quirúrgicos. `.app-main table` recibe `color: var(--bs-body-color)` para eliminar el negro heredado de Bootstrap en columnas sin clase explícita.
+- **Web — Dark mode, progress bar**: eliminado `background-color: #e9ecef` inline en la barra de umbral del dashboard; Bootstrap aplica el color correcto vía `--bs-progress-bg` según el tema.
+- **Web — Botón Cafecito**: color actualizado de naranja (`#ff5c00`) a violeta (`#7c64bf`) para coincidir con la identidad visual de la plataforma. Aplica en sidebar y perfil.
+
 ---
 
 ## [1.14.0] — 2026-06-13
