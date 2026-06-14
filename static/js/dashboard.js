@@ -32,10 +32,11 @@ function initDonutChart() {
                 const { ctx: c, chartArea: { top, bottom, left, right } } = chart;
                 const cx = (left + right) / 2;
                 const cy = (top + bottom) / 2;
+                const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
                 c.save();
                 c.textAlign = 'center';
                 c.textBaseline = 'middle';
-                c.fillStyle = '#6b7280';
+                c.fillStyle = isDark ? '#9ca3af' : '#6b7280';
                 c.font = '13px system-ui, sans-serif';
                 c.fillText('Total gastado', cx, cy - 14);
                 c.fillStyle = '#dc3545';
@@ -45,6 +46,7 @@ function initDonutChart() {
             },
         };
 
+        const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
         new Chart(ctx, {
             type: 'doughnut',
             plugins: [centerTextPlugin],
@@ -54,7 +56,7 @@ function initDonutChart() {
                     data: data,
                     backgroundColor: colors,
                     borderWidth: 2,
-                    borderColor: '#fff',
+                    borderColor: isDark ? '#2c3136' : '#fff',
                 }],
             },
             options: {
@@ -104,6 +106,8 @@ function initEvolutionChart() {
     const formatARS = value =>
         '$ ' + value.toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
+    const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+    const gridColor = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)';
     const chart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -175,6 +179,7 @@ function initEvolutionChart() {
             },
             scales: {
                 y: {
+                    grid: { color: gridColor },
                     ticks: {
                         callback: value => formatARS(value),
                     },

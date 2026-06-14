@@ -288,7 +288,7 @@
                         <div>
                             <p class="text-muted mb-0 small">Gastos Fijos — {{ month_name }}</p>
                             <span class="fw-semibold">
-                                <span class="{% if recurring_paid == recurring_total %}text-success{% else %}text-dark{% endif %}">{{ recurring_paid }}</span>
+                                <span class="{% if recurring_paid == recurring_total %}text-success{% else %}text-body{% endif %}">{{ recurring_paid }}</span>
                                 <span class="text-muted"> / {{ recurring_total }} pagados</span>
                                 {% if recurring_overdue > 0 %}
                                 <span class="badge bg-danger ms-2">{{ recurring_overdue }} vencido{{ recurring_overdue|pluralize }}</span>
@@ -308,7 +308,7 @@
                 {% if recurring_pending %}
                 <div class="mt-2 d-flex flex-wrap gap-2">
                     {% for item in recurring_pending %}
-                    <span class="badge {% if item.overdue %}bg-danger{% else %}bg-light text-dark border{% endif %} fw-normal">
+                    <span class="badge {% if item.overdue %}bg-danger{% else %}bg-secondary-subtle text-secondary-emphasis border{% endif %} fw-normal">
                         <i class="bi bi-clock me-1"></i>{{ item.rec.name }} — día {{ item.rec.due_day }}
                     </span>
                     {% endfor %}
@@ -334,7 +334,7 @@
                         <div>
                             <p class="text-muted mb-0 small">Ingresos Fijos — {{ month_name }}</p>
                             <span class="fw-semibold">
-                                <span class="{% if recurring_income_collected == recurring_income_total %}text-success{% else %}text-dark{% endif %}">{{ recurring_income_collected }}</span>
+                                <span class="{% if recurring_income_collected == recurring_income_total %}text-success{% else %}text-body{% endif %}">{{ recurring_income_collected }}</span>
                                 <span class="text-muted"> / {{ recurring_income_total }} cobrados</span>
                                 {% if recurring_income_overdue > 0 %}
                                 <span class="badge bg-warning text-dark ms-2">{{ recurring_income_overdue }} pendiente{{ recurring_income_overdue|pluralize }}</span>
@@ -354,7 +354,7 @@
                 {% if recurring_income_pending %}
                 <div class="mt-2 d-flex flex-wrap gap-2">
                     {% for item in recurring_income_pending %}
-                    <span class="badge {% if item.overdue %}bg-warning text-dark{% else %}bg-light text-dark border{% endif %} fw-normal">
+                    <span class="badge {% if item.overdue %}bg-warning text-dark{% else %}bg-secondary-subtle text-secondary-emphasis border{% endif %} fw-normal">
                         <i class="bi bi-clock me-1"></i>{{ item.rec.name }} — día {{ item.rec.expected_day }}
                     </span>
                     {% endfor %}
@@ -411,9 +411,9 @@
             </div>
             <div class="card-body p-0">
                 {% if ranking_distribution %}
-                <div class="px-3 py-2 border-bottom bg-light">
+                <div class="px-3 py-2 border-bottom bg-body-secondary">
                     <small class="text-muted">
-                        Total: <strong class="text-dark">{{ expense_total|currency }}</strong>
+                        Total: <strong class="text-body">{{ expense_total|currency }}</strong>
                         &mdash; {{ ranking_distribution|length }} grupo{{ ranking_distribution|length|pluralize }}
                     </small>
                 </div>
@@ -433,7 +433,7 @@
                                     <span class="rounded-circle flex-shrink-0"
                                           style="width:10px;height:10px;background:{{ item.color }};display:inline-block;"></span>
                                     <a href="{% url 'expenses:list' %}?month={{ current_month }}&year={{ current_year }}&category={{ item.pk }}"
-                                       class="small fw-semibold text-decoration-none text-dark">{{ item.name }}</a>
+                                       class="small fw-semibold text-decoration-none text-body">{{ item.name }}</a>
                                     {% if item.subcategories %}
                                     <i class="bi bi-chevron-down text-muted small ranking-chevron"></i>
                                     {% endif %}
@@ -528,7 +528,7 @@
                                 {% endif %}
                                 <div class="min-width-0">
                                     <a href="{% if tx.type == 'expense' %}{% url 'expenses:update' tx.pk %}{% else %}{% url 'income:update' tx.pk %}{% endif %}"
-                                       class="text-decoration-none text-dark fw-semibold d-block text-truncate">
+                                       class="text-decoration-none text-body fw-semibold d-block text-truncate">
                                         {{ tx.description|default:"Sin descripción" }}
                                     </a>
                                     <small class="text-muted">

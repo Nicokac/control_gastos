@@ -74,6 +74,7 @@ function initExpenseDonut() {
     const params = new URLSearchParams(window.location.search);
     let selectedIndex = null;
 
+    const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
     const chart = new Chart(canvas, {
         type: 'doughnut',
         data: {
@@ -82,7 +83,7 @@ function initExpenseDonut() {
                 data: data,
                 backgroundColor: colors,
                 borderWidth: 2,
-                borderColor: '#fff',
+                borderColor: isDark ? '#2c3136' : '#fff',
                 hoverOffset: 8,
             }]
         },
@@ -173,6 +174,7 @@ function initExpenseDailyChart() {
     const data = JSON.parse(dataEl.textContent);
     if (!data.length) return;
 
+    const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
     new Chart(canvas, {
         type: 'line',
         data: {
@@ -206,7 +208,7 @@ function initExpenseDailyChart() {
                     ticks: { font: { size: 11 }, maxTicksLimit: 10 }
                 },
                 y: {
-                    grid: { color: 'rgba(0,0,0,0.05)' },
+                    grid: { color: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)' },
                     ticks: {
                         font: { size: 11 },
                         callback: function (v) { return '$ ' + Number(v).toLocaleString('es-AR', { maximumFractionDigits: 0 }); }
@@ -229,6 +231,7 @@ function initExpenseDailyBarChart() {
     const data = JSON.parse(dataEl.textContent);
     if (!data.length) return;
 
+    const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
     const metaEl = document.getElementById('expense-daily-meta');
     const meta = metaEl ? JSON.parse(metaEl.textContent) : {};
     const month = meta.month || 0;
@@ -281,7 +284,7 @@ function initExpenseDailyBarChart() {
                     ticks: { font: { size: 11 }, maxTicksLimit: 10 }
                 },
                 y: {
-                    grid: { color: 'rgba(0,0,0,0.05)' },
+                    grid: { color: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)' },
                     ticks: {
                         font: { size: 11 },
                         callback: function (v) {
@@ -308,6 +311,7 @@ function initExpenseMonthlyChart() {
     const rawDatasets = JSON.parse(datasetsEl.textContent);
     if (!rawDatasets.length) return;
 
+    const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
     const datasets = rawDatasets.map(function (ds) {
         return {
             label: ds.label,
@@ -343,7 +347,7 @@ function initExpenseMonthlyChart() {
                 x: { stacked: true, grid: { display: false }, ticks: { font: { size: 11 } } },
                 y: {
                     stacked: true,
-                    grid: { color: 'rgba(0,0,0,0.05)' },
+                    grid: { color: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)' },
                     ticks: {
                         font: { size: 11 },
                         callback: function (v) {
@@ -371,6 +375,7 @@ function initSmallDonut(canvasId, labelsId, dataId, colorsId) {
     const colors = JSON.parse(colorsEl.textContent);
     if (!data.length) return;
 
+    const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
     new Chart(canvas, {
         type: 'doughnut',
         data: {
@@ -379,7 +384,7 @@ function initSmallDonut(canvasId, labelsId, dataId, colorsId) {
                 data: data,
                 backgroundColor: colors,
                 borderWidth: 2,
-                borderColor: '#fff',
+                borderColor: isDark ? '#2c3136' : '#fff',
                 hoverOffset: 4,
             }]
         },

@@ -110,7 +110,7 @@
                         <canvas id="expenseDonutChart"></canvas>
                         <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;width:110px">
                             <div class="small text-muted" id="expenseDonutLabel">Total</div>
-                            <div class="fw-bold" style="font-size:0.95rem;color:#212529" id="expenseDonutTotal">{{ total|currency }}</div>
+                            <div class="fw-bold text-body" style="font-size:0.95rem" id="expenseDonutTotal">{{ total|currency }}</div>
                         </div>
                     </div>
                 </div>
@@ -127,13 +127,13 @@
                                 <span class="text-muted me-2 flex-shrink-0">{{ g.pct }}%</span>
                                 <span class="text-danger fw-semibold flex-shrink-0">{{ g.subtotal|currency }}</span>
                             </div>
-                            <div style="height:4px;min-height:4px;max-height:4px;border-radius:2px;background-color:#e9ecef;margin-left:14px;overflow:hidden;line-height:0">
+                            <div style="height:4px;min-height:4px;max-height:4px;border-radius:2px;background-color:var(--bs-border-color);margin-left:14px;overflow:hidden;line-height:0">
                                 <div style="height:4px;width:{{ g.pct }}%;background-color:{{ g.color }};border-radius:2px"></div>
                             </div>
                         </a>
                         {% endfor %}
                     </div>
-                    <div id="expenseLegendFade" style="position:absolute;bottom:0;left:0;right:0;height:36px;background:linear-gradient(to bottom,rgba(255,255,255,0),rgba(255,255,255,1));pointer-events:none"></div>
+                    <div id="expenseLegendFade" style="position:absolute;bottom:0;left:0;right:0;height:36px;background:linear-gradient(to bottom,transparent,var(--bs-body-bg));pointer-events:none"></div>
                 </div>
             </div>
             <hr class="my-3">
@@ -231,10 +231,10 @@
                     {% sort_url "category" as url_category %}
                     {% sort_url "description" as url_description %}
                     {% sort_url "amount" as url_amount %}
-                    <th><a href="{{ url_date }}" class="text-decoration-none text-dark d-flex align-items-center gap-1">Fecha{% if order_by == "date" %}<i class="bi bi-chevron-{% if order_dir == 'asc' %}up{% else %}down{% endif %} text-muted" style="font-size:0.7rem"></i>{% endif %}</a></th>
-                    <th><a href="{{ url_category }}" class="text-decoration-none text-dark d-flex align-items-center gap-1">Categoría{% if order_by == "category" %}<i class="bi bi-chevron-{% if order_dir == 'asc' %}up{% else %}down{% endif %} text-muted" style="font-size:0.7rem"></i>{% endif %}</a></th>
-                    <th><a href="{{ url_description }}" class="text-decoration-none text-dark d-flex align-items-center gap-1">Descripción{% if order_by == "description" %}<i class="bi bi-chevron-{% if order_dir == 'asc' %}up{% else %}down{% endif %} text-muted" style="font-size:0.7rem"></i>{% endif %}</a></th>
-                    <th class="text-end"><a href="{{ url_amount }}" class="text-decoration-none text-dark d-flex align-items-center justify-content-end gap-1">Monto{% if order_by == "amount" %}<i class="bi bi-chevron-{% if order_dir == 'asc' %}up{% else %}down{% endif %} text-muted" style="font-size:0.7rem"></i>{% endif %}</a></th>
+                    <th><a href="{{ url_date }}" class="text-decoration-none text-body d-flex align-items-center gap-1">Fecha{% if order_by == "date" %}<i class="bi bi-chevron-{% if order_dir == 'asc' %}up{% else %}down{% endif %} text-muted" style="font-size:0.7rem"></i>{% endif %}</a></th>
+                    <th><a href="{{ url_category }}" class="text-decoration-none text-body d-flex align-items-center gap-1">Categoría{% if order_by == "category" %}<i class="bi bi-chevron-{% if order_dir == 'asc' %}up{% else %}down{% endif %} text-muted" style="font-size:0.7rem"></i>{% endif %}</a></th>
+                    <th><a href="{{ url_description }}" class="text-decoration-none text-body d-flex align-items-center gap-1">Descripción{% if order_by == "description" %}<i class="bi bi-chevron-{% if order_dir == 'asc' %}up{% else %}down{% endif %} text-muted" style="font-size:0.7rem"></i>{% endif %}</a></th>
+                    <th class="text-end"><a href="{{ url_amount }}" class="text-decoration-none text-body d-flex align-items-center justify-content-end gap-1">Monto{% if order_by == "amount" %}<i class="bi bi-chevron-{% if order_dir == 'asc' %}up{% else %}down{% endif %} text-muted" style="font-size:0.7rem"></i>{% endif %}</a></th>
                     <th class="text-center col-actions">Acciones</th>
                 </tr>
             </thead>

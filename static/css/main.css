@@ -628,3 +628,11 @@ form#incomeForm .category-btn:hover .btn {
 [data-bs-theme="dark"] .color-swatch--active {
     border-color: #dee2e6 !important;
 }
+
+[data-bs-theme="dark"] .category-btn .btn {
+    border-color: rgba(255, 255, 255, .2);
+}
+
+[data-bs-theme="dark"] .amount-input input::placeholder {
+    color: #6c757d;
+}

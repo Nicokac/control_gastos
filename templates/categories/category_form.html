@@ -59,7 +59,7 @@
                     <input type="hidden" name="parent" value="{{ preset_parent.pk }}">
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Grupo</label>
-                        <div class="form-control bg-light d-flex align-items-center gap-2">
+                        <div class="form-control bg-body-secondary d-flex align-items-center gap-2">
                             <i class="{{ preset_parent.icon|default:'bi-folder' }} text-muted"></i>
                             <span>{{ preset_parent.name }}</span>
                             <span class="badge bg-secondary ms-1">{{ preset_parent.get_type_display }}</span>
@@ -127,7 +127,7 @@
                     </div>
 
                     <!-- Preview ícono + color -->
-                    <div class="mb-3 d-flex align-items-center gap-3 p-3 border rounded bg-light">
+                    <div class="mb-3 d-flex align-items-center gap-3 p-3 border rounded bg-body-secondary">
                         <div id="icon-color-preview"
                              style="width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;background-color:{{ form.color.value|default:'#6c757d' }}20;border:2px solid {{ form.color.value|default:'#6c757d' }}">
                             <i id="preview-icon"
