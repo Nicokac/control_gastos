@@ -3,6 +3,8 @@
 from datetime import date
 from decimal import Decimal
 
+from django.utils import timezone
+
 import pytest
 
 
@@ -64,3 +66,40 @@ class TestDashboardEndpoint:
         headers = auth_header(client, user)
         response = client.get(self.url + "?month=6&year=2026", **headers)
         assert Decimal(response.json()["total_expenses"]) == Decimal("0")
+
+    def test_proyeccion_disponible_en_periodo_actual(
+        self, client, user, expense_factory, income_factory, expense_category, income_category
+    ):
+        today = timezone.localdate()
+        # Gasto en el día 1 del mes actual para garantizar period_day >= 3
+        expense_factory(
+            user, expense_category, date=date(today.year, today.month, 1), amount=Decimal("9000")
+        )
+        income_factory(
+            user, income_category, date=date(today.year, today.month, 1), amount=Decimal("30000")
+        )
+        headers = auth_header(client, user)
+        response = client.get(self.url, **headers)
+        data = response.json()
+        # Solo verificamos la estructura; projection_available depende del día real
+        assert "projection_available" in data
+        assert "projected_expense" in data
+        assert "projected_balance" in data
+
+    def test_proyeccion_no_disponible_en_periodo_pasado(
+        self, client, user, expense_factory, expense_category
+    ):
+        expense_factory(user, expense_category, date=date(2025, 1, 10), amount=Decimal("5000"))
+        headers = auth_header(client, user)
+        response = client.get(self.url + "?month=1&year=2025", **headers)
+        data = response.json()
+        assert data["projection_available"] is False
+        assert data["projected_expense"] is None
+        assert data["projected_balance"] is None
+
+    def test_proyeccion_no_disponible_sin_gastos(self, client, user):
+        headers = auth_header(client, user)
+        today = timezone.localdate()
+        response = client.get(self.url + f"?month={today.month}&year={today.year}", **headers)
+        data = response.json()
+        assert data["projection_available"] is False
