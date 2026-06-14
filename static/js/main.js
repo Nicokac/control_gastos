@@ -59,6 +59,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Landing: fallback CSP-safe para imágenes de showcase
     initShowcaseImageFallback();
+
+    // Dark mode toggle
+    initDarkMode();
 });
 
 /**
@@ -611,5 +614,33 @@ function initShowcaseImageFallback() {
             const placeholder = this.nextElementSibling;
             if (placeholder) placeholder.style.display = 'flex';
         });
+    });
+}
+
+function initDarkMode() {
+    const toggle = document.getElementById('darkModeToggle');
+    if (!toggle) return;
+
+    const icon = document.getElementById('darkModeIcon');
+    const label = document.getElementById('darkModeLabel');
+    const html = document.documentElement;
+
+    function applyTheme(dark) {
+        html.setAttribute('data-bs-theme', dark ? 'dark' : 'light');
+        if (icon) {
+            icon.className = dark ? 'bi bi-sun me-2' : 'bi bi-moon me-2';
+        }
+        if (label) {
+            label.textContent = dark ? 'Modo claro' : 'Modo oscuro';
+        }
+    }
+
+    const isDark = localStorage.getItem('theme') === 'dark';
+    applyTheme(isDark);
+
+    toggle.addEventListener('click', function() {
+        const nowDark = html.getAttribute('data-bs-theme') !== 'dark';
+        localStorage.setItem('theme', nowDark ? 'dark' : 'light');
+        applyTheme(nowDark);
     });
 }

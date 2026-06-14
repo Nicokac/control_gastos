@@ -94,6 +94,11 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context["period_day"] = period_day
         context["period_total_days"] = period_total_days
 
+        # Proyección de cierre de mes (solo período actual, mínimo 3 días transcurridos)
+        context["projected_expense"] = None
+        context["projected_balance"] = None
+        context["projection_available"] = False
+
         # Obtener datos de cada módulo
         context.update(
             self._get_balance_data(user, selected_month, selected_year, fin_start, fin_end)
@@ -104,6 +109,18 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context.update(self._get_recent_transactions(user))
         context.update(self._get_expense_distribution(user, selected_month, selected_year))
         context.update(self._get_monthly_evolution(user, evolution_month, selected_year))
+
+        # Proyección de cierre de mes
+        if is_current_period and period_day >= 3 and period_total_days > 0:
+            expense_total = context.get("expense_total") or Decimal("0")
+            income_total = context.get("income_total") or Decimal("0")
+            if expense_total > 0:
+                daily_rate = expense_total / period_day
+                projected_expense = daily_rate * period_total_days
+                projected_balance = income_total - projected_expense
+                context["projected_expense"] = projected_expense
+                context["projected_balance"] = projected_balance
+                context["projection_available"] = True
 
         return context
 

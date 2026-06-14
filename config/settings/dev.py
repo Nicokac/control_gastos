@@ -82,6 +82,7 @@ CSP_STYLE_SRC = (
 CSP_SCRIPT_SRC = (
     "'self'",
     "https://cdn.jsdelivr.net",
+    "'sha256-hMDSqaKocjFQnFOi+zd9DA7iCijrEwaWfoI3Q6t8mxo='",  # pragma: allowlist secret
 )
 
 # Fuentes: propias + jsDelivr + data: (para icon fonts, etc.)

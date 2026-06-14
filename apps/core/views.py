@@ -190,9 +190,19 @@ def exchange_rate_today(request):
         return JsonResponse({"error": "No se pudo obtener la cotización"}, status=503)
 
 
-APP_VERSION = "1.14.0"
+APP_VERSION = "1.15.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.15.0",
+        "date": "Junio 2026",
+        "title": "Modo oscuro y proyección de cierre de período",
+        "items": [
+            "Activá el modo oscuro desde el menú de usuario — se recuerda entre sesiones",
+            "El dashboard ahora muestra una proyección de cuánto gastarás al cierre del período, basada en tu ritmo actual",
+            "La proyección aparece a partir del tercer día del período cuando tenés gastos registrados",
+        ],
+    },
     {
         "version": "1.14.0",
         "date": "Junio 2026",

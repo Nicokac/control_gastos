@@ -242,3 +242,64 @@ class TestDashboardMultiUserIsolation:
         assert "Ingreso secreto" not in content
         assert "999999" not in content
         assert "888888" not in content
+
+
+@pytest.mark.slow
+@pytest.mark.integration
+@pytest.mark.django_db
+class TestDashboardProjection:
+    """Tests de proyección de cierre de mes."""
+
+    def test_proyeccion_aparece_con_datos_suficientes(
+        self, authenticated_client, user, expense_category, income_category
+    ):
+        url = get_dashboard_url()
+        if url is None:
+            pytest.skip("Dashboard URL not configured")
+
+        today = timezone.now().date()
+        # Crear gastos en los últimos 3 días para asegurar period_day >= 3
+        for i in range(3):
+            d = today.replace(day=max(1, today.day - i))
+            Expense.objects.create(
+                user=user,
+                category=expense_category,
+                description=f"Gasto día {i}",
+                amount=Decimal("3000.00"),
+                currency=Currency.ARS,
+                exchange_rate=Decimal("1"),
+                date=d,
+            )
+        Income.objects.create(
+            user=user,
+            category=income_category,
+            description="Sueldo test",
+            amount=Decimal("100000.00"),
+            currency=Currency.ARS,
+            exchange_rate=Decimal("1"),
+            date=today,
+        )
+
+        response = authenticated_client.get(url)
+        assert response.status_code == 200
+        assert "Proyección al cierre" in response.content.decode()
+
+    def test_proyeccion_no_aparece_sin_gastos(self, authenticated_client, user, income_category):
+        url = get_dashboard_url()
+        if url is None:
+            pytest.skip("Dashboard URL not configured")
+
+        today = timezone.now().date()
+        Income.objects.create(
+            user=user,
+            category=income_category,
+            description="Sueldo test",
+            amount=Decimal("100000.00"),
+            currency=Currency.ARS,
+            exchange_rate=Decimal("1"),
+            date=today,
+        )
+
+        response = authenticated_client.get(url)
+        assert response.status_code == 200
+        assert "Proyección al cierre" not in response.content.decode()

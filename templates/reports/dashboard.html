@@ -152,6 +152,16 @@
                                 · Te quedan {{ balance|currency }}
                             </small>
                         </div>
+                        {% if projection_available %}
+                        <div class="mt-2 pt-2 border-top d-flex align-items-center gap-2 flex-wrap" style="font-size:0.82rem">
+                            <i class="bi bi-graph-up text-secondary"></i>
+                            <span class="text-muted">Proyección al cierre:</span>
+                            <span class="fw-semibold {% if projected_balance >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                {{ projected_balance|currency }}
+                            </span>
+                            <span class="text-muted">(gastos estimados {{ projected_expense|currency }})</span>
+                        </div>
+                        {% endif %}
                         {% else %}
                         <p class="text-muted mb-0 small">Sin ingresos registrados este mes. El balance refleja solo los gastos.</p>
                         {% endif %}

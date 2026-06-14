@@ -781,7 +781,7 @@ Si un gasto con la misma descripción y monto similar aparece 2-3 meses consecut
 
 ### DT-054 — Proyección de cierre de mes
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.15.0)
 
 El dashboard muestra el gasto acumulado hasta hoy pero no proyecta cómo cerrará el mes al ritmo actual.
 
@@ -853,7 +853,7 @@ Hoy `SharedExpense` registra quién pagó pero no calcula quién le debe a quié
 
 ### DT-060 — Modo oscuro en la web
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.15.0)
 
 La app web no tiene modo oscuro. Bootstrap 5.3 ya trae soporte nativo via `data-bs-theme="dark"`.
 

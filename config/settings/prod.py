@@ -182,6 +182,7 @@ CSP_SCRIPT_SRC = (
     "'self'",
     "https://cdn.jsdelivr.net",
     "https://cdnjs.cloudflare.com",
+    "'sha256-hMDSqaKocjFQnFOi+zd9DA7iCijrEwaWfoI3Q6t8mxo='",  # pragma: allowlist secret
 )
 
 # Estilos: unsafe-inline requerido para estilos dinámicos en templates (ver D-009)
