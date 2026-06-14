@@ -90,7 +90,7 @@
 
                         <!-- Exchange rate (solo visible si USD) -->
                         <div class="mb-4 {% if form.currency.value != 'USD' %}d-none{% endif %}" id="exchangeRateField">
-                            <label class="form-label">Cotización del dólar</label>
+                            <label class="form-label">Cotización del dólar <span class="text-muted fw-normal">(oficial, editable)</span></label>
                             <div class="input-group input-group-wide">
                                 <span class="input-group-text">1 USD =</span>
                                 <input type="text"
@@ -100,12 +100,16 @@
                                        placeholder="0,00"
                                        inputmode="decimal"
                                        value="{{ form.exchange_rate.value|default:'' }}"
+                                       {% if object %}data-saved-rate="{{ object.exchange_rate }}"{% endif %}
                                        {% if form.currency.value != 'USD' %}disabled{% endif %}>
                                 <span class="input-group-text">ARS</span>
                             </div>
                             {% if form.exchange_rate.errors %}
                             <div class="text-danger small mt-1">{{ form.exchange_rate.errors.0 }}</div>
                             {% endif %}
+                            <div id="exchangeRateHint" class="text-muted small mt-1 d-none">
+                                <i class="bi bi-clock me-1"></i><span id="exchangeRateUpdatedAt"></span>
+                            </div>
                         </div>
 
                         <!-- CATEGORÍA (botones visuales agrupados) -->

@@ -5,6 +5,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.14.0] — 2026-06-13
+
+### Added
+
+- **Gastos e Ingresos — Cotización USD automática**: al seleccionar dólar como moneda, el campo de cotización se rellena automáticamente con el precio de venta del dólar oficial (vía dolarapi.com). El valor se cachea 15 minutos para no martillar la API. El usuario puede editarlo libremente si necesita usar otro tipo de cambio.
+- **Gastos e Ingresos — Referencia de valor guardado**: al editar un registro en USD, se muestra el valor de cotización original junto al timestamp de la última cotización oficial, para no perder la referencia histórica.
+
+---
+
 ## [1.13.5] — 2026-06-13
 
 ### Fixed

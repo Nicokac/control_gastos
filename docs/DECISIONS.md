@@ -761,13 +761,9 @@ La app no tiene ningún mecanismo para que los usuarios apoyen económicamente e
 
 ### DT-052 — Cotización del dólar automática
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.14.0)
 
-Hoy el tipo de cambio se ingresa manualmente al registrar un gasto en USD. No hay integración con ninguna API de cotizaciones.
-
-**Why:** Argentina tiene múltiples tipos de cambio relevantes (oficial, blue, MEP). Ingresar el valor a mano es fricción diaria y genera datos inconsistentes entre usuarios.
-
-**Camino de resolución:** integrar dolarapi.com u equivalente. Guardar la cotización del día en un modelo `ExchangeRate` (moneda, tipo, valor, fecha). El formulario de gasto/ingreso en USD precarga el último valor disponible. Actualización diaria via management command o GitHub Actions cron. Override manual siempre disponible.
+Al seleccionar USD en gastos o ingresos, la cotización oficial se completa automáticamente vía dolarapi.com (precio de venta). Se cachea 15 minutos en Django cache. El usuario puede editarlo libremente. Al editar un registro existente, se muestra el valor guardado originalmente como referencia. No se implementó modelo `ExchangeRate` — la caché por request es suficiente para el volumen actual.
 
 ---
 

@@ -1,11 +1,15 @@
 # Create your views here.
+import json
 import logging
+import urllib.request
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.cache import cache
 from django.core.mail import send_mail
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse_lazy
 from django.views.generic import (
     CreateView,
@@ -161,9 +165,45 @@ class FeedbackView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-APP_VERSION = "1.13.5"
+_DOLAR_API_URL = "https://dolarapi.com/v1/dolares/oficial"
+_DOLAR_CACHE_KEY = "dolar_oficial_venta"
+_DOLAR_CACHE_TTL = 900  # 15 minutos
+
+
+@login_required
+def exchange_rate_today(request):
+    cached = cache.get(_DOLAR_CACHE_KEY)
+    if cached:
+        return JsonResponse(cached)
+
+    try:
+        req = urllib.request.Request(_DOLAR_API_URL, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read().decode())
+        payload = {
+            "venta": str(data["venta"]),
+            "updated_at": data.get("fechaActualizacion", ""),
+        }
+        cache.set(_DOLAR_CACHE_KEY, payload, timeout=_DOLAR_CACHE_TTL)
+        return JsonResponse(payload)
+    except Exception:
+        return JsonResponse({"error": "No se pudo obtener la cotización"}, status=503)
+
+
+APP_VERSION = "1.14.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.14.0",
+        "date": "Junio 2026",
+        "title": "Cotización del dólar automática",
+        "items": [
+            "Al registrar un gasto o ingreso en USD, la cotización oficial se completa automáticamente",
+            "El valor se actualiza cada 15 minutos desde la fuente oficial",
+            "Podés editarlo libremente si usaste otro tipo de cambio (blue, tarjeta, cripto)",
+            "Al editar un registro existente, se muestra el valor guardado originalmente como referencia",
+        ],
+    },
     {
         "version": "1.12.0",
         "date": "Junio 2026",

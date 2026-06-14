@@ -74,11 +74,48 @@ function initExchangeRateToggle() {
     const currencySelect = document.getElementById('id_currency');
     const exchangeRateField = document.getElementById('exchangeRateField');
     const exchangeRateInput = document.getElementById('id_exchange_rate');
+    const exchangeRateHint = document.getElementById('exchangeRateHint');
+    const exchangeRateUpdatedAt = document.getElementById('exchangeRateUpdatedAt');
 
     if (!currencySelect || !exchangeRateField || !exchangeRateInput) return;
 
-    // Preservar el valor sugerido del servidor (leer del atributo, no del .value que puede estar vacío si disabled)
     const serverSuggestedRate = exchangeRateInput.getAttribute('value') || exchangeRateInput.value;
+
+    function fetchExchangeRate() {
+        fetch('/api/exchange-rate/')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.error) return;
+
+                const formatted = parseFloat(data.venta).toLocaleString('es-AR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                });
+                exchangeRateInput.value = formatted;
+
+                if (exchangeRateHint && exchangeRateUpdatedAt) {
+                    let hint = '';
+                    if (data.updated_at) {
+                        const fecha = new Date(data.updated_at);
+                        const hora = fecha.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: false });
+                        hint = 'Última cotización oficial: ' + hora + ' hs';
+                    }
+                    const savedRate = exchangeRateInput.dataset.savedRate;
+                    if (savedRate && savedRate !== '1.0000') {
+                        const savedFormatted = parseFloat(savedRate).toLocaleString('es-AR', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                        });
+                        hint += (hint ? ' · ' : '') + 'Valor guardado: ' + savedFormatted;
+                    }
+                    if (hint) {
+                        exchangeRateUpdatedAt.textContent = hint;
+                        exchangeRateHint.classList.remove('d-none');
+                    }
+                }
+            })
+            .catch(function() {});
+    }
 
     function toggleExchangeRate() {
         const isUSD = currencySelect.value === 'USD';
@@ -88,24 +125,22 @@ function initExchangeRateToggle() {
 
         if (!isUSD) {
             exchangeRateInput.value = '';
-        } else if (!exchangeRateInput.value && serverSuggestedRate) {
-            // Restaurar el valor sugerido del servidor al cambiar a USD
-            exchangeRateInput.value = serverSuggestedRate;
-        }
-
-        if (isUSD && !exchangeRateInput.value) {
-            const serverValue = exchangeRateInput.defaultValue;
-            if (serverValue && serverValue !== '0' && serverValue !== '0,00') {
-                exchangeRateInput.value = serverValue;
+            if (exchangeRateHint) exchangeRateHint.classList.add('d-none');
+        } else {
+            if (serverSuggestedRate) {
+                exchangeRateInput.value = serverSuggestedRate;
             }
+            fetchExchangeRate();
             exchangeRateInput.focus();
         }
     }
 
     currencySelect.addEventListener('change', toggleExchangeRate);
 
-    // Estado inicial
-    toggleExchangeRate();
+    // Estado inicial: si ya está en USD (edición), traer cotización sin pisar el valor existente
+    if (currencySelect.value === 'USD') {
+        fetchExchangeRate();
+    }
 }
 
 /**
