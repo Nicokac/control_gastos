@@ -9,6 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.core.utils import get_financial_period
 from apps.expenses.models import Expense
 from apps.income.models import Income
 from apps.recurring.models import RecurringExpense
@@ -116,6 +117,26 @@ class DashboardView(APIView):
             )[:5]
         )
 
+        # Proyección de cierre de período (solo período actual, mínimo 3 días)
+        is_current_period = month == today.month and year == today.year
+        projection_available = False
+        projected_expense = None
+        projected_balance = None
+
+        if is_current_period:
+            start_day = getattr(user, "financial_month_start_day", 1)
+            fin_start, fin_end = get_financial_period(month, year, start_day)
+            period_total_days = (fin_end - fin_start).days
+            if fin_start <= today < fin_end:
+                period_day = (today - fin_start).days + 1
+            else:
+                period_day = period_total_days
+            if period_day >= 3 and period_total_days > 0 and total_expenses > 0:
+                daily_rate = total_expenses / period_day
+                projected_expense = daily_rate * period_total_days
+                projected_balance = total_income - projected_expense
+                projection_available = True
+
         return Response(
             {
                 "month": month,
@@ -150,5 +171,12 @@ class DashboardView(APIView):
                     "expenses": recent_expenses,
                     "income": recent_income,
                 },
+                "projection_available": projection_available,
+                "projected_expense": str(projected_expense)
+                if projected_expense is not None
+                else None,
+                "projected_balance": str(projected_balance)
+                if projected_balance is not None
+                else None,
             }
         )

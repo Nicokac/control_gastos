@@ -10,6 +10,7 @@ import '../widgets/pending_recurring_card.dart';
 import '../widgets/dashboard_skeleton.dart';
 import '../widgets/last_updated_label.dart';
 import '../../../core/widgets/offline_banner.dart';
+import '../../../core/utils/formatters.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -123,6 +124,13 @@ class _DashboardContent extends StatelessWidget {
           onTapIncome: () => context.push('/income'),
           onTapExpenses: () => context.push('/expenses'),
         ),
+        if (data['projection_available'] == true) ...[
+          const SizedBox(height: 8),
+          _ProjectionBanner(
+            projectedExpense: data['projected_expense'] as String,
+            projectedBalance: data['projected_balance'] as String,
+          ),
+        ],
         const SizedBox(height: 12),
         Row(
           children: [
@@ -189,6 +197,52 @@ class _DashboardContent extends StatelessWidget {
         RecentTransactionsList(expenses: recentExpenses, income: recentIncome),
         const SizedBox(height: 16),
       ],
+    );
+  }
+}
+
+class _ProjectionBanner extends StatelessWidget {
+  final String projectedExpense;
+  final String projectedBalance;
+
+  const _ProjectionBanner({
+    required this.projectedExpense,
+    required this.projectedBalance,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final balanceValue = double.tryParse(projectedBalance) ?? 0;
+    final isPositive = balanceValue >= 0;
+    final color = isPositive ? Colors.green[700]! : Colors.red[700]!;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.trending_up, size: 16, color: color),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Proyección al cierre: ${formatArsString(projectedExpense)} en gastos',
+              style: TextStyle(fontSize: 12, color: color),
+            ),
+          ),
+          Text(
+            formatArsString(projectedBalance),
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
