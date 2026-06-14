@@ -135,7 +135,7 @@
                             <a href="{% url 'users:profile' %}" class="ms-auto text-decoration-none small">Cambiar umbral</a>
                         </div>
                         {% endif %}
-                        <div class="progress mb-2" style="height: 12px; border-radius: 6px; background-color: #e9ecef;">
+                        <div class="progress mb-2" style="height: 12px; border-radius: 6px;">
                             <div class="progress-bar {% if expense_percentage >= alert_threshold %}bg-danger{% else %}bg-success{% endif %}"
                                 role="progressbar"
                                 style="width: {% if expense_percentage > 100 %}100{% else %}{{ expense_percentage|floatformat:0 }}{% endif %}%; min-width: 10px; border-radius: 6px;"

@@ -636,3 +636,10 @@ form#incomeForm .category-btn:hover .btn {
 [data-bs-theme="dark"] .amount-input input::placeholder {
     color: #6c757d;
 }
+
+[data-bs-theme="dark"] .table-light,
+[data-bs-theme="dark"] .table-light > * > tr > td,
+[data-bs-theme="dark"] .table-light > * > tr > th {
+    --bs-table-bg: transparent;
+    color: inherit;
+}
