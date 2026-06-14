@@ -781,13 +781,15 @@ Si un gasto con la misma descripción y monto similar aparece 2-3 meses consecut
 
 ### DT-054 — Proyección de cierre de mes
 
-**Estado:** ✅ Resuelto (v1.15.0)
+**Estado:** ✅ Resuelto (v1.15.0 web · v1.16.0 mobile)
 
 El dashboard muestra el gasto acumulado hasta hoy pero no proyecta cómo cerrará el mes al ritmo actual.
 
 **Why:** los datos pasados informan; la proyección permite actuar. "A este ritmo terminás el mes con −$45.000" convierte la app de registro histórico en herramienta de decisión.
 
-**Camino de resolución:** con el período financiero ya configurable (`financial_month_start_day`), calcular `gasto_diario_promedio * días_restantes` y sumarlo al acumulado. Mostrar como badge en el hero del dashboard. Sin modelo nuevo, solo lógica en `DashboardView`.
+**Resolución web (v1.15.0):** con el período financiero ya configurable (`financial_month_start_day`), calcular `gasto_diario_promedio * días_restantes` y sumarlo al acumulado. Mostrar como badge en el hero del dashboard. Sin modelo nuevo, solo lógica en `DashboardView`.
+
+**Resolución mobile (v1.16.0):** los campos `projection_available`, `projected_expense` y `projected_balance` se agregaron al endpoint `GET /api/v1/dashboard/`. La lógica reutiliza `get_financial_period()` con el `financial_month_start_day` del usuario, idéntica a la web. En Flutter, `_ProjectionBanner` se muestra entre `BalanceCard` y los botones rápidos solo cuando `projection_available == true`.
 
 ---
 

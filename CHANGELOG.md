@@ -5,6 +5,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.16.0] — 2026-06-14
+
+### Added
+
+- **Mobile — Proyección de cierre de período**: el dashboard móvil ahora muestra el banner de proyección entre el card de balance y los botones rápidos. La lógica es idéntica a la web: gasto diario promedio × días totales del período financiero. Se muestra solo en el período actual con al menos 3 días de gastos y respeta el `financial_month_start_day` del usuario.
+- **API — Campos de proyección en `/api/v1/dashboard/`**: el endpoint devuelve `projection_available` (bool), `projected_expense` y `projected_balance` (strings o null). Lógica server-side con `get_financial_period()` reutilizada de la vista web.
+
+---
+
 ## [1.15.0] — 2026-06-14
 
 ### Added
