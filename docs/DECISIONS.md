@@ -757,7 +757,7 @@ La app no tiene ningún mecanismo para que los usuarios apoyen económicamente e
 
 **Why:** se quiere validar la disposición a pagar de los usuarios antes de invertir en la infraestructura de pagos recurrentes (Stripe + modelo freemium). Cafecito es cero fricción técnica y permite recibir apoyo voluntario de forma inmediata.
 
-**Resolución:** botón "Invitame un café" agregado en el sidebar web (pie), en la tarjeta "Acerca de" del perfil web, y en la pantalla "Acerca de" de la app móvil. URL: [cafecito.app/niicok](https://cafecito.app/niicok)
+**Resolución:** botón "Invitame un Cafecito" agregado en el sidebar web (pie), en la tarjeta "Acerca de" del perfil web, y en la pantalla "Acerca de" de la app móvil. URL: [cafecito.app/niicok](https://cafecito.app/niicok)
 
 ### DT-052 — Cotización del dólar automática
 

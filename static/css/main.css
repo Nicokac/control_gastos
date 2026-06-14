@@ -637,9 +637,24 @@ form#incomeForm .category-btn:hover .btn {
     color: #6c757d;
 }
 
-[data-bs-theme="dark"] .table-light,
-[data-bs-theme="dark"] .table-light > * > tr > td,
-[data-bs-theme="dark"] .table-light > * > tr > th {
-    --bs-table-bg: transparent;
-    color: inherit;
+[data-bs-theme="dark"] thead.table-light th,
+[data-bs-theme="dark"] thead.table-light td,
+[data-bs-theme="dark"] tbody.table-light td,
+[data-bs-theme="dark"] tbody.table-light th,
+[data-bs-theme="dark"] tfoot.table-light td,
+[data-bs-theme="dark"] tfoot.table-light th {
+    color: var(--bs-body-color);
+    background-color: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme="dark"] tr.table-secondary > td,
+[data-bs-theme="dark"] tr.table-secondary > th {
+    background-color: rgba(255, 255, 255, 0.06);
+    color: var(--bs-secondary-color);
+}
+
+[data-bs-theme="dark"] .app-main table th,
+[data-bs-theme="dark"] .app-main table td {
+    color: var(--bs-body-color);
 }
