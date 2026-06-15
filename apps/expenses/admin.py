@@ -22,7 +22,6 @@ class ExpenseAdmin(admin.ModelAdmin):
         "date",
         "category",
         "payment_method",
-        "expense_type",
         "currency",
     )
     search_fields = (
@@ -40,7 +39,7 @@ class ExpenseAdmin(admin.ModelAdmin):
         ("Monto", {"fields": ("amount", "currency", "exchange_rate", "amount_ars")}),
         (
             "Detalles Opcionales",
-            {"fields": ("payment_method", "expense_type"), "classes": ("collapse",)},
+            {"fields": ("payment_method",), "classes": ("collapse",)},
         ),
         ("Auditoría", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
     )

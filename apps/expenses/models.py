@@ -5,7 +5,7 @@ from decimal import Decimal
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import models
 
-from apps.core.constants import ExpenseType, PaymentMethod
+from apps.core.constants import PaymentMethod
 from apps.core.mixins import CurrencyMixin, TimestampMixin
 from apps.core.utils import get_month_date_range_exclusive
 
@@ -37,13 +37,6 @@ class Expense(TimestampMixin, CurrencyMixin, models.Model):
         blank=True,
         default="",
         verbose_name="Método de pago",
-    )
-    expense_type = models.CharField(
-        max_length=10,
-        choices=ExpenseType.choices,
-        blank=True,
-        default="",
-        verbose_name="Tipo de gasto",
     )
     saving = models.ForeignKey(
         "savings.Saving",

@@ -88,17 +88,15 @@ class TestExpenseListView:
         assert response.status_code == 200
         assert response.context["total"] == Decimal("1500.00")
 
-    def test_list_builds_expense_type_and_payment_method_summary(
+    def test_list_builds_payment_method_summary(
         self, authenticated_client, user, expense_category, expense_factory
     ):
-        """Verifica que construya resúmenes por tipo y método de pago."""
         expense_factory(
             user,
             expense_category,
-            description="Gasto Fijo Efectivo",
+            description="Gasto Efectivo",
             amount=Decimal("1000.00"),
             date=timezone.now().date(),
-            expense_type="FIXED",
             payment_method="CASH",
         )
 
@@ -106,13 +104,7 @@ class TestExpenseListView:
         response = authenticated_client.get(url)
 
         assert response.status_code == 200
-
-        expense_type_summary = response.context["expense_type_summary"]
         payment_method_summary = response.context["payment_method_summary"]
-
-        assert len(expense_type_summary) == 1
-        assert expense_type_summary[0]["subtotal"] == Decimal("1000.00")
-
         assert len(payment_method_summary) == 1
         assert payment_method_summary[0]["subtotal"] == Decimal("1000.00")
 
@@ -135,7 +127,6 @@ class TestExpenseListView:
         content = response.content.decode()
 
         assert "M\u00e9todo de pago" in content or "Método de pago" in content
-        assert "Tipo" in content
         assert "filter_form" in response.context
 
 
@@ -259,7 +250,6 @@ class TestExpenseCreateView:
 
         # Campos opcionales visibles directamente en el formulario
         assert "M\u00e9todo de pago" in content or "Método de pago" in content
-        assert "Tipo de gasto" in content
 
 
 @pytest.mark.django_db
@@ -610,23 +600,6 @@ class TestExpenseListViewFilters:
         content = response.content.decode()
         assert "Pago Efectivo" in content
         assert "Pago Débito" not in content
-
-    def test_filter_by_expense_type(
-        self, authenticated_client, user, expense_category, expense_factory
-    ):
-        """Verifica filtro por tipo de gasto."""
-        expense_factory(user, expense_category, description="Gasto Fijo", expense_type="FIXED")
-        expense_factory(
-            user, expense_category, description="Gasto Variable", expense_type="VARIABLE"
-        )
-
-        url = reverse("expenses:list")
-        response = authenticated_client.get(url, {"expense_type": "FIXED"})
-
-        assert response.status_code == 200
-        content = response.content.decode()
-        assert "Gasto Fijo" in content
-        assert "Gasto Variable" not in content
 
     def test_filter_by_date_range(
         self, authenticated_client, user, expense_category, expense_factory

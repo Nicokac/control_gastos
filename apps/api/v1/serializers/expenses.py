@@ -28,7 +28,6 @@ class ExpenseSerializer(serializers.ModelSerializer):
             "category_color",
             "category_icon",
             "payment_method",
-            "expense_type",
             "saving",
             "recurring",
             "created_at",

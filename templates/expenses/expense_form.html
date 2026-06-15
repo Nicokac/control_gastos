@@ -212,19 +212,6 @@
                                 {% endif %}
                             </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label text-muted">Tipo de gasto <span class="fw-normal">(opcional)</span></label>
-                                <select name="expense_type" class="form-select {% if form.expense_type.errors %}is-invalid{% endif %}">
-                                    {% for value, label in form.expense_type.field.choices %}
-                                    <option value="{{ value }}" {% if form.expense_type.value == value %}selected{% endif %}>
-                                        {{ label }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                                {% if form.expense_type.errors %}
-                                <div class="invalid-feedback">{{ form.expense_type.errors.0 }}</div>
-                                {% endif %}
-                            </div>
                         </div>
 
                 {{ form.recurring }}

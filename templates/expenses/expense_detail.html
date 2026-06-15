@@ -65,15 +65,6 @@
                             {% endif %}
                         </dd>
 
-                        <dt class="col-sm-4 text-muted">Tipo de gasto</dt>
-                        <dd class="col-sm-8">
-                            {% if expense.expense_type %}
-                                {{ expense.get_expense_type_display }}
-                            {% else %}
-                                <span class="text-muted">No especificado</span>
-                                <a href="{% url 'expenses:update' expense.pk %}" class="ms-2 small text-primary text-decoration-none">Completar</a>
-                            {% endif %}
-                        </dd>
                     </dl>
 
                     <hr>

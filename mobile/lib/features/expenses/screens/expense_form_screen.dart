@@ -24,7 +24,6 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
   int? _categoryId;
   String _currency = 'ARS';
   String _paymentMethod = '';
-  String _expenseType = '';
 
   bool _loading = false;
   bool get _isEditing => widget.existing != null;
@@ -40,7 +39,6 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
       _categoryId = e['category'] as int?;
       _currency = e['currency'] as String? ?? 'ARS';
       _paymentMethod = e['payment_method'] as String? ?? '';
-      _expenseType = e['expense_type'] as String? ?? '';
       // _groupId se resuelve después de que carguen las categorías
     }
   }
@@ -158,7 +156,6 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
       'description': _descCtrl.text.trim(),
       'category': _categoryId,
       if (_paymentMethod.isNotEmpty) 'payment_method': _paymentMethod,
-      if (_expenseType.isNotEmpty) 'expense_type': _expenseType,
     };
 
     final notifier = ref.read(expenseListProvider.notifier);
@@ -391,21 +388,6 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
             ),
             const SizedBox(height: 16),
 
-            DropdownButtonFormField<String>(
-              value: _expenseType.isEmpty ? null : _expenseType,
-              decoration: const InputDecoration(
-                labelText: 'Tipo de gasto',
-                prefixIcon: Icon(Icons.category_outlined),
-                border: OutlineInputBorder(),
-              ),
-              items: const [
-                DropdownMenuItem(value: null, child: Text('Sin especificar')),
-                DropdownMenuItem(value: 'FIXED', child: Text('Fijo')),
-                DropdownMenuItem(value: 'VARIABLE', child: Text('Variable')),
-              ],
-              onChanged: (v) =>
-                  setState(() => _expenseType = v ?? ''),
-            ),
           ],
         ),
       ),

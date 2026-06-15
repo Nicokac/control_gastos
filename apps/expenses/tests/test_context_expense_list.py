@@ -33,7 +33,6 @@ class TestExpenseListContext:
 
         assert "filter_form" in response.context
         assert "total" in response.context
-        assert "expense_type_summary" in response.context
         assert "payment_method_summary" in response.context
 
         assert isinstance(response.context["filter_form"], ExpenseFilterForm)

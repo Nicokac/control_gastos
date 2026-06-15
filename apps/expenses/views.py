@@ -8,7 +8,7 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 
 from apps.categories.models import Category
-from apps.core.constants import ExpenseType, PaymentMethod
+from apps.core.constants import PaymentMethod
 from apps.core.utils import get_month_date_range_exclusive
 from apps.core.views import (
     UserOwnedCreateView,
@@ -43,7 +43,6 @@ class ExpenseListView(UserOwnedListView):
                 "date_from",
                 "date_to",
                 "payment_method",
-                "expense_type",
             ]
         )
 
@@ -59,7 +58,6 @@ class ExpenseListView(UserOwnedListView):
         category = self.request.GET.get("category")
         subcategory = self.request.GET.get("subcategory")
         payment_method = self.request.GET.get("payment_method")
-        expense_type = self.request.GET.get("expense_type")
 
         # Filtro por fecha exacta (date_from / date_to) — tiene prioridad sobre mes/año
         date_from = self.request.GET.get("date_from")
@@ -108,8 +106,6 @@ class ExpenseListView(UserOwnedListView):
             qs = qs.filter(category__parent_id=category)
         if payment_method:
             qs = qs.filter(payment_method=payment_method)
-        if expense_type:
-            qs = qs.filter(expense_type=expense_type)
 
         order_by = self.request.GET.get("order_by", "date")
         direction = self.request.GET.get("dir", "desc")
@@ -138,7 +134,6 @@ class ExpenseListView(UserOwnedListView):
                 "date_from",
                 "date_to",
                 "payment_method",
-                "expense_type",
             ]
         )
 
@@ -156,7 +151,6 @@ class ExpenseListView(UserOwnedListView):
                 "category",
                 "subcategory",
                 "payment_method",
-                "expense_type",
             ]
         )
         context["order_by"] = self.request.GET.get("order_by", "date")
@@ -167,31 +161,6 @@ class ExpenseListView(UserOwnedListView):
         total = qs.aggregate(total=Sum("amount_ars"))["total"] or 0
         context["total"] = total
         total_nonzero = total or 1
-
-        expense_type_labels = dict(ExpenseType.choices)
-        type_classified = qs.exclude(expense_type="").aggregate(s=Sum("amount_ars"))["s"] or 0
-        type_unclassified = (total - type_classified) if total else 0
-        expense_type_summary = [
-            {
-                "label": expense_type_labels.get(row["expense_type"], row["expense_type"]),
-                "subtotal": row["subtotal"],
-            }
-            for row in qs.exclude(expense_type="")
-            .values("expense_type")
-            .annotate(subtotal=Sum("amount_ars"))
-            .order_by("expense_type")
-        ]
-        if type_unclassified > 0:
-            expense_type_summary.append({"label": "Sin clasificar", "subtotal": type_unclassified})
-        _type_colors = {"Fijo": "#0d6efd", "Variable": "#20c997", "Sin clasificar": "#adb5bd"}
-        for item in expense_type_summary:
-            item["pct"] = round(item["subtotal"] / total_nonzero * 100, 1)
-            item["color"] = _type_colors.get(item["label"], "#6c757d")
-        expense_type_summary.sort(key=lambda x: x["subtotal"], reverse=True)
-        context["expense_type_summary"] = expense_type_summary
-        context["type_donut_labels"] = [i["label"] for i in expense_type_summary]
-        context["type_donut_data"] = [float(i["subtotal"]) for i in expense_type_summary]
-        context["type_donut_colors"] = [i["color"] for i in expense_type_summary]
 
         payment_method_labels = dict(PaymentMethod.choices)
         method_classified = qs.exclude(payment_method="").aggregate(s=Sum("amount_ars"))["s"] or 0
@@ -290,7 +259,6 @@ class ExpenseListView(UserOwnedListView):
                 "date_from",
                 "date_to",
                 "payment_method",
-                "expense_type",
             ]
         )
         if has_filters:
@@ -501,7 +469,6 @@ class ExpenseCreateView(UserOwnedCreateView):
                 initial["currency"] = source.currency
                 initial["exchange_rate"] = source.exchange_rate
                 initial["payment_method"] = source.payment_method
-                initial["expense_type"] = source.expense_type
             except (Expense.DoesNotExist, ValueError):
                 pass
 
@@ -603,11 +570,9 @@ class ExpenseExportView(ExpenseListView):
                 "Tipo de cambio",
                 "Monto ARS",
                 "Método de pago",
-                "Tipo de gasto",
             ]
         )
 
-        expense_type_labels = dict(ExpenseType.choices)
         payment_method_labels = dict(PaymentMethod.choices)
 
         for expense in expenses:
@@ -626,9 +591,6 @@ class ExpenseExportView(ExpenseListView):
                     expense.amount_ars,
                     payment_method_labels.get(expense.payment_method, "")
                     if expense.payment_method
-                    else "",
-                    expense_type_labels.get(expense.expense_type, "")
-                    if expense.expense_type
                     else "",
                 ]
             )

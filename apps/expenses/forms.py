@@ -8,7 +8,7 @@ from django import forms
 from django.utils import timezone
 
 from apps.categories.models import Category
-from apps.core.constants import ExpenseType, PaymentMethod
+from apps.core.constants import PaymentMethod
 from apps.core.forms import BaseFilterForm, CurrencyFormMixin
 from apps.savings.models import Saving, SavingStatus
 
@@ -35,7 +35,6 @@ class ExpenseForm(CurrencyFormMixin, forms.ModelForm):
             "exchange_rate",
             "description",
             "payment_method",
-            "expense_type",
         ]
         widgets = {
             "amount": forms.TextInput(
@@ -65,11 +64,6 @@ class ExpenseForm(CurrencyFormMixin, forms.ModelForm):
                 }
             ),
             "payment_method": forms.Select(
-                attrs={
-                    "class": "form-select",
-                }
-            ),
-            "expense_type": forms.Select(
                 attrs={
                     "class": "form-select",
                 }
@@ -124,7 +118,6 @@ class ExpenseForm(CurrencyFormMixin, forms.ModelForm):
 
         # Hacer campos opcionales explícitamente no requeridos
         self.fields["payment_method"].required = False
-        self.fields["expense_type"].required = False
         self.fields["exchange_rate"].required = False
 
         # Savings activas del usuario como destino opcional
@@ -159,7 +152,6 @@ class ExpenseForm(CurrencyFormMixin, forms.ModelForm):
         self.fields["payment_method"].choices = [("", "-- Opcional --")] + list(
             PaymentMethod.choices
         )
-        self.fields["expense_type"].choices = [("", "-- Opcional --")] + list(ExpenseType.choices)
 
     def clean(self):
         """Validaciones adicionales."""
@@ -219,18 +211,12 @@ class ExpenseFilterForm(BaseFilterForm):
         required=False,
         widget=forms.Select(attrs={"class": "form-select form-select-sm"}),
     )
-    expense_type = forms.ChoiceField(
-        choices=[],
-        required=False,
-        widget=forms.Select(attrs={"class": "form-select form-select-sm"}),
-    )
 
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, user=user, **kwargs)
         self.fields["payment_method"].choices = [("", "Todos los métodos")] + list(
             PaymentMethod.choices
         )
-        self.fields["expense_type"].choices = [("", "Todos los tipos")] + list(ExpenseType.choices)
         if user:
             from apps.core.constants import CategoryType
 

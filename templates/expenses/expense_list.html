@@ -56,10 +56,6 @@
                 <label class="form-label small text-muted">Método de pago</label>
                 {{ filter_form.payment_method }}
             </div>
-            <div class="col-md-2">
-                <label class="form-label small text-muted">Tipo</label>
-                {{ filter_form.expense_type }}
-            </div>
             <div class="col-auto ms-auto d-flex gap-2 align-items-end">
                 <button type="submit" class="btn btn-outline-primary btn-sm">
                     <i class="bi bi-funnel"></i>
@@ -84,7 +80,7 @@
         <div class="d-flex justify-content-between align-items-center">
             <span class="text-muted">Total del período:</span>
             <div class="d-flex align-items-center gap-3">
-                {% if expense_type_summary or payment_method_summary or category_summary %}
+                {% if payment_method_summary or category_summary %}
                 <a class="text-decoration-none small text-muted expense-summary-toggle"
                    data-bs-toggle="collapse"
                    href="#expenseSummaryDetail"
@@ -95,7 +91,7 @@
                 <span class="h4 mb-0 text-danger">{{ total|currency }}</span>
             </div>
         </div>
-        {% if group_summary or expense_type_summary or payment_method_summary %}
+        {% if group_summary or payment_method_summary %}
         {{ donut_labels|json_script:"expense-donut-labels" }}
         {{ donut_data|json_script:"expense-donut-data" }}
         {{ donut_colors|json_script:"expense-donut-colors" }}
@@ -168,34 +164,11 @@
             </div>
             <hr class="my-3">
             {% endif %}
-            {% if expense_type_summary or payment_method_summary %}
-            {{ type_donut_labels|json_script:"expense-type-labels" }}
-            {{ type_donut_data|json_script:"expense-type-data" }}
-            {{ type_donut_colors|json_script:"expense-type-colors" }}
+            {% if payment_method_summary %}
             {{ method_donut_labels|json_script:"expense-method-labels" }}
             {{ method_donut_data|json_script:"expense-method-data" }}
             {{ method_donut_colors|json_script:"expense-method-colors" }}
             <div class="row g-4">
-                {% if expense_type_summary %}
-                <div class="col-md-6">
-                    <p class="small text-muted mb-2">Por tipo de gasto</p>
-                    <div class="d-flex gap-3 align-items-center">
-                        <div style="position:relative;width:120px;height:120px;flex-shrink:0">
-                            <canvas id="expenseTypeDonut"></canvas>
-                        </div>
-                        <div class="flex-grow-1">
-                            {% for item in expense_type_summary %}
-                            <div class="d-flex align-items-center small mb-1">
-                                <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background-color:{{ item.color }};flex-shrink:0;margin-right:6px"></span>
-                                <span class="text-truncate flex-grow-1 me-2">{{ item.label }}</span>
-                                <span class="text-muted flex-shrink-0">{{ item.pct }}%</span>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
-                {% if payment_method_summary %}
                 <div class="col-md-6">
                     <p class="small text-muted mb-2">Por método de pago</p>
                     <div class="d-flex gap-3 align-items-center">
@@ -213,7 +186,6 @@
                         </div>
                     </div>
                 </div>
-                {% endif %}
             </div>
             {% endif %}
         </div>
