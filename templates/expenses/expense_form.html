@@ -50,12 +50,12 @@
                 {% if form.errors %}
                 <div class="alert alert-warning">
                     <p class="mb-1 fw-semibold">No pudimos guardar el gasto.</p>
-                    <p class="mb-0 small">Completá monto, categoría y fecha. La descripción, destino de ahorro, método de pago y tipo son opcionales.</p>
+                    <p class="mb-0 small">Completá monto, categoría y fecha. La descripción, destino de ahorro y método de pago son opcionales.</p>
                 </div>
                 {% else %}
                 <div class="alert alert-light border mb-4">
                     <p class="mb-1 fw-semibold">Antes de registrarlo</p>
-                    <p class="mb-0 small">Monto, categoría y fecha son obligatorios. La descripción, destino de ahorro, método de pago y tipo son opcionales.</p>
+                    <p class="mb-0 small">Monto, categoría y fecha son obligatorios. La descripción, destino de ahorro y método de pago son opcionales.</p>
                 </div>
                 {% endif %}
 
@@ -196,7 +196,7 @@
                             {% endif %}
                         </div>
 
-                        <!-- MÉTODO DE PAGO Y TIPO -->
+                        <!-- MÉTODO DE PAGO -->
                         <div class="row mb-4 pt-3 border-top">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label text-muted">Método de pago <span class="fw-normal">(opcional)</span></label>

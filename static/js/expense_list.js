@@ -23,7 +23,6 @@ document.addEventListener('DOMContentLoaded', function () {
             initExpenseDailyChart();
             initExpenseDailyBarChart();
             initExpenseMonthlyChart();
-            initSmallDonut('expenseTypeDonut', 'expense-type-labels', 'expense-type-data', 'expense-type-colors');
             initSmallDonut('expenseMethodDonut', 'expense-method-labels', 'expense-method-data', 'expense-method-colors');
         }
 
