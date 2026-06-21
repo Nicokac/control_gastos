@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/utils/category_icons.dart';
 
 class CategorySelector extends StatelessWidget {
   final List<dynamic> categories;
@@ -79,42 +80,5 @@ class CategorySelector extends StatelessWidget {
     );
   }
 
-  IconData _iconFromName(String name) {
-    const map = <String, IconData>{
-      'house': Icons.home,
-      'house-fill': Icons.home,
-      'cart': Icons.shopping_cart,
-      'cart-fill': Icons.shopping_cart,
-      'car-front': Icons.directions_car,
-      'car-front-fill': Icons.directions_car,
-      'heart-pulse': Icons.favorite,
-      'heart-pulse-fill': Icons.favorite,
-      'book': Icons.book,
-      'book-fill': Icons.book,
-      'cup-hot': Icons.local_cafe,
-      'cup-hot-fill': Icons.local_cafe,
-      'airplane': Icons.flight,
-      'controller': Icons.sports_esports,
-      'tv': Icons.tv,
-      'phone': Icons.phone,
-      'wifi': Icons.wifi,
-      'lightning': Icons.bolt,
-      'droplet': Icons.water_drop,
-      'scissors': Icons.content_cut,
-      'gift': Icons.card_giftcard,
-      'gift-fill': Icons.card_giftcard,
-      'person': Icons.person,
-      'people': Icons.group,
-      'briefcase': Icons.work,
-      'briefcase-fill': Icons.work,
-      'graph-up': Icons.trending_up,
-      'bank': Icons.account_balance,
-      'cash-coin': Icons.attach_money,
-      'piggy-bank': Icons.savings,
-      'piggy-bank-fill': Icons.savings,
-      'repeat': Icons.repeat,
-      'circle': Icons.circle,
-    };
-    return map[name] ?? Icons.label_outline;
-  }
+  IconData _iconFromName(String name) => categoryIconFromName(name);
 }

@@ -5,6 +5,16 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [Mobile 1.15.1] — 2026-06-15
+
+### Fixed
+
+- **Mobile — Selector de ícono al crear categoría**: faltaba la UI para elegir ícono; se creaba siempre con un valor fijo no perteneciente al catálogo. Ahora se muestra un grid con los 42 íconos de `CATEGORY_ICON_CHOICES` y se envía el seleccionado.
+- **Mobile — Categoría nueva no aparecía al crear un gasto**: el provider de categorías del formulario de gasto (`categoriesProvider`) no se invalidaba al crear una categoría, solo al borrarla. Quedaba cacheada la lista vieja hasta reiniciar la app.
+- **Mobile — Íconos de categorías creadas desde la web no se veían en la app**: el mapeo de íconos comparaba sin el prefijo `bi-` (ej. `'house'`) pero el backend guarda `bi-house`; ningún ícono coincidía nunca. Corregido y centralizado en `core/utils/category_icons.dart`.
+
+---
+
 ## [1.16.0] — 2026-06-14
 
 ### Added

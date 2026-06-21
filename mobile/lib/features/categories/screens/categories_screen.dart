@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/utils/category_icons.dart';
 import '../../expenses/providers/expense_provider.dart';
 
 // Provider de categorías con invalidación
@@ -43,7 +44,10 @@ class CategoriesScreen extends ConsumerWidget {
       ),
       builder: (ctx) => _CreateCategorySheet(
         parentGroup: parentGroup,
-        onCreated: () => ref.invalidate(allCategoriesProvider),
+        onCreated: () {
+          ref.invalidate(allCategoriesProvider);
+          ref.invalidate(categoriesProvider);
+        },
       ),
     );
   }
@@ -106,7 +110,10 @@ class _CategoriesList extends StatelessWidget {
       builder: (ctx) => _CreateCategorySheet(
         parentGroup: parent,
         forceType: type,
-        onCreated: () => ref.invalidate(allCategoriesProvider),
+        onCreated: () {
+          ref.invalidate(allCategoriesProvider);
+          ref.invalidate(categoriesProvider);
+        },
       ),
     );
   }
@@ -334,6 +341,7 @@ class _CreateCategorySheetState extends ConsumerState<_CreateCategorySheet> {
   final _nameCtrl = TextEditingController();
   String _type = 'EXPENSE';
   String _color = '#6c757d';
+  String _icon = 'bi-tag';
   bool _loading = false;
 
   static const _colors = [
@@ -361,7 +369,7 @@ class _CreateCategorySheetState extends ConsumerState<_CreateCategorySheet> {
       'name': _nameCtrl.text.trim(),
       'type': _type,
       'color': _color,
-      'icon': 'circle',
+      'icon': _icon,
       if (widget.parentGroup != null) 'parent': widget.parentGroup!['id'],
     };
 
@@ -453,6 +461,51 @@ class _CreateCategorySheetState extends ConsumerState<_CreateCategorySheet> {
                 ),
               );
             }).toList(),
+          ),
+          const SizedBox(height: 16),
+          Text('Ícono',
+              style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 96,
+            child: GridView.builder(
+              scrollDirection: Axis.horizontal,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+                childAspectRatio: 1,
+              ),
+              itemCount: categoryIconChoices.length,
+              itemBuilder: (context, index) {
+                final name = categoryIconChoices[index];
+                final selected = _icon == name;
+                final c = Color(
+                    int.parse('FF${_color.replaceFirst('#', '')}', radix: 16));
+                return GestureDetector(
+                  onTap: () => setState(() => _icon = name),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? c.withValues(alpha: 0.2)
+                          : Colors.grey.withValues(alpha: 0.07),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: selected ? c : Colors.transparent,
+                        width: 2,
+                      ),
+                    ),
+                    child: Icon(
+                      categoryIconFromName(name),
+                      color: selected ? c : Colors.grey[600],
+                      size: 20,
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
           const SizedBox(height: 20),
           SizedBox(
