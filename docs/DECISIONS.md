@@ -54,6 +54,8 @@ Mantenerlos visibles en el formulario principal.
   y analizar comportamiento por método de pago.
 - Moverlos a sección colapsada reduciría su adopción sin beneficio real de UX.
 
+**Nota (2026-06-14):** `expense_type` fue eliminado por completo del modelo, no solo reubicado. Ver commit `b57d2b7`.
+
 ---
 
 ## D-003 — alert_threshold global definido en User, no en Budget

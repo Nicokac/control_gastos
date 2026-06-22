@@ -7,9 +7,9 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 
 ## Estado Actual
 
-- ✅ Backend Django completo (web app funcional en producción — v1.8.0)
+- ✅ Backend Django completo (web app funcional en producción — v1.16.0)
 - ✅ API REST completa (DRF + JWT, todos los endpoints)
-- ✅ App Flutter en progreso — Auth, Dashboard, Gastos, Ingresos, Gastos Compartidos funcionando
+- ✅ App Flutter publicada en Google Play Console (v1.15.1+5) — todas las features del MVP funcionando
 
 ---
 
@@ -214,7 +214,7 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 - [x] `flutter build appbundle --release` — app-release.aab generado (54 MB)
 - [x] Application ID: `app.controlgastos`, nombre: "Control de Gastos", versión: 1.12.0+1
 - [x] Keystore de firma configurado
-- [ ] Android: Google Play Console — cuenta creada, verificación de identidad pendiente
+- [x] Android: Google Play Console — cuenta verificada, app publicada (versión actual: 1.15.1+5)
 
 ---
 
@@ -240,11 +240,13 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 ---
 
 ## FASE 7 — v2 Features
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Completa (2026-06-21)
 
 ### 7.1 Mejoras pendientes (deuda técnica)
 - [x] DT-048 — ícono representativo de la app
 - [x] DT-049 — deshacer "marcar pagado" en gastos fijos
+- [x] DT-054 (mobile) — proyección de cierre de período en dashboard
+- [x] Fix — selector de ícono al crear categoría + caché de categorías no invalidada al crear gasto
 
 ---
 
@@ -303,3 +305,19 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-06-07 | Fase 5 | Offline support: cache local en dashboard y gastos, banner visual cuando no hay conexión |
 | 2026-06-07 | Fase 5 | Build & Release: application ID app.controlgastos, keystore configurado, appbundle generado |
 | 2026-06-07 | Fase 6 | Testing completo: 51 tests pasando — 4 unit providers + 5 widget tests |
+| 2026-06-07 | Fase 4 | Gastos compartidos: bloquea creación si no hay miembros del hogar cargados |
+| 2026-06-07 | Fase 4 | Dashboard: acceso permanente a Gastos Fijos, card visible siempre (no solo con pendientes) |
+| 2026-06-07 | Fix | Login: detección de errores 401 vía DioException en lugar de parsear strings; corrige pantalla negra con credenciales incorrectas |
+| 2026-06-07 | Fix | CI: resueltos 18 warnings de drf_spectacular que rompían `check --deploy` |
+| 2026-06-07 | Fase 4 | Botón de Cafecito (donaciones) agregado en web y mobile |
+| 2026-06-08 | Fase 4 | Auth: aviso de intentos restantes antes del bloqueo (django-axes) en web y mobile |
+| 2026-06-08 | Fix | Mobile: formato argentino en montos — separador de miles y decimales corregido |
+| 2026-06-12 | Fix | Web: favicon optimizado, SEO en landing, páginas de error y correcciones ortográficas |
+| 2026-06-14 | Fase 4 | Proyección de cierre de período en dashboard mobile — `_ProjectionBanner` + campos nuevos en `/api/v1/dashboard/` (DT-054 mobile) |
+| 2026-06-14 | Fase 4 | Eliminado campo "Tipo de gasto" de web y mobile (modelo, forms, views, serializer, admin, templates, tests) |
+| 2026-06-15 | Fase 5 | Bump versión mobile a 1.15.0+4 — release sin tipo de gasto subido a Google Play Console |
+| 2026-06-15 | Fase 5 | Google Play Console: cuenta verificada, app publicada |
+| 2026-06-21 | Fix | Mobile: agregado selector de ícono al crear categoría (faltaba la UI, se enviaba un valor fijo no perteneciente al catálogo) |
+| 2026-06-21 | Fix | Mobile: categoría nueva no aparecía al crear un gasto — `categoriesProvider` no se invalidaba al crear, solo al borrar |
+| 2026-06-21 | Fix | Mobile: mapeo de íconos de categoría corregido y centralizado en `core/utils/category_icons.dart` — comparaba sin el prefijo `bi-` que usa el backend |
+| 2026-06-21 | Fase 5 | Bump versión mobile a 1.15.1+5 — fix de categorías subido a Google Play Console |
