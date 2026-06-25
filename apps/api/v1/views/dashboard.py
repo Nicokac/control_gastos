@@ -9,7 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.core.utils import get_financial_period
+from apps.core.utils import get_financial_period, get_next_month_commitment
 from apps.expenses.models import Expense
 from apps.income.models import Income
 from apps.recurring.models import RecurringExpense
@@ -137,6 +137,30 @@ class DashboardView(APIView):
                 projected_balance = total_income - projected_expense
                 projection_available = True
 
+        # Comprometido del mes siguiente (solo período actual)
+        next_month_commitment_available = False
+        next_month_committed_total = None
+        next_month_expected_total = None
+        next_month_free_balance = None
+        next_month_committed_items = []
+        next_month_committed_unestimated = []
+
+        if is_current_period:
+            next_month, next_year = (1, year + 1) if month == 12 else (month + 1, year)
+            commitment = get_next_month_commitment(user, next_month, next_year)
+            next_month_commitment_available = commitment["next_month_commitment_available"]
+            next_month_committed_total = commitment["next_month_committed_total"]
+            next_month_expected_total = commitment["next_month_expected_total"]
+            next_month_free_balance = commitment["next_month_free_balance"]
+            next_month_committed_items = [
+                {"id": item["rec"].pk, "name": item["rec"].name, "amount": str(item["amount"])}
+                for item in commitment["next_month_committed_items"]
+            ]
+            next_month_committed_unestimated = [
+                {"id": rec.pk, "name": rec.name}
+                for rec in commitment["next_month_committed_unestimated"]
+            ]
+
         return Response(
             {
                 "month": month,
@@ -178,5 +202,17 @@ class DashboardView(APIView):
                 "projected_balance": str(projected_balance)
                 if projected_balance is not None
                 else None,
+                "next_month_commitment_available": next_month_commitment_available,
+                "next_month_committed_total": str(next_month_committed_total)
+                if next_month_committed_total is not None
+                else None,
+                "next_month_expected_total": str(next_month_expected_total)
+                if next_month_expected_total is not None
+                else None,
+                "next_month_free_balance": str(next_month_free_balance)
+                if next_month_free_balance is not None
+                else None,
+                "next_month_committed_items": next_month_committed_items,
+                "next_month_committed_unestimated": next_month_committed_unestimated,
             }
         )

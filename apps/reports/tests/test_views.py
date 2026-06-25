@@ -473,7 +473,7 @@ class TestDashboardQueryPerformance:
 
         # Dashboard vacío debería usar pocas queries
         # Baseline: ~8 queries (session, user, balance, budgets, savings, etc.)
-        with django_assert_max_num_queries(17):
+        with django_assert_max_num_queries(19):
             authenticated_client.get(url_helper("dashboard"))
 
     def test_dashboard_with_data_query_count(
@@ -521,7 +521,7 @@ class TestDashboardQueryPerformance:
 
         # Con datos, queries deberían mantenerse constantes (no N+1)
         # Máximo 15 queries permitidas
-        with django_assert_max_num_queries(17):
+        with django_assert_max_num_queries(19):
             response = authenticated_client.get(url_helper("dashboard"))
 
         assert response.status_code == 200
@@ -574,7 +574,7 @@ class TestDashboardQueryPerformance:
 
         # Aún con más datos, queries deben mantenerse ~igual
         # Si hay N+1, esto fallaría (sería 50+ queries)
-        with django_assert_max_num_queries(17):
+        with django_assert_max_num_queries(19):
             response = authenticated_client.get(url_helper("dashboard"))
 
         assert response.status_code == 200
@@ -651,3 +651,111 @@ class TestMonthlyEvolution:
         expense_factory(user, expense_category, amount=Decimal("500.00"), date=today)
         response = authenticated_client.get(url_helper("dashboard"))
         assert response.context["evolution_expenses"][-1] == 1500.0
+
+
+@pytest.mark.django_db
+class TestNextMonthCommitment:
+    """Tests para _get_next_month_commitment del dashboard (DT-057)."""
+
+    def test_not_available_without_recurrents(self, authenticated_client, url_helper):
+        """Sin gastos ni ingresos fijos activos, el widget no está disponible."""
+        response = authenticated_client.get(url_helper("dashboard"))
+        assert response.context["next_month_commitment_available"] is False
+
+    def test_committed_total_uses_last_expense_amount(
+        self, authenticated_client, user, expense_category, expense_factory
+    ):
+        """El total comprometido usa el monto del último Expense vinculado al recurrente."""
+        from apps.recurring.models import RecurringExpense
+
+        rec = RecurringExpense.objects.create(
+            user=user, name="Edenor", category=expense_category, due_day=10
+        )
+        expense_factory(user, expense_category, amount=Decimal("3000.00"), recurring=rec)
+
+        response = authenticated_client.get(reverse("reports:dashboard"))
+        assert response.context["next_month_commitment_available"] is True
+        assert response.context["next_month_committed_total"] == Decimal("3000.00")
+        assert len(response.context["next_month_committed_items"]) == 1
+
+    def test_recurrent_without_payment_is_unestimated_and_excluded_from_total(
+        self, authenticated_client, user, expense_category
+    ):
+        """Un gasto fijo sin pagos previos no suma al total y se lista aparte."""
+        from apps.recurring.models import RecurringExpense
+
+        rec = RecurringExpense.objects.create(
+            user=user, name="Gimnasio", category=expense_category, due_day=5
+        )
+
+        response = authenticated_client.get(reverse("reports:dashboard"))
+        assert response.context["next_month_committed_total"] == Decimal("0")
+        assert response.context["next_month_committed_items"] == []
+        assert rec in response.context["next_month_committed_unestimated"]
+
+    def test_inactive_recurrent_excluded(
+        self, authenticated_client, user, expense_category, expense_factory
+    ):
+        """Un gasto fijo inactivo no se incluye en el cálculo."""
+        from apps.recurring.models import RecurringExpense
+
+        rec = RecurringExpense.objects.create(
+            user=user,
+            name="Servicio dado de baja",
+            category=expense_category,
+            due_day=10,
+            is_active=False,
+        )
+        expense_factory(user, expense_category, amount=Decimal("999.00"), recurring=rec)
+
+        response = authenticated_client.get(reverse("reports:dashboard"))
+        assert response.context["next_month_commitment_available"] is False
+        assert response.context["next_month_committed_total"] == Decimal("0")
+
+    def test_expected_income_and_free_balance(
+        self,
+        authenticated_client,
+        user,
+        expense_category,
+        income_category,
+        expense_factory,
+        income_factory,
+    ):
+        """El ingreso esperado y el balance libre se calculan correctamente."""
+        from apps.recurring.models import RecurringExpense
+        from apps.recurring_income.models import RecurringIncome
+
+        rec_expense = RecurringExpense.objects.create(
+            user=user, name="Alquiler", category=expense_category, due_day=5
+        )
+        expense_factory(user, expense_category, amount=Decimal("4000.00"), recurring=rec_expense)
+
+        rec_income = RecurringIncome.objects.create(
+            user=user, name="Sueldo", category=income_category, expected_day=1
+        )
+        income_factory(user, income_category, amount=Decimal("10000.00"), recurring=rec_income)
+
+        response = authenticated_client.get(reverse("reports:dashboard"))
+        assert response.context["next_month_expected_total"] == Decimal("10000.00")
+        assert response.context["next_month_committed_total"] == Decimal("4000.00")
+        assert response.context["next_month_free_balance"] == Decimal("6000.00")
+
+    def test_not_available_for_past_period(
+        self, authenticated_client, user, expense_category, expense_factory
+    ):
+        """El widget no se calcula al ver un mes pasado (no es el período actual)."""
+        from apps.recurring.models import RecurringExpense
+
+        rec = RecurringExpense.objects.create(
+            user=user, name="Edenor", category=expense_category, due_day=10
+        )
+        expense_factory(user, expense_category, amount=Decimal("3000.00"), recurring=rec)
+
+        today = timezone.now().date()
+        prev_month = 12 if today.month == 1 else today.month - 1
+        prev_year = today.year - 1 if today.month == 1 else today.year
+
+        response = authenticated_client.get(
+            reverse("reports:dashboard") + f"?month={prev_month}&year={prev_year}"
+        )
+        assert response.context["next_month_commitment_available"] is False

@@ -103,3 +103,53 @@ class TestDashboardEndpoint:
         response = client.get(self.url + f"?month={today.month}&year={today.year}", **headers)
         data = response.json()
         assert data["projection_available"] is False
+
+    def test_comprometido_mes_siguiente_con_recurrente_pagado(
+        self, client, user, expense_category, expense_factory
+    ):
+        from apps.recurring.models import RecurringExpense
+
+        rec = RecurringExpense.objects.create(
+            user=user, name="Edenor", category=expense_category, due_day=10
+        )
+        expense_factory(user, expense_category, amount=Decimal("3000.00"), recurring=rec)
+
+        headers = auth_header(client, user)
+        response = client.get(self.url, **headers)
+        data = response.json()
+        assert data["next_month_commitment_available"] is True
+        assert Decimal(data["next_month_committed_total"]) == Decimal("3000.00")
+        assert len(data["next_month_committed_items"]) == 1
+        assert data["next_month_committed_items"][0]["name"] == "Edenor"
+
+    def test_comprometido_mes_siguiente_sin_pago_previo_queda_sin_estimar(
+        self, client, user, expense_category
+    ):
+        from apps.recurring.models import RecurringExpense
+
+        RecurringExpense.objects.create(
+            user=user, name="Gimnasio", category=expense_category, due_day=5
+        )
+
+        headers = auth_header(client, user)
+        response = client.get(self.url, **headers)
+        data = response.json()
+        assert Decimal(data["next_month_committed_total"]) == Decimal("0")
+        assert data["next_month_committed_items"] == []
+        assert any(item["name"] == "Gimnasio" for item in data["next_month_committed_unestimated"])
+
+    def test_comprometido_mes_siguiente_no_disponible_en_periodo_pasado(
+        self, client, user, expense_category, expense_factory
+    ):
+        from apps.recurring.models import RecurringExpense
+
+        rec = RecurringExpense.objects.create(
+            user=user, name="Edenor", category=expense_category, due_day=10
+        )
+        expense_factory(user, expense_category, amount=Decimal("3000.00"), recurring=rec)
+
+        headers = auth_header(client, user)
+        response = client.get(self.url + "?month=1&year=2025", **headers)
+        data = response.json()
+        assert data["next_month_commitment_available"] is False
+        assert data["next_month_committed_total"] is None

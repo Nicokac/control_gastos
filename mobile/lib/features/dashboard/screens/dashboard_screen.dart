@@ -192,6 +192,10 @@ class _DashboardContent extends StatelessWidget {
           ),
           const SizedBox(height: 12),
         ],
+        if (data['next_month_commitment_available'] == true) ...[
+          _NextMonthCommitmentCard(data: data),
+          const SizedBox(height: 12),
+        ],
         ExpenseChart(expensesByCategory: expensesByCategory),
         const SizedBox(height: 12),
         RecentTransactionsList(expenses: recentExpenses, income: recentIncome),
@@ -242,6 +246,143 @@ class _ProjectionBanner extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _NextMonthCommitmentCard extends StatelessWidget {
+  final Map<String, dynamic> data;
+
+  const _NextMonthCommitmentCard({required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    final monthName = data['next_month_name'] as String? ?? '';
+    final committedTotal = data['next_month_committed_total'] as String? ?? '0';
+    final expectedTotal = data['next_month_expected_total'] as String? ?? '0';
+    final freeBalance = data['next_month_free_balance'] as String? ?? '0';
+    final items = data['next_month_committed_items'] as List<dynamic>? ?? [];
+    final unestimated =
+        data['next_month_committed_unestimated'] as List<dynamic>? ?? [];
+
+    final freeBalanceValue = double.tryParse(freeBalance) ?? 0;
+    final freeBalanceColor =
+        freeBalanceValue >= 0 ? Colors.green[700]! : Colors.red[700]!;
+
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(Icons.event_note, size: 18, color: Colors.grey[700]),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Comprometido — $monthName',
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      ),
+                      Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: formatArsString(committedTotal),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.red,
+                              ),
+                            ),
+                            const TextSpan(text: ' en gastos fijos y cuotas'),
+                          ],
+                        ),
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 6,
+              runSpacing: 4,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text('Ingreso fijo esperado:',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                Text(
+                  formatArsString(expectedTotal),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
+                ),
+                Text('· Te quedaría:',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                Text(
+                  formatArsString(freeBalance),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: freeBalanceColor,
+                  ),
+                ),
+              ],
+            ),
+            if (items.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: items.map((item) {
+                  final map = item as Map<String, dynamic>;
+                  return Chip(
+                    visualDensity: VisualDensity.compact,
+                    label: Text(
+                      '${map['name']} — ${formatArsString(map['amount'] as String)}',
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                    backgroundColor: Colors.grey.withValues(alpha: 0.08),
+                  );
+                }).toList(),
+              ),
+            ],
+            if (unestimated.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: unestimated.map((rec) {
+                  final map = rec as Map<String, dynamic>;
+                  return Chip(
+                    visualDensity: VisualDensity.compact,
+                    avatar: const Icon(Icons.help_outline, size: 14),
+                    label: Text(
+                      '${map['name']} (sin monto estimado)',
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                    backgroundColor: Colors.grey.withValues(alpha: 0.05),
+                  );
+                }).toList(),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

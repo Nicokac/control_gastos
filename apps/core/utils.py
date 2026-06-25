@@ -165,3 +165,57 @@ def get_financial_period(month: int, year: int, start_day: int = 1):
     end_date = date(next_year, next_month, actual_end_day)
 
     return start_date, end_date
+
+
+def get_next_month_commitment(user, next_month: int, next_year: int) -> dict:
+    """
+    Estima cuánto del mes siguiente ya está comprometido: gastos fijos
+    activos (incluye cuotas en curso) vs. ingresos fijos esperados.
+
+    El monto de cada recurrente se infiere de su último pago/cobro
+    registrado. Los que nunca se pagaron no tienen monto estimable y
+    se listan aparte para no subestimar el total con $0.
+    """
+    from apps.recurring.models import RecurringExpense
+    from apps.recurring_income.models import RecurringIncome
+
+    expense_recurrents = RecurringExpense.objects.filter(
+        user=user, is_active=True
+    ).prefetch_related("expenses")
+    income_recurrents = RecurringIncome.objects.filter(user=user, is_active=True).prefetch_related(
+        "incomes"
+    )
+
+    committed_items = []
+    committed_total = Decimal("0")
+    committed_unestimated = []
+    for r in expense_recurrents:
+        last = r.last_expense
+        if last is None:
+            committed_unestimated.append(r)
+            continue
+        committed_items.append({"rec": r, "amount": last.amount_ars})
+        committed_total += last.amount_ars
+
+    expected_items = []
+    expected_total = Decimal("0")
+    expected_unestimated = []
+    for r in income_recurrents:
+        last = r.last_income
+        if last is None:
+            expected_unestimated.append(r)
+            continue
+        expected_items.append({"rec": r, "amount": last.amount_ars})
+        expected_total += last.amount_ars
+
+    return {
+        "next_month_name": get_month_name(next_month),
+        "next_month_committed_total": committed_total,
+        "next_month_committed_items": committed_items,
+        "next_month_committed_unestimated": committed_unestimated,
+        "next_month_expected_total": expected_total,
+        "next_month_expected_items": expected_items,
+        "next_month_expected_unestimated": expected_unestimated,
+        "next_month_free_balance": expected_total - committed_total,
+        "next_month_commitment_available": bool(committed_items or expected_items),
+    }

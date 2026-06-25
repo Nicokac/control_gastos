@@ -190,9 +190,20 @@ def exchange_rate_today(request):
         return JsonResponse({"error": "No se pudo obtener la cotización"}, status=503)
 
 
-APP_VERSION = "1.16.0"
+APP_VERSION = "1.17.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.17.0",
+        "date": "Junio 2026",
+        "title": "Cuánto necesitás para el mes que viene",
+        "items": [
+            "Dashboard: nueva tarjeta que muestra cuánto ya tenés comprometido el mes que viene en gastos fijos y cuotas",
+            "Se compara contra tu ingreso fijo esperado para saber cuánto te quedaría libre",
+            "Los gastos fijos sin pagos previos se muestran aparte, sin afectar el total estimado",
+            "Disponible también en la app móvil",
+        ],
+    },
     {
         "version": "1.15.0",
         "date": "Junio 2026",

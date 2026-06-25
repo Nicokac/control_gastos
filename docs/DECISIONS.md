@@ -821,13 +821,13 @@ La app muestra datos pero no genera observaciones sobre ellos.
 
 ### DT-057 — Calendario de compromisos futuros
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.17.0 web · v1.16.0 mobile)
 
-Ya se soportan gastos en cuotas y gastos fijos, pero no hay vista prospectiva de los próximos meses.
+Ya se soportan gastos en cuotas y gastos fijos, pero no había vista prospectiva de los próximos meses.
 
 **Why:** saber cuánto del ingreso futuro ya está comprometido en cuotas y vencimientos permite planificar antes de asumir nuevos compromisos.
 
-**Camino de resolución:** vista de timeline (próximos 3-6 meses) que consolida `RecurringExpense` activos y cuotas pendientes. Widget en dashboard con total comprometido del mes siguiente. Alerta cuando los compromisos superan un umbral del ingreso habitual.
+**Resolución:** se descartó el timeline de 3-6 meses y el formato calendario — el usuario quería un número directo, no un calendario visual. Se implementó `get_next_month_commitment()` en `apps/core/utils.py`, reutilizado por la vista web (`DashboardView`) y la API (`/api/v1/dashboard/`). Suma `last_expense.amount_ars` de los `RecurringExpense` activos (incluye cuotas en curso, ya excluidas si se completaron por `auto_deactivate_if_complete`) y lo compara contra `last_income.amount_ars` de los `RecurringIncome` activos. Los recurrentes sin pago/cobro previo no tienen monto estimable y se listan aparte (`*_unestimated`) para no subestimar el total con $0. Solo se calcula para el período actual — no aplica al navegar meses pasados. Widget nuevo en dashboard web y mobile (`_NextMonthCommitmentCard`).
 
 ---
 

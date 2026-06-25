@@ -11,7 +11,12 @@ from django.http import HttpResponse
 from django.utils import timezone
 from django.views.generic import TemplateView
 
-from apps.core.utils import get_financial_period, get_month_date_range_exclusive, get_month_name
+from apps.core.utils import (
+    get_financial_period,
+    get_month_date_range_exclusive,
+    get_month_name,
+    get_next_month_commitment,
+)
 from apps.expenses.models import Expense
 from apps.income.models import Income
 from apps.savings.models import MovementType, Saving, SavingMovement, SavingStatus
@@ -99,6 +104,9 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context["projected_balance"] = None
         context["projection_available"] = False
 
+        # Comprometido del mes siguiente (solo período actual)
+        context["next_month_commitment_available"] = False
+
         # Obtener datos de cada módulo
         context.update(
             self._get_balance_data(user, selected_month, selected_year, fin_start, fin_end)
@@ -106,6 +114,16 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context.update(self._get_savings_data(user))
         context.update(self._get_recurring_data(user, selected_month, selected_year))
         context.update(self._get_recurring_income_data(user, selected_month, selected_year))
+        if is_current_period:
+            next_month, next_year = (
+                (1, selected_year + 1)
+                if selected_month == 12
+                else (
+                    selected_month + 1,
+                    selected_year,
+                )
+            )
+            context.update(get_next_month_commitment(user, next_month, next_year))
         context.update(self._get_recent_transactions(user))
         context.update(self._get_expense_distribution(user, selected_month, selected_year))
         context.update(self._get_monthly_evolution(user, evolution_month, selected_year))

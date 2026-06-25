@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.17.0 / Mobile 1.16.0] — 2026-06-25
+
+### Added
+
+- **Dashboard — Comprometido del mes que viene (DT-057)**: nueva tarjeta que suma los gastos fijos activos (incluye cuotas en curso) y los compara contra el ingreso fijo esperado, mostrando cuánto quedaría libre. El monto de cada recurrente se infiere de su último pago/cobro registrado; los que nunca se pagaron se listan aparte como "sin monto estimado" para no subestimar el total. Solo se calcula para el período actual. Disponible en web y mobile vía nuevos campos en `/api/v1/dashboard/`.
+
+---
+
 ## [Mobile 1.15.1] — 2026-06-15
 
 ### Fixed

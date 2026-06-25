@@ -321,3 +321,5 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-06-21 | Fix | Mobile: categoría nueva no aparecía al crear un gasto — `categoriesProvider` no se invalidaba al crear, solo al borrar |
 | 2026-06-21 | Fix | Mobile: mapeo de íconos de categoría corregido y centralizado en `core/utils/category_icons.dart` — comparaba sin el prefijo `bi-` que usa el backend |
 | 2026-06-21 | Fase 5 | Bump versión mobile a 1.15.1+5 — fix de categorías subido a Google Play Console |
+| 2026-06-25 | Fase 4 | Comprometido del mes que viene en dashboard mobile — `_NextMonthCommitmentCard` + campos nuevos en `/api/v1/dashboard/` (DT-057) |
+| 2026-06-25 | Fase 5 | Bump versión mobile a 1.16.0+6 |

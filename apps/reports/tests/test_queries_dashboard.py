@@ -64,8 +64,9 @@ class TestDashboardQueries:
 
         url = reverse("reports:dashboard")
 
-        # Act + Assert (anti N+1): +3 queries por _get_monthly_evolution
-        with django_assert_max_num_queries(17):
+        # Act + Assert (anti N+1): +3 queries por _get_monthly_evolution,
+        # +2 por _get_next_month_commitment (RecurringExpense/RecurringIncome)
+        with django_assert_max_num_queries(19):
             resp = client.get(url)
 
         assert resp.status_code == 200
@@ -89,7 +90,7 @@ class TestDashboardQueries:
 
         from apps.reports.views import DashboardView
 
-        with django_assert_max_num_queries(15):
+        with django_assert_max_num_queries(17):
             response = DashboardView.as_view()(request)
 
         assert response.status_code == 200
