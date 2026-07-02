@@ -258,9 +258,11 @@ class TestDashboardProjection:
             pytest.skip("Dashboard URL not configured")
 
         today = timezone.now().date()
-        # Crear gastos en los últimos 3 días para asegurar period_day >= 3
+        if today.day < 3:
+            pytest.skip("La proyección requiere al menos 3 días transcurridos en el mes")
+
         for i in range(3):
-            d = today.replace(day=max(1, today.day - i))
+            d = today.replace(day=today.day - i)
             Expense.objects.create(
                 user=user,
                 category=expense_category,

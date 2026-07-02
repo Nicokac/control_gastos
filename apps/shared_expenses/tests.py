@@ -17,9 +17,11 @@ def member(user):
 
 @pytest.fixture
 def shared_expense(user, expense_category, member):
+    from django.utils import timezone
+
     return SharedExpense.objects.create(
         user=user,
-        date=date(2026, 6, 1),
+        date=timezone.localdate(),
         description="Supermercado",
         amount=Decimal("5000"),
         currency="ARS",
@@ -167,7 +169,16 @@ class TestSharedExpenseListView:
         response = authenticated_client.get(self.url)
         assert "Gasto ajeno" not in response.content.decode()
 
-    def test_filtro_por_mes(self, authenticated_client, shared_expense, expense_category, user):
+    def test_filtro_por_mes(self, authenticated_client, expense_category, user, member):
+        SharedExpense.objects.create(
+            user=user,
+            date=date(2026, 6, 15),
+            description="Supermercado junio",
+            amount=Decimal("5000"),
+            currency="ARS",
+            category=expense_category,
+            paid_by=member,
+        )
         SharedExpense.objects.create(
             user=user,
             date=date(2026, 5, 1),
@@ -178,7 +189,7 @@ class TestSharedExpenseListView:
         )
         response = authenticated_client.get(self.url + "?month=6&year=2026")
         content = response.content.decode()
-        assert "Supermercado" in content
+        assert "Supermercado junio" in content
         assert "Mayo gasto" not in content
 
 

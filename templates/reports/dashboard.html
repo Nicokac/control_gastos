@@ -308,9 +308,27 @@
                 {% if recurring_pending %}
                 <div class="mt-2 d-flex flex-wrap gap-2">
                     {% for item in recurring_pending %}
-                    <span class="badge {% if item.overdue %}bg-danger{% else %}bg-secondary-subtle text-secondary-emphasis border{% endif %} fw-normal">
-                        <i class="bi bi-clock me-1"></i>{{ item.rec.name }} — día {{ item.rec.due_day }}
-                    </span>
+                    {% if item.overdue %}
+                        <span class="badge bg-danger fw-normal">
+                            <i class="bi bi-exclamation-circle me-1"></i>{{ item.rec.name }} — Vencido
+                        </span>
+                    {% elif item.days_until_due == 0 %}
+                        <span class="badge bg-warning text-dark fw-normal">
+                            <i class="bi bi-clock me-1"></i>{{ item.rec.name }} — Hoy
+                        </span>
+                    {% elif item.days_until_due == 1 %}
+                        <span class="badge bg-warning text-dark fw-normal">
+                            <i class="bi bi-clock me-1"></i>{{ item.rec.name }} — Mañana
+                        </span>
+                    {% elif item.days_until_due <= 3 %}
+                        <span class="badge bg-warning text-dark fw-normal">
+                            <i class="bi bi-clock me-1"></i>{{ item.rec.name }} — En {{ item.days_until_due }} días
+                        </span>
+                    {% else %}
+                        <span class="badge bg-secondary-subtle text-secondary-emphasis border fw-normal">
+                            <i class="bi bi-clock me-1"></i>{{ item.rec.name }} — día {{ item.rec.due_day }}
+                        </span>
+                    {% endif %}
                     {% endfor %}
                 </div>
                 {% endif %}

@@ -323,7 +323,14 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
     def _get_recurring_data(self, user, month, year):
         """Obtiene el estado de gastos fijos del mes actual."""
+        import calendar
+
+        from django.utils import timezone
+
         from apps.recurring.models import RecurringExpense
+
+        today = timezone.localdate()
+        is_current = year == today.year and month == today.month
 
         recurrents = RecurringExpense.objects.filter(user=user, is_active=True).prefetch_related(
             "expenses"
@@ -335,11 +342,25 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             for r in recurrents
             if not r.is_paid_in(month, year) and r.status_for(month, year) == "overdue"
         )
-        pending = [
-            {"rec": r, "overdue": r.status_for(month, year) == "overdue"}
-            for r in recurrents
-            if not r.is_paid_in(month, year)
-        ]
+
+        def days_until(due_day):
+            if not is_current:
+                return None
+            last_day = calendar.monthrange(year, month)[1]
+            return min(due_day, last_day) - today.day
+
+        pending = sorted(
+            [
+                {
+                    "rec": r,
+                    "overdue": r.status_for(month, year) == "overdue",
+                    "days_until_due": days_until(r.due_day),
+                }
+                for r in recurrents
+                if not r.is_paid_in(month, year)
+            ],
+            key=lambda x: x["days_until_due"] if x["days_until_due"] is not None else 999,
+        )
 
         return {
             "recurring_total": total_active,

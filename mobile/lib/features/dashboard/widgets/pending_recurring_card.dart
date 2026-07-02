@@ -162,10 +162,28 @@ class _RecurringRow extends StatelessWidget {
   final Map<String, dynamic> item;
   const _RecurringRow({required this.item});
 
+  Color _rowColor() {
+    final isOverdue = item['status'] == 'overdue';
+    final days = item['days_until_due'] as int?;
+    if (isOverdue) return Colors.red[700]!;
+    if (days != null && days <= 3) return Colors.orange[700]!;
+    return Colors.grey[600]!;
+  }
+
+  String _dueLabel() {
+    final isOverdue = item['status'] == 'overdue';
+    final days = item['days_until_due'] as int?;
+    if (isOverdue) return 'Vencido';
+    if (days == null) return 'Pendiente';
+    if (days == 0) return 'Hoy';
+    if (days == 1) return 'Mañana';
+    if (days <= 3) return 'En $days días';
+    return 'Día ${item['due_day']}';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isOverdue = item['status'] == 'overdue';
-    final color = isOverdue ? Colors.red[700]! : Colors.orange[700]!;
+    final color = _rowColor();
     final amount = item['last_amount'] != null
         ? double.tryParse(item['last_amount'] as String)
         : null;
@@ -187,9 +205,7 @@ class _RecurringRow extends StatelessWidget {
             Text(
               formatArs(amount),
               style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: color),
+                  fontSize: 12, fontWeight: FontWeight.bold, color: color),
             ),
           const SizedBox(width: 6),
           Container(
@@ -199,7 +215,7 @@ class _RecurringRow extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              isOverdue ? 'Vencido' : 'Pendiente',
+              _dueLabel(),
               style: TextStyle(
                   fontSize: 10, color: color, fontWeight: FontWeight.bold),
             ),

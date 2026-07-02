@@ -76,17 +76,31 @@ class DashboardView(APIView):
             RecurringExpense.objects.filter(user=user, is_active=True).select_related("category")
         )
         total_recurring = len(all_recurring)
-        pending_recurring = [
-            {
-                "id": rec.pk,
-                "name": rec.name,
-                "due_day": rec.due_day,
-                "status": rec.status_for(month, year),
-                "last_amount": str(rec.last_expense.amount_ars) if rec.last_expense else None,
-            }
-            for rec in all_recurring
-            if rec.status_for(month, year) in ("pending", "overdue")
-        ]
+
+        def _days_until_due(rec, ref_month, ref_year, ref_today):
+            import calendar
+
+            last_day = calendar.monthrange(ref_year, ref_month)[1]
+            due = min(rec.due_day, last_day)
+            return due - ref_today.day
+
+        pending_recurring = sorted(
+            [
+                {
+                    "id": rec.pk,
+                    "name": rec.name,
+                    "due_day": rec.due_day,
+                    "status": rec.status_for(month, year),
+                    "last_amount": str(rec.last_expense.amount_ars) if rec.last_expense else None,
+                    "days_until_due": _days_until_due(rec, month, year, today)
+                    if (year == today.year and month == today.month)
+                    else None,
+                }
+                for rec in all_recurring
+                if rec.status_for(month, year) in ("pending", "overdue")
+            ],
+            key=lambda r: (r["days_until_due"] if r["days_until_due"] is not None else 999),
+        )
 
         recent_expenses = list(
             Expense.objects.filter(user=user)

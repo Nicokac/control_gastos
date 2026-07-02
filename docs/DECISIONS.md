@@ -908,6 +908,26 @@ La app no tiene diferenciación entre usuarios gratuitos y de pago. Todo el cont
 
 ---
 
+### DT-063 — Urgencia en gastos fijos pendientes (días restantes y semáforo)
+
+**Estado:** ⏳ Pendiente
+
+Hoy el card "Gastos Fijos" del dashboard (web y mobile) lista los ítems pendientes de forma plana, sin jerarquía de urgencia. El modelo `RecurringExpense` ya tiene `due_day` y `status_for()` que distingue `pending`/`overdue`, pero esa información no se traduce en ninguna señal visual de proximidad.
+
+**Problema concreto:** un gasto que vence mañana y uno que vence en 20 días se muestran igual. No hay alerta si algo venceu sin registrar pago.
+
+**Why:** el objetivo es que el usuario sepa de un vistazo qué pagar hoy, qué mañana y qué puede esperar, sin tener que ir a la sección de Gastos Fijos para entenderlo.
+
+**Camino de resolución:**
+1. Agregar `days_until_due` en la API (`/api/v1/dashboard/`) para cada ítem de `pending_recurring` — calculado desde `today` al `due_day` del mes en curso.
+2. En web (`templates/reports/dashboard.html`): ordenar los chips de pendientes por `days_until_due` y agregar badge de color (rojo = vencido, ámbar = ≤3 días, gris = resto). Agregar texto "Vence hoy / en X días / Vencido hace X días".
+3. En mobile (`PendingRecurringCard`): mismo ordenamiento y semáforo visual.
+4. No requiere migraciones ni cambios de modelo.
+
+**Ver también:** DT-057 (comprometido del mes que viene, ya resuelto).
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.
