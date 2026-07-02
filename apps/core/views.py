@@ -190,9 +190,19 @@ def exchange_rate_today(request):
         return JsonResponse({"error": "No se pudo obtener la cotización"}, status=503)
 
 
-APP_VERSION = "1.17.0"
+APP_VERSION = "1.18.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.18.0",
+        "date": "Julio 2026",
+        "title": "Semáforo de urgencia en gastos fijos",
+        "items": [
+            "Los gastos fijos pendientes ahora muestran cuántos días faltan para vencer: hoy, mañana, en X días o vencido",
+            "Los más urgentes aparecen primero y en rojo o amarillo según la proximidad",
+            "Disponible en web y en la app móvil",
+        ],
+    },
     {
         "version": "1.17.0",
         "date": "Junio 2026",

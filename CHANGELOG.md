@@ -5,6 +5,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.18.0] — 2026-07-02
+
+### Added
+
+- **Dashboard — Semáforo de urgencia en gastos fijos pendientes (DT-063)**: los chips de gastos fijos pendientes ahora se ordenan por proximidad al vencimiento y muestran una etiqueta contextual ("Hoy", "Mañana", "En X días", "Vencido") con colores rojo/ámbar/gris. Se agregó `days_until_due` en la API (`/api/v1/dashboard/`) y se actualizó el `PendingRecurringCard` en mobile. Sin cambios de modelo ni migraciones.
+
+### Fixed
+
+- Dos tests con fechas hardcodeadas que fallaban el primer día de cada mes o al cambiar de mes.
+
+---
+
 ## [1.17.0 / Mobile 1.16.0] — 2026-06-25
 
 ### Added

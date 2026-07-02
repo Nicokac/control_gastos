@@ -7,9 +7,9 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 
 ## Estado Actual
 
-- ✅ Backend Django completo (web app funcional en producción — v1.16.0)
+- ✅ Backend Django completo (web app funcional en producción — v1.18.0)
 - ✅ API REST completa (DRF + JWT, todos los endpoints)
-- ✅ App Flutter publicada en Google Play Console (v1.15.1+5) — todas las features del MVP funcionando
+- ✅ App Flutter publicada en Google Play Console (v1.15.1+5) — pendiente build y subida de v1.16.0+6
 
 ---
 
@@ -323,3 +323,4 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-06-21 | Fase 5 | Bump versión mobile a 1.15.1+5 — fix de categorías subido a Google Play Console |
 | 2026-06-25 | Fase 4 | Comprometido del mes que viene en dashboard mobile — `_NextMonthCommitmentCard` + campos nuevos en `/api/v1/dashboard/` (DT-057) |
 | 2026-06-25 | Fase 5 | Bump versión mobile a 1.16.0+6 |
+| 2026-07-02 | Fase 4 | Semáforo de urgencia en gastos fijos pendientes — `days_until_due` en API + `PendingRecurringCard` actualizado con colores y etiquetas de proximidad (DT-063) |
