@@ -327,6 +327,159 @@ class TestExpenseCreateWithSaving:
 
 
 @pytest.mark.django_db
+class TestExpenseUpdateWithSaving:
+    """Tests para ajuste de meta de ahorro al editar un gasto."""
+
+    def test_edit_expense_same_saving_same_amount_no_extra_movement(
+        self, authenticated_client, user, expense_category, saving_factory
+    ):
+        """Editar sin cambiar meta ni monto no genera movimiento extra."""
+        from apps.expenses.models import Expense
+        from apps.savings.models import SavingMovement
+
+        saving = saving_factory(user, target_amount=Decimal("10000.00"))
+        expense = Expense.objects.create(
+            user=user,
+            category=expense_category,
+            description="Gasto original",
+            amount=Decimal("1000.00"),
+            currency="ARS",
+            exchange_rate=Decimal("1"),
+            date=timezone.now().date(),
+            saving=saving,
+        )
+        saving.add_deposit(Decimal("1000.00"), "depósito inicial")
+        movements_before = SavingMovement.objects.filter(saving=saving).count()
+
+        url = reverse("expenses:update", kwargs={"pk": expense.pk})
+        data = {
+            "category": expense_category.pk,
+            "description": "Gasto original",
+            "amount": "1000.00",
+            "currency": "ARS",
+            "date": timezone.now().date().isoformat(),
+            "saving": saving.pk,
+        }
+        response = authenticated_client.post(url, data)
+
+        assert response.status_code == 302
+        saving.refresh_from_db()
+        assert SavingMovement.objects.filter(saving=saving).count() == movements_before
+
+    def test_edit_expense_same_saving_amount_change_adjusts_diff(
+        self, authenticated_client, user, expense_category, saving_factory
+    ):
+        """Editar el monto del gasto con la misma meta ajusta la diferencia."""
+        from apps.expenses.models import Expense
+
+        saving = saving_factory(user, target_amount=Decimal("10000.00"))
+        expense = Expense.objects.create(
+            user=user,
+            category=expense_category,
+            description="Gasto original",
+            amount=Decimal("1000.00"),
+            currency="ARS",
+            exchange_rate=Decimal("1"),
+            date=timezone.now().date(),
+            saving=saving,
+        )
+        saving.add_deposit(Decimal("1000.00"), "depósito inicial")
+        saving.refresh_from_db()
+        amount_before = saving.current_amount
+
+        url = reverse("expenses:update", kwargs={"pk": expense.pk})
+        data = {
+            "category": expense_category.pk,
+            "description": "Gasto original",
+            "amount": "1500.00",
+            "currency": "ARS",
+            "date": timezone.now().date().isoformat(),
+            "saving": saving.pk,
+        }
+        response = authenticated_client.post(url, data)
+
+        assert response.status_code == 302
+        saving.refresh_from_db()
+        assert saving.current_amount == amount_before + Decimal("500.00")
+
+    def test_edit_expense_removes_saving_reverts_deposit(
+        self, authenticated_client, user, expense_category, saving_factory
+    ):
+        """Quitar la meta al editar revierte el depósito original."""
+        from apps.expenses.models import Expense
+
+        saving = saving_factory(user, target_amount=Decimal("10000.00"))
+        expense = Expense.objects.create(
+            user=user,
+            category=expense_category,
+            description="Gasto original",
+            amount=Decimal("1000.00"),
+            currency="ARS",
+            exchange_rate=Decimal("1"),
+            date=timezone.now().date(),
+            saving=saving,
+        )
+        saving.add_deposit(Decimal("1000.00"), "depósito inicial")
+        saving.refresh_from_db()
+        amount_before = saving.current_amount
+
+        url = reverse("expenses:update", kwargs={"pk": expense.pk})
+        data = {
+            "category": expense_category.pk,
+            "description": "Gasto original",
+            "amount": "1000.00",
+            "currency": "ARS",
+            "date": timezone.now().date().isoformat(),
+        }
+        response = authenticated_client.post(url, data)
+
+        assert response.status_code == 302
+        saving.refresh_from_db()
+        assert saving.current_amount == amount_before - Decimal("1000.00")
+
+    def test_edit_expense_changes_saving_moves_deposit(
+        self, authenticated_client, user, expense_category, saving_factory
+    ):
+        """Cambiar de meta revierte en la anterior y deposita en la nueva."""
+        from apps.expenses.models import Expense
+
+        saving_a = saving_factory(user, target_amount=Decimal("10000.00"))
+        saving_b = saving_factory(user, target_amount=Decimal("10000.00"))
+        expense = Expense.objects.create(
+            user=user,
+            category=expense_category,
+            description="Gasto original",
+            amount=Decimal("1000.00"),
+            currency="ARS",
+            exchange_rate=Decimal("1"),
+            date=timezone.now().date(),
+            saving=saving_a,
+        )
+        saving_a.add_deposit(Decimal("1000.00"), "depósito inicial")
+        saving_a.refresh_from_db()
+        saving_b.refresh_from_db()
+        amount_a_before = saving_a.current_amount
+        amount_b_before = saving_b.current_amount
+
+        url = reverse("expenses:update", kwargs={"pk": expense.pk})
+        data = {
+            "category": expense_category.pk,
+            "description": "Gasto original",
+            "amount": "1000.00",
+            "currency": "ARS",
+            "date": timezone.now().date().isoformat(),
+            "saving": saving_b.pk,
+        }
+        response = authenticated_client.post(url, data)
+
+        assert response.status_code == 302
+        saving_a.refresh_from_db()
+        saving_b.refresh_from_db()
+        assert saving_a.current_amount == amount_a_before - Decimal("1000.00")
+        assert saving_b.current_amount == amount_b_before + Decimal("1000.00")
+
+
+@pytest.mark.django_db
 class TestExpenseCreateMessages:
     """Tests de mensajes toast para creación de gastos."""
 

@@ -2,6 +2,7 @@
 Formularios para gastos.
 """
 
+import contextlib
 from decimal import Decimal
 
 from django import forms
@@ -180,6 +181,21 @@ class ExpenseForm(CurrencyFormMixin, forms.ModelForm):
         """Guarda el gasto asignando el usuario y aplica depósito a meta si corresponde."""
         from django.db import transaction
 
+        is_new = not self.instance.pk
+
+        # Capturar estado anterior antes de modificar la instancia
+        if not is_new:
+            old = (
+                Expense.objects.filter(pk=self.instance.pk)
+                .values("saving_id", "amount_ars")
+                .first()
+            )
+            old_saving_id = old["saving_id"] if old else None
+            old_amount = old["amount_ars"] if old else None
+        else:
+            old_saving_id = None
+            old_amount = None
+
         instance = super().save(commit=False)
         instance.user = self.user
         instance.recurring = self.cleaned_data.get("recurring")
@@ -187,12 +203,53 @@ class ExpenseForm(CurrencyFormMixin, forms.ModelForm):
         if commit:
             with transaction.atomic():
                 instance.save()
-                saving = self.cleaned_data.get("saving")
-                if saving:
-                    saving.add_deposit(
-                        amount=instance.amount_ars,
-                        description=f"Gasto vinculado: {instance.description or 'Sin descripción'}",
-                    )
+                new_saving = self.cleaned_data.get("saving")
+                new_saving_id = new_saving.pk if new_saving else None
+
+                if is_new:
+                    # Creación: depositar si hay meta seleccionada
+                    if new_saving:
+                        new_saving.add_deposit(
+                            amount=instance.amount_ars,
+                            description=f"Gasto vinculado: {instance.description or 'Sin descripción'}",
+                        )
+                else:
+                    # Edición: ajustar según cambios de meta y/o monto
+                    if old_saving_id and old_saving_id != new_saving_id:
+                        # Meta anterior: revertir depósito original
+                        from apps.savings.models import Saving
+
+                        with contextlib.suppress(Saving.DoesNotExist, ValueError):
+                            old_saving = Saving.objects.get(pk=old_saving_id)
+                            old_saving.add_withdrawal(
+                                amount=old_amount,
+                                description=f"Reversión por edición de gasto: {instance.description or 'Sin descripción'}",
+                            )
+
+                    if new_saving and new_saving_id != old_saving_id:
+                        # Meta nueva: depositar en la nueva
+                        new_saving.add_deposit(
+                            amount=instance.amount_ars,
+                            description=f"Gasto vinculado: {instance.description or 'Sin descripción'}",
+                        )
+                    elif (
+                        new_saving
+                        and new_saving_id == old_saving_id
+                        and instance.amount_ars != old_amount
+                    ):
+                        # Misma meta, monto cambió: ajustar la diferencia
+                        diff = instance.amount_ars - old_amount
+                        if diff > 0:
+                            new_saving.add_deposit(
+                                amount=diff,
+                                description=f"Ajuste por edición de gasto: {instance.description or 'Sin descripción'}",
+                            )
+                        elif diff < 0:
+                            with contextlib.suppress(ValueError):
+                                new_saving.add_withdrawal(
+                                    amount=abs(diff),
+                                    description=f"Ajuste por edición de gasto: {instance.description or 'Sin descripción'}",
+                                )
 
         return instance
 
