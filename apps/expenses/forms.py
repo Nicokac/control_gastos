@@ -138,6 +138,10 @@ class ExpenseForm(CurrencyFormMixin, forms.ModelForm):
                 label="Destino de ahorro",
             )
 
+        # Pre-seleccionar meta vinculada al editar
+        if self.instance.pk and self.instance.saving_id:
+            self.fields["saving"].initial = self.instance.saving_id
+
         # Gasto recurrente vinculado (campo oculto, se setea desde la vista)
         from apps.recurring.models import RecurringExpense
 
@@ -199,6 +203,7 @@ class ExpenseForm(CurrencyFormMixin, forms.ModelForm):
         instance = super().save(commit=False)
         instance.user = self.user
         instance.recurring = self.cleaned_data.get("recurring")
+        instance.saving = self.cleaned_data.get("saving")
 
         if commit:
             with transaction.atomic():
