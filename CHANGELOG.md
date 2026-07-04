@@ -13,6 +13,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ### Fixed
 
+- **Gastos — Doble depósito en meta de ahorro al editar**: al editar un gasto vinculado a una meta, el depósito se volvía a aplicar sin revertir el anterior. Corregido: el form ahora diferencia creación de edición, ajusta solo la diferencia si cambia el monto, revierte el depósito si se quita la meta, y mueve el saldo si se cambia de meta. El dropdown de "Destino de ahorro" ahora también pre-selecciona la meta actual al editar.
 - Dos tests con fechas hardcodeadas que fallaban el primer día de cada mes o al cambiar de mes.
 
 ---
