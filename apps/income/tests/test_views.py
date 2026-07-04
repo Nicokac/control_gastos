@@ -2,6 +2,8 @@
 Tests para las vistas de Income.
 """
 
+import io
+
 from django.urls import reverse
 from django.utils import timezone
 
@@ -363,49 +365,69 @@ class TestIncomeExportView:
         assert response.status_code == 302
         assert "login" in response.url
 
-    def test_export_returns_csv(self, authenticated_client, income):
+    def test_export_returns_xlsx(self, authenticated_client, income):
+        import openpyxl
+
         url = reverse("income:export")
         response = authenticated_client.get(url)
 
         assert response.status_code == 200
-        assert "text/csv" in response["Content-Type"]
+        assert "spreadsheetml" in response["Content-Type"]
         assert "ingresos" in response["Content-Disposition"]
-        assert ".csv" in response["Content-Disposition"]
+        assert ".xlsx" in response["Content-Disposition"]
+
+        wb = openpyxl.load_workbook(filename=io.BytesIO(response.content))
+        ws = wb.active
+        assert ws.cell(row=1, column=1).value == "Fecha"
 
     def test_export_contains_income_data(self, authenticated_client, income):
+        import openpyxl
+
         url = reverse("income:export")
         response = authenticated_client.get(url)
-        content = response.content.decode("utf-8-sig")
 
-        assert income.description in content
-        assert "Fecha" in content
+        wb = openpyxl.load_workbook(filename=io.BytesIO(response.content))
+        ws = wb.active
+        values = [cell.value for row in ws.iter_rows() for cell in row if cell.value]
+
+        assert income.description in values
 
     def test_export_respects_filters(
         self, authenticated_client, user, income_category, income_factory
     ):
         from datetime import date
 
+        import openpyxl
+
         income_factory(user, income_category, description="Enero", date=date(2026, 1, 15))
         income_factory(user, income_category, description="Febrero", date=date(2026, 2, 15))
 
         url = reverse("income:export")
         response = authenticated_client.get(url, {"month": "1", "year": "2026"})
-        content = response.content.decode("utf-8-sig")
 
-        assert "Enero" in content
-        assert "Febrero" not in content
+        wb = openpyxl.load_workbook(filename=io.BytesIO(response.content))
+        ws = wb.active
+        values = [cell.value for row in ws.iter_rows(min_row=2) for cell in row]
+
+        assert "Enero" in values
+        assert "Febrero" not in values
 
     def test_export_excludes_other_user_income(
         self, authenticated_client, other_user, income_category_factory, income_factory
     ):
+        import openpyxl
+
         other_cat = income_category_factory(other_user, name="Otra")
         income_factory(other_user, other_cat, description="Ingreso Ajeno")
 
         url = reverse("income:export")
         response = authenticated_client.get(url)
-        content = response.content.decode("utf-8-sig")
 
-        assert "Ingreso Ajeno" not in content
+        wb = openpyxl.load_workbook(filename=io.BytesIO(response.content))
+        ws = wb.active
+        values = [cell.value for row in ws.iter_rows(min_row=2) for cell in row]
+
+        assert "Ingreso Ajeno" not in values
 
     def test_cannot_view_other_user_income_detail(
         self, authenticated_client, other_user, income_category_factory, income_factory

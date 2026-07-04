@@ -1,4 +1,4 @@
-import csv
+import io
 import logging
 
 from django.contrib import messages
@@ -547,31 +547,44 @@ class ExpenseDetailView(UserOwnedDetailView):
 
 
 class ExpenseExportView(ExpenseListView):
-    """Exporta los gastos filtrados como CSV, respetando los mismos filtros que la lista."""
+    """Exporta los gastos filtrados como XLSX, respetando los mismos filtros que la lista."""
 
     def get(self, request, *args, **kwargs):
+        import openpyxl
+        from openpyxl.styles import Alignment, Font, PatternFill
+
         expenses = self.get_queryset().select_related("category", "category__parent")
 
-        today = timezone.localdate()
-        filename = f"gastos {today.strftime('%d.%m.%Y')}.csv"
-        response = HttpResponse(content_type="text/csv; charset=utf-8")
-        response["Content-Disposition"] = f'attachment; filename="{filename}"'
-        response.write("﻿")  # BOM para compatibilidad con Excel
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Gastos"
 
-        writer = csv.writer(response)
-        writer.writerow(
-            [
-                "Fecha",
-                "Grupo",
-                "Subcategoría",
-                "Descripción",
-                "Monto",
-                "Moneda",
-                "Tipo de cambio",
-                "Monto ARS",
-                "Método de pago",
-            ]
-        )
+        headers = [
+            "Fecha",
+            "Grupo",
+            "Subcategoría",
+            "Descripción",
+            "Monto",
+            "Moneda",
+            "Tipo de cambio",
+            "Monto ARS",
+            "Método de pago",
+        ]
+        ws.append(headers)
+
+        header_font = Font(bold=True, color="FFFFFF")
+        header_fill = PatternFill("solid", fgColor="1F4E79")
+        center = Alignment(horizontal="center")
+        right = Alignment(horizontal="right")
+
+        for _col, cell in enumerate(ws[1], start=1):
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = center
+
+        column_widths = [12, 22, 22, 36, 14, 10, 14, 14, 18]
+        for i, width in enumerate(column_widths, start=1):
+            ws.column_dimensions[openpyxl.utils.get_column_letter(i)].width = width
 
         payment_method_labels = dict(PaymentMethod.choices)
 
@@ -579,20 +592,36 @@ class ExpenseExportView(ExpenseListView):
             cat = expense.category
             grupo = cat.parent.name if cat.parent else cat.name
             subcategoria = cat.name if cat.parent else ""
-            writer.writerow(
+            ws.append(
                 [
                     expense.date.strftime("%d/%m/%Y"),
                     grupo,
                     subcategoria,
                     expense.description,
-                    expense.amount,
+                    float(expense.amount),
                     expense.currency,
-                    expense.exchange_rate or "",
-                    expense.amount_ars,
+                    float(expense.exchange_rate) if expense.exchange_rate else "",
+                    float(expense.amount_ars),
                     payment_method_labels.get(expense.payment_method, "")
                     if expense.payment_method
                     else "",
                 ]
             )
 
+        for row in ws.iter_rows(min_row=2):
+            for col_idx, cell in enumerate(row, start=1):
+                if col_idx in (5, 7, 8):
+                    cell.alignment = right
+
+        today = timezone.localdate()
+        filename = f"gastos {today.strftime('%d.%m.%Y')}.xlsx"
+        buffer = io.BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)
+
+        response = HttpResponse(
+            buffer.read(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response

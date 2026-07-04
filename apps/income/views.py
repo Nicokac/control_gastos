@@ -1,4 +1,4 @@
-import csv
+import io
 import logging
 
 from django.contrib import messages
@@ -270,46 +270,75 @@ class IncomeDetailView(UserOwnedDetailView):
 
 
 class IncomeExportView(IncomeListView):
-    """Exporta los ingresos filtrados como CSV, respetando los mismos filtros que la lista."""
+    """Exporta los ingresos filtrados como XLSX, respetando los mismos filtros que la lista."""
 
     def get(self, request, *args, **kwargs):
+        import openpyxl
+        from openpyxl.styles import Alignment, Font, PatternFill
+
         incomes = self.get_queryset().select_related("category", "category__parent")
 
-        today = timezone.localdate()
-        filename = f"ingresos {today.strftime('%d.%m.%Y')}.csv"
-        response = HttpResponse(content_type="text/csv; charset=utf-8")
-        response["Content-Disposition"] = f'attachment; filename="{filename}"'
-        response.write("﻿")  # BOM para compatibilidad con Excel
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Ingresos"
 
-        writer = csv.writer(response)
-        writer.writerow(
-            [
-                "Fecha",
-                "Grupo",
-                "Categoría",
-                "Descripción",
-                "Monto",
-                "Moneda",
-                "Tipo de cambio",
-                "Monto ARS",
-            ]
-        )
+        headers = [
+            "Fecha",
+            "Grupo",
+            "Categoría",
+            "Descripción",
+            "Monto",
+            "Moneda",
+            "Tipo de cambio",
+            "Monto ARS",
+        ]
+        ws.append(headers)
+
+        header_font = Font(bold=True, color="FFFFFF")
+        header_fill = PatternFill("solid", fgColor="1F4E79")
+        center = Alignment(horizontal="center")
+        right = Alignment(horizontal="right")
+
+        for cell in ws[1]:
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = center
+
+        column_widths = [12, 22, 22, 36, 14, 10, 14, 14]
+        for i, width in enumerate(column_widths, start=1):
+            ws.column_dimensions[openpyxl.utils.get_column_letter(i)].width = width
 
         for income in incomes:
             cat = income.category
             grupo = cat.parent.name if cat.parent else cat.name
             categoria = cat.name if cat.parent else ""
-            writer.writerow(
+            ws.append(
                 [
                     income.date.strftime("%d/%m/%Y"),
                     grupo,
                     categoria,
                     income.description,
-                    income.amount,
+                    float(income.amount),
                     income.currency,
-                    income.exchange_rate or "",
-                    income.amount_ars,
+                    float(income.exchange_rate) if income.exchange_rate else "",
+                    float(income.amount_ars),
                 ]
             )
 
+        for row in ws.iter_rows(min_row=2):
+            for col_idx, cell in enumerate(row, start=1):
+                if col_idx in (5, 7, 8):
+                    cell.alignment = right
+
+        today = timezone.localdate()
+        filename = f"ingresos {today.strftime('%d.%m.%Y')}.xlsx"
+        buffer = io.BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)
+
+        response = HttpResponse(
+            buffer.read(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response

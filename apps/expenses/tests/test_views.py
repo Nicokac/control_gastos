@@ -2,6 +2,7 @@
 Tests para las vistas de Expense.
 """
 
+import io
 from decimal import Decimal
 
 from django.urls import reverse
@@ -1067,49 +1068,70 @@ class TestExpenseExportView:
         assert response.status_code == 302
         assert "login" in response.url
 
-    def test_export_returns_csv(self, authenticated_client, expense):
+    def test_export_returns_xlsx(self, authenticated_client, expense):
+        import openpyxl
+
         url = reverse("expenses:export")
         response = authenticated_client.get(url)
 
         assert response.status_code == 200
-        assert "text/csv" in response["Content-Type"]
+        assert "spreadsheetml" in response["Content-Type"]
         assert "gastos" in response["Content-Disposition"]
-        assert ".csv" in response["Content-Disposition"]
+        assert ".xlsx" in response["Content-Disposition"]
+
+        wb = openpyxl.load_workbook(filename=io.BytesIO(response.content))
+        ws = wb.active
+        assert ws.cell(row=1, column=1).value == "Fecha"
 
     def test_export_contains_expense_data(self, authenticated_client, expense):
+        import openpyxl
+
         url = reverse("expenses:export")
         response = authenticated_client.get(url)
-        content = response.content.decode("utf-8-sig")
 
-        assert expense.description in content
-        assert "Fecha" in content
+        wb = openpyxl.load_workbook(filename=io.BytesIO(response.content))
+        ws = wb.active
+        values = [[cell.value for cell in row] for row in ws.iter_rows()]
+        flat = [v for row in values for v in row if v]
+
+        assert expense.description in flat
 
     def test_export_respects_filters(
         self, authenticated_client, user, expense_category, expense_factory
     ):
         from datetime import date
 
+        import openpyxl
+
         expense_factory(user, expense_category, description="Enero", date=date(2026, 1, 15))
         expense_factory(user, expense_category, description="Febrero", date=date(2026, 2, 15))
 
         url = reverse("expenses:export")
         response = authenticated_client.get(url, {"month": "1", "year": "2026"})
-        content = response.content.decode("utf-8-sig")
 
-        assert "Enero" in content
-        assert "Febrero" not in content
+        wb = openpyxl.load_workbook(filename=io.BytesIO(response.content))
+        ws = wb.active
+        values = [cell.value for row in ws.iter_rows(min_row=2) for cell in row]
+
+        assert "Enero" in values
+        assert "Febrero" not in values
 
     def test_export_excludes_other_user_expenses(
         self, authenticated_client, other_user, expense_category_factory, expense_factory
     ):
+        import openpyxl
+
         other_cat = expense_category_factory(other_user, name="Otra")
         expense_factory(other_user, other_cat, description="Gasto Ajeno")
 
         url = reverse("expenses:export")
         response = authenticated_client.get(url)
-        content = response.content.decode("utf-8-sig")
 
-        assert "Gasto Ajeno" not in content
+        wb = openpyxl.load_workbook(filename=io.BytesIO(response.content))
+        ws = wb.active
+        values = [cell.value for row in ws.iter_rows(min_row=2) for cell in row]
+
+        assert "Gasto Ajeno" not in values
 
 
 @pytest.mark.django_db
