@@ -1,11 +1,17 @@
 import io
+import json
 import logging
+import tempfile
 
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import transaction
 from django.db.models import Q, Sum
 from django.http import HttpResponse
+from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
+from django.views import View
 
 from apps.categories.models import Category
 from apps.core.constants import PaymentMethod
@@ -625,3 +631,253 @@ class ExpenseExportView(ExpenseListView):
         )
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response
+
+
+def _build_import_preview(rows, user, categories):
+    """
+    Convierte lista de ImportedRow en lista de dicts para el template de preview.
+    - Agrupa impuestos ARS en una sola fila.
+    - Sugiere categoría por historial del usuario (descripción exacta) con prioridad
+      sobre la sugerencia por nombre de la fila.
+    - La fila de impuestos agrupada se marca como is_tax=True para que el template
+      la deje deschekeada por defecto.
+    """
+    from decimal import Decimal as _D
+
+    from .importers import ImportedRow
+
+    # Agrupar impuestos ARS
+    tax_total = _D("0")
+    tax_date = None
+    non_tax_rows = []
+    for r in rows:
+        if r.suggested_category_name == "Impuestos" and r.currency == "ARS":
+            tax_total += r.amount
+            if tax_date is None:
+                tax_date = r.raw_date
+        else:
+            non_tax_rows.append(r)
+
+    if tax_total > 0:
+        non_tax_rows.append(
+            ImportedRow(
+                raw_date=tax_date,
+                description="Impuestos tarjeta",
+                amount=tax_total,
+                currency="ARS",
+                suggested_category_name="Impuestos",
+            )
+        )
+
+    # Mapa nombre → pk para sugerencias por nombre (impuestos)
+    cat_by_name = {c.name.lower(): c.pk for c in categories}
+
+    # Mapa descripción → pk basado en historial del usuario
+    descriptions = [r.description.strip() for r in non_tax_rows]
+    history_map: dict[str, int] = {}
+    if descriptions:
+        past = (
+            Expense.objects.filter(user=user, description__in=descriptions)
+            .exclude(category__isnull=True)
+            .values("description", "category_id")
+            .order_by("-date")
+        )
+        for row in past:
+            desc = row["description"]
+            if desc not in history_map:
+                history_map[desc] = row["category_id"]
+
+    preview_rows = []
+    for r in non_tax_rows:
+        desc = r.description.strip().replace("\n", " ").replace("\r", "")
+        is_tax = r.suggested_category_name == "Impuestos"
+
+        # Prioridad: historial > sugerencia por nombre
+        suggested_pk = history_map.get(desc) or cat_by_name.get(
+            r.suggested_category_name.lower(), ""
+        )
+
+        preview_rows.append(
+            {
+                "date": r.raw_date,
+                "description": desc,
+                "amount": str(r.amount),
+                "currency": r.currency,
+                "suggested_category_pk": suggested_pk,
+                "is_tax": is_tax,
+            }
+        )
+
+    return preview_rows
+
+
+class ExpenseImportView(LoginRequiredMixin, View):
+    """Paso 1: el usuario sube el PDF y ve el preview de transacciones."""
+
+    template_name = "expenses/expense_import.html"
+
+    def get(self, request):
+        categories = Category.get_expense_categories(request.user)
+        return render(request, self.template_name, {"categories": categories})
+
+    def post(self, request):
+        from .importers import parse_macro_visa
+
+        pdf_file = request.FILES.get("pdf_file")
+        if not pdf_file:
+            messages.error(request, "Seleccioná un archivo PDF.")
+            return redirect("expenses:import")
+
+        if not pdf_file.name.lower().endswith(".pdf"):
+            messages.error(request, "El archivo debe ser un PDF.")
+            return redirect("expenses:import")
+
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+            for chunk in pdf_file.chunks():
+                tmp.write(chunk)
+            tmp_path = tmp.name
+
+        try:
+            rows = parse_macro_visa(tmp_path)
+        except Exception:
+            logger.exception("Error al parsear el PDF")
+            messages.error(
+                request,
+                "No se pudo leer el archivo. Verificá que sea un resumen Visa Macro válido.",
+            )
+            return redirect("expenses:import")
+
+        if not rows:
+            messages.warning(request, "No se encontraron transacciones en el archivo.")
+            return redirect("expenses:import")
+
+        categories = Category.get_expense_categories(request.user)
+        expense_groups = Category.get_groups(request.user, "expense")
+        preview_rows = _build_import_preview(rows, request.user, categories)
+        return render(
+            request,
+            self.template_name,
+            {
+                "categories": categories,
+                "expense_groups": expense_groups,
+                "preview_rows": preview_rows,
+                "preview_json": json.dumps(preview_rows),
+                "total_rows": len(preview_rows),
+            },
+        )
+
+
+class ExpenseImportDebugView(LoginRequiredMixin, View):
+    """Vista de debug: parsea un PDF fijo del servidor y muestra el preview sin upload.
+    Solo disponible con DEBUG=True."""
+
+    template_name = "expenses/expense_import.html"
+
+    def get(self, request):
+        from django.conf import settings
+
+        if not settings.DEBUG:
+            from django.http import Http404
+
+            raise Http404
+
+        from pathlib import Path
+
+        from .importers import parse_macro_visa
+
+        pdf_path = Path(settings.BASE_DIR) / "resumen_6_2026.pdf"
+
+        if not pdf_path.exists():
+            messages.error(request, f"PDF de debug no encontrado en {pdf_path}")
+            return redirect("expenses:import")
+
+        try:
+            rows = parse_macro_visa(pdf_path)
+        except Exception:
+            logger.exception("Error al parsear PDF de debug")
+            messages.error(request, "No se pudo leer el PDF de debug.")
+            return redirect("expenses:import")
+
+        categories = Category.get_expense_categories(request.user)
+        expense_groups = Category.get_groups(request.user, "expense")
+        preview_rows = _build_import_preview(rows, request.user, categories)
+        return render(
+            request,
+            self.template_name,
+            {
+                "categories": categories,
+                "expense_groups": expense_groups,
+                "preview_rows": preview_rows,
+                "preview_json": json.dumps(preview_rows),
+                "total_rows": len(preview_rows),
+            },
+        )
+
+
+class ExpenseImportConfirmView(LoginRequiredMixin, View):
+    """Paso 2: el usuario confirma las filas y se crean los gastos."""
+
+    def post(self, request):
+        try:
+            rows_data = json.loads(request.POST.get("rows_json", "[]"))
+        except (ValueError, TypeError):
+            messages.error(request, "Datos inválidos.")
+            return redirect("expenses:import")
+
+        user = request.user
+        categories = {str(c.pk): c for c in Category.get_expense_categories(user)}
+
+        created = 0
+        errors = 0
+
+        with transaction.atomic():
+            for row in rows_data:
+                if not row.get("include"):
+                    continue
+
+                cat_pk = str(row.get("category_pk", ""))
+                category = categories.get(cat_pk)
+                if not category:
+                    errors += 1
+                    continue
+
+                raw_date = row.get("date", "")
+                try:
+                    d, m, y = raw_date.split(".")
+                    expense_date = timezone.datetime(2000 + int(y), int(m), int(d)).date()
+                except (ValueError, AttributeError):
+                    errors += 1
+                    continue
+
+                try:
+                    amount = __import__("decimal").Decimal(row.get("amount", "0"))
+                except Exception:
+                    errors += 1
+                    continue
+
+                currency = row.get("currency", "ARS")
+                description = row.get("description", "")[:255]
+
+                Expense.objects.create(
+                    user=user,
+                    date=expense_date,
+                    category=category,
+                    description=description,
+                    amount=amount,
+                    currency=currency,
+                    exchange_rate=__import__("decimal").Decimal("1.0000"),
+                    amount_ars=amount,
+                )
+                created += 1
+
+        if created:
+            messages.success(
+                request,
+                f"Se importaron {created} gasto{'s' if created != 1 else ''} correctamente.",
+            )
+        if errors:
+            messages.warning(
+                request, f"{errors} fila{'s' if errors != 1 else ''} no se pudieron importar."
+            )
+
+        return redirect("expenses:list")

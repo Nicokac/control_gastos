@@ -186,6 +186,55 @@ class CategoryDeleteView(LoginRequiredMixin, DeleteView):
         return HttpResponseRedirect(self.get_success_url())
 
 
+class CategoryQuickCreateView(LoginRequiredMixin, View):
+    """Crea una subcategoría de gasto vía AJAX desde el import de PDF."""
+
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+        except (json.JSONDecodeError, AttributeError):
+            return JsonResponse({"error": "Datos inválidos."}, status=400)
+
+        parent_pk = data.get("parent_pk")
+        name = (data.get("name") or "").strip()
+
+        if not parent_pk or not name:
+            return JsonResponse({"error": "Nombre y grupo son obligatorios."}, status=400)
+
+        try:
+            parent = Category.objects.get(
+                pk=parent_pk,
+                parent__isnull=True,
+            )
+        except (Category.DoesNotExist, ValueError):
+            return JsonResponse({"error": "Grupo no encontrado."}, status=404)
+
+        from apps.core.constants import CategoryType
+
+        new_cat = Category(
+            name=name,
+            type=CategoryType.EXPENSE,
+            user=request.user,
+            parent=parent,
+            color=parent.color,
+            icon=parent.icon,
+        )
+        try:
+            new_cat.full_clean()
+            new_cat.save()
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+
+        return JsonResponse(
+            {
+                "pk": new_cat.pk,
+                "name": new_cat.name,
+                "parent_name": parent.name,
+                "label": f"{parent.name} › {new_cat.name}",
+            }
+        )
+
+
 class CategoryReorderView(LoginRequiredMixin, View):
     """Recibe lista ordenada de IDs de grupos y actualiza su campo order."""
 
