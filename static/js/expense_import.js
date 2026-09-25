@@ -3,8 +3,10 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!container) return;
 
     const QUICK_CREATE_URL = container.dataset.quickCreateUrl;
+    const EXCHANGE_RATE_URL = container.dataset.exchangeRateUrl;
     const CSRF = container.dataset.csrf;
     const rows = JSON.parse(container.dataset.rows);
+    const previewHash = container.dataset.previewHash;
 
     const table = document.getElementById('preview-table');
     const jsonInput = document.getElementById('rows-json-input');
@@ -13,6 +15,53 @@ document.addEventListener('DOMContentLoaded', function () {
     const selectedCountBadge = document.getElementById('selected-count');
     const categorizedCountEl = document.getElementById('categorized-count');
     const includedCountEl = document.getElementById('included-count');
+    const usdRateInput = document.getElementById('usd-exchange-rate');
+
+    const PROGRESS_KEY = previewHash ? 'expense_import_progress_' + previewHash : null;
+
+    function saveProgress() {
+        if (!PROGRESS_KEY) return;
+        const state = [];
+        table.querySelectorAll('tbody tr').forEach(function (tr, i) {
+            state.push({
+                include: tr.querySelector('.row-check').checked,
+                category_pk: tomSelects[i] ? tomSelects[i].getValue() : '',
+            });
+        });
+        try {
+            localStorage.setItem(PROGRESS_KEY, JSON.stringify(state));
+        } catch {}
+    }
+
+    function loadProgress() {
+        if (!PROGRESS_KEY) return null;
+        try {
+            const raw = localStorage.getItem(PROGRESS_KEY);
+            return raw ? JSON.parse(raw) : null;
+        } catch {
+            return null;
+        }
+    }
+
+    function clearProgress() {
+        if (!PROGRESS_KEY) return;
+        try {
+            localStorage.removeItem(PROGRESS_KEY);
+        } catch {}
+    }
+
+    if (usdRateInput && EXCHANGE_RATE_URL) {
+        fetch(EXCHANGE_RATE_URL)
+            .then(function (res) { return res.ok ? res.json() : null; })
+            .then(function (data) {
+                if (data && data.venta && !usdRateInput.value) {
+                    usdRateInput.value = data.venta;
+                    updateCounters();
+                }
+            })
+            .catch(function () {});
+        usdRateInput.addEventListener('input', updateCounters);
+    }
 
     const tomSelects = [];
     table.querySelectorAll('.row-category').forEach(function (sel) {
@@ -38,7 +87,14 @@ document.addEventListener('DOMContentLoaded', function () {
         categorizedCountEl.textContent = categorized;
         includedCountEl.textContent = included;
 
-        btnConfirm.disabled = included === 0 || categorized < included;
+        const includedUsd = checks.some(function (c, i) {
+            return c.checked && rows[i].currency === 'USD';
+        });
+        const rateValid = !usdRateInput || parseFloat(usdRateInput.value) > 0;
+
+        btnConfirm.disabled = included === 0 || categorized < included || (includedUsd && !rateValid);
+
+        saveProgress();
     }
 
     checkAll.addEventListener('change', function () {
@@ -59,6 +115,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     document.getElementById('confirm-form').addEventListener('submit', function () {
+        clearProgress();
+        const usdRate = usdRateInput ? usdRateInput.value : '';
         const result = [];
         table.querySelectorAll('tbody tr').forEach(function (tr, i) {
             const checked = tr.querySelector('.row-check').checked;
@@ -72,6 +130,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 amount: rows[i].amount,
                 currency: rows[i].currency,
                 category_pk: categoryPk,
+                exchange_rate: rows[i].currency === 'USD' ? usdRate : '',
             });
         });
         jsonInput.value = JSON.stringify(result);
@@ -79,10 +138,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const modal = new bootstrap.Modal(document.getElementById('modalNuevaCat'));
     const modalParent = document.getElementById('modal-parent');
+    const modalNewGroupWrapper = document.getElementById('modal-new-group-wrapper');
+    const modalNewGroupName = document.getElementById('modal-new-group-name');
     const modalName = document.getElementById('modal-name');
     const modalError = document.getElementById('modal-error');
     const modalSave = document.getElementById('modal-save');
     let targetTomSelect = null;
+
+    modalParent.addEventListener('change', function () {
+        modalNewGroupWrapper.classList.toggle('d-none', modalParent.value !== 'new');
+    });
 
     table.addEventListener('click', function (e) {
         const btn = e.target.closest('.btn-new-cat');
@@ -90,6 +155,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const tr = btn.closest('tr');
         const idx = parseInt(tr.dataset.idx, 10);
         targetTomSelect = tomSelects[idx];
+        modalParent.value = '';
+        modalNewGroupWrapper.classList.add('d-none');
+        modalNewGroupName.value = '';
         modalName.value = '';
         modalError.textContent = '';
         modalError.classList.add('d-none');
@@ -99,10 +167,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     modalSave.addEventListener('click', async function () {
         const parentPk = modalParent.value;
+        const newGroupName = modalNewGroupName.value.trim();
         const name = modalName.value.trim();
         modalError.classList.add('d-none');
 
-        if (!parentPk || !name) {
+        if (!parentPk || !name || (parentPk === 'new' && !newGroupName)) {
             modalError.textContent = 'Completá el grupo y el nombre.';
             modalError.classList.remove('d-none');
             return;
@@ -110,10 +179,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         modalSave.disabled = true;
         try {
+            const payload = { parent_pk: parentPk === 'new' ? 'new' : parseInt(parentPk, 10), name: name };
+            if (parentPk === 'new') payload.new_group_name = newGroupName;
+
             const res = await fetch(QUICK_CREATE_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
-                body: JSON.stringify({ parent_pk: parseInt(parentPk, 10), name: name }),
+                body: JSON.stringify(payload),
             });
             const data = await res.json();
             if (!res.ok) {
@@ -126,6 +198,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 ts.addOption({ value: String(data.pk), text: data.label });
                 ts.refreshOptions(false);
             });
+
+            if (parentPk === 'new') {
+                const newGroupOption = document.createElement('option');
+                newGroupOption.value = String(data.parent_pk);
+                newGroupOption.textContent = data.parent_name;
+                modalParent.insertBefore(newGroupOption, modalParent.querySelector('option[value="new"]'));
+            }
 
             if (targetTomSelect) {
                 targetTomSelect.setValue(String(data.pk));
@@ -144,6 +223,27 @@ document.addEventListener('DOMContentLoaded', function () {
     modalName.addEventListener('keydown', function (e) {
         if (e.key === 'Enter') modalSave.click();
     });
+
+    const savedProgress = loadProgress();
+    if (savedProgress && savedProgress.length === tomSelects.length) {
+        const rowsEls = table.querySelectorAll('tbody tr');
+        savedProgress.forEach(function (state, i) {
+            if (rowsEls[i]) rowsEls[i].querySelector('.row-check').checked = !!state.include;
+            if (tomSelects[i] && state.category_pk) tomSelects[i].setValue(state.category_pk, true);
+        });
+        const banner = document.getElementById('progress-restored-banner');
+        if (banner) banner.classList.remove('d-none');
+        checkAll.checked = Array.from(table.querySelectorAll('.row-check')).every(function (c) {
+            return c.checked;
+        });
+    }
+
+    const closeBanner = document.getElementById('progress-restored-close');
+    if (closeBanner) {
+        closeBanner.addEventListener('click', function () {
+            document.getElementById('progress-restored-banner').classList.add('d-none');
+        });
+    }
 
     updateCounters();
 });

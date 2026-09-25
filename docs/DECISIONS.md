@@ -797,13 +797,17 @@ El dashboard muestra el gasto acumulado hasta hoy pero no proyecta cómo cerrar�
 
 ### DT-055 — Importación de resúmenes bancarios
 
-**Estado:** ⏳ Pendiente
+**Estado:** 🧪 Resuelto en beta (v1.19.0) — Fase 1
 
-La carga es 100% manual. No existe forma de importar movimientos desde el banco o Mercado Pago.
+La carga era 100% manual. No existía forma de importar movimientos desde el banco.
 
-**Why:** la fricción de carga manual es la principal causa de abandono en apps de finanzas personales. Importar el CSV/Excel del banco y mapear columnas automáticamente es el salto de calidad más grande posible en UX.
+**Why:** la fricción de carga manual es la principal causa de abandono en apps de finanzas personales. Importar el resumen del banco y mapear columnas automáticamente es el salto de calidad más grande posible en UX.
 
-**Camino de resolución:** vista de importación que acepta CSV/XLSX. Parser configurable por banco (columnas de fecha, descripción, monto). Sugerencia de categoría por descripción usando reglas simples (contains). Detección de duplicados contra gastos ya cargados. Revisión manual antes de confirmar la importación.
+**Resolución (Fase 1 — beta):** vista de importación (`/expenses/import/`) que acepta PDF de resumen Visa Macro. `apps/expenses/importers.py` parsea con `pdfplumber` usando coordenadas de columna (robusto a descripciones de largo variable). Preview editable con Tom Select, contador de filas categorizadas, botón de confirmación bloqueado hasta completar categorías. Impuestos (sellos, IIBB, IVA, DB.RG) se agrupan en una sola fila "Impuestos tarjeta", deschequeada por defecto. Sugerencia de categoría por historial del usuario (descripción exacta) con prioridad sobre sugerencia por nombre. Modal para crear subcategoría — y grupo nuevo si hace falta — sin salir de la pantalla. Filas en USD piden la cotización del día (precompletada desde `dolarapi.com`) antes de habilitar la confirmación. Detección de duplicados contra gastos ya cargados (fecha+descripción+monto), marcados visualmente y excluidos por defecto. Errores de fila al confirmar muestran detalle (cuál fila y por qué). Progreso de categorización se guarda en `localStorage` atado a un hash del resumen, para no perderlo ante un cierre accidental de pestaña — requiere volver a subir el mismo PDF para restaurarlo, ya que el archivo no se persiste en el servidor.
+
+**Por qué queda marcado como beta:** el parser está probado solo contra resúmenes Visa Macro (banco único). Falta soporte multi-banco, tipo de gasto por fila (puntual/fijo/cuota — Fase 2) y detección de recurrentes existentes para registrar el pago en vez de crear un gasto suelto (Fase 3). El badge "Beta" se muestra en el botón "Importar" de la lista de gastos y en el header de la pantalla de importación.
+
+**Riesgo aceptado:** un resumen de otro banco no va a parsear correctamente (el parser está atado a las coordenadas X específicas del layout de Macro). Si el usuario sube un PDF de otro formato, el resultado es una lista vacía o filas mal separadas, sin error explícito más allá de "no se encontraron transacciones".
 
 ---
 

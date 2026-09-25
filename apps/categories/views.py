@@ -187,7 +187,8 @@ class CategoryDeleteView(LoginRequiredMixin, DeleteView):
 
 
 class CategoryQuickCreateView(LoginRequiredMixin, View):
-    """Crea una subcategoría de gasto vía AJAX desde el import de PDF."""
+    """Crea una subcategoría de gasto vía AJAX desde el import de PDF.
+    Si parent_pk es "new", primero crea el grupo (new_group_name) y la subcategoría debajo."""
 
     def post(self, request, *args, **kwargs):
         try:
@@ -195,21 +196,40 @@ class CategoryQuickCreateView(LoginRequiredMixin, View):
         except (json.JSONDecodeError, AttributeError):
             return JsonResponse({"error": "Datos inválidos."}, status=400)
 
+        from apps.core.constants import CATEGORY_COLOR_CHOICES, CategoryType
+
         parent_pk = data.get("parent_pk")
         name = (data.get("name") or "").strip()
 
         if not parent_pk or not name:
             return JsonResponse({"error": "Nombre y grupo son obligatorios."}, status=400)
 
-        try:
-            parent = Category.objects.get(
-                pk=parent_pk,
-                parent__isnull=True,
-            )
-        except (Category.DoesNotExist, ValueError):
-            return JsonResponse({"error": "Grupo no encontrado."}, status=404)
+        if parent_pk == "new":
+            new_group_name = (data.get("new_group_name") or "").strip()
+            if not new_group_name:
+                return JsonResponse({"error": "El nombre del grupo es obligatorio."}, status=400)
 
-        from apps.core.constants import CategoryType
+            parent = Category(
+                name=new_group_name,
+                type=CategoryType.EXPENSE,
+                user=request.user,
+                parent=None,
+                color=CATEGORY_COLOR_CHOICES[0][0],
+            )
+            try:
+                parent.full_clean()
+                parent.save()
+            except Exception as e:
+                return JsonResponse({"error": str(e)}, status=400)
+        else:
+            try:
+                parent = Category.objects.get(
+                    models.Q(is_system=True) | models.Q(user=request.user),
+                    pk=parent_pk,
+                    parent__isnull=True,
+                )
+            except (Category.DoesNotExist, ValueError):
+                return JsonResponse({"error": "Grupo no encontrado."}, status=404)
 
         new_cat = Category(
             name=name,
@@ -229,6 +249,7 @@ class CategoryQuickCreateView(LoginRequiredMixin, View):
             {
                 "pk": new_cat.pk,
                 "name": new_cat.name,
+                "parent_pk": parent.pk,
                 "parent_name": parent.name,
                 "label": f"{parent.name} › {new_cat.name}",
             }

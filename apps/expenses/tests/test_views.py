@@ -1239,3 +1239,38 @@ class TestExpenseCreateWithRecurring:
         assert response.redirect_chain[-1][0] == reverse("recurring:list")
         msgs = [m.message for m in response.context["messages"]]
         assert any("Gasto registrado" in m for m in msgs)
+
+
+class TestImportPreviewHash:
+    """Tests para el hash determinístico usado en el guardado de progreso (localStorage)."""
+
+    def test_same_rows_produce_same_hash(self):
+        from apps.expenses.views import _import_preview_hash
+
+        rows = [
+            {"date": "05.07.26", "description": "NETFLIX.COM", "amount": "8500.00"},
+            {"date": "06.07.26", "description": "SPOTIFY", "amount": "4200.00"},
+        ]
+        assert _import_preview_hash(rows) == _import_preview_hash(rows)
+
+    def test_different_rows_produce_different_hash(self):
+        from apps.expenses.views import _import_preview_hash
+
+        rows_a = [{"date": "05.07.26", "description": "NETFLIX.COM", "amount": "8500.00"}]
+        rows_b = [{"date": "05.07.26", "description": "NETFLIX.COM", "amount": "9000.00"}]
+        assert _import_preview_hash(rows_a) != _import_preview_hash(rows_b)
+
+    def test_row_order_affects_hash(self):
+        from apps.expenses.views import _import_preview_hash
+
+        rows_a = [
+            {"date": "05.07.26", "description": "NETFLIX.COM", "amount": "8500.00"},
+            {"date": "06.07.26", "description": "SPOTIFY", "amount": "4200.00"},
+        ]
+        rows_b = list(reversed(rows_a))
+        assert _import_preview_hash(rows_a) != _import_preview_hash(rows_b)
+
+    def test_empty_rows_returns_stable_hash(self):
+        from apps.expenses.views import _import_preview_hash
+
+        assert _import_preview_hash([]) == _import_preview_hash([])

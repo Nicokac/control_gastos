@@ -41,9 +41,14 @@
         </a>
         <h1 class="h3 mb-0">
             <i class="bi bi-file-earmark-arrow-up text-danger me-2"></i>Importar resumen bancario
+            <span class="badge bg-warning text-dark align-middle" style="font-size:.65rem">BETA</span>
         </h1>
     </div>
 </div>
+<p class="text-muted small mb-4">
+    <i class="bi bi-info-circle me-1"></i>
+    Esta función está en beta: por ahora solo está probada con resúmenes de tarjeta Visa del Banco Macro.
+</p>
 
 {% if not preview_rows %}
 {# ── Paso 1: subir PDF ── #}
@@ -86,6 +91,12 @@
 
 {% else %}
 {# ── Paso 2: preview y confirmación ── #}
+<div class="alert alert-info d-flex align-items-center gap-2 py-2 mb-3 d-none" id="progress-restored-banner">
+    <i class="bi bi-arrow-counterclockwise"></i>
+    <span>Se restauró tu progreso de categorización anterior para este resumen.</span>
+    <button type="button" class="btn-close ms-auto" aria-label="Cerrar" id="progress-restored-close"></button>
+</div>
+
 <div class="d-flex justify-content-between align-items-center mb-3">
     <p class="text-muted mb-0">
         Se encontraron <strong>{{ total_rows }}</strong> transacciones.
@@ -97,6 +108,20 @@
         </span>
     </div>
 </div>
+
+{% if has_usd_rows %}
+<div class="alert alert-warning d-flex align-items-center gap-3 py-2 mb-3" id="usd-rate-banner">
+    <i class="bi bi-currency-exchange fs-5"></i>
+    <div class="flex-grow-1">
+        <strong>Este resumen tiene filas en USD.</strong>
+        Ingresá la cotización del día que pagaste la tarjeta para convertirlas a pesos.
+    </div>
+    <div class="input-group input-group-sm" style="width:180px">
+        <span class="input-group-text">$</span>
+        <input type="number" step="0.01" min="0.01" class="form-control" id="usd-exchange-rate" placeholder="Cotización">
+    </div>
+</div>
+{% endif %}
 
 <form method="post" action="{% url 'expenses:import_confirm' %}" id="confirm-form">
     {% csrf_token %}
@@ -120,10 +145,10 @@
                 </thead>
                 <tbody>
                     {% for row in preview_rows %}
-                    <tr data-idx="{{ forloop.counter0 }}" {% if row.is_tax %}class="row-tax"{% endif %}>
+                    <tr data-idx="{{ forloop.counter0 }}" {% if row.is_tax or row.is_duplicate %}class="row-tax"{% endif %}>
                         <td>
                             <input type="checkbox" class="form-check-input row-check"
-                                {% if not row.is_tax %}checked{% endif %}>
+                                {% if not row.is_tax and not row.is_duplicate %}checked{% endif %}>
                         </td>
                         <td class="text-nowrap small text-muted">{{ row.date }}</td>
                         <td>
@@ -131,6 +156,9 @@
                                    class="form-control form-control-sm border-0 bg-transparent row-description"
                                    value="{{ row.description }}"
                                    maxlength="255">
+                            {% if row.is_duplicate %}
+                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">Ya importado</span>
+                            {% endif %}
                         </td>
                         <td class="text-end fw-semibold small text-nowrap">
                             {{ row.amount }}
@@ -195,10 +223,15 @@
                         {% for g in expense_groups %}
                         <option value="{{ g.pk }}">{{ g.name }}</option>
                         {% endfor %}
+                        <option value="new">+ Crear grupo nuevo</option>
                     </select>
                 </div>
+                <div class="mb-3 d-none" id="modal-new-group-wrapper">
+                    <label class="form-label form-label-sm fw-semibold">Nombre del grupo nuevo</label>
+                    <input type="text" class="form-control form-control-sm" id="modal-new-group-name" maxlength="100" placeholder="Ej: Finanzas">
+                </div>
                 <div class="mb-1">
-                    <label class="form-label form-label-sm fw-semibold">Nombre</label>
+                    <label class="form-label form-label-sm fw-semibold">Nombre de la subcategoría</label>
                     <input type="text" class="form-control form-control-sm" id="modal-name" maxlength="100" placeholder="Ej: Streaming">
                 </div>
                 <div class="text-danger small mt-2 d-none" id="modal-error"></div>
@@ -219,8 +252,10 @@
 {% if preview_rows %}
 <div id="import-data"
      data-quick-create-url="{% url 'categories:quick_create' %}"
+     data-exchange-rate-url="{% url 'core:exchange_rate_today' %}"
      data-csrf="{{ csrf_token }}"
      data-rows="{{ preview_json|escape }}"
+     data-preview-hash="{{ preview_hash }}"
      style="display:none"></div>
 <script src="{% static 'js/expense_import.js' %}"></script>
 {% endif %}

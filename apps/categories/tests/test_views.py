@@ -522,3 +522,100 @@ class TestCategoryReorderView:
             url, data="no-es-json", content_type="application/json"
         )
         assert response.status_code == 400
+
+
+@pytest.mark.django_db
+class TestCategoryQuickCreateView:
+    """Tests para el endpoint de creación rápida de subcategoría (import PDF)."""
+
+    def test_login_required(self, client):
+        url = reverse("categories:quick_create")
+        response = client.post(
+            url,
+            data=json.dumps({"parent_pk": 1, "name": "Streaming"}),
+            content_type="application/json",
+        )
+        assert response.status_code == 302
+        assert "login" in response.url
+
+    def test_creates_subcategory_under_existing_group(self, authenticated_client, user):
+        group = Category.objects.create(
+            name="Entretenimiento", type=CategoryType.EXPENSE, user=user, parent=None
+        )
+        url = reverse("categories:quick_create")
+        response = authenticated_client.post(
+            url,
+            data=json.dumps({"parent_pk": group.pk, "name": "Streaming"}),
+            content_type="application/json",
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["label"] == "Entretenimiento › Streaming"
+
+        new_cat = Category.objects.get(pk=data["pk"])
+        assert new_cat.parent_id == group.pk
+        assert new_cat.user == user
+        assert new_cat.type == CategoryType.EXPENSE
+
+    def test_creates_new_group_and_subcategory(self, authenticated_client, user):
+        url = reverse("categories:quick_create")
+        response = authenticated_client.post(
+            url,
+            data=json.dumps(
+                {"parent_pk": "new", "new_group_name": "Finanzas", "name": "Impuestos"}
+            ),
+            content_type="application/json",
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["label"] == "Finanzas › Impuestos"
+
+        new_group = Category.objects.get(pk=data["parent_pk"])
+        assert new_group.name == "Finanzas"
+        assert new_group.parent_id is None
+        assert new_group.user == user
+
+        new_cat = Category.objects.get(pk=data["pk"])
+        assert new_cat.parent_id == new_group.pk
+
+    def test_new_group_without_name_returns_400(self, authenticated_client):
+        url = reverse("categories:quick_create")
+        response = authenticated_client.post(
+            url,
+            data=json.dumps({"parent_pk": "new", "new_group_name": "", "name": "Impuestos"}),
+            content_type="application/json",
+        )
+        assert response.status_code == 400
+
+    def test_cannot_use_other_user_group_as_parent(self, authenticated_client, other_user):
+        other_group = Category.objects.create(
+            name="Grupo Otro", type=CategoryType.EXPENSE, user=other_user, parent=None
+        )
+        url = reverse("categories:quick_create")
+        response = authenticated_client.post(
+            url,
+            data=json.dumps({"parent_pk": other_group.pk, "name": "Sub"}),
+            content_type="application/json",
+        )
+        assert response.status_code == 404
+
+    def test_missing_name_returns_400(self, authenticated_client, user):
+        group = Category.objects.create(
+            name="Grupo", type=CategoryType.EXPENSE, user=user, parent=None
+        )
+        url = reverse("categories:quick_create")
+        response = authenticated_client.post(
+            url,
+            data=json.dumps({"parent_pk": group.pk, "name": ""}),
+            content_type="application/json",
+        )
+        assert response.status_code == 400
+
+    def test_invalid_body_returns_400(self, authenticated_client):
+        url = reverse("categories:quick_create")
+        response = authenticated_client.post(
+            url, data="no-es-json", content_type="application/json"
+        )
+        assert response.status_code == 400

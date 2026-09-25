@@ -1,3 +1,4 @@
+import hashlib
 import io
 import json
 import logging
@@ -14,7 +15,7 @@ from django.utils import timezone
 from django.views import View
 
 from apps.categories.models import Category
-from apps.core.constants import PaymentMethod
+from apps.core.constants import CategoryType, PaymentMethod
 from apps.core.utils import get_month_date_range_exclusive
 from apps.core.views import (
     UserOwnedCreateView,
@@ -687,6 +688,15 @@ def _build_import_preview(rows, user, categories):
             if desc not in history_map:
                 history_map[desc] = row["category_id"]
 
+    # Set de (fecha, descripción, monto) ya existentes para detectar duplicados
+    existing_keys = set()
+    if descriptions:
+        existing = Expense.objects.filter(user=user, description__in=descriptions).values(
+            "date", "description", "amount"
+        )
+        for row in existing:
+            existing_keys.add((row["date"], row["description"], row["amount"]))
+
     preview_rows = []
     for r in non_tax_rows:
         desc = r.description.strip().replace("\n", " ").replace("\r", "")
@@ -697,6 +707,8 @@ def _build_import_preview(rows, user, categories):
             r.suggested_category_name.lower(), ""
         )
 
+        is_duplicate = not is_tax and (r.date_parsed, desc, r.amount) in existing_keys
+
         preview_rows.append(
             {
                 "date": r.raw_date,
@@ -705,10 +717,18 @@ def _build_import_preview(rows, user, categories):
                 "currency": r.currency,
                 "suggested_category_pk": suggested_pk,
                 "is_tax": is_tax,
+                "is_duplicate": is_duplicate,
             }
         )
 
     return preview_rows
+
+
+def _import_preview_hash(preview_rows):
+    """Hash determinístico del contenido del resumen, para atar el progreso guardado
+    en localStorage a un PDF específico (mismo resumen re-subido = mismo hash)."""
+    raw = "|".join(f"{r['date']}:{r['description']}:{r['amount']}" for r in preview_rows)
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
 
 
 class ExpenseImportView(LoginRequiredMixin, View):
@@ -752,7 +772,7 @@ class ExpenseImportView(LoginRequiredMixin, View):
             return redirect("expenses:import")
 
         categories = Category.get_expense_categories(request.user)
-        expense_groups = Category.get_groups(request.user, "expense")
+        expense_groups = Category.get_groups(request.user, CategoryType.EXPENSE)
         preview_rows = _build_import_preview(rows, request.user, categories)
         return render(
             request,
@@ -763,6 +783,8 @@ class ExpenseImportView(LoginRequiredMixin, View):
                 "preview_rows": preview_rows,
                 "preview_json": json.dumps(preview_rows),
                 "total_rows": len(preview_rows),
+                "has_usd_rows": any(r["currency"] == "USD" for r in preview_rows),
+                "preview_hash": _import_preview_hash(preview_rows),
             },
         )
 
@@ -799,7 +821,7 @@ class ExpenseImportDebugView(LoginRequiredMixin, View):
             return redirect("expenses:import")
 
         categories = Category.get_expense_categories(request.user)
-        expense_groups = Category.get_groups(request.user, "expense")
+        expense_groups = Category.get_groups(request.user, CategoryType.EXPENSE)
         preview_rows = _build_import_preview(rows, request.user, categories)
         return render(
             request,
@@ -810,6 +832,8 @@ class ExpenseImportDebugView(LoginRequiredMixin, View):
                 "preview_rows": preview_rows,
                 "preview_json": json.dumps(preview_rows),
                 "total_rows": len(preview_rows),
+                "has_usd_rows": any(r["currency"] == "USD" for r in preview_rows),
+                "preview_hash": _import_preview_hash(preview_rows),
             },
         )
 
@@ -828,17 +852,19 @@ class ExpenseImportConfirmView(LoginRequiredMixin, View):
         categories = {str(c.pk): c for c in Category.get_expense_categories(user)}
 
         created = 0
-        errors = 0
+        error_details: list[str] = []
 
         with transaction.atomic():
             for row in rows_data:
                 if not row.get("include"):
                     continue
 
+                row_desc = (row.get("description") or "(sin descripción)")[:60]
+
                 cat_pk = str(row.get("category_pk", ""))
                 category = categories.get(cat_pk)
                 if not category:
-                    errors += 1
+                    error_details.append(f"{row_desc}: sin categoría válida")
                     continue
 
                 raw_date = row.get("date", "")
@@ -846,17 +872,30 @@ class ExpenseImportConfirmView(LoginRequiredMixin, View):
                     d, m, y = raw_date.split(".")
                     expense_date = timezone.datetime(2000 + int(y), int(m), int(d)).date()
                 except (ValueError, AttributeError):
-                    errors += 1
+                    error_details.append(f"{row_desc}: fecha inválida")
                     continue
 
                 try:
                     amount = __import__("decimal").Decimal(row.get("amount", "0"))
                 except Exception:
-                    errors += 1
+                    error_details.append(f"{row_desc}: monto inválido")
                     continue
 
                 currency = row.get("currency", "ARS")
                 description = row.get("description", "")[:255]
+
+                if currency == "USD":
+                    try:
+                        exchange_rate = __import__("decimal").Decimal(
+                            str(row.get("exchange_rate") or "0")
+                        )
+                    except Exception:
+                        exchange_rate = __import__("decimal").Decimal("0")
+                    if exchange_rate <= 0:
+                        error_details.append(f"{row_desc}: falta cotización del dólar")
+                        continue
+                else:
+                    exchange_rate = __import__("decimal").Decimal("1.0000")
 
                 Expense.objects.create(
                     user=user,
@@ -865,8 +904,7 @@ class ExpenseImportConfirmView(LoginRequiredMixin, View):
                     description=description,
                     amount=amount,
                     currency=currency,
-                    exchange_rate=__import__("decimal").Decimal("1.0000"),
-                    amount_ars=amount,
+                    exchange_rate=exchange_rate,
                 )
                 created += 1
 
@@ -875,9 +913,14 @@ class ExpenseImportConfirmView(LoginRequiredMixin, View):
                 request,
                 f"Se importaron {created} gasto{'s' if created != 1 else ''} correctamente.",
             )
-        if errors:
+        if error_details:
+            n = len(error_details)
+            detail_text = "; ".join(error_details[:5])
+            if n > 5:
+                detail_text += f"; y {n - 5} más"
             messages.warning(
-                request, f"{errors} fila{'s' if errors != 1 else ''} no se pudieron importar."
+                request,
+                f"{n} fila{'s' if n != 1 else ''} no se pudieron importar: {detail_text}",
             )
 
         return redirect("expenses:list")

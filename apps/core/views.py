@@ -190,9 +190,21 @@ def exchange_rate_today(request):
         return JsonResponse({"error": "No se pudo obtener la cotización"}, status=503)
 
 
-APP_VERSION = "1.18.0"
+APP_VERSION = "1.19.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.19.0",
+        "date": "Septiembre 2026",
+        "title": "Importar resumen de tarjeta (Beta)",
+        "items": [
+            "Nueva sección para subir el PDF del resumen de tu tarjeta (Visa Macro) y cargar los gastos en bloque",
+            "El sistema sugiere la categoría de cada gasto según tu historial",
+            "Los impuestos del resumen se agrupan automáticamente en una sola fila",
+            "Podés crear categorías nuevas sin salir de la pantalla",
+            "Función en Beta: por ahora solo probada con resúmenes de Banco Macro",
+        ],
+    },
     {
         "version": "1.18.0",
         "date": "Julio 2026",

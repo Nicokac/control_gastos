@@ -5,6 +5,21 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.19.0] — 2026-09-25
+
+### Added
+
+- **Gastos — Importación de resúmenes bancarios (DT-055, beta)**: nueva pantalla `/expenses/import/` para subir un resumen de tarjeta en PDF (Visa Macro) y cargar los gastos en bloque en lugar de uno por uno. El sistema parsea el PDF, arma un preview editable por fila (fecha, descripción, monto, moneda, categoría) y solo confirma los gastos que el usuario revisa y aprueba. Funcionalidad marcada como **Beta** en la UI: el parser fue probado únicamente contra resúmenes Visa Macro.
+  - Sugerencia automática de categoría por historial del usuario (misma descripción ya categorizada antes) y por nombre para filas de impuestos.
+  - Impuestos de sellos/IIBB/IVA/DB.RG se agrupan en una sola fila "Impuestos tarjeta", excluida por defecto.
+  - Modal para crear una subcategoría — o un grupo nuevo si hace falta — sin salir de la pantalla de importación.
+  - Filas en dólares piden la cotización del día (precompletada automáticamente) antes de permitir confirmar la importación.
+  - Detección de gastos duplicados contra los ya cargados (misma fecha, descripción y monto), excluidos por defecto en el preview.
+  - Si el usuario cierra la pestaña a mitad de categorizar, el progreso se guarda localmente y se restaura al volver a subir el mismo resumen.
+  - Mensajes de error detallados por fila si alguna no se pudo importar al confirmar.
+
+---
+
 ## [1.18.0] — 2026-07-02
 
 ### Added
