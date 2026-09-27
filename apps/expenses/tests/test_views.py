@@ -1279,6 +1279,78 @@ class TestImportPreviewHash:
 
 
 @pytest.mark.django_db
+class TestBuildImportPreviewRecurringMatch:
+    """Tests para el aviso de vínculo a un RecurringExpense existente en el preview."""
+
+    def _imported_row(self, description, **overrides):
+        from apps.expenses.importers import ImportedRow
+
+        defaults = {
+            "raw_date": "05.07.26",
+            "description": description,
+            "amount": Decimal("8500.00"),
+            "currency": "ARS",
+        }
+        defaults.update(overrides)
+        return ImportedRow(**defaults)
+
+    def test_flags_row_matching_existing_active_recurring(self, user, expense_category):
+        from apps.expenses.views import _build_import_preview
+        from apps.recurring.models import RecurringExpense
+
+        RecurringExpense.objects.create(
+            user=user, name="NETFLIX.COM", category=expense_category, due_day=5
+        )
+        rows = [self._imported_row("NETFLIX.COM")]
+
+        preview = _build_import_preview(rows, user, [])
+
+        assert preview[0]["matches_existing_recurring"] is True
+
+    def test_does_not_flag_row_without_existing_recurring(self, user):
+        from apps.expenses.views import _build_import_preview
+
+        rows = [self._imported_row("ALMACEN DON JOSE")]
+
+        preview = _build_import_preview(rows, user, [])
+
+        assert preview[0]["matches_existing_recurring"] is False
+
+    def test_does_not_flag_row_matching_inactive_recurring(self, user, expense_category):
+        from apps.expenses.views import _build_import_preview
+        from apps.recurring.models import RecurringExpense
+
+        RecurringExpense.objects.create(
+            user=user,
+            name="NETFLIX.COM",
+            category=expense_category,
+            due_day=5,
+            is_active=False,
+        )
+        rows = [self._imported_row("NETFLIX.COM")]
+
+        preview = _build_import_preview(rows, user, [])
+
+        assert preview[0]["matches_existing_recurring"] is False
+
+    def test_does_not_flag_row_matching_other_user_recurring(
+        self, user, other_user, expense_category_factory
+    ):
+        from apps.expenses.views import _build_import_preview
+        from apps.recurring.models import RecurringExpense
+
+        other_cat = expense_category_factory(other_user, name="Otra")
+        RecurringExpense.objects.create(
+            user=other_user, name="NETFLIX.COM", category=other_cat, due_day=5
+        )
+        rows = [self._imported_row("NETFLIX.COM")]
+
+        preview = _build_import_preview(rows, user, [])
+
+        assert preview[0]["matches_existing_recurring"] is False
+
+
+@pytest.mark.django_db
 class TestExpenseImportConfirmView:
     """Tests para la confirmación de importación, incluida la creación de recurrentes."""
 

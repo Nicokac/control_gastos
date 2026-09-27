@@ -698,6 +698,18 @@ def _build_import_preview(rows, user, categories):
         for row in existing:
             existing_keys.add((row["date"], row["description"], row["amount"]))
 
+    # Set de nombres de recurrentes activos: filas Fijo/Cuota que coincidan se
+    # vinculan al recurrente existente en lugar de crear uno nuevo (ver Fase 2/3).
+    from apps.recurring.models import RecurringExpense
+
+    existing_recurring_names = set()
+    if descriptions:
+        existing_recurring_names = set(
+            RecurringExpense.objects.filter(
+                user=user, is_active=True, name__in=descriptions
+            ).values_list("name", flat=True)
+        )
+
     preview_rows = []
     for r in non_tax_rows:
         desc = r.description.strip().replace("\n", " ").replace("\r", "")
@@ -723,6 +735,7 @@ def _build_import_preview(rows, user, categories):
                 "suggested_type": "punctual" if is_tax else r.suggested_type,
                 "installment_current": installment_match[0] if installment_match else "",
                 "installment_total": installment_match[1] if installment_match else "",
+                "matches_existing_recurring": desc in existing_recurring_names,
             }
         )
 

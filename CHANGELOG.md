@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.20.1] — 2026-09-27
+
+### Added
+
+- **Gastos — Aviso de vínculo a gasto fijo existente en el preview (DT-055, beta)**: al marcar una fila como Fijo o Cuota en la importación de resúmenes, si ya existe un gasto fijo con ese nombre el preview lo muestra antes de confirmar ("Se vincula a tu gasto fijo existente"), en lugar de que el usuario recién se entere después de importar.
+
+---
+
 ## [1.20.0] — 2026-09-27
 
 ### Added

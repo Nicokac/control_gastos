@@ -191,7 +191,7 @@
                             </button>
                         </td>
                         <td>
-                            <select class="form-select form-select-sm row-type">
+                            <select class="form-select form-select-sm row-type" data-matches-recurring="{{ row.matches_existing_recurring|yesno:'1,0' }}">
                                 <option value="punctual" {% if row.suggested_type == "punctual" %}selected{% endif %}>Puntual</option>
                                 <option value="fixed" {% if row.suggested_type == "fixed" %}selected{% endif %}>Fijo</option>
                                 <option value="installment" {% if row.suggested_type == "installment" %}selected{% endif %}>Cuota</option>
@@ -202,6 +202,9 @@
                                 <span class="small text-muted align-self-center">/</span>
                                 <input type="number" min="1" class="form-control form-control-sm row-installment-total"
                                        value="{{ row.installment_total }}" placeholder="Total" style="width:55px">
+                            </div>
+                            <div class="d-none mt-1 small text-primary row-recurring-match">
+                                <i class="bi bi-link-45deg"></i> Se vincula a tu gasto fijo existente
                             </div>
                         </td>
                     </tr>

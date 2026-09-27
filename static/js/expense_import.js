@@ -81,6 +81,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const typeSelect = tr.querySelector('.row-type');
         const fields = tr.querySelector('.row-installment-fields');
         fields.classList.toggle('d-none', typeSelect.value !== 'installment');
+
+        const recurringMatch = tr.querySelector('.row-recurring-match');
+        const matchesExisting = typeSelect.dataset.matchesRecurring === '1';
+        const isRecurringType = typeSelect.value === 'fixed' || typeSelect.value === 'installment';
+        recurringMatch.classList.toggle('d-none', !(matchesExisting && isRecurringType));
     }
 
     table.querySelectorAll('tbody tr').forEach(function (tr) {
