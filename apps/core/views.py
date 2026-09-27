@@ -190,9 +190,20 @@ def exchange_rate_today(request):
         return JsonResponse({"error": "No se pudo obtener la cotización"}, status=503)
 
 
-APP_VERSION = "1.19.0"
+APP_VERSION = "1.20.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.20.0",
+        "date": "Septiembre 2026",
+        "title": "Detección de gastos fijos y cuotas al importar (Beta)",
+        "items": [
+            "Al importar tu resumen, cada gasto se puede marcar como Puntual, Fijo o en Cuotas",
+            "El sistema sugiere el tipo automáticamente (por ejemplo, detecta 'Cuota 3/6' o servicios como Netflix o Spotify) y vos confirmás",
+            "Si el gasto fijo ya existe, se registra el pago en lugar de crear uno duplicado",
+            "Función en Beta: seguimos probando el flujo completo antes de sacarla de beta",
+        ],
+    },
     {
         "version": "1.19.0",
         "date": "Septiembre 2026",

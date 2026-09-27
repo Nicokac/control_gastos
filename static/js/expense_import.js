@@ -26,6 +26,9 @@ document.addEventListener('DOMContentLoaded', function () {
             state.push({
                 include: tr.querySelector('.row-check').checked,
                 category_pk: tomSelects[i] ? tomSelects[i].getValue() : '',
+                type: tr.querySelector('.row-type').value,
+                installment_current: tr.querySelector('.row-installment-current').value,
+                installment_total: tr.querySelector('.row-installment-total').value,
             });
         });
         try {
@@ -74,6 +77,22 @@ document.addEventListener('DOMContentLoaded', function () {
         ts.on('change', updateCounters);
     });
 
+    function toggleInstallmentFields(tr) {
+        const typeSelect = tr.querySelector('.row-type');
+        const fields = tr.querySelector('.row-installment-fields');
+        fields.classList.toggle('d-none', typeSelect.value !== 'installment');
+    }
+
+    table.querySelectorAll('tbody tr').forEach(function (tr) {
+        toggleInstallmentFields(tr);
+        tr.querySelector('.row-type').addEventListener('change', function () {
+            toggleInstallmentFields(tr);
+            updateCounters();
+        });
+        tr.querySelector('.row-installment-current').addEventListener('input', updateCounters);
+        tr.querySelector('.row-installment-total').addEventListener('input', updateCounters);
+    });
+
     function updateCounters() {
         const checks = Array.from(table.querySelectorAll('.row-check'));
         const included = checks.filter(function (c) { return c.checked; }).length;
@@ -92,7 +111,20 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         const rateValid = !usdRateInput || parseFloat(usdRateInput.value) > 0;
 
-        btnConfirm.disabled = included === 0 || categorized < included || (includedUsd && !rateValid);
+        const rowsEls = Array.from(table.querySelectorAll('tbody tr'));
+        const invalidInstallment = rowsEls.some(function (tr, i) {
+            if (!checks[i].checked) return false;
+            if (tr.querySelector('.row-type').value !== 'installment') return false;
+            const current = tr.querySelector('.row-installment-current').value;
+            const total = tr.querySelector('.row-installment-total').value;
+            return !current || !total;
+        });
+
+        btnConfirm.disabled =
+            included === 0 ||
+            categorized < included ||
+            (includedUsd && !rateValid) ||
+            invalidInstallment;
 
         saveProgress();
     }
@@ -123,6 +155,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const description = tr.querySelector('.row-description').value;
             const ts = tomSelects[i];
             const categoryPk = ts ? ts.getValue() : '';
+            const type = tr.querySelector('.row-type').value;
             result.push({
                 include: checked,
                 date: rows[i].date,
@@ -131,6 +164,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 currency: rows[i].currency,
                 category_pk: categoryPk,
                 exchange_rate: rows[i].currency === 'USD' ? usdRate : '',
+                type: type,
+                installment_current: type === 'installment' ? tr.querySelector('.row-installment-current').value : '',
+                installment_total: type === 'installment' ? tr.querySelector('.row-installment-total').value : '',
             });
         });
         jsonInput.value = JSON.stringify(result);
@@ -228,8 +264,16 @@ document.addEventListener('DOMContentLoaded', function () {
     if (savedProgress && savedProgress.length === tomSelects.length) {
         const rowsEls = table.querySelectorAll('tbody tr');
         savedProgress.forEach(function (state, i) {
-            if (rowsEls[i]) rowsEls[i].querySelector('.row-check').checked = !!state.include;
+            const tr = rowsEls[i];
+            if (!tr) return;
+            tr.querySelector('.row-check').checked = !!state.include;
             if (tomSelects[i] && state.category_pk) tomSelects[i].setValue(state.category_pk, true);
+            if (state.type) {
+                tr.querySelector('.row-type').value = state.type;
+                toggleInstallmentFields(tr);
+            }
+            if (state.installment_current) tr.querySelector('.row-installment-current').value = state.installment_current;
+            if (state.installment_total) tr.querySelector('.row-installment-total').value = state.installment_total;
         });
         const banner = document.getElementById('progress-restored-banner');
         if (banner) banner.classList.remove('d-none');

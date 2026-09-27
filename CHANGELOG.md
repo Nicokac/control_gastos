@@ -5,6 +5,17 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.20.0] — 2026-09-27
+
+### Added
+
+- **Gastos — Tipo de gasto en la importación de resúmenes (DT-055, beta)**: cada fila del preview de importación ahora tiene un selector de tipo (Puntual / Fijo / Cuota). El sistema sugiere "Cuota" si detecta el patrón "Cuota X/Y" en la descripción y "Fijo" si el comercio coincide con una lista de servicios conocidos (Netflix, Spotify, streaming, telefonía, etc.) — la sugerencia siempre queda a confirmación del usuario, nunca se aplica sola.
+  - Al confirmar una fila Fijo o Cuota, si ya existe un gasto fijo con ese mismo nombre se registra el pago sobre el existente en vez de crear uno duplicado.
+  - Si no existe, se crea el gasto fijo automáticamente — con la cantidad de cuotas y el número de cuota actual para los pagos en cuotas.
+  - Sigue marcada como **Beta**: probada solo con resúmenes Visa Macro del Banco Macro.
+
+---
+
 ## [1.19.0] — 2026-09-25
 
 ### Added

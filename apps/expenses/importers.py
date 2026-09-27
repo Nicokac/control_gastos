@@ -3,6 +3,30 @@ from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal, InvalidOperation
 
+_INSTALLMENT_RE = re.compile(r"Cuota\s+(\d+)/(\d+)", re.IGNORECASE)
+
+# Comercios conocidos como servicios recurrentes → se sugiere tipo "fijo"
+# La descripción ya viene limpia y en mayúsculas desde el parser.
+_KNOWN_FIXED_SERVICES = [
+    "NETFLIX",
+    "SPOTIFY",
+    "DISNEY",
+    "HBO",
+    "YOUTUBE PREMIUM",
+    "PARAMOUNT",
+    "AMAZON PRIME",
+    "PERSONAL FLOW",
+    "MOVISTAR",
+    "CLARO",
+    "TELECENTRO",
+    "DIRECTV",
+    "ICLOUD",
+    "GOOGLE ONE",
+    "GOOGLE STORAGE",
+    "OPENAI",
+    "ANTHROPIC",
+]
+
 
 @dataclass
 class ImportedRow:
@@ -19,6 +43,24 @@ class ImportedRow:
             return date(2000 + int(y), int(m), int(d))
         except Exception:
             return None
+
+    @property
+    def installment_match(self) -> tuple[int, int] | None:
+        """(cuota_actual, total_cuotas) si la descripción tiene patrón 'Cuota X/Y'."""
+        m = _INSTALLMENT_RE.search(self.description)
+        if not m:
+            return None
+        return int(m.group(1)), int(m.group(2))
+
+    @property
+    def suggested_type(self) -> str:
+        """Tipo de gasto sugerido: 'installment', 'fixed' o 'punctual'."""
+        if self.installment_match:
+            return "installment"
+        desc_upper = self.description.upper()
+        if any(service in desc_upper for service in _KNOWN_FIXED_SERVICES):
+            return "fixed"
+        return "punctual"
 
 
 _DATE_RE = re.compile(r"^\d{2}\.\d{2}\.\d{2}$")

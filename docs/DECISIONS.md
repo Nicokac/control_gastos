@@ -797,7 +797,7 @@ El dashboard muestra el gasto acumulado hasta hoy pero no proyecta cómo cerrar�
 
 ### DT-055 — Importación de resúmenes bancarios
 
-**Estado:** 🧪 Resuelto en beta (v1.19.0) — Fase 1
+**Estado:** 🧪 Resuelto en beta (v1.20.0) — Fases 1 y 2
 
 La carga era 100% manual. No existía forma de importar movimientos desde el banco.
 
@@ -805,9 +805,11 @@ La carga era 100% manual. No existía forma de importar movimientos desde el ban
 
 **Resolución (Fase 1 — beta):** vista de importación (`/expenses/import/`) que acepta PDF de resumen Visa Macro. `apps/expenses/importers.py` parsea con `pdfplumber` usando coordenadas de columna (robusto a descripciones de largo variable). Preview editable con Tom Select, contador de filas categorizadas, botón de confirmación bloqueado hasta completar categorías. Impuestos (sellos, IIBB, IVA, DB.RG) se agrupan en una sola fila "Impuestos tarjeta", deschequeada por defecto. Sugerencia de categoría por historial del usuario (descripción exacta) con prioridad sobre sugerencia por nombre. Modal para crear subcategoría — y grupo nuevo si hace falta — sin salir de la pantalla. Filas en USD piden la cotización del día (precompletada desde `dolarapi.com`) antes de habilitar la confirmación. Detección de duplicados contra gastos ya cargados (fecha+descripción+monto), marcados visualmente y excluidos por defecto. Errores de fila al confirmar muestran detalle (cuál fila y por qué). Progreso de categorización se guarda en `localStorage` atado a un hash del resumen, para no perderlo ante un cierre accidental de pestaña — requiere volver a subir el mismo PDF para restaurarlo, ya que el archivo no se persiste en el servidor.
 
-**Por qué queda marcado como beta:** el parser está probado solo contra resúmenes Visa Macro (banco único). Falta soporte multi-banco, tipo de gasto por fila (puntual/fijo/cuota — Fase 2) y detección de recurrentes existentes para registrar el pago en vez de crear un gasto suelto (Fase 3). El badge "Beta" se muestra en el botón "Importar" de la lista de gastos y en el header de la pantalla de importación.
+**Resolución (Fase 2 — beta, alcance completo):** cada fila del preview tiene un selector de tipo (Puntual / Fijo / Cuota), con sugerencia automática — `installment_match` detecta el patrón "Cuota X/Y" en la descripción, y una lista curada de comercios conocidos (`_KNOWN_FIXED_SERVICES` en `importers.py`) sugiere "Fijo". El usuario siempre confirma manualmente el tipo, la sugerencia nunca se aplica sola. Al confirmar una fila Fijo/Cuota, `ExpenseImportConfirmView` busca un `RecurringExpense` activo del usuario con nombre exactamente igual a la descripción: si existe, vincula el `Expense` nuevo a ese recurrente sin crear uno duplicado (esto absorbe el alcance que originalmente iba a ser la Fase 3); si no existe, crea el `RecurringExpense` — con `total_installments`, `starting_installment` y `start_date` tomados de la fila para las cuotas — y vincula el gasto. Las cuotas sin ambos números completos (por si el parser falló) bloquean la confirmación con mensaje de error específico.
 
-**Riesgo aceptado:** un resumen de otro banco no va a parsear correctamente (el parser está atado a las coordenadas X específicas del layout de Macro). Si el usuario sube un PDF de otro formato, el resultado es una lista vacía o filas mal separadas, sin error explícito más allá de "no se encontraron transacciones".
+**Por qué sigue en beta:** el parser está probado solo contra resúmenes Visa Macro (banco único) — un PDF de otro banco no va a parsear correctamente. La lista de servicios conocidos para sugerir "Fijo" es curada a mano y no cubre todos los casos; el usuario puede corregir el tipo manualmente en cualquier fila. El badge "Beta" se mantiene visible en el botón "Importar" de la lista de gastos y en el header de la pantalla de importación hasta validar el flujo completo con más resúmenes reales.
+
+**Riesgo aceptado:** un resumen de otro banco no va a parsear correctamente (el parser está atado a las coordenadas X específicas del layout de Macro). Si el usuario sube un PDF de otro formato, el resultado es una lista vacía o filas mal separadas, sin error explícito más allá de "no se encontraron transacciones". El matching de recurrentes existentes es por nombre exacto — si el usuario edita la descripción de una fila antes de confirmar, no va a coincidir con un recurrente ya creado y se genera uno nuevo en su lugar.
 
 ---
 

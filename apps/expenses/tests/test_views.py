@@ -3,6 +3,8 @@ Tests para las vistas de Expense.
 """
 
 import io
+import json
+from datetime import date
 from decimal import Decimal
 
 from django.urls import reverse
@@ -1274,3 +1276,113 @@ class TestImportPreviewHash:
         from apps.expenses.views import _import_preview_hash
 
         assert _import_preview_hash([]) == _import_preview_hash([])
+
+
+@pytest.mark.django_db
+class TestExpenseImportConfirmView:
+    """Tests para la confirmación de importación, incluida la creación de recurrentes."""
+
+    def _row(self, **overrides):
+        row = {
+            "include": True,
+            "date": "05.07.26",
+            "description": "NETFLIX.COM",
+            "amount": "8500.00",
+            "currency": "ARS",
+            "category_pk": "",
+            "exchange_rate": "",
+            "type": "punctual",
+            "installment_current": "",
+            "installment_total": "",
+        }
+        row.update(overrides)
+        return row
+
+    def test_punctual_row_creates_plain_expense(self, authenticated_client, user, expense_category):
+        url = reverse("expenses:import_confirm")
+        row = self._row(category_pk=str(expense_category.pk))
+        response = authenticated_client.post(url, {"rows_json": json.dumps([row])}, follow=True)
+
+        assert response.status_code == 200
+        expense = Expense.objects.get(user=user)
+        assert expense.recurring is None
+        assert expense.description == "NETFLIX.COM"
+
+    def test_fixed_row_creates_recurring_expense(
+        self, authenticated_client, user, expense_category
+    ):
+        from apps.recurring.models import RecurringExpense
+
+        url = reverse("expenses:import_confirm")
+        row = self._row(category_pk=str(expense_category.pk), type="fixed")
+        authenticated_client.post(url, {"rows_json": json.dumps([row])}, follow=True)
+
+        recurring = RecurringExpense.objects.get(user=user, name="NETFLIX.COM")
+        assert recurring.total_installments is None
+        expense = Expense.objects.get(user=user)
+        assert expense.recurring_id == recurring.pk
+
+    def test_fixed_row_reuses_existing_recurring(
+        self, authenticated_client, user, expense_category
+    ):
+        from apps.recurring.models import RecurringExpense
+
+        existing = RecurringExpense.objects.create(
+            user=user, name="NETFLIX.COM", category=expense_category, due_day=5
+        )
+        url = reverse("expenses:import_confirm")
+        row = self._row(category_pk=str(expense_category.pk), type="fixed")
+        authenticated_client.post(url, {"rows_json": json.dumps([row])}, follow=True)
+
+        assert RecurringExpense.objects.filter(user=user, name="NETFLIX.COM").count() == 1
+        expense = Expense.objects.get(user=user)
+        assert expense.recurring_id == existing.pk
+
+    def test_installment_row_creates_recurring_with_total(
+        self, authenticated_client, user, expense_category
+    ):
+        from apps.recurring.models import RecurringExpense
+
+        url = reverse("expenses:import_confirm")
+        row = self._row(
+            category_pk=str(expense_category.pk),
+            description="DEPILIFE Cuota 03/06",
+            type="installment",
+            installment_current="3",
+            installment_total="6",
+        )
+        authenticated_client.post(url, {"rows_json": json.dumps([row])}, follow=True)
+
+        recurring = RecurringExpense.objects.get(user=user, name="DEPILIFE Cuota 03/06")
+        assert recurring.total_installments == 6
+        assert recurring.starting_installment == 3
+        assert recurring.start_date == date(2026, 7, 5)
+
+    def test_installment_row_without_totals_is_rejected(
+        self, authenticated_client, user, expense_category
+    ):
+        url = reverse("expenses:import_confirm")
+        row = self._row(category_pk=str(expense_category.pk), type="installment")
+        response = authenticated_client.post(url, {"rows_json": json.dumps([row])}, follow=True)
+
+        assert not Expense.objects.filter(user=user).exists()
+        msgs = [m.message for m in response.context["messages"]]
+        assert any("datos de cuota inválidos" in m for m in msgs)
+
+    def test_other_user_recurring_is_not_reused(
+        self, authenticated_client, user, other_user, expense_category_factory
+    ):
+        from apps.recurring.models import RecurringExpense
+
+        other_cat = expense_category_factory(other_user, name="Otra")
+        RecurringExpense.objects.create(
+            user=other_user, name="NETFLIX.COM", category=other_cat, due_day=5
+        )
+        my_cat = expense_category_factory(user, name="Mia")
+
+        url = reverse("expenses:import_confirm")
+        row = self._row(category_pk=str(my_cat.pk), type="fixed")
+        authenticated_client.post(url, {"rows_json": json.dumps([row])}, follow=True)
+
+        assert RecurringExpense.objects.filter(user=user, name="NETFLIX.COM").count() == 1
+        assert RecurringExpense.objects.filter(user=other_user, name="NETFLIX.COM").count() == 1

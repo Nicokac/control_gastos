@@ -3,6 +3,7 @@ import io
 import json
 import logging
 import tempfile
+from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -709,6 +710,7 @@ def _build_import_preview(rows, user, categories):
 
         is_duplicate = not is_tax and (r.date_parsed, desc, r.amount) in existing_keys
 
+        installment_match = r.installment_match
         preview_rows.append(
             {
                 "date": r.raw_date,
@@ -718,6 +720,9 @@ def _build_import_preview(rows, user, categories):
                 "suggested_category_pk": suggested_pk,
                 "is_tax": is_tax,
                 "is_duplicate": is_duplicate,
+                "suggested_type": "punctual" if is_tax else r.suggested_type,
+                "installment_current": installment_match[0] if installment_match else "",
+                "installment_total": installment_match[1] if installment_match else "",
             }
         )
 
@@ -848,8 +853,13 @@ class ExpenseImportConfirmView(LoginRequiredMixin, View):
             messages.error(request, "Datos inválidos.")
             return redirect("expenses:import")
 
+        from apps.recurring.models import RecurringExpense
+
         user = request.user
         categories = {str(c.pk): c for c in Category.get_expense_categories(user)}
+        recurring_by_name = {
+            r.name: r for r in RecurringExpense.objects.filter(user=user, is_active=True)
+        }
 
         created = 0
         error_details: list[str] = []
@@ -876,8 +886,8 @@ class ExpenseImportConfirmView(LoginRequiredMixin, View):
                     continue
 
                 try:
-                    amount = __import__("decimal").Decimal(row.get("amount", "0"))
-                except Exception:
+                    amount = Decimal(row.get("amount", "0"))
+                except InvalidOperation:
                     error_details.append(f"{row_desc}: monto inválido")
                     continue
 
@@ -886,16 +896,43 @@ class ExpenseImportConfirmView(LoginRequiredMixin, View):
 
                 if currency == "USD":
                     try:
-                        exchange_rate = __import__("decimal").Decimal(
-                            str(row.get("exchange_rate") or "0")
-                        )
-                    except Exception:
-                        exchange_rate = __import__("decimal").Decimal("0")
+                        exchange_rate = Decimal(str(row.get("exchange_rate") or "0"))
+                    except InvalidOperation:
+                        exchange_rate = Decimal("0")
                     if exchange_rate <= 0:
                         error_details.append(f"{row_desc}: falta cotización del dólar")
                         continue
                 else:
-                    exchange_rate = __import__("decimal").Decimal("1.0000")
+                    exchange_rate = Decimal("1.0000")
+
+                row_type = row.get("type", "punctual")
+                recurring = None
+
+                if row_type in ("fixed", "installment"):
+                    recurring = recurring_by_name.get(description)
+                    if recurring is None:
+                        installment_total = None
+                        starting_installment = None
+                        if row_type == "installment":
+                            try:
+                                installment_total = int(row.get("installment_total") or 0)
+                                starting_installment = int(row.get("installment_current") or 0)
+                            except (TypeError, ValueError):
+                                installment_total = None
+                            if not installment_total or not starting_installment:
+                                error_details.append(f"{row_desc}: datos de cuota inválidos")
+                                continue
+
+                        recurring = RecurringExpense.objects.create(
+                            user=user,
+                            name=description,
+                            category=category,
+                            due_day=min(expense_date.day, 28),
+                            total_installments=installment_total,
+                            starting_installment=starting_installment,
+                            start_date=expense_date if row_type == "installment" else None,
+                        )
+                        recurring_by_name[description] = recurring
 
                 Expense.objects.create(
                     user=user,
@@ -905,7 +942,10 @@ class ExpenseImportConfirmView(LoginRequiredMixin, View):
                     amount=amount,
                     currency=currency,
                     exchange_rate=exchange_rate,
+                    recurring=recurring,
                 )
+                if recurring is not None:
+                    recurring.auto_deactivate_if_complete()
                 created += 1
 
         if created:
