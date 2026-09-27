@@ -51,6 +51,9 @@ CLAUDE.md
 # Documentos privados de negocio
 docs/MONETIZACION.md
 
+# Resúmenes bancarios de prueba (datos financieros reales)
+resumen_*.pdf
+
 # Flutter mobile app (versionado en su propio repo o ignorado)
 mobile/build/
 mobile/.dart_tool/
