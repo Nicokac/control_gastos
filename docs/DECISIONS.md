@@ -811,6 +811,14 @@ La carga era 100% manual. No existía forma de importar movimientos desde el ban
 
 **Riesgo aceptado:** un resumen de otro banco no va a parsear correctamente (el parser está atado a las coordenadas X específicas del layout de Macro). Si el usuario sube un PDF de otro formato, el resultado es una lista vacía o filas mal separadas, sin error explícito más allá de "no se encontraron transacciones". El matching de recurrentes existentes es por nombre exacto — si el usuario edita la descripción de una fila antes de confirmar, no va a coincidir con un recurrente ya creado y se genera uno nuevo en su lugar.
 
+**Paridad con mobile — decisión consciente de no portar (2026-09-29):** DT-055 completo (Fases 1 y 2) es **web-only**. No hay equivalente en Flutter ni está planeado en el corto plazo.
+
+**Why:** el flujo requiere subir un archivo, revisar un preview con muchas filas editables (categoría, tipo, cuotas), crear categorías al vuelo y resolver casos borde (USD, duplicados, impuestos agrupados) — una experiencia que encaja mejor en pantalla grande que en mobile. Además la funcionalidad todavía está en beta y atada a un solo banco; portarla ahora significaría mantener dos implementaciones de algo que puede seguir cambiando de forma.
+
+**Estado de paridad general (relevado 2026-09-29):** mobile 1.16.0 está sincronizado con la web hasta v1.18.0 inclusive (DT-063 — semáforo de gastos fijos — ya portado, ver `PendingRecurringCard`). La única brecha actual entre mobile y web es DT-055 (v1.19.0 en adelante), y es intencional.
+
+**Cuándo reevaluar:** cuando DT-055 salga de beta (parser probado con más resúmenes reales, o soporte multi-banco), evaluar un flujo simplificado en mobile — sin las interacciones ricas de la web, priorizando algo directo (subir PDF, ver preview, confirmar) sobre paridad exacta con la UI web.
+
 ---
 
 ### DT-056 — Insights automáticos mensuales

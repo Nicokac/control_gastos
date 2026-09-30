@@ -806,6 +806,10 @@ class PrivacyView(TemplateView):
     template_name = "core/privacy.html"
 
 
+class AccountDeletionView(TemplateView):
+    template_name = "core/account_deletion.html"
+
+
 class LandingView(TemplateView):
     template_name = "core/landing.html"
 
