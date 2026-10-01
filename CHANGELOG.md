@@ -5,6 +5,21 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.20.2] — 2026-09-30
+
+### Fixed
+
+- **Categorías — Grupo de gastos sin subcategoría quedaba invisible al cargar un gasto**: `get_expense_categories` solo devuelve subcategorías (D-011), así que un grupo nuevo sin ninguna subcategoría no aparecía en el selector de categorías. Ahora, al crear un grupo de gastos, se crea automáticamente una subcategoría "General" lista para usar. No afecta a Ingresos, que no tenía esta restricción.
+- **Registro — Nombre de usuario con espacios**: la validación de backend ya rechazaba espacios correctamente, pero no había ningún aviso visible antes de intentarlo. Se agregó un texto de ayuda en el formulario web.
+- **Mi Cuenta — Eliminar cuenta y datos**: la página pública `/account-deletion/` ahora también explica cómo eliminar datos puntuales (gastos, ingresos, categorías, metas, gastos fijos) sin eliminar la cuenta completa, como exige Google Play junto con la eliminación total.
+
+### Mobile
+
+- **Versión mostrada en "Acerca de"**: mostraba 1.13.0 en vez de la versión real de la app. Corregido.
+- **Registro — Nombre de usuario con espacios**: el formulario no validaba el formato en el cliente y, si el registro fallaba, siempre mostraba "Error al crear la cuenta." sin indicar el motivo real. Ahora valida el formato antes de enviar y muestra el mensaje específico que devuelve el servidor.
+
+---
+
 ## [1.20.1] — 2026-09-27
 
 ### Added
