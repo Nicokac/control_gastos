@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/utils/category_icons.dart';
 import '../../expenses/providers/expense_provider.dart';
+import '../../income/providers/income_provider.dart';
 
 // Provider de categorías con invalidación
 final allCategoriesProvider = FutureProvider<List<dynamic>>((ref) async {
@@ -47,6 +48,7 @@ class CategoriesScreen extends ConsumerWidget {
         onCreated: () {
           ref.invalidate(allCategoriesProvider);
           ref.invalidate(categoriesProvider);
+          ref.invalidate(incomeCategoriesProvider);
         },
       ),
     );
@@ -113,6 +115,7 @@ class _CategoriesList extends StatelessWidget {
         onCreated: () {
           ref.invalidate(allCategoriesProvider);
           ref.invalidate(categoriesProvider);
+          ref.invalidate(incomeCategoriesProvider);
         },
       ),
     );
@@ -282,6 +285,7 @@ class _SubcatTile extends StatelessWidget {
       await repo.deleteCategory(subcat['id'] as int);
       ref.invalidate(allCategoriesProvider);
       ref.invalidate(categoriesProvider);
+      ref.invalidate(incomeCategoriesProvider);
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

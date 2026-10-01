@@ -5,6 +5,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [Mobile 1.16.0+7] — 2026-10-01
+
+### Fixed
+
+- **Ingresos — No se podía guardar un ingreso con un grupo de categoría sin subcategorías**: un tester reportó que al elegir el grupo "Sueldo" (sin subcategorías propias) aparecía "Seleccioná una categoría" y no había forma de completar el guardado, ni siquiera creando una subcategoría nueva. Dos causas combinadas:
+  - El formulario de ingresos siempre exigía elegir una subcategoría, pero el modelo de Ingresos sí permite usar un grupo directamente como categoría (a diferencia de Gastos). Ahora, si el grupo elegido no tiene subcategorías, se usa el grupo mismo como categoría.
+  - El provider de categorías de ingresos no se invalidaba al crear una categoría nueva desde la pantalla de Categorías (sí se invalidaba el de Gastos desde junio, pero no el de Ingresos), así que una subcategoría recién creada no aparecía sin reiniciar la app.
+  - Corregida también la edición de un ingreso cuya categoría ya es un grupo directo (el selector de grupo quedaba vacío al abrir la edición).
+- **Gastos — Aviso cuando un grupo no tiene subcategorías**: como medida preventiva, si el usuario elige un grupo de gastos sin subcategorías se muestra un aviso explicando que hay que crear una desde Categorías, en vez de un selector vacío sin explicación. El backend ya evita este caso para grupos nuevos (ver v1.20.2), esto cubre grupos viejos que hayan quedado sin subcategoría.
+
+---
+
 ## [1.20.2] — 2026-09-30
 
 ### Fixed

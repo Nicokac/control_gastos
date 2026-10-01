@@ -50,9 +50,10 @@ class _IncomeFormScreenState extends ConsumerState<IncomeFormScreen> {
   void _resolveGroupFromCategories(List<dynamic> cats) {
     if (_categoryId == null || _groupId != null) return;
     final cat = cats.where((c) => c['id'] == _categoryId).firstOrNull;
-    if (cat != null && cat['parent'] != null) {
-      _groupId = cat['parent'] as int?;
-    }
+    if (cat == null) return;
+    // Si la categoría tiene padre, el padre es el grupo. Si no tiene padre,
+    // la categoría misma es un grupo usado directamente (ver _submit/onSelected).
+    _groupId = (cat['parent'] as int?) ?? (cat['id'] as int?);
   }
 
   Future<void> _pickDate() async {
@@ -285,7 +286,12 @@ class _IncomeFormScreenState extends ConsumerState<IncomeFormScreen> {
                           selectedId: _groupId,
                           onSelected: (id) => setState(() {
                             _groupId = id;
-                            _categoryId = null;
+                            // Si el grupo no tiene subcategorías, se usa el
+                            // grupo directamente como categoría (los ingresos
+                            // admiten esto, a diferencia de los gastos).
+                            final hasSubcats =
+                                cats.any((c) => c['parent'] == id);
+                            _categoryId = hasSubcats ? null : id;
                           }),
                         ),
                         child: InputDecorator(
@@ -308,7 +314,7 @@ class _IncomeFormScreenState extends ConsumerState<IncomeFormScreen> {
                         ),
                       ),
                     ),
-                    if (_groupId != null) ...[
+                    if (_groupId != null && subcats.isNotEmpty) ...[
                       const SizedBox(height: 16),
                       InkWell(
                         onTap: () => _pickFromBottomSheet(

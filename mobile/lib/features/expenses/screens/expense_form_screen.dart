@@ -318,7 +318,15 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
                         ),
                       ),
                     ),
-                    if (_groupId != null) ...[
+                    if (_groupId != null && subcats.isEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        'Este grupo todavía no tiene subcategorías. '
+                        'Creá una desde Categorías para poder usarla acá.',
+                        style: TextStyle(color: Colors.red[700], fontSize: 13),
+                      ),
+                    ],
+                    if (_groupId != null && subcats.isNotEmpty) ...[
                       const SizedBox(height: 16),
                       InkWell(
                         onTap: () => _pickFromBottomSheet(
