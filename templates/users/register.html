@@ -48,6 +48,8 @@
                         <div class="invalid-feedback">
                             {{ form.username.errors.0 }}
                         </div>
+                        {% else %}
+                        <div class="form-text">Sin espacios. Solo letras, números y los símbolos @ . + - _</div>
                         {% endif %}
                     </div>
 

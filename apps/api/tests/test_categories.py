@@ -80,6 +80,55 @@ class TestCategoryCreateEndpoint:
         cat = Category.objects.get(name="Intento sistema", user=user)
         assert cat.is_system is False
 
+    def test_nuevo_grupo_de_gastos_recibe_subcategoria_general(self, client, user):
+        """Un grupo de gastos nuevo debe quedar utilizable de inmediato (D-011)."""
+        headers = auth_header(client, user)
+        data = {
+            "name": "Supermercado",
+            "type": CategoryType.EXPENSE,
+            "icon": "bi-cart",
+            "color": "#dc3545",
+        }
+        response = client.post(self.url, data, content_type="application/json", **headers)
+        assert response.status_code == 201
+
+        group = Category.objects.get(name="Supermercado", user=user, parent__isnull=True)
+        subcategory = Category.objects.get(parent=group)
+        assert subcategory.name == "General"
+        assert subcategory.type == CategoryType.EXPENSE
+        assert subcategory in Category.get_expense_categories(user)
+
+    def test_nueva_subcategoria_no_dispara_autocompletado(self, client, user, system_expense_group):
+        headers = auth_header(client, user)
+        data = {
+            "name": "Sub manual",
+            "type": CategoryType.EXPENSE,
+            "parent": system_expense_group.pk,
+            "icon": "bi-tag",
+            "color": "#dc3545",
+        }
+        response = client.post(self.url, data, content_type="application/json", **headers)
+        assert response.status_code == 201
+
+        subcategory = Category.objects.get(name="Sub manual", user=user)
+        assert Category.objects.filter(parent=subcategory).count() == 0
+
+    def test_nuevo_grupo_de_ingresos_no_recibe_subcategoria_automatica(self, client, user):
+        """Los ingresos no tienen la restricción de D-011; no deben recibir
+        subcategoría automática."""
+        headers = auth_header(client, user)
+        data = {
+            "name": "Freelance",
+            "type": CategoryType.INCOME,
+            "icon": "bi-cash",
+            "color": "#28a745",
+        }
+        response = client.post(self.url, data, content_type="application/json", **headers)
+        assert response.status_code == 201
+
+        group = Category.objects.get(name="Freelance", user=user, parent__isnull=True)
+        assert Category.objects.filter(parent=group).count() == 0
+
 
 @pytest.mark.django_db
 class TestCategoryValidations:

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from apps.categories.models import Category
+from apps.core.constants import CategoryType
 
 
 class CategoryGroupSerializer(serializers.ModelSerializer):
@@ -50,4 +51,20 @@ class CategorySerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data["user"] = self.context["request"].user
         validated_data["is_system"] = False
-        return super().create(validated_data)
+        instance = super().create(validated_data)
+
+        # Los gastos solo pueden asignarse a subcategorías (ver D-011), así que un
+        # grupo de gastos recién creado sin subcategorías quedaría invisible al cargar
+        # un gasto. Los ingresos no tienen esta restricción. Ver CategoryCreateView
+        # (web) para la misma lógica.
+        if instance.parent_id is None and instance.type == CategoryType.EXPENSE:
+            Category.objects.create(
+                name="General",
+                type=instance.type,
+                user=instance.user,
+                parent=instance,
+                color=instance.color,
+                icon=instance.icon,
+            )
+
+        return instance

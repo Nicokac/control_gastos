@@ -261,7 +261,7 @@ def expense_factory(db):
         defaults = {
             "user": user,
             "category": category,
-            "date": timezone.now().date(),
+            "date": timezone.localdate(),
             "description": "Gasto de prueba",
             "amount": Decimal("100.00"),
             "currency": Currency.ARS,
@@ -302,7 +302,7 @@ def income_factory(db):
         **kwargs,
     ):
         if date is None:
-            date = timezone.now().date()
+            date = timezone.localdate()
 
         description = kwargs.pop("description", "Ingreso de prueba")
         currency = kwargs.pop("currency", Currency.ARS)

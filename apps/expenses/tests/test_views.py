@@ -82,7 +82,7 @@ class TestExpenseListView:
             expense_category,
             description="Gasto Resumen",
             amount=Decimal("1500.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         url = reverse("expenses:list")
@@ -99,7 +99,7 @@ class TestExpenseListView:
             expense_category,
             description="Gasto Efectivo",
             amount=Decimal("1000.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
             payment_method="CASH",
         )
 

@@ -122,6 +122,68 @@ class TestCategoryCreateView:
         category = Category.objects.get(name="Mi Categoría")
         assert category.user == user
 
+    def test_new_expense_group_gets_default_general_subcategory(self, authenticated_client, user):
+        """Un grupo de gastos nuevo debe quedar utilizable de inmediato (D-011:
+        get_expense_categories solo devuelve subcategorías)."""
+        url = reverse("categories:create")
+        data = {
+            "name": "Supermercado",
+            "type": CategoryType.EXPENSE,
+            "icon": "bi-cart",
+            "color": "#dc3545",
+        }
+
+        authenticated_client.post(url, data)
+
+        group = Category.objects.get(name="Supermercado", user=user, parent__isnull=True)
+        subcategory = Category.objects.get(parent=group)
+        assert subcategory.name == "General"
+        assert subcategory.type == CategoryType.EXPENSE
+        assert subcategory.user == user
+        assert subcategory in Category.get_expense_categories(user)
+
+    def test_new_expense_subcategory_does_not_get_extra_subcategory(
+        self, authenticated_client, user
+    ):
+        """Crear una subcategoría (con parent) no debe disparar el autocompletado."""
+        group = Category.objects.create(
+            name="Grupo Existente",
+            type=CategoryType.EXPENSE,
+            user=user,
+            parent=None,
+            icon="bi-cart",
+            color="#dc3545",
+        )
+        url = reverse("categories:create")
+        data = {
+            "name": "Subcategoría Manual",
+            "type": CategoryType.EXPENSE,
+            "parent": group.pk,
+            "icon": "bi-cart",
+            "color": "#dc3545",
+        }
+
+        authenticated_client.post(url, data)
+
+        subcategory = Category.objects.get(name="Subcategoría Manual")
+        assert Category.objects.filter(parent=subcategory).count() == 0
+
+    def test_new_income_group_does_not_get_default_subcategory(self, authenticated_client, user):
+        """Los ingresos no tienen la restricción de D-011 (get_income_categories
+        incluye grupos sueltos), así que no deben recibir subcategoría automática."""
+        url = reverse("categories:create")
+        data = {
+            "name": "Freelance",
+            "type": CategoryType.INCOME,
+            "icon": "bi-cash",
+            "color": "#28a745",
+        }
+
+        authenticated_client.post(url, data)
+
+        group = Category.objects.get(name="Freelance", user=user, parent__isnull=True)
+        assert Category.objects.filter(parent=group).count() == 0
+
 
 @pytest.mark.django_db
 class TestCategoryUpdateView:
@@ -370,7 +432,7 @@ class TestCategoryToastMessages:
         assert response.status_code == 200
         assert Category.objects.filter(name="Categoría Toast", user=user).exists()
         msgs = [m.message for m in response.context["messages"]]
-        assert any("Categoría creada" in m for m in msgs)
+        assert any("Grupo creado" in m for m in msgs)
 
     def test_update_category_success_adds_toast(self, authenticated_client, expense_category):
         url = reverse("categories:update", kwargs={"pk": expense_category.pk})

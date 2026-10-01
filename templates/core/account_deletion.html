@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Eliminar cuenta - Control de Gastos{% endblock %}
+{% block title %}Eliminar cuenta y datos - Control de Gastos{% endblock %}
 
 {% block navbar %}{% endblock %}
 
@@ -22,10 +22,20 @@
 </nav>
 
 <div class="container py-5" style="max-width: 760px;">
-    <h1 class="h3 fw-bold mb-1">Eliminar tu cuenta de Control de Gastos</h1>
+    <h1 class="h3 fw-bold mb-1">Eliminar tu cuenta o tus datos en Control de Gastos</h1>
     <p class="text-muted small mb-5">Última actualización: septiembre 2026</p>
 
-    <h2 class="h5 fw-semibold mt-4 mb-2">Cómo solicitar la eliminación</h2>
+    <h2 class="h5 fw-semibold mt-4 mb-2">Eliminar datos puntuales, sin borrar tu cuenta</h2>
+    <p>No hace falta eliminar toda la cuenta para borrar información específica. Dentro de la app, cada registro tiene su propia opción de eliminación:</p>
+    <ul>
+        <li><strong>Gastos e ingresos:</strong> desde la lista correspondiente, cada fila tiene un botón <strong>Eliminar</strong> que borra ese registro de forma inmediata.</li>
+        <li><strong>Categorías propias:</strong> desde <strong>Categorías</strong>, podés eliminar cualquier categoría que hayas creado (no aplica a las categorías del sistema).</li>
+        <li><strong>Metas de ahorro:</strong> desde <strong>Ahorros</strong>, podés eliminar una meta y sus movimientos asociados.</li>
+        <li><strong>Gastos fijos / recurrentes:</strong> desde <strong>Gastos Fijos</strong>, podés eliminar cualquier gasto recurrente que hayas configurado.</li>
+    </ul>
+    <p>Estas eliminaciones son inmediatas y permanentes, y no requieren contactarnos ni completar ningún formulario.</p>
+
+    <h2 class="h5 fw-semibold mt-4 mb-2">Eliminar tu cuenta completa</h2>
     <p>Si tenés acceso a tu cuenta:</p>
     <ol>
         <li>Iniciá sesión en <a href="{% url 'users:login' %}">Control de Gastos</a>.</li>
@@ -72,7 +82,7 @@
         <div class="d-flex gap-3">
             <a href="{% url 'core:terms' %}" class="text-muted small text-decoration-none">Términos y condiciones</a>
             <a href="{% url 'core:privacy' %}" class="text-muted small text-decoration-none">Política de privacidad</a>
-            <a href="{% url 'core:account_deletion' %}" class="text-muted small text-decoration-none">Eliminar cuenta</a>
+            <a href="{% url 'core:account_deletion' %}" class="text-muted small text-decoration-none">Eliminar cuenta y datos</a>
         </div>
     </div>
 </footer>

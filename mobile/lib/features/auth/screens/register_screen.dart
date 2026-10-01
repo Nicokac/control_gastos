@@ -1,7 +1,10 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../data/repositories/auth_repository.dart';
+
+final _usernameRegex = RegExp(r'^[\w.@+-]+$');
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -42,14 +45,28 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         const SnackBar(content: Text('Cuenta creada. Iniciá sesión.')),
       );
       context.go('/login');
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error al crear la cuenta.')),
+        SnackBar(content: Text(_extractErrorMessage(e))),
       );
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  String _extractErrorMessage(Object error) {
+    if (error is DioException) {
+      final data = error.response?.data;
+      if (data is Map) {
+        final firstField = data.values.first;
+        if (firstField is List && firstField.isNotEmpty) {
+          return firstField.first.toString();
+        }
+        if (firstField is String) return firstField;
+      }
+    }
+    return 'Error al crear la cuenta.';
   }
 
   @override
@@ -79,10 +96,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   controller: _usernameController,
                   decoration: const InputDecoration(
                     labelText: 'Nombre de usuario',
+                    helperText: 'Sin espacios. Solo letras, números y @ . + - _',
                     border: OutlineInputBorder(),
                   ),
-                  validator: (v) =>
-                      v == null || v.isEmpty ? 'Ingresá un usuario' : null,
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'Ingresá un usuario';
+                    if (!_usernameRegex.hasMatch(v)) {
+                      return 'Sin espacios. Solo letras, números y @ . + - _';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 16),
                 TextFormField(

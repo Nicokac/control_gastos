@@ -13,7 +13,7 @@ from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
-from apps.core.constants import CATEGORY_COLOR_CHOICES
+from apps.core.constants import CATEGORY_COLOR_CHOICES, CategoryType
 from apps.core.views import UserFormKwargsMixin
 
 from .forms import CategoryForm
@@ -104,7 +104,27 @@ class CategoryCreateView(LoginRequiredMixin, UserFormKwargsMixin, CreateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        messages.success(self.request, "Categoría creada correctamente.")
+
+        # Los gastos solo pueden asignarse a subcategorías (ver D-011), así que un
+        # grupo de gastos recién creado sin subcategorías quedaría invisible al cargar
+        # un gasto. Los ingresos no tienen esta restricción (get_income_categories
+        # incluye grupos sueltos), por eso el autocompletado es solo para EXPENSE.
+        if self.object.parent_id is None and self.object.type == CategoryType.EXPENSE:
+            Category.objects.create(
+                name="General",
+                type=self.object.type,
+                user=self.request.user,
+                parent=self.object,
+                color=self.object.color,
+                icon=self.object.icon,
+            )
+            messages.success(
+                self.request,
+                "Grupo creado correctamente, con una subcategoría 'General' lista para usar.",
+            )
+        else:
+            messages.success(self.request, "Categoría creada correctamente.")
+
         return response
 
     def form_invalid(self, form):
@@ -195,8 +215,6 @@ class CategoryQuickCreateView(LoginRequiredMixin, View):
             data = json.loads(request.body)
         except (json.JSONDecodeError, AttributeError):
             return JsonResponse({"error": "Datos inválidos."}, status=400)
-
-        from apps.core.constants import CATEGORY_COLOR_CHOICES, CategoryType
 
         parent_pk = data.get("parent_pk")
         name = (data.get("name") or "").strip()
