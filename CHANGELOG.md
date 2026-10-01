@@ -5,7 +5,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
-## [Mobile 1.16.0+7] — 2026-10-01
+## [Mobile 1.16.0+8] — 2026-10-01
 
 ### Fixed
 
