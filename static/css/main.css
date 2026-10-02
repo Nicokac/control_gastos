@@ -658,3 +658,13 @@ form#incomeForm .category-btn:hover .btn {
 [data-bs-theme="dark"] .app-main table td {
     color: var(--bs-body-color);
 }
+
+/* Botón de ojo del dashboard — ocultar montos sensibles (DT-065) */
+.sensitive-amount {
+    transition: filter 0.15s ease;
+}
+
+body.amounts-hidden .sensitive-amount {
+    filter: blur(6px);
+    user-select: none;
+}

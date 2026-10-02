@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/sensitive_text.dart';
 
 class RecentTransactionsList extends StatelessWidget {
   final List<dynamic> expenses;
@@ -163,7 +164,7 @@ class _TransactionTile extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
+              SensitiveText(
                 _formattedAmount,
                 style: TextStyle(
                   fontSize: 13,

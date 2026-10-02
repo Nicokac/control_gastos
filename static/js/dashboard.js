@@ -1,7 +1,36 @@
 document.addEventListener('DOMContentLoaded', function () {
     initDonutChart();
     initEvolutionChart();
+    initAmountsToggle();
 });
+
+function initAmountsToggle() {
+    const STORAGE_KEY = 'dashboard_amounts_hidden';
+    const btn = document.getElementById('toggle-amounts-btn');
+    const icon = document.getElementById('toggle-amounts-icon');
+    if (!btn || !icon) return;
+
+    function applyState(hidden) {
+        document.body.classList.toggle('amounts-hidden', hidden);
+        icon.classList.toggle('bi-eye', !hidden);
+        icon.classList.toggle('bi-eye-slash', hidden);
+        btn.title = hidden ? 'Mostrar montos' : 'Ocultar montos';
+    }
+
+    let hidden = false;
+    try {
+        hidden = localStorage.getItem(STORAGE_KEY) === '1';
+    } catch {}
+    applyState(hidden);
+
+    btn.addEventListener('click', function () {
+        hidden = !hidden;
+        applyState(hidden);
+        try {
+            localStorage.setItem(STORAGE_KEY, hidden ? '1' : '0');
+        } catch {}
+    });
+}
 
 function initDonutChart() {
     const ctx = document.getElementById('expenseChart');

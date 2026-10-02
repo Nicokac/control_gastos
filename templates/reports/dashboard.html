@@ -25,6 +25,10 @@
         </div>
     </div>
     <div class="d-flex gap-2 align-items-center">
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="toggle-amounts-btn"
+                title="Ocultar montos">
+            <i class="bi bi-eye" id="toggle-amounts-icon"></i>
+        </button>
         <a href="{% url 'reports:export' %}?month={{ current_month }}&year={{ current_year }}"
            class="btn btn-outline-success btn-sm" title="Exportar resumen a Excel">
             <i class="bi bi-file-earmark-excel me-1"></i>Excel
@@ -117,7 +121,7 @@
                             <div>
                                 <p class="text-muted mb-0">Balance</p>
                                 <h2 class="{% if balance_is_positive %}text-primary{% else %}text-warning{% endif %} mb-0 fw-bold" style="font-size: 2rem;">
-                                    {{ balance|currency }}
+                                    {{ balance|sensitive_currency }}
                                 </h2>
                             </div>
                         </div>
@@ -149,7 +153,7 @@
                             </small>
                             <small class="text-muted">
                                 <a href="{% url 'users:profile' %}" class="text-muted text-decoration-underline" style="text-underline-offset:2px" title="Configurar período financiero">Día {{ period_day }} de {{ period_total_days }}{% if financial_start_day > 1 %} (período financiero){% endif %}</a>
-                                · Te quedan {{ balance|currency }}
+                                · Te quedan {{ balance|sensitive_currency }}
                             </small>
                         </div>
                         {% if projection_available %}
@@ -157,9 +161,9 @@
                             <i class="bi bi-graph-up text-secondary"></i>
                             <span class="text-muted">Proyección al cierre:</span>
                             <span class="fw-semibold {% if projected_balance >= 0 %}text-success{% else %}text-danger{% endif %}">
-                                {{ projected_balance|currency }}
+                                {{ projected_balance|sensitive_currency }}
                             </span>
-                            <span class="text-muted">(gastos estimados {{ projected_expense|currency }})</span>
+                            <span class="text-muted">(gastos estimados {{ projected_expense|sensitive_currency }})</span>
                         </div>
                         {% endif %}
                         {% else %}
@@ -182,7 +186,7 @@
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <p class="text-muted mb-1">Gastos</p>
-                        <h3 class="text-danger mb-0 fw-semibold" style="font-size: 1.6rem;">{{ expense_total|currency }}</h3>
+                        <h3 class="text-danger mb-0 fw-semibold" style="font-size: 1.6rem;">{{ expense_total|sensitive_currency }}</h3>
                     </div>
                     <div class="bg-danger bg-opacity-10 rounded p-2">
                         <i class="bi bi-arrow-up-circle text-danger fs-4"></i>
@@ -218,7 +222,7 @@
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <p class="text-muted mb-1">Ingresos</p>
-                        <h3 class="text-success mb-0 fw-semibold" style="font-size: 1.6rem;">{{ income_total|currency }}</h3>
+                        <h3 class="text-success mb-0 fw-semibold" style="font-size: 1.6rem;">{{ income_total|sensitive_currency }}</h3>
                     </div>
                     <div class="bg-success bg-opacity-10 rounded p-2">
                         <i class="bi bi-graph-up-arrow text-success fs-4"></i>
@@ -252,7 +256,7 @@
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
                         <p class="text-muted mb-1">Ahorro acumulado</p>
-                        <h3 class="text-info mb-0 fw-semibold" style="font-size: 1.6rem;">{{ savings_total_current|currency }}</h3>
+                        <h3 class="text-info mb-0 fw-semibold" style="font-size: 1.6rem;">{{ savings_total_current|sensitive_currency }}</h3>
                     </div>
                     <div class="bg-info bg-opacity-10 rounded p-2">
                         <i class="bi bi-piggy-bank text-info fs-4"></i>
@@ -263,7 +267,7 @@
                     <div class="progress mb-1" style="height: 4px;">
                         <div class="progress-bar bg-info" style="width: {{ savings_progress }}%;"></div>
                     </div>
-                    <small class="text-muted">{{ savings_progress }}% de {{ savings_total_target|currency }} · {{ savings_count }} meta{{ savings_count|pluralize }}</small>
+                    <small class="text-muted">{{ savings_progress }}% de {{ savings_total_target|sensitive_currency }} · {{ savings_count }} meta{{ savings_count|pluralize }}</small>
                     {% else %}
                     <small class="text-muted">Sin metas activas</small>
                     {% endif %}
@@ -397,24 +401,24 @@
                     <div>
                         <p class="text-muted mb-0 small">Comprometido — {{ next_month_name }}</p>
                         <span class="fw-semibold">
-                            <span class="text-danger">{{ next_month_committed_total|currency }}</span>
+                            <span class="text-danger">{{ next_month_committed_total|sensitive_currency }}</span>
                             <span class="text-muted"> en gastos fijos y cuotas</span>
                         </span>
                     </div>
                 </div>
                 <div class="d-flex flex-wrap gap-2 align-items-center" style="font-size:0.82rem">
                     <span class="text-muted">Ingreso fijo esperado:</span>
-                    <span class="fw-semibold text-success">{{ next_month_expected_total|currency }}</span>
+                    <span class="fw-semibold text-success">{{ next_month_expected_total|sensitive_currency }}</span>
                     <span class="text-muted">· Te quedaría:</span>
                     <span class="fw-semibold {% if next_month_free_balance >= 0 %}text-success{% else %}text-danger{% endif %}">
-                        {{ next_month_free_balance|currency }}
+                        {{ next_month_free_balance|sensitive_currency }}
                     </span>
                 </div>
                 {% if next_month_committed_items %}
                 <div class="mt-2 d-flex flex-wrap gap-2">
                     {% for item in next_month_committed_items %}
                     <span class="badge bg-secondary-subtle text-secondary-emphasis border fw-normal">
-                        <i class="bi bi-arrow-repeat me-1"></i>{{ item.rec.name }} — {{ item.amount|currency }}
+                        <i class="bi bi-arrow-repeat me-1"></i>{{ item.rec.name }} — {{ item.amount|sensitive_currency }}
                     </span>
                     {% endfor %}
                 </div>
@@ -448,7 +452,7 @@
                 {% if top_category %}
                 <div class="alert alert-danger py-2 mb-3 small">
                     Tu mayor grupo de gasto fue <strong>{{ top_category.name }}</strong>,
-                    con <strong>{{ top_category.total|currency }}</strong>
+                    con <strong>{{ top_category.total|sensitive_currency }}</strong>
                     ({{ top_category.percentage }}% del total).
                 </div>
                 {% endif %}
@@ -481,7 +485,7 @@
                 {% if ranking_distribution %}
                 <div class="px-3 py-2 border-bottom bg-body-secondary">
                     <small class="text-muted">
-                        Total: <strong class="text-body">{{ expense_total|currency }}</strong>
+                        Total: <strong class="text-body">{{ expense_total|sensitive_currency }}</strong>
                         &mdash; {{ ranking_distribution|length }} grupo{{ ranking_distribution|length|pluralize }}
                     </small>
                 </div>
@@ -507,7 +511,7 @@
                                     {% endif %}
                                 </div>
                                 <div class="text-end">
-                                    <span class="small fw-bold">{{ item.total|currency }}</span>
+                                    <span class="small fw-bold">{{ item.total|sensitive_currency }}</span>
                                     <span class="text-muted small ms-2">{{ item.percentage }}%</span>
                                 </div>
                             </div>
@@ -521,7 +525,7 @@
                                             {% if sub.icon %}<i class="{{ sub.icon }} me-1"></i>{% endif %}
                                             {{ sub.name }}
                                         </a>
-                                        <span class="small text-muted">{{ sub.total|currency }}</span>
+                                        <span class="small text-muted">{{ sub.total|sensitive_currency }}</span>
                                     </li>
                                     {% endfor %}
                                 </ul>
@@ -607,7 +611,7 @@
                             </div>
                             <div class="d-flex align-items-center gap-2 flex-shrink-0">
                                 <span class="{% if tx.type == 'expense' %}text-danger{% else %}text-success{% endif %} fw-bold">
-                                    {% if tx.type == 'expense' %}-{% endif %}{{ tx.amount|currency }}
+                                    {% if tx.type == 'expense' %}-{% endif %}{{ tx.amount|sensitive_currency }}
                                 </span>
                                 <a href="{% if tx.type == 'expense' %}{% url 'expenses:update' tx.pk %}{% else %}{% url 'income:update' tx.pk %}{% endif %}"
                                    class="btn btn-sm btn-outline-primary py-0 px-1" title="Editar">

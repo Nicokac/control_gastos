@@ -952,6 +952,73 @@ Hoy el card "Gastos Fijos" del dashboard (web y mobile) lista los ítems pendien
 
 ---
 
+### DT-065 — Botón "ojo" para ocultar montos sensibles
+
+**Estado:** ✅ Resuelto (v1.21.0 web · Mobile 1.16.0+9)
+
+No existía forma de ocultar rápidamente los montos en pantalla (balance, gastos, ingresos) en web ni mobile. Si alguien usa la app en público (transporte, oficina compartida), sus datos financieros quedaban expuestos a cualquiera que mire la pantalla.
+
+**Why:** patrón estándar en apps de finanzas personales y bancos — un ícono de ojo que alterna entre mostrar el valor real y un placeholder, sin ocultar la navegación ni el resto de la UI.
+
+**Alcance resuelto:** solo Dashboard (balance principal, KPIs, proyección, comprometido del mes que viene, donut de distribución, últimos movimientos, gastos fijos pendientes). Persistente por dispositivo — no requiere backend ni sincroniza entre dispositivos.
+
+**Resolución (web):** nuevo filtro de template `sensitive_currency` (`apps/core/templatetags/currency_filters.py`) que envuelve el monto en `<span class="sensitive-amount">`, usado solo en `dashboard.html` (no toca el filtro `currency` original usado en el resto de la app). CSS en `main.css` (`body.amounts-hidden .sensitive-amount { filter: blur(6px) }`), compatible con modo oscuro. JS en `dashboard.js` con persistencia en `localStorage`.
+
+**Resolución (mobile):** `amounts_visibility_provider.dart` (`Notifier<bool>` con `shared_preferences`, mismo patrón que `theme_provider.dart`) + widget `SensitiveText` que reemplaza `Text` en los montos del dashboard, mostrando `••••••` cuando está oculto.
+
+---
+
+### DT-066 — Fecha de vencimiento de gasto fijo: no editable
+
+**Estado:** 🚫 Descartado — error de reporte, confirmado por el usuario
+
+Se había reportado que no se podía editar el día de vencimiento (`due_day`) de un gasto fijo después de creado. Revisando el código (`apps/recurring/forms.py`, `apps/api/v1/serializers/recurring.py`, `mobile/lib/features/recurring/screens/recurring_form_screen.dart`) el campo nunca estuvo bloqueado — ni en `read_only_fields` ni deshabilitado en ningún formulario. El usuario confirmó que el campo funciona correctamente y que el reporte había sido un error propio (probablemente una confusión puntual al usar la app). No se tocó código.
+
+---
+
+### DT-067 — Balance positivo de fin de mes no se traslada automáticamente
+
+**Estado:** ⏳ Pendiente (a definir enfoque)
+
+Al cerrar un mes, el balance positivo (ingresos − gastos) no se traslada como "sobrante" al mes siguiente ni se vincula a ninguna meta de ahorro. El usuario tiene que registrarlo manualmente como un ingreso o un depósito a una meta.
+
+**Why:** es un paso manual repetitivo y fácil de olvidar — el dato (cuánto sobró) ya existe en el dashboard, solo falta un mecanismo para "hacer algo" con él automáticamente.
+
+**Opciones a evaluar (a decidir antes de implementar):**
+1. **Sugerencia pasiva**: al cierre de mes, el dashboard muestra un banner "Te sobraron $X este mes — ¿querés destinarlo a una meta de ahorro?" con un botón que pre-completa un `SavingMovement`. Cero automatismo, el usuario sigue confirmando cada vez.
+2. **Regla automática configurable**: el usuario define una vez "el sobrante de cada mes va a la meta Vacaciones" y el sistema lo aplica solo al cierre de cada período financiero (se conecta con DT-061, ahorro por reglas automáticas, que ya cubre un mecanismo similar para % de ingresos).
+3. **Categoría especial "Ahorro del mes"**: un `Expense` o `SavingMovement` especial que se genera automáticamente con el sobrante, sin pedir confirmación — más automático pero más arriesgado si el cálculo de "sobrante" no es exacto (gastos pendientes de registrar, por ejemplo).
+
+**Riesgo a resolver en cualquier opción:** definir qué es "balance positivo" con precisión — ¿ingresos menos gastos del período financiero completo? ¿se espera a que termine el mes o se puede anticipar? ¿qué pasa si el usuario carga gastos de ese mes después de haber trasladado el sobrante?
+
+---
+
+### DT-068 — Pop-up de aviso de nuevas actualizaciones
+
+**Estado:** ⏳ Pendiente
+
+No hay ningún aviso dentro de la app cuando sale una versión nueva. El usuario se entera solo si entra a "Novedades" (`WHATS_NEW` en web) por su cuenta, o si la Play Store actualiza la app mobile sin que lo note.
+
+**Why:** mejora la percepción de que el producto está vivo y evita que el usuario mobile quede en una versión vieja sin saberlo, sobre todo mientras el proyecto está en fase de iteración rápida (varias versiones por semana).
+
+**Camino de resolución:**
+- **Web**: ya existe `WHATS_NEW` + `/novedades/`. Falta un mecanismo que detecte "hay contenido nuevo desde la última vez que el usuario lo vio" y dispare un modal o badge al loguearse (comparar última versión vista, guardada en el perfil del usuario, contra la versión más reciente de `WHATS_NEW`).
+- **Mobile**: no hay pantalla de "Novedades" todavía. Evaluar si conviene replicar el mismo patrón (modal al abrir la app si hay una versión nueva) o simplemente un link a la página web de novedades.
+
+---
+
+### DT-069 — Color del botón "Invitame un Cafecito" inconsistente en mobile
+
+**Estado:** ⏳ Pendiente
+
+El botón de Cafecito en mobile no mantiene el mismo color que en la web (`#7C64BF` fondo, blanco texto/ícono) — probablemente varía según el tema claro/oscuro del dispositivo en vez de mantenerse fijo como en la web.
+
+**Why:** es parte de la identidad de marca del botón (DT-050); debería verse igual en ambas plataformas independientemente del tema del sistema.
+
+**Camino de resolución:** ubicar el widget del botón en mobile (pantalla "Acerca de") y fijar explícitamente `backgroundColor: Color(0xFF7C64BF)` y `foregroundColor: Colors.white`, sin heredar del `Theme` del dispositivo — igual que el botón web no depende de `data-bs-theme`.
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.

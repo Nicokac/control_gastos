@@ -190,9 +190,19 @@ def exchange_rate_today(request):
         return JsonResponse({"error": "No se pudo obtener la cotización"}, status=503)
 
 
-APP_VERSION = "1.20.2"
+APP_VERSION = "1.21.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.21.0",
+        "date": "Octubre 2026",
+        "title": "Ocultar montos en el dashboard",
+        "items": [
+            "Nuevo botón de ojo en el dashboard para ocultar rápidamente tus montos cuando usás la app en público",
+            "Se aplica al balance, gastos, ingresos, ahorro y últimos movimientos",
+            "La preferencia se recuerda en este dispositivo",
+        ],
+    },
     {
         "version": "1.20.0",
         "date": "Septiembre 2026",

@@ -32,3 +32,12 @@ def currency(value, currency_code="ARS"):
     except (InvalidOperation, ValueError, TypeError):
         return "$ 0,00"
     return format_currency(value, currency_code)
+
+
+@register.filter(name="sensitive_currency", is_safe=True)
+def sensitive_currency(value, currency_code="ARS"):
+    """Igual que |currency, pero envuelve el resultado para poder ocultarlo
+    con el botón de ojo del dashboard (ver DT-065)."""
+    from django.utils.html import format_html
+
+    return format_html('<span class="sensitive-amount">{}</span>', currency(value, currency_code))

@@ -10,6 +10,8 @@ import '../widgets/pending_recurring_card.dart';
 import '../widgets/dashboard_skeleton.dart';
 import '../widgets/last_updated_label.dart';
 import '../../../core/widgets/offline_banner.dart';
+import '../../../core/widgets/sensitive_text.dart';
+import '../../../core/providers/amounts_visibility_provider.dart';
 import '../../../core/utils/formatters.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -20,6 +22,7 @@ class DashboardScreen extends ConsumerWidget {
     final user = ref.watch(authProvider).valueOrNull;
     final dashboardAsync = ref.watch(dashboardProvider);
     final notifier = ref.read(dashboardProvider.notifier);
+    final amountsHidden = ref.watch(amountsHiddenProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -29,6 +32,12 @@ class DashboardScreen extends ConsumerWidget {
               : 'Dashboard',
         ),
         actions: [
+          IconButton(
+            icon: Icon(amountsHidden ? Icons.visibility_off : Icons.visibility),
+            tooltip: amountsHidden ? 'Mostrar montos' : 'Ocultar montos',
+            onPressed: () =>
+                ref.read(amountsHiddenProvider.notifier).toggle(),
+          ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             tooltip: 'Configuración',
@@ -232,12 +241,28 @@ class _ProjectionBanner extends StatelessWidget {
           Icon(Icons.trending_up, size: 16, color: color),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(
-              'Proyección al cierre: ${formatArsString(projectedExpense)} en gastos',
-              style: TextStyle(fontSize: 12, color: color),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Proyección al cierre: ',
+                  style: TextStyle(fontSize: 12, color: color),
+                ),
+                Flexible(
+                  child: SensitiveText(
+                    formatArsString(projectedExpense),
+                    style: TextStyle(fontSize: 12, color: color),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Text(
+                  ' en gastos',
+                  style: TextStyle(fontSize: 12, color: color),
+                ),
+              ],
             ),
           ),
-          Text(
+          SensitiveText(
             formatArsString(projectedBalance),
             style: TextStyle(
               fontSize: 13,
@@ -251,13 +276,14 @@ class _ProjectionBanner extends StatelessWidget {
   }
 }
 
-class _NextMonthCommitmentCard extends StatelessWidget {
+class _NextMonthCommitmentCard extends ConsumerWidget {
   final Map<String, dynamic> data;
 
   const _NextMonthCommitmentCard({required this.data});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final amountsHidden = ref.watch(amountsHiddenProvider);
     final monthName = data['next_month_name'] as String? ?? '';
     final committedTotal = data['next_month_committed_total'] as String? ?? '0';
     final expectedTotal = data['next_month_expected_total'] as String? ?? '0';
@@ -300,7 +326,9 @@ class _NextMonthCommitmentCard extends StatelessWidget {
                         TextSpan(
                           children: [
                             TextSpan(
-                              text: formatArsString(committedTotal),
+                              text: amountsHidden
+                                  ? '••••••'
+                                  : formatArsString(committedTotal),
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.red,
@@ -324,7 +352,7 @@ class _NextMonthCommitmentCard extends StatelessWidget {
               children: [
                 Text('Ingreso fijo esperado:',
                     style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                Text(
+                SensitiveText(
                   formatArsString(expectedTotal),
                   style: const TextStyle(
                     fontSize: 12,
@@ -334,7 +362,7 @@ class _NextMonthCommitmentCard extends StatelessWidget {
                 ),
                 Text('· Te quedaría:',
                     style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                Text(
+                SensitiveText(
                   formatArsString(freeBalance),
                   style: TextStyle(
                     fontSize: 12,
@@ -351,10 +379,13 @@ class _NextMonthCommitmentCard extends StatelessWidget {
                 runSpacing: 6,
                 children: items.map((item) {
                   final map = item as Map<String, dynamic>;
+                  final amountText = amountsHidden
+                      ? '••••••'
+                      : formatArsString(map['amount'] as String);
                   return Chip(
                     visualDensity: VisualDensity.compact,
                     label: Text(
-                      '${map['name']} — ${formatArsString(map['amount'] as String)}',
+                      '${map['name']} — $amountText',
                       style: const TextStyle(fontSize: 11),
                     ),
                     backgroundColor: Colors.grey.withValues(alpha: 0.08),

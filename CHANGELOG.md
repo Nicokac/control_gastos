@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.21.0 / Mobile 1.16.0+9] — 2026-10-01
+
+### Added
+
+- **Dashboard — Ocultar montos (DT-065)**: nuevo botón de ojo en el header del dashboard que oculta el balance, gastos, ingresos, ahorro, proyección, comprometido del mes que viene, distribución por categoría y últimos movimientos. Útil para usar la app en público sin exponer los montos a cualquiera que mire la pantalla. La preferencia se recuerda en el dispositivo (no se sincroniza entre dispositivos). Disponible en web y mobile.
+
+---
+
 ## [Mobile 1.16.0+8] — 2026-10-01
 
 ### Fixed

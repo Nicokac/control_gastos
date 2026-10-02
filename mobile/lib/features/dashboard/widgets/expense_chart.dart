@@ -1,14 +1,16 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/sensitive_text.dart';
 
-class ExpenseChart extends StatelessWidget {
+class ExpenseChart extends ConsumerWidget {
   final List<dynamic> expensesByCategory;
 
   const ExpenseChart({super.key, required this.expensesByCategory});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (expensesByCategory.isEmpty) {
       return Card(
         elevation: 2,
@@ -127,12 +129,18 @@ class ExpenseChart extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            Text(
-              'Total: ${_formatAmount(total)}',
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.grey[600],
-              ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Total: ',
+                  style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                ),
+                SensitiveText(
+                  _formatAmount(total),
+                  style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                ),
+              ],
             ),
           ],
         ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/sensitive_text.dart';
 
 class BalanceCard extends StatelessWidget {
   final String totalIncome;
@@ -35,7 +36,7 @@ class BalanceCard extends StatelessWidget {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 4),
-            Text(
+            SensitiveText(
               formatArsString(balance),
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
@@ -114,7 +115,7 @@ class _StatItem extends StatelessWidget {
                     label,
                     style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                   ),
-                  Text(
+                  SensitiveText(
                     amount,
                     style: TextStyle(
                       fontSize: 13,

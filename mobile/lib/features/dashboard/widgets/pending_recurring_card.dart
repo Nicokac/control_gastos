@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/sensitive_text.dart';
 
 class PendingRecurringCard extends StatelessWidget {
   final List<dynamic> pending;
@@ -202,7 +203,7 @@ class _RecurringRow extends StatelessWidget {
             ),
           ),
           if (amount != null)
-            Text(
+            SensitiveText(
               formatArs(amount),
               style: TextStyle(
                   fontSize: 12, fontWeight: FontWeight.bold, color: color),
