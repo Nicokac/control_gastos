@@ -87,10 +87,13 @@ class AboutScreen extends StatelessWidget {
           const SizedBox(height: 16),
           FilledButton.icon(
             onPressed: _openCafecito,
-            icon: const Icon(Icons.coffee_outlined),
-            label: const Text('Invitame un Cafecito'),
+            icon: const Icon(Icons.coffee_outlined, color: Colors.white),
+            label: const Text(
+              'Invitame un Cafecito',
+              style: TextStyle(color: Colors.white),
+            ),
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFFF5C00),
+              backgroundColor: const Color(0xFF7C64BF),
               minimumSize: const Size(double.infinity, 48),
             ),
           ),

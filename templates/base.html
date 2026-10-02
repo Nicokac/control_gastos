@@ -75,6 +75,35 @@
         </div>
     </div>
 
+    <!-- Aviso de novedades (DT-068) — el JS decide si se muestra, según localStorage -->
+    {% if user.is_authenticated and LATEST_RELEASE %}
+    <div class="modal fade" id="whatsNewModal" tabindex="-1" aria-labelledby="whatsNewModalLabel" aria-hidden="true"
+         data-version="{{ LATEST_RELEASE.version }}">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="whatsNewModalLabel">
+                        <i class="bi bi-stars me-2 text-warning"></i>{{ LATEST_RELEASE.title }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" id="whatsNewCloseBtn"></button>
+                </div>
+                <div class="modal-body">
+                    <span class="badge bg-primary mb-2">v{{ LATEST_RELEASE.version }}</span>
+                    <ul class="ps-3 mb-0">
+                        {% for item in LATEST_RELEASE.items %}
+                        <li class="mb-1 text-secondary">{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <a href="{% url 'core:whats_new' %}" class="btn btn-outline-secondary btn-sm" id="whatsNewSeeAllBtn">Ver todas las novedades</a>
+                    <button type="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal" id="whatsNewOkBtn">Entendido</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- App data passed via data-attributes (CSP-safe, no inline scripts) -->
     <div id="app-data"
          data-app-version="{{ APP_VERSION }}"

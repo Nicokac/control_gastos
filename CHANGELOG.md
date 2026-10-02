@@ -5,6 +5,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.22.0 / Mobile 1.16.0+10] — 2026-10-02
+
+### Added
+
+- **Aviso de novedades al entrar (DT-068)**: mensaje emergente con las novedades de la última versión, disparado automáticamente para usuarios que todavía no lo vieron — sin tener que ir a buscar la sección de Novedades manualmente. Web: modal al cargar cualquier página logueada, usando el mismo mecanismo de `localStorage` que ya mostraba el badge "Nuevo" en el sidebar (una sola fuente de verdad). Mobile: diálogo al entrar al dashboard, comparando contra la versión guardada en el dispositivo.
+
+### Fixed
+
+- **Mobile — Color del botón "Invitame un Cafecito" (DT-069)**: usaba un naranja (`#FF5C00`) en vez del violeta de marca (`#7C64BF`) que sí tenía la versión web. Corregido y fijado explícitamente para que no dependa del tema del dispositivo.
+
+---
+
 ## [1.21.0 / Mobile 1.16.0+9] — 2026-10-01
 
 ### Added

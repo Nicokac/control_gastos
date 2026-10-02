@@ -36,6 +36,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Show "Nuevo" badge on whats-new link if unseen version
     initWhatsNewBadge();
 
+    // Show pop-up with latest release notes if unseen version
+    initWhatsNewModal();
+
     // Collapsible category groups (categories list page)
     initCategoryCollapse();
 
@@ -340,6 +343,28 @@ function initWhatsNewBadge() {
             el.style.display = 'inline';
         });
     }
+}
+
+/**
+ * Pop-up de novedades (DT-068): muestra el modal con la última versión
+ * si el usuario todavía no la vio. Usa la misma clave localStorage que
+ * el badge del sidebar, así ambos quedan sincronizados.
+ */
+function initWhatsNewModal() {
+    const modalEl = document.getElementById('whatsNewModal');
+    if (!modalEl || typeof bootstrap === 'undefined') return;
+
+    const version = modalEl.dataset.version;
+    const seen = localStorage.getItem('whats_new_seen');
+    if (!version || seen === version) return;
+
+    const markSeen = () => localStorage.setItem('whats_new_seen', version);
+
+    modalEl.addEventListener('hidden.bs.modal', markSeen);
+    document.getElementById('whatsNewSeeAllBtn')?.addEventListener('click', markSeen);
+
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
 }
 
 /**

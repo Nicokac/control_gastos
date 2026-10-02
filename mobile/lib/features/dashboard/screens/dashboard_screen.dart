@@ -13,12 +13,27 @@ import '../../../core/widgets/offline_banner.dart';
 import '../../../core/widgets/sensitive_text.dart';
 import '../../../core/providers/amounts_visibility_provider.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/utils/whats_new.dart';
 
-class DashboardScreen extends ConsumerWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  bool _whatsNewChecked = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_whatsNewChecked) {
+      _whatsNewChecked = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) maybeShowWhatsNewDialog(context);
+      });
+    }
+
     final user = ref.watch(authProvider).valueOrNull;
     final dashboardAsync = ref.watch(dashboardProvider);
     final notifier = ref.read(dashboardProvider.notifier);

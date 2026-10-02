@@ -190,9 +190,18 @@ def exchange_rate_today(request):
         return JsonResponse({"error": "No se pudo obtener la cotización"}, status=503)
 
 
-APP_VERSION = "1.21.0"
+APP_VERSION = "1.22.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.22.0",
+        "date": "Octubre 2026",
+        "title": "Aviso de novedades al entrar",
+        "items": [
+            "Ahora te avisamos con un mensaje emergente cuando hay novedades nuevas, sin que tengas que ir a buscar la sección manualmente",
+            "Corregido: el color del botón de Cafecito en la app móvil no coincidía con el de la web",
+        ],
+    },
     {
         "version": "1.21.0",
         "date": "Octubre 2026",

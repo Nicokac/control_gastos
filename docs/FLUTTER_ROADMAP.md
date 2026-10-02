@@ -7,9 +7,9 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 
 ## Estado Actual
 
-- ✅ Backend Django completo (web app funcional en producción — v1.18.0)
+- ✅ Backend Django completo (web app funcional en producción — v1.22.0)
 - ✅ API REST completa (DRF + JWT, todos los endpoints)
-- ✅ App Flutter publicada en Google Play Console (v1.15.1+5) — pendiente build y subida de v1.16.0+6
+- ✅ App Flutter publicada en Google Play Console — Prueba interna (Mobile 1.16.0+10)
 
 ---
 
@@ -324,3 +324,11 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-06-25 | Fase 4 | Comprometido del mes que viene en dashboard mobile — `_NextMonthCommitmentCard` + campos nuevos en `/api/v1/dashboard/` (DT-057) |
 | 2026-06-25 | Fase 5 | Bump versión mobile a 1.16.0+6 |
 | 2026-07-02 | Fase 4 | Semáforo de urgencia en gastos fijos pendientes — `days_until_due` en API + `PendingRecurringCard` actualizado con colores y etiquetas de proximidad (DT-063) |
+| 2026-09-29 | Fase 5 | Bump versión mobile a 1.16.0+7 — fix de versión desactualizada en "Acerca de" (mostraba 1.13.0) y validación de username con espacios en el registro |
+| 2026-09-30 | Fase 4 | Mobile: corregido guardado de ingreso con grupo de categoría sin subcategorías — `incomeCategoriesProvider` no se invalidaba al crear categoría, y el form no permitía usar un grupo directo como categoría (sí lo permite el modelo en Ingresos) |
+| 2026-09-30 | Fase 5 | Bump versión mobile a 1.16.0+8 |
+| 2026-10-01 | Fase 5 | Bump versión mobile a 1.16.0+9 — el build +8 se había compilado antes del fix real, se recompiló con el fix incluido |
+| 2026-10-01 | Fase 4 | Botón de ojo para ocultar montos en el dashboard — `amountsHiddenProvider` + widget `SensitiveText`, persistencia en `shared_preferences` (DT-065) |
+| 2026-10-02 | Fase 4 | Aviso de novedades al entrar al dashboard — `AlertDialog` comparando versión contra `shared_preferences` (DT-068) |
+| 2026-10-02 | Fix | Color del botón "Invitame un Cafecito" corregido — estaba en naranja (`#FF5C00`) en vez del violeta de marca `#7C64BF` (DT-069) |
+| 2026-10-02 | Fase 5 | Bump versión mobile a 1.16.0+10 |

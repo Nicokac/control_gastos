@@ -5,6 +5,9 @@ class ApiConstants {
   );
 
   static const String appVersion = '1.16.0'; // mantener sincronizado con pubspec.yaml
+  // Resumen de novedades de la versión actual (DT-068) — actualizar junto con appVersion.
+  static const String latestReleaseSummary =
+      'Mejoras de categorías en Ingresos y Gastos, y correcciones varias.';
   static const String websiteUrl = 'https://control-gastos-fr8z.onrender.com';
   static const String developerName = 'Nicolás Kachuk';
   static const String developerEmail = 'kachuknm@gmail.com';

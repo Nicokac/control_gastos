@@ -995,27 +995,33 @@ Al cerrar un mes, el balance positivo (ingresos − gastos) no se traslada como 
 
 ### DT-068 — Pop-up de aviso de nuevas actualizaciones
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.22.0 web · Mobile 1.16.0+10)
 
-No hay ningún aviso dentro de la app cuando sale una versión nueva. El usuario se entera solo si entra a "Novedades" (`WHATS_NEW` en web) por su cuenta, o si la Play Store actualiza la app mobile sin que lo note.
+No había ningún aviso dentro de la app cuando salía una versión nueva. El usuario se enteraba solo si entraba a "Novedades" por su cuenta, o si la Play Store actualizaba la app mobile sin que lo note.
 
-**Why:** mejora la percepción de que el producto está vivo y evita que el usuario mobile quede en una versión vieja sin saberlo, sobre todo mientras el proyecto está en fase de iteración rápida (varias versiones por semana).
+**Why:** mejora la percepción de que el producto está vivo y evita que el usuario mobile quede en una versión vieja sin saberlo, sobre todo mientras el proyecto está en fase de iteración rápida.
 
-**Camino de resolución:**
-- **Web**: ya existe `WHATS_NEW` + `/novedades/`. Falta un mecanismo que detecte "hay contenido nuevo desde la última vez que el usuario lo vio" y dispare un modal o badge al loguearse (comparar última versión vista, guardada en el perfil del usuario, contra la versión más reciente de `WHATS_NEW`).
-- **Mobile**: no hay pantalla de "Novedades" todavía. Evaluar si conviene replicar el mismo patrón (modal al abrir la app si hay una versión nueva) o simplemente un link a la página web de novedades.
+**Hallazgo durante la implementación:** ya existía un sistema de detección "hay novedades" en web vía `localStorage` (`whats_new_seen`), usado para mostrar un badge "Nuevo" en el link del sidebar, marcado como visto al entrar a `/novedades/`. El plan original de este DT proponía un campo en la DB (`User.last_seen_version`) — se descartó por ser redundante: se optó por reusar la misma clave de `localStorage` ya existente, una sola fuente de verdad en vez de dos sistemas de tracking en paralelo.
+
+**Resolución (web):** `apps/core/context_processors.py` expone `LATEST_RELEASE` (la primera entrada de `WHATS_NEW`) a todos los templates. `base.html` renderiza un modal Bootstrap con el contenido de la última versión si el usuario está logueado. `main.js` (`initWhatsNewModal()`) decide si mostrarlo comparando `localStorage.whats_new_seen` contra la versión del modal — si coincide, no se muestra. Al cerrar el modal (cualquier botón) o hacer clic en "Ver todas las novedades", se marca como visto con la misma clave que ya usaba el badge del sidebar.
+
+**Resolución (mobile):** no existe pantalla de "Novedades" en mobile, así que se implementó un `AlertDialog` nativo (`core/utils/whats_new.dart`) que se dispara una vez al entrar al dashboard, comparando `ApiConstants.appVersion` contra `shared_preferences` (misma key `whats_new_seen_version`). El resumen de texto (`ApiConstants.latestReleaseSummary`) es manual — hay que actualizarlo junto con `appVersion` en cada bump, igual que ya se hacía con la versión.
+
+**Riesgo aceptado:** en mobile, el resumen de novedades es un string fijo (no una lista completa como en web) porque no existe una estructura tipo `WHATS_NEW` en el cliente Flutter — mantenerla sincronizada manualmente es la misma carga operativa que ya existía para `appVersion`, no se agrega proceso nuevo.
 
 ---
 
 ### DT-069 — Color del botón "Invitame un Cafecito" inconsistente en mobile
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (Mobile 1.16.0+10)
 
-El botón de Cafecito en mobile no mantiene el mismo color que en la web (`#7C64BF` fondo, blanco texto/ícono) — probablemente varía según el tema claro/oscuro del dispositivo en vez de mantenerse fijo como en la web.
+El botón de Cafecito en mobile no mantenía el mismo color que en la web.
 
-**Why:** es parte de la identidad de marca del botón (DT-050); debería verse igual en ambas plataformas independientemente del tema del sistema.
+**Why:** es parte de la identidad de marca del botón (DT-050); debería verse igual en ambas plataformas.
 
-**Camino de resolución:** ubicar el widget del botón en mobile (pantalla "Acerca de") y fijar explícitamente `backgroundColor: Color(0xFF7C64BF)` y `foregroundColor: Colors.white`, sin heredar del `Theme` del dispositivo — igual que el botón web no depende de `data-bs-theme`.
+**Causa real:** no era un problema de tema claro/oscuro como se sospechaba — el color estaba directamente hardcodeado mal: `Color(0xFFFF5C00)` (naranja) en vez de `#7C64BF` (violeta de marca). La pantalla "Acerca de" (`about_screen.dart`) nunca tuvo el color correcto desde que se implementó.
+
+**Resolución:** corregido a `Color(0xFF7C64BF)`, y se fijó explícitamente `color: Colors.white` en el ícono y el texto del botón para que no hereden del tema del dispositivo (mismo criterio que el botón web, que tampoco depende de `data-bs-theme`).
 
 ---
 
