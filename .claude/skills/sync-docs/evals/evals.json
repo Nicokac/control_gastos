@@ -1,0 +1,23 @@
+{
+  "skill_name": "sync-docs",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Acabamos de corregir un bug en la app mobile: cuando el usuario tocaba dos veces seguidas el botón de 'Registrar pago' en un gasto fijo, se creaban dos Expense duplicados en vez de uno. Lo arreglamos deshabilitando el botón mientras la request está en curso, en recurring_form_screen.dart. Ya está testeado y funciona. Documentá esto.",
+      "expected_output": "Debería proponer: entrada en CHANGELOG.md como '## [Mobile X.Y.Z+N]' con sección ### Fixed, una fila nueva en la tabla de Registro de progreso de docs/FLUTTER_ROADMAP.md, y proponer (no aplicar sin confirmar) un bump del build number en mobile/pubspec.yaml. No debería crear una entrada DT-XXX en DECISIONS.md (es un fix puntual sin decisión de diseño no-obvia detrás), ni tocar APP_VERSION ni WHATS_NEW (no tocó web).",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Terminamos de implementar la exportación de reportes a PDF, disponible tanto en la web (nuevo botón en el dashboard) como en mobile (nueva opción en el menú de Settings). Usa una librería nueva (reportlab) en el backend y comparte el mismo endpoint de API para ambas plataformas. Está todo testeado. Necesito que dejes todo documentado antes de que yo haga el commit.",
+      "expected_output": "Debería proponer: una entrada DT-XXX nueva en docs/DECISIONS.md con Estado Resuelto (numerada automáticamente al siguiente número libre), una entrada combinada en CHANGELOG.md tipo '## [X.Y.Z / Mobile A.B.C+D]' con ### Added, una entrada en WHATS_NEW en lenguaje de usuario final, proponer bump MINOR tanto de APP_VERSION como del pubspec.yaml (funcionalidad nueva visible en ambas plataformas), y una fila nueva en docs/FLUTTER_ROADMAP.md. Debería esperar confirmación antes de aplicar cualquier bump de versión, no aplicarlo directo.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Un usuario reportó que el selector de moneda (ARS/USD) en el formulario de ingresos no funcionaba en Firefox. Investigamos el código completo del formulario, el JS asociado, y probamos en Firefox real — todo funciona correctamente. No encontramos ningún bug. El usuario confirmó que probablemente fue una extensión del navegador interfiriendo, no un problema de la app. Documentá que investigamos esto.",
+      "expected_output": "Debería proponer solo una entrada DT-XXX nueva en docs/DECISIONS.md con Estado Descartado, explicando qué se investigó y por qué se concluyó que no era un bug real — mismo patrón que DT-066 del proyecto. No debería tocar CHANGELOG.md, no debería proponer ningún bump de versión, no debería tocar FLUTTER_ROADMAP.md (no es un cambio de mobile).",
+      "files": []
+    }
+  ]
+}

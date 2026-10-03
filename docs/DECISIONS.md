@@ -1025,6 +1025,47 @@ El botón de Cafecito en mobile no mantenía el mismo color que en la web.
 
 ---
 
+### DT-070 — Evaluación e instalación de skills de agente (Claude Code)
+
+**Estado:** 🟡 En progreso — fase 1 (instalación oficial) ✅ y fase 2 (skill custom `sync-docs`) ✅ completadas 2026-10-03
+
+Se evaluó qué skills/plugins de Claude Code podrían asistir el desarrollo del proyecto, organizados en 4 módulos: (1) publicación en tiendas, (2) deuda técnica/roadmap/versionado, (3) diseño visual/UX, (4) QA/testing. Se pidieron dos análisis externos independientes y se cruzaron.
+
+**Why:** el proyecto es mantenido por un único desarrollador con asistencia de Claude Code. Automatizar partes repetitivas del proceso (checklist de Play Store, sincronización de docs, QA) reduce la carga manual y el riesgo de olvidos (ya pasó con `FLUTTER_ROADMAP.md` desactualizado 3 meses — ver más abajo).
+
+**Hallazgo clave — Módulo 2 no tiene cobertura pública:** ninguna skill encontrada en ninguno de los dos análisis maneja el patrón específico de este repo — `docs/DECISIONS.md` con formato `DT-XXX`, `docs/FLUTTER_ROADMAP.md`, y doble versionado desacoplado (`APP_VERSION` en `apps/core/views.py` para web, `version` en `mobile/pubspec.yaml` para mobile, cada uno con su propio changelog). Las alternativas más cercanas (`changelog-generator`, `doc-freshness`, `docs-sync`) asumen un esquema de versión única con Conventional Commits, que no calza con este proyecto. **Decisión: construir una skill propia con `skill-creator` en vez de adaptar una de terceros.**
+
+**Instaladas (alta confianza — oficiales), confirmado 2026-10-03:**
+- `dart-flutter@dart-flutter` v1.0.6 (scope user) — plugin oficial de Flutter/Dart (`flutter/agent-plugins`), base de conocimiento mobile
+- `superpowers@claude-plugins-official` v6.4.1 (scope user) — ya estaba instalado de antes; metodología de trabajo (brainstorm → plan → TDD → debug → verify), capa de proceso, no de dominio
+- `code-review@claude-plugins-official` y `frontend-design@claude-plugins-official` — ya estaban instalados de antes (no forman parte de esta evaluación, pre-existentes)
+- Skills oficiales de Anthropic (`skill-creator`, `webapp-testing`) — ya disponibles sin instalación adicional en esta sesión
+
+**Nota (resuelta):** `claude plugin list` mostró `superpowers@claude-plugins-official` aparentemente duplicado — v5.1.0 en scope `local` y v6.4.1 en scope `user`. Investigado: la instalación `local` v5.1.0 pertenece a otro proyecto (`portafolio_de_activos`, instalada 2026-06-16), no a `control_gastos` — cada proyecto tiene su propio scope `local` independiente. No afecta a este repo, que usa la v6.4.1 de scope `user`. No se tocó.
+
+**Evaluadas, pendientes de decisión (requieren probar antes de confiar):**
+- Django: tres paquetes comunitarios candidatos (`affaan-m`, `andreassendev`, `jeffallan`) ofrecen `django-patterns`/`django-security`/`django-verification` — elegir uno solo, no mezclar autores
+- Play Store compliance: `android/skills` → `play-policy-insights` (oficial Google) cruza código vs. declaraciones de Data Safety, pero está pensado para Android nativo — no confirmado que funcione bien sobre un proyecto Flutter
+- Diseño: `design-auditor` detecta colores hardcodeados contra tokens (relevante tras el bug de DT-069), pero no valida paridad entre Bootstrap web y Dart mobile
+
+**Descartadas explícitamente:**
+- Paquetes grandes de un solo autor sin revisar (`zakariaf/Flutter-Skills` completo, 40+ skills de `flutter-claude-skills`) — riesgo de instrucciones superpuestas/contradictorias sin curación
+- Cualquier skill que requiera credenciales de Google Cloud/Play Console (`yasserstudio/gpc-skills`, `PollyGlot/google-play-cli-skills`) — demasiado sensible sin auditar el código fuente primero
+- `git-workflow-automation` / `changelog-generator` — asumen Conventional Commits + versión única, no el esquema real del repo
+
+**Skill custom construida — `sync-docs` (Módulo 2), confirmado 2026-10-03:**
+Creada en `.claude/skills/sync-docs/` (skill de proyecto, no global) con `skill-creator`. Automatiza el Paso 2-5 del flujo manual que se venía siguiendo toda esta sesión: entrada en `docs/DECISIONS.md` (`DT-XXX` o la sub-serie `DTD-XXX` para descartes dentro de `D-015`), entrada en `CHANGELOG.md`, propuesta de bump de versión (web/mobile, **nunca aplicado sin confirmación explícita del usuario**), y actualización de `docs/FLUTTER_ROADMAP.md` cuando el cambio toca mobile. Se dispara explícitamente (el usuario la pide), no automáticamente.
+
+Validada con 3 test cases representativos (fix mobile puro, feature web+mobile, reporte investigado y descartado), corridos con y sin la skill (subagentes en paralelo) en 2 iteraciones:
+
+- **Hallazgo principal (ambas iteraciones):** sin la skill, el bump de versión se aplica directamente sin pedir confirmación en el 100% de los casos que lo involucran — exactamente el riesgo que la skill fue diseñada para evitar. Con la skill, 0% de los casos aplicó un bump sin proponerlo primero.
+- **Iteración 1 → 2:** pass rate con skill pasó de 94% a 100% tras dos ajustes — (a) agregar un ejemplo explícito y literal de qué fix NO amerita una entrada en `DECISIONS.md` (el criterio "decisión de diseño no-obvia" por sí solo no bastaba, tanto el agente con skill como el baseline crearon una entrada de más para un fix simple en la primera corrida); (b) documentar explícitamente la sub-serie `DTD-XXX` que ya existía en el repo real pero no estaba mencionada en el draft inicial de la skill.
+- Resultados completos (incluyendo HTML de revisión lado a lado) en `sync-docs-workspace/` — directorio local, no versionado (agregado a `.gitignore`).
+
+**Próximo paso:** evaluar una por una las candidatas de Django y Play Store antes de confiarles tareas reales (quedan pendientes, no se avanzó en esta sesión).
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.
