@@ -2,7 +2,51 @@
   "permissions": {
     "allow": [
       "Bash(python -c ' *)",
-      "Bash(python manage.py shell -c ' *)"
+      "Bash(python manage.py shell -c ' *)",
+      "PowerShell(pytest apps/expenses/tests/ apps/categories/tests/ -q --no-cov 2>&1)",
+      "PowerShell(pytest apps/expenses/tests/ -q --no-cov 2>&1)",
+      "PowerShell(pytest apps/expenses/tests/ apps/categories/tests/ apps/core/tests/ -q --no-cov 2>&1)",
+      "PowerShell(pytest apps/categories/tests/ -q --no-cov 2>&1)",
+      "PowerShell(pytest apps/categories/tests/test_views.py -q --no-cov 2>&1)",
+      "Bash(pytest apps/categories/tests/ apps/expenses/tests/ -q --no-cov)",
+      "PowerShell(pytest apps/categories/tests/ apps/expenses/tests/ -q --no-cov 2>&1)",
+      "PowerShell(pytest apps/expenses/tests/test_views.py -q --no-cov -k \"ImportPreviewHash\" 2>&1)",
+      "PowerShell(pytest apps/expenses/tests/ apps/core/tests/ -q --no-cov 2>&1)",
+      "PowerShell(pytest apps/expenses/tests/test_views.py -q --no-cov -k \"ImportConfirm\" 2>&1)",
+      "PowerShell(pytest apps/expenses/tests/ apps/recurring/tests/ apps/categories/tests/ -q --no-cov 2>&1)",
+      "PowerShell(pytest apps/expenses/tests/test_importers.py -q --no-cov 2>&1)",
+      "PowerShell(pytest apps/core/tests/ apps/expenses/tests/ -q --no-cov 2>&1)",
+      "PowerShell(pytest apps/expenses/tests/test_views.py -q --no-cov -k \"RecurringMatch\" 2>&1)",
+      "PowerShell(python manage.py check --settings=config.settings.dev 2>&1)",
+      "Bash(python3 -m pip show git-filter-repo)",
+      "Bash(git filter-repo *)",
+      "Bash(pip --version)",
+      "PowerShell(pytest apps/reports/tests/ apps/core/tests/test_constants.py -q --no-cov 2>&1)",
+      "PowerShell(pytest apps/core/tests/test_currency_filters.py -q --no-cov 2>&1)",
+      "PowerShell(flutter analyze lib/ 2>&1)",
+      "PowerShell(pytest apps/core/tests/test_currency_filters.py apps/reports/tests/ -q --no-cov 2>&1)",
+      "PowerShell(Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-Process -Id 49976)",
+      "PowerShell(Get-Process -Id 73700 -ErrorAction SilentlyContinue)",
+      "PowerShell(Stop-Process -Id 73700 -Force)",
+      "PowerShell(Get-Process -Id 49976 -ErrorAction SilentlyContinue)",
+      "PowerShell(Restart-Service -Name iphlpsvc -Force -ErrorAction SilentlyContinue)",
+      "PowerShell(python manage.py makemigrations --check --dry-run --settings=config.settings.dev 2>&1)",
+      "PowerShell(pytest apps/users/tests/ apps/core/tests/test_views.py -q --no-cov 2>&1)",
+      "Bash(mkdir -p \"/c/Users/kachu/Python user/Django/control_gastos/.claude/skills/sync-docs\")",
+      "Edit(/.claude/skills/sync-docs/**)",
+      "Bash(mkdir -p \"/c/Users/kachu/Python user/Django/control_gastos/.claude/skills/sync-docs/evals\")",
+      "Bash(nohup python eval-viewer/generate_review.py '/c/Users/kachu/Python user/Django/control_gastos/sync-docs-workspace/iteration-1' --skill-name sync-docs --benchmark '/c/Users/kachu/Python user/Django/control_gastos/sync-docs-workspace/iteration-1/benchmark.json')",
+      "Bash(echo \"PID: $!\")",
+      "Bash(netstat -ano)",
+      "Bash(PYTHONIOENCODING=utf-8 python eval-viewer/generate_review.py '/c/Users/kachu/Python user/Django/control_gastos/sync-docs-workspace/iteration-1' --skill-name sync-docs --benchmark '/c/Users/kachu/Python user/Django/control_gastos/sync-docs-workspace/iteration-1/benchmark.json' --static '/c/Users/kachu/Python user/Django/control_gastos/sync-docs-workspace/iteration-1/review.html')",
+      "Bash(PYTHONIOENCODING=utf-8 python eval-viewer/generate_review.py '/c/Users/kachu/Python user/Django/control_gastos/sync-docs-workspace/iteration-2' --skill-name sync-docs --benchmark '/c/Users/kachu/Python user/Django/control_gastos/sync-docs-workspace/iteration-2/benchmark.json' --previous-workspace '/c/Users/kachu/Python user/Django/control_gastos/sync-docs-workspace/iteration-1' --static '/c/Users/kachu/Python user/Django/control_gastos/sync-docs-workspace/iteration-2/review.html')",
+      "Bash(python -m scripts.package_skill \"/c/Users/kachu/Python user/Django/control_gastos/.claude/skills/sync-docs\")",
+      "Bash(PYTHONIOENCODING=utf-8 python -m scripts.package_skill \"/c/Users/kachu/Python user/Django/control_gastos/.claude/skills/sync-docs\")"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\kachu\\Python user\\Django\\control_gastos\\.claude\\skills",
+      "C:\\Users\\kachu\\Python user\\Django\\control_gastos\\.claude\\skills\\sync-docs"
     ]
   }
 }
