@@ -1043,13 +1043,23 @@ Se evaluó qué skills/plugins de Claude Code podrían asistir el desarrollo del
 
 **Nota (resuelta):** `claude plugin list` mostró `superpowers@claude-plugins-official` aparentemente duplicado — v5.1.0 en scope `local` y v6.4.1 en scope `user`. Investigado: la instalación `local` v5.1.0 pertenece a otro proyecto (`portafolio_de_activos`, instalada 2026-06-16), no a `control_gastos` — cada proyecto tiene su propio scope `local` independiente. No afecta a este repo, que usa la v6.4.1 de scope `user`. No se tocó.
 
+**Instalado — `flutter@flutter-skills` v1.0.0 (scope user), confirmado 2026-10-03:**
+Marketplace `zakariaf/Flutter-Skills` (40 skills para Riverpod 3.x + Material 3 + go_router — prácticamente el stack mobile real de este proyecto). Se reconsideró la decisión original de descartarlo (ver "Descartadas" más abajo, ahora corregida): el README del repo aclara que las 40 skills fueron destiladas de +10 apps Flutter en producción, reconciliadas a **un solo stack canónico** (misma terminología, mismo vocabulario, sin contradicciones entre sí) y revisadas adversarialmente — no es un paquete sin curar de un autor individual, el riesgo que motivó el descarte original no aplica acá. Instalado completo en vez de una sola skill porque el propio repo lo ofrece así vía plugin marketplace (mismo mecanismo que `dart-flutter`), y las 40 ya vienen reconciliadas entre sí.
+
+Relevantes para el Módulo 3 (diseño/UX) de esta evaluación:
+- `ui-states-and-feedback` — resuelve loading/empty/error/content en un solo switch, ataca directo las preguntas de UX ad-hoc mencionadas al abrir este DT ("¿dónde pongo este botón?", "¿cómo muestro un estado vacío?")
+- `design-system-structure` — organización tokens→theme→componentes, con gate CI contra valores sin tokenizar (relevante tras el bug de color hardcodeado de DT-069)
+- `accessibility-as-code`, `adaptive-layout`, `testing-strategy`, `release-and-store-shipping` — cobertura adicional útil, no evaluadas a fondo todavía
+
+**Sigue pendiente — el problema de paridad web↔mobile no lo resuelve ninguna skill externa.** Ninguna de las 40 conoce el lenguaje visual específico de este proyecto (qué es "Primary", "Income", "Expense" en este repo puntual) ni compara Bootstrap (web) contra Dart (mobile) — es exactamente el mismo tipo de gap que llevó a construir `sync-docs` para el Módulo 2. Candidata futura: una skill de proyecto `control-gastos-design-system` que defina los tokens reales (colores de Primary/Success/Warning/Danger/Income/Expense/Savings, spacing, radios, etc.) e inspeccione `static/css/` + `templates/` contra `mobile/lib/` para marcar colores hardcodeados y mismatches entre plataformas.
+
 **Evaluadas, pendientes de decisión (requieren probar antes de confiar):**
 - Django: tres paquetes comunitarios candidatos (`affaan-m`, `andreassendev`, `jeffallan`) ofrecen `django-patterns`/`django-security`/`django-verification` — elegir uno solo, no mezclar autores
 - Play Store compliance: `android/skills` → `play-policy-insights` (oficial Google) cruza código vs. declaraciones de Data Safety, pero está pensado para Android nativo — no confirmado que funcione bien sobre un proyecto Flutter
-- Diseño: `design-auditor` detecta colores hardcodeados contra tokens (relevante tras el bug de DT-069), pero no valida paridad entre Bootstrap web y Dart mobile
+- UX/accesibilidad adicional: `design-review` (`humbleteam/design-review`, heurísticas de Nielsen + WCAG 2.2, formato Before/After/Why) y una skill de WCAG 2.2 AA dedicada — candidatas para auditar pantallas web existentes, no instaladas todavía
 
 **Descartadas explícitamente:**
-- Paquetes grandes de un solo autor sin revisar (`zakariaf/Flutter-Skills` completo, 40+ skills de `flutter-claude-skills`) — riesgo de instrucciones superpuestas/contradictorias sin curación
+- Paquetes grandes de un solo autor sin revisar (40+ skills de `flutter-claude-skills`, distinto del marketplace `zakariaf/Flutter-Skills` ya instalado) — riesgo de instrucciones superpuestas/contradictorias sin curación
 - Cualquier skill que requiera credenciales de Google Cloud/Play Console (`yasserstudio/gpc-skills`, `PollyGlot/google-play-cli-skills`) — demasiado sensible sin auditar el código fuente primero
 - `git-workflow-automation` / `changelog-generator` — asumen Conventional Commits + versión única, no el esquema real del repo
 
