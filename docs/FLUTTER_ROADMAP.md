@@ -346,3 +346,7 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-10-04 | Fase 5 | Bump versión mobile a 1.16.6+16 |
 | 2026-10-04 | Fix | Versión en "Acerca de" leída con `package_info_plus` en vez de constante manual desincronizada (DT-078) |
 | 2026-10-04 | Fase 5 | Bump versión mobile a 1.16.7+18 (build 17 descartado por Play Console, ya usado) |
+| 2026-10-04 | Fase 4 | Términos y condiciones y Política de privacidad agregados en Acerca de (DT-079) |
+| 2026-10-04 | Fase 5 | Bordes redondeados y fuente más chica en campos de Configuración (DT-079) |
+| 2026-10-04 | Fase 4 | Toggle porcentaje/monto en el gráfico de Gastos por categoría del dashboard — `expenseChartViewProvider` (DT-079) |
+| 2026-10-04 | Fase 5 | Bump versión mobile a 1.17.0+19 |

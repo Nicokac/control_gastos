@@ -1186,6 +1186,26 @@ Durante el release de hoy (DT-071 a 077, 6 bumps de versión: 1.16.0+10 → 1.16
 
 ---
 
+### DT-079 — Mobile: 5 mejoras relevadas por el usuario tras uso real de la app
+
+**Estado:** ✅ Resuelto
+
+Lista de puntos relevados directamente por el usuario usando la app en el día a día (no por una skill ni revisión automatizada):
+
+1. **Falta de contenido legal en mobile**: la app no tenía acceso a Términos y condiciones ni Política de privacidad, ya publicados en la web (`/terms/`, `/privacy/`).
+2. **Inconsistencia visual en Configuración**: los campos de "Cuenta" y "Preferencias" (Email, Nombre, Apellido, Usuario, Moneda, Día de inicio) usaban `OutlineInputBorder()` sin radio (esquinas casi cuadradas), distinto del look del `SegmentedButton` en "Apariencia".
+3. **Fuente grande en los mismos campos**: tamaño default de Material (~16px), percibido como grande para una pantalla de configuración densa.
+4. **"Gastos por categoría" sin vista de monto**: el gráfico de torta del dashboard solo mostraba el porcentaje de cada categoría, sin forma de ver el acumulado real en pesos.
+
+**Why:** son ajustes de experiencia real detectados con uso cotidiano, no bugs — la app funcionaba correctamente, pero la consistencia visual entre secciones y la falta de una vista alternativa en el gráfico de gastos eran mejoras pendientes de UX que ningún análisis automatizado (ni las skills de `flutter@flutter-skills`, orientadas a patrones de código, no a preferencias de producto) iba a señalar.
+
+**Resolución:**
+- **Legal**: 2 `ListTile` nuevos en `about_screen.dart` ("Términos y condiciones", "Política de privacidad") que abren las páginas ya existentes en la web vía `url_launcher`, reusando el mismo patrón que "Sitio web" — sin duplicar contenido legal en dos lugares.
+- **Bordes y fuente**: en `settings_screen.dart` se centralizaron `_inputBorder` (radio 12) y `_inputFontSize` (14) como constantes reusadas en los 6 campos de "Cuenta" y "Preferencias".
+- **Toggle %/monto**: nuevo `expenseChartViewProvider` (`core/providers/expense_chart_view_provider.dart`, mismo patrón que `amountsHiddenProvider` de DT-065 — persistido en `shared_preferences`) y un `SegmentedButton` chico junto al título en `expense_chart.dart` que alterna cada fila de categoría entre porcentaje y monto (`SensitiveText`, respetando el botón de ocultar montos existente).
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.

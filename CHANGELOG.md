@@ -5,6 +5,19 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [Mobile 1.17.0+19] — 2026-10-04
+
+### Added
+
+- **Gastos por categoría — vista en monto (DT-079)**: nuevo botón junto al título del gráfico de torta para alternar entre ver el porcentaje de cada categoría o el monto acumulado real en pesos. Se recuerda en el dispositivo y respeta el botón de ocultar montos.
+
+### Fixed
+
+- **Acceso a Términos y condiciones y Política de privacidad desde la app**: ya estaban disponibles en la web, ahora también desde Acerca de.
+- **Consistencia visual en Configuración**: los campos de Cuenta y Preferencias tenían esquinas más cuadradas que el resto de la app; ahora usan el mismo estilo redondeado, con una fuente un poco más chica y compacta.
+
+---
+
 ## [Mobile 1.16.7+18] — 2026-10-04
 
 ### Fixed

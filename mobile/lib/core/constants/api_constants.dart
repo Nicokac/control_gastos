@@ -6,7 +6,7 @@ class ApiConstants {
 
   // Resumen de novedades de la versión actual (DT-068) — actualizar junto con el bump de pubspec.yaml.
   static const String latestReleaseSummary =
-      'Mejoras de categorías en Ingresos y Gastos, y correcciones varias.';
+      'Nuevo botón para ver el monto en Gastos por categoría, acceso a Términos y Privacidad, y mejoras visuales en Configuración.';
   static const String websiteUrl = 'https://control-gastos-fr8z.onrender.com';
   static const String termsUrl =
       'https://control-gastos-fr8z.onrender.com/terms/';
