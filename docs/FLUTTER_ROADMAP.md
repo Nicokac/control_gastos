@@ -336,3 +336,5 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-10-03 | Fase 5 | Bump versión mobile a 1.16.1+11 |
 | 2026-10-03 | Fix | Errores de red mostrados sin mapear — nuevo widget `ErrorStateView` (modo completo y compacto) reusado en 13 pantallas, con mensaje amigable, reintento y detalle técnico solo en debug (DT-072) |
 | 2026-10-03 | Fase 5 | Bump versión mobile a 1.16.2+12 |
+| 2026-10-03 | Fase 5 | Skeletons generalizados a listas (gastos, ingresos, fijos, ahorros, compartidos, miembros) — `ListSkeleton` reusando los bloques de `DashboardSkeleton` (DT-073) |
+| 2026-10-03 | Fase 5 | Bump versión mobile a 1.16.3+13 |

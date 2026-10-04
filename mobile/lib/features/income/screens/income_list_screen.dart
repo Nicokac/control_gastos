@@ -7,6 +7,7 @@ import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state_view.dart';
+import '../../../core/widgets/list_skeleton.dart';
 
 class IncomeListScreen extends ConsumerWidget {
   const IncomeListScreen({super.key});
@@ -32,7 +33,7 @@ class IncomeListScreen extends ConsumerWidget {
         ],
       ),
       body: incomeAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const ListSkeleton(),
         error: (e, _) => ErrorStateView(error: e, onRetry: notifier.reload),
         data: (incomeList) => RefreshIndicator(
           onRefresh: notifier.reload,

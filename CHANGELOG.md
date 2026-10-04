@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [Mobile 1.16.3+13] — 2026-10-03
+
+### Changed
+
+- **Mobile — Skeletons en listas (DT-073)**: las pantallas de gastos, ingresos, gastos fijos, ahorros, gastos compartidos y miembros del hogar mostraban un spinner centrado al cargar, en vez de un esqueleto con la forma del contenido final (como ya tenía el dashboard). Se generalizó `ListSkeleton`, reduciendo el salto de layout al llegar los datos.
+
+---
+
 ## [Mobile 1.16.2+12] — 2026-10-03
 
 ### Fixed

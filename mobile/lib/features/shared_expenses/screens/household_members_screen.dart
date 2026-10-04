@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/shared_expense_provider.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/widgets/error_state_view.dart';
+import '../../../core/widgets/list_skeleton.dart';
 
 class HouseholdMembersScreen extends ConsumerStatefulWidget {
   const HouseholdMembersScreen({super.key});
@@ -119,7 +120,7 @@ class _HouseholdMembersScreenState
         ],
       ),
       body: membersAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const ListSkeleton(itemCount: 3),
         error: (e, _) => ErrorStateView(
           error: e,
           onRetry: () => ref.invalidate(householdMembersProvider),

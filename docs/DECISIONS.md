@@ -1112,6 +1112,18 @@ Un cuarto caso relacionado pero distinto —`settings_screen.dart` retorna `Size
 
 ---
 
+### DT-073 — Mobile: loading sin forma del contenido final (spinner centrado en vez de skeleton)
+
+**Estado:** ✅ Resuelto
+
+Tercer hallazgo de mayor repetición de la misma revisión con `flutter@flutter-skills` (ver DT-070/071/072). Regla 7 de `ui-states-and-feedback`: el estado de carga debería anticipar la forma del resultado (un esqueleto con la silueta de la lista/card que va a aparecer), no un spinner centrado que no da ninguna pista de qué se está cargando y provoca un salto de layout brusco cuando llega la data. Solo el dashboard (`DashboardSkeleton`) seguía este patrón; las pantallas de lista (`expense_list_screen`, `income_list_screen`, `recurring_list_screen`, `savings_list_screen`, `shared_expense_list_screen`, `household_members_screen`) usaban `Center(child: CircularProgressIndicator())`.
+
+**Why:** mismo motivo que ya justificó `DashboardSkeleton` en su momento — un esqueleto reduce la sensación de espera y evita el salto de layout, pero solo se había aplicado una vez y no se generalizó al resto de las listas.
+
+**Resolución:** se creó `mobile/lib/core/widgets/list_skeleton.dart` (`ListSkeleton(itemCount, withCard)`), reusando los bloques `SkeletonBox`/`SkeletonLine` ya existentes en `core/widgets/skeleton.dart` (los mismos que usa `DashboardSkeleton`). Dos variantes según la silueta real de cada pantalla: tile simple (ícono circular + 2 líneas + monto) para listas tipo `ListTile` (gastos, ingresos, recurrentes, compartidos, miembros del hogar), y `withCard: true` (card con barra de progreso) para ahorros, que usa `Card` + `LinearProgressIndicator` en vez de `ListTile`. `categories_screen.dart` quedó fuera: su estructura (secciones expandibles de grupos/subcategorías) no coincide con ninguna de las dos siluetas y generalizar ahí requeriría un skeleton dedicado, no una reutilización directa.
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.

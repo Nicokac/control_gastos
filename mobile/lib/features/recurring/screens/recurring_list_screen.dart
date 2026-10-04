@@ -6,6 +6,7 @@ import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../core/widgets/error_state_view.dart';
+import '../../../core/widgets/list_skeleton.dart';
 
 class RecurringListScreen extends ConsumerWidget {
   const RecurringListScreen({super.key});
@@ -26,7 +27,7 @@ class RecurringListScreen extends ConsumerWidget {
         ],
       ),
       body: recurringAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const ListSkeleton(),
         error: (e, _) => ErrorStateView(error: e, onRetry: notifier.reload),
         data: (items) => RefreshIndicator(
           onRefresh: notifier.reload,
