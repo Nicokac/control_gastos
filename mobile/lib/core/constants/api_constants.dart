@@ -4,7 +4,7 @@ class ApiConstants {
     defaultValue: 'https://control-gastos-fr8z.onrender.com/api/v1',
   );
 
-  static const String appVersion = '1.16.0'; // mantener sincronizado con pubspec.yaml
+  static const String appVersion = '1.16.6'; // mantener sincronizado con pubspec.yaml
   // Resumen de novedades de la versión actual (DT-068) — actualizar junto con appVersion.
   static const String latestReleaseSummary =
       'Mejoras de categorías en Ingresos y Gastos, y correcciones varias.';
