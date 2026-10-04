@@ -1162,6 +1162,18 @@ Al revisar el código se encontró un segundo bug, más relevante: el `FormField
 
 ---
 
+### DT-077 — Mobile: `settings_screen` mostraba pantalla en blanco ante `user == null`
+
+**Estado:** ✅ Resuelto (sin bump de versión — sin impacto visible real)
+
+Caso borde detectado durante DT-072 pero dejado fuera de esa resolución porque no era el mismo patrón ("error sin mapear"). `settings_screen.dart` retornaba `SizedBox.shrink()` dentro del estado `data` de `authProvider` cuando `user == null` — un cuarto estado no representado explícitamente (ni loading, ni error, ni contenido real).
+
+**Why:** se investigó cuándo ocurre realmente: `authProvider` pasa a `AsyncData(null)` de forma sincrónica en `logout()` (`auth_provider.dart:75`), y el `GoRouter` tiene un `redirect` conectado a ese mismo provider vía `refreshListenable` (`app_router.dart:69-83`) que fuerza la navegación a `/login` en cuanto detecta `isLoggedIn == false`. En la práctica, `user == null` en esta pantalla dura exactamente un frame — la pantalla jamás llega a ser percibida por el usuario antes de que el router la reemplace por `/login`. No es un bug con impacto real, pero `SizedBox.shrink()` seguía siendo un estado silencioso sin justificación explícita en el código.
+
+**Resolución:** cambiado a `Center(child: CircularProgressIndicator())` — mismo widget que el estado `loading`, ya que conceptualmente es "esperando salir de esta pantalla", no contenido vacío. Cambio de una línea, sin bump de versión ni entrada en CHANGELOG por no tener impacto visible observable (criterio de CLAUDE.md para cambios internos).
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.

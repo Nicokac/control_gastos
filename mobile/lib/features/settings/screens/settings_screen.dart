@@ -128,7 +128,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           onRetry: () => ref.invalidate(authProvider),
         ),
         data: (user) {
-          if (user == null) return const SizedBox.shrink();
+          if (user == null) {
+            return const Center(child: CircularProgressIndicator());
+          }
           _initFromUser(user);
 
           return Form(
