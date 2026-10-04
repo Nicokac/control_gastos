@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [Mobile 1.16.5+15] — 2026-10-04
+
+### Fixed
+
+- **Mobile — Selectores de color/ícono sin nombre accesible (DT-075)**: los círculos de color de categorías y metas de ahorro, y el selector de ícono de categorías, no tenían ningún texto alternativo para lectores de pantalla — solo eran identificables viéndolos. Se agregó `Semantics` con el nombre en español de cada color (ej. "Rojo", "Verde") y de cada ícono (ej. "Carrito de compras").
+
+---
+
 ## [Mobile 1.16.4+14] — 2026-10-04
 
 ### Fixed

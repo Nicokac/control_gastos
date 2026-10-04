@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/savings_provider.dart';
 import 'savings_list_screen.dart';
+import '../../../core/constants/category_colors.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/section_label.dart';
@@ -310,25 +311,31 @@ class _SavingFormScreenState extends ConsumerState<SavingFormScreen> {
     final color = parseSavingColor(hex);
     final selected = _color == hex;
 
-    return InkWell(
-      borderRadius: BorderRadius.circular(22),
-      onTap: () => setState(() => _color = hex),
-      child: SizedBox(
-        width: 44,
-        height: 44,
-        child: Center(
-          child: Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-              border:
-                  selected ? Border.all(color: Colors.black87, width: 2) : null,
+    return Semantics(
+      label: categoryColorName(hex),
+      button: true,
+      selected: selected,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(22),
+        onTap: () => setState(() => _color = hex),
+        child: SizedBox(
+          width: 44,
+          height: 44,
+          child: Center(
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+                border: selected
+                    ? Border.all(color: Colors.black87, width: 2)
+                    : null,
+              ),
+              child: selected
+                  ? const Icon(Icons.check, color: Colors.white, size: 18)
+                  : null,
             ),
-            child: selected
-                ? const Icon(Icons.check, color: Colors.white, size: 18)
-                : null,
           ),
         ),
       ),

@@ -1136,6 +1136,18 @@ Cuarto hallazgo de la revisión con `flutter@flutter-skills` (ver DT-070/071/072
 
 ---
 
+### DT-075 — Mobile: selectores de color/ícono sin nombre accesible para lectores de pantalla
+
+**Estado:** ✅ Resuelto
+
+Quinto hallazgo de la misma revisión con `flutter@flutter-skills` (ver DT-070 a 074), regla de `accessibility-as-code` de no depender solo de una señal visual: los círculos de color en `categories_screen.dart` y `saving_form_screen.dart` indicaban el color seleccionado solo con un borde + ícono de check, pero el color en sí (rojo, verde, azul, etc.) no tenía ningún texto alternativo — un lector de pantalla anunciaba el elemento como un botón sin nombre. El selector de ícono de categorías (42 opciones tipo `bi-cart`, `bi-piggy-bank`) tenía el mismo problema: ningún nombre descriptivo, solo la clave técnica interna.
+
+**Why:** el estado seleccionado ya cumplía parcialmente la regla de "no depender solo del color" (hay un ícono de check visible), pero identificar *cuál* opción es cada círculo — antes de seleccionarla — solo era posible viéndola. Sin nombre accesible, un usuario de lector de pantalla no puede elegir un color o ícono con intención, solo "el tercer botón" sin saber qué representa.
+
+**Resolución:** se creó `mobile/lib/core/constants/category_colors.dart` con `categoryColorNames` (mapa hex→nombre en español para los 10 colores de `CATEGORY_COLOR_CHOICES`) y `categoryColorName(hex)`, reusado en ambas pantallas via `Semantics(label: ..., button: true, selected: ...)` envolviendo cada círculo. Para el selector de ícono de categorías, se agregó `_categoryIconNames` (42 nombres descriptivos, ej. `bi-cart` → "Carrito de compras") y `categoryIconName(name)` en `core/utils/category_icons.dart`, junto al resto de los mapeos de ese mismo ícono, aplicado igual con `Semantics`. El selector de íconos de `saving_form_screen` (6 opciones) no necesitó cambios: ya muestra el nombre como `Text` visible junto al ícono, que un lector de pantalla ya anuncia por defecto.
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.

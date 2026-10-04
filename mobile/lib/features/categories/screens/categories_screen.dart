@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/constants/category_colors.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/category_icons.dart';
 import '../../../core/widgets/error_state_view.dart';
@@ -451,26 +452,31 @@ class _CreateCategorySheetState extends ConsumerState<_CreateCategorySheet> {
               final c = Color(
                   int.parse('FF${hex.replaceFirst('#', '')}', radix: 16));
               final selected = _color == hex;
-              return GestureDetector(
-                onTap: () => setState(() => _color = hex),
-                child: SizedBox(
-                  width: 44,
-                  height: 44,
-                  child: Center(
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: c,
-                        shape: BoxShape.circle,
-                        border: selected
-                            ? Border.all(color: Colors.black, width: 3)
+              return Semantics(
+                label: categoryColorName(hex),
+                button: true,
+                selected: selected,
+                child: GestureDetector(
+                  onTap: () => setState(() => _color = hex),
+                  child: SizedBox(
+                    width: 44,
+                    height: 44,
+                    child: Center(
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: c,
+                          shape: BoxShape.circle,
+                          border: selected
+                              ? Border.all(color: Colors.black, width: 3)
+                              : null,
+                        ),
+                        child: selected
+                            ? const Icon(Icons.check,
+                                color: Colors.white, size: 16)
                             : null,
                       ),
-                      child: selected
-                          ? const Icon(Icons.check,
-                              color: Colors.white, size: 16)
-                          : null,
                     ),
                   ),
                 ),
@@ -497,26 +503,31 @@ class _CreateCategorySheetState extends ConsumerState<_CreateCategorySheet> {
                 final selected = _icon == name;
                 final c = Color(
                     int.parse('FF${_color.replaceFirst('#', '')}', radix: 16));
-                return GestureDetector(
-                  onTap: () => setState(() => _icon = name),
-                  child: Center(
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: selected
-                            ? c.withValues(alpha: 0.2)
-                            : Colors.grey.withValues(alpha: 0.07),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: selected ? c : Colors.transparent,
-                          width: 2,
+                return Semantics(
+                  label: categoryIconName(name),
+                  button: true,
+                  selected: selected,
+                  child: GestureDetector(
+                    onTap: () => setState(() => _icon = name),
+                    child: Center(
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? c.withValues(alpha: 0.2)
+                              : Colors.grey.withValues(alpha: 0.07),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: selected ? c : Colors.transparent,
+                            width: 2,
+                          ),
                         ),
-                      ),
-                      child: Icon(
-                        categoryIconFromName(name),
-                        color: selected ? c : Colors.grey[600],
-                        size: 20,
+                        child: Icon(
+                          categoryIconFromName(name),
+                          color: selected ? c : Colors.grey[600],
+                          size: 20,
+                        ),
                       ),
                     ),
                   ),
