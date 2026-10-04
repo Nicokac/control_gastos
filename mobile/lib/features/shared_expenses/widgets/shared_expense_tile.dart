@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/formatters.dart';
 
 class SharedExpenseTile extends StatelessWidget {
@@ -56,8 +57,8 @@ class SharedExpenseTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
             decoration: BoxDecoration(
               color: paidByMe
-                  ? const Color(0xFF0d6efd).withValues(alpha: 0.1)
-                  : Colors.orange.withValues(alpha: 0.1),
+                  ? context.semanticColors.shared.withValues(alpha: 0.1)
+                  : context.semanticColors.dueSoon.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
@@ -65,7 +66,9 @@ class SharedExpenseTile extends StatelessWidget {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
-                color: paidByMe ? const Color(0xFF0d6efd) : Colors.orange[700],
+                color: paidByMe
+                    ? context.semanticColors.shared
+                    : context.semanticColors.dueSoon,
               ),
             ),
           ),
@@ -79,7 +82,7 @@ class SharedExpenseTile extends StatelessWidget {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: Colors.red[700],
+              color: context.semanticColors.expense,
             ),
           ),
           if (onDelete != null) ...[

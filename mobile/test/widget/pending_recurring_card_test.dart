@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:control_gastos_app/core/theme/app_semantic_colors.dart';
 import 'package:control_gastos_app/features/dashboard/widgets/pending_recurring_card.dart';
 
 void main() {
@@ -9,6 +10,7 @@ void main() {
     VoidCallback? onViewAll,
   }) {
     return MaterialApp(
+      theme: ThemeData(extensions: const [AppSemanticColors.light]),
       home: Scaffold(
         body: PendingRecurringCard(
           pending: pending,

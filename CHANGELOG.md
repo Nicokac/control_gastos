@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [Mobile 1.16.1+11] — 2026-10-03
+
+### Fixed
+
+- **Mobile — Colores semánticos hardcodeados en vez de tema (DT-071)**: cada pantalla repetía literales hex (`Colors.red[700]`, `Colors.green[700]`, etc.) para distinguir gastos/ingresos/ahorros/compartidos/vencimientos, en vez de leerlos del tema de la app — mismo origen que causó el bug de color del botón Cafecito (DT-069). Se centralizaron en un `ThemeExtension` (`AppSemanticColors`) con valores que ahora coinciden exactamente con la paleta oficial de categorías (antes eran aproximaciones de Material a esos mismos colores).
+
+---
+
 ## [1.22.0 / Mobile 1.16.0+10] — 2026-10-02
 
 ### Added

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/sensitive_text.dart';
 
@@ -40,7 +41,9 @@ class BalanceCard extends StatelessWidget {
               formatArsString(balance),
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: isPositive ? Colors.green[700] : Colors.red[700],
+                    color: isPositive
+                        ? context.semanticColors.success
+                        : context.semanticColors.danger,
                   ),
             ),
             const SizedBox(height: 16),
@@ -50,7 +53,7 @@ class BalanceCard extends StatelessWidget {
                   child: _StatItem(
                     label: 'Ingresos',
                     amount: formatArsString(totalIncome),
-                    color: Colors.green[700]!,
+                    color: context.semanticColors.income,
                     icon: Icons.arrow_upward,
                     onTap: onTapIncome,
                   ),
@@ -60,7 +63,7 @@ class BalanceCard extends StatelessWidget {
                   child: _StatItem(
                     label: 'Gastos',
                     amount: formatArsString(totalExpenses),
-                    color: Colors.red[700]!,
+                    color: context.semanticColors.expense,
                     icon: Icons.arrow_downward,
                     onTap: onTapExpenses,
                   ),

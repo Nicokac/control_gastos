@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/savings_provider.dart';
 import 'savings_list_screen.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/empty_state.dart';
 
@@ -157,7 +158,9 @@ class _MovementTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDeposit = movement['type'] == 'DEPOSIT';
-    final color = isDeposit ? Colors.green[700]! : Colors.orange[700]!;
+    final color = isDeposit
+        ? context.semanticColors.success
+        : context.semanticColors.dueSoon;
     final amount = double.tryParse(movement['amount']?.toString() ?? '') ?? 0;
     final date = DateTime.tryParse(movement['created_at'] as String? ?? '');
     final description = movement['description'] as String?;

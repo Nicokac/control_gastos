@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/savings_provider.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/empty_state.dart';
 
@@ -70,7 +71,7 @@ class SavingsListScreen extends ConsumerWidget {
                       'Creá una meta para empezar a ahorrar con un objetivo claro',
                   actionLabel: 'Nueva meta',
                   onAction: () => context.push('/savings/new'),
-                  color: const Color(0xFF28a745),
+                  color: context.semanticColors.savings,
                 )
               : ListView.builder(
                   padding: const EdgeInsets.all(16),
@@ -84,7 +85,7 @@ class SavingsListScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/savings/new'),
-        backgroundColor: const Color(0xFF28a745),
+        backgroundColor: context.semanticColors.savings,
         child: const Icon(Icons.add),
       ),
     );
@@ -108,10 +109,10 @@ class _SavingCard extends StatelessWidget {
     }
   }
 
-  Color _statusColor(Color baseColor) {
+  Color _statusColor(BuildContext context, Color baseColor) {
     switch (item['status'] as String? ?? '') {
       case 'COMPLETED':
-        return Colors.green[700]!;
+        return context.semanticColors.success;
       case 'CANCELLED':
         return Colors.grey[600]!;
       default:
@@ -200,7 +201,9 @@ class _SavingCard extends StatelessWidget {
                     ? 'Depósito registrado correctamente'
                     : 'Retiro registrado correctamente'),
           ),
-          backgroundColor: error == null ? Colors.green[700] : Colors.red[700],
+          backgroundColor: error == null
+              ? context.semanticColors.success
+              : context.semanticColors.danger,
         ),
       );
     }
@@ -233,7 +236,7 @@ class _SavingCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = parseSavingColor(item['color'] as String?);
-    final statusColor = _statusColor(color);
+    final statusColor = _statusColor(context, color);
     final progress =
         ((item['progress_percentage'] as num?)?.toDouble() ?? 0) / 100;
     final isActive = (item['status'] as String? ?? '') == 'ACTIVE';

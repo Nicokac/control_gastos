@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/recurring_provider.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/empty_state.dart';
 
@@ -48,14 +49,14 @@ class RecurringListScreen extends ConsumerWidget {
                   subtitle: 'Registrá tus gastos recurrentes para llevar el seguimiento',
                   actionLabel: 'Agregar gasto fijo',
                   onAction: () => context.push('/recurring/new'),
-                  color: Colors.orange[700],
+                  color: context.semanticColors.recurring,
                 )
               : _RecurringContent(items: items, notifier: notifier),
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/recurring/new'),
-        backgroundColor: Colors.orange[700],
+        backgroundColor: context.semanticColors.recurring,
         child: const Icon(Icons.add),
       ),
     );
@@ -132,14 +133,14 @@ class _RecurringTile extends StatelessWidget {
     required this.onEdit,
   });
 
-  Color get _statusColor {
+  Color _statusColor(BuildContext context) {
     switch (item['status'] as String? ?? '') {
       case 'paid':
-        return Colors.green[700]!;
+        return context.semanticColors.onTrack;
       case 'overdue':
-        return Colors.red[700]!;
+        return context.semanticColors.overdue;
       default:
-        return Colors.orange[700]!;
+        return context.semanticColors.dueSoon;
     }
   }
 
@@ -237,8 +238,9 @@ class _RecurringTile extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(error ?? 'Pago registrado correctamente'),
-          backgroundColor:
-              error == null ? Colors.green[700] : Colors.red[700],
+          backgroundColor: error == null
+              ? context.semanticColors.success
+              : context.semanticColors.danger,
         ),
       );
     }
@@ -271,7 +273,9 @@ class _RecurringTile extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(error ?? 'Pago revertido'),
-          backgroundColor: error == null ? Colors.orange[700] : Colors.red[700],
+          backgroundColor: error == null
+              ? context.semanticColors.dueSoon
+              : context.semanticColors.danger,
         ),
       );
     }
@@ -347,14 +351,14 @@ class _RecurringTile extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: _statusColor.withValues(alpha: 0.1),
+                  color: _statusColor(context).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   _statusLabel,
                   style: TextStyle(
                       fontSize: 10,
-                      color: _statusColor,
+                      color: _statusColor(context),
                       fontWeight: FontWeight.bold),
                 ),
               ),

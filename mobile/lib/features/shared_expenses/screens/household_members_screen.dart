@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/shared_expense_provider.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 
 class HouseholdMembersScreen extends ConsumerStatefulWidget {
   const HouseholdMembersScreen({super.key});
@@ -161,14 +162,14 @@ class _HouseholdMembersScreenState
                   final member = members[index] as Map<String, dynamic>;
                   return ListTile(
                     leading: CircleAvatar(
-                      backgroundColor:
-                          const Color(0xFF0d6efd).withValues(alpha: 0.15),
+                      backgroundColor: context.semanticColors.shared
+                          .withValues(alpha: 0.15),
                       child: Text(
                         (member['name'] as String)
                             .substring(0, 1)
                             .toUpperCase(),
                         style: TextStyle(
-                          color: const Color(0xFF0d6efd),
+                          color: context.semanticColors.shared,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -185,7 +186,7 @@ class _HouseholdMembersScreenState
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddDialog,
-        backgroundColor: const Color(0xFF0d6efd),
+        backgroundColor: context.semanticColors.shared,
         child: const Icon(Icons.person_add),
       ),
     );

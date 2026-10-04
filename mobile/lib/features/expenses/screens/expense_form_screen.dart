@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/expense_provider.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/section_label.dart';
 
@@ -203,7 +204,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
                 prefixText: '\$ ',
                 border: const OutlineInputBorder(),
                 filled: true,
-                fillColor: Colors.red.withValues(alpha: 0.05),
+                fillColor: context.semanticColors.expense.withValues(alpha: 0.05),
               ),
               validator: (v) {
                 if (v == null || v.isEmpty) return 'Ingresá el monto';
@@ -323,7 +324,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
                       Text(
                         'Este grupo todavía no tiene subcategorías. '
                         'Creá una desde Categorías para poder usarla acá.',
-                        style: TextStyle(color: Colors.red[700], fontSize: 13),
+                        style: TextStyle(color: context.semanticColors.expense, fontSize: 13),
                       ),
                     ],
                     if (_groupId != null && subcats.isNotEmpty) ...[

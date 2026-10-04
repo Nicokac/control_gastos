@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/providers/theme_provider.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -58,7 +59,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(ok ? 'Perfil actualizado' : 'Error al guardar'),
-          backgroundColor: ok ? Colors.green[700] : Colors.red[700],
+          backgroundColor: ok
+              ? context.semanticColors.success
+              : context.semanticColors.danger,
         ),
       );
     }

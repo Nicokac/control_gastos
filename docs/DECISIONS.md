@@ -1076,6 +1076,40 @@ Validada con 3 test cases representativos (fix mobile puro, feature web+mobile, 
 
 ---
 
+### DT-071 — Mobile: colores semánticos hardcodeados en vez de tema
+
+**Estado:** ✅ Resuelto
+
+Revisión de las 18 pantallas de la app mobile con las skills `design-system-structure`, `ui-states-and-feedback`, `adaptive-layout` y `accessibility-as-code` (plugin `flutter@flutter-skills`, ver DT-070). Hallazgo de mayor repetición: `app.dart` define `ColorScheme.fromSeed(seedColor: Color(0xFF0d6efd))`, pero casi ninguna pantalla lo consume. En su lugar, cada archivo repetía literales hex para la temática de cada tipo de dato: `Colors.red[700]`/`Colors.red.withValues(alpha: 0.05)` (gastos), `Colors.green[700]` (ingresos), `Colors.orange[700]` (pendientes/vencidos), `Color(0xFF0d6efd)` (compartidos), `Color(0xFF28a745)` (ahorros). Confirmado en 21 archivos (14 pantallas + 7 widgets compartidos).
+
+**Why:** mismo patrón de bug que causó DT-069 (color de marca hardcodeado mal en `about_screen.dart`) — sin una fuente única de verdad, cada pantalla puede divergir del resto o de la web sin que se note hasta que alguien lo reporta.
+
+**Resolución:** se creó `mobile/lib/core/theme/app_semantic_colors.dart`, un `ThemeExtension<AppSemanticColors>` registrado en `_lightTheme`/`_darkTheme` de `app.dart`, con slots separados por tipo de uso (decisión tomada explícitamente para no mezclar significados que hoy comparten el mismo hex por casualidad):
+
+- **Tipo de dato:** `expense`, `income`, `savings`, `shared`, `recurring`
+- **Resultado de una acción:** `success`, `danger` (snackbars de éxito/error genéricos, antes mezclados con los colores de ingreso/gasto)
+- **Urgencia de vencimiento:** `overdue`, `dueSoon`, `onTrack` (antes mezclados con los mismos verdes/rojos/naranjas)
+
+Los valores usan la paleta real del proyecto (`#dc3545`, `#28a745`, `#fd7e14`, `#0d6efd` — `CATEGORY_COLOR_CHOICES`) en vez de los `Colors.red[700]`/`Colors.green[700]` de Material que se usaban antes, lo que de paso corrige pequeñas diferencias de tono contra la web. Se migraron las 21 pantallas/widgets detectadas, accediendo a los colores vía `context.semanticColors.<slot>` (extensión `AppSemanticColorsX` sobre `BuildContext`). Dos casos sin slot exacto (depósito/retiro en `saving_detail_screen.dart`, pago/reversión en `recurring_list_screen.dart`) se resolvieron reusando `success`/`dueSoon` en vez de crear slots de un solo uso.
+
+Se actualizaron `balance_card_test.dart` y `pending_recurring_card_test.dart` (fallaban porque el `MaterialApp` de prueba no registraba la extensión) agregando `theme: ThemeData(extensions: const [AppSemanticColors.light])`. Verificado con `flutter analyze` (sin issues nuevos) y `flutter test` (mismo resultado que el baseline: 40 pasan / 12 fallan por un problema de aislamiento entre archivos de test preexistente, no relacionado a este cambio — pendiente de investigar aparte).
+
+Los colores de "gasto"/"ingreso" en textos de error/advertencia puntuales (ej. el aviso de "este grupo no tiene subcategorías" en los formularios) se dejaron mapeados al slot de tipo de dato correspondiente por consistencia visual del formulario, no porque sean semánticamente un error.
+
+---
+
+### DT-072 — Mobile: errores de red mostrados sin mapear (`e.toString()` crudo)
+
+**Estado:** ⏳ Pendiente
+
+Mismo origen que DT-071 (revisión con las 4 skills de `flutter@flutter-skills`). Segundo hallazgo de mayor repetición: cuando un `AsyncValue`/`FutureBuilder` cae en estado de error, la pantalla renderiza el mensaje de la excepción directo (`Text('Error: $e')` o equivalente) en vez de un mensaje mapeado y amigable. Confirmado en 13 de las 18 pantallas (`categories_screen`, `expense_form_screen`, `expense_list_screen`, `income_form_screen`, `income_list_screen`, `recurring_form_screen`, `recurring_list_screen`, `saving_detail_screen`, `savings_list_screen`, `settings_screen`, `shared_expense_form_screen`, `shared_expense_list_screen`, `household_members_screen`). Además, varios de estos casos (`expense_form_screen`, `income_form_screen`, `recurring_form_screen`, `shared_expense_form_screen`, `settings_screen`) no ofrecen ninguna acción de reintento junto al error.
+
+**Why:** el texto de una excepción (`SocketException`, `DioException`, etc.) es ruido técnico en inglés que no le dice nada al usuario final sobre qué pasó ni qué puede hacer — y si el texto de la excepción cambia (ej. al actualizar una librería), cambia la UX sin que nadie lo note.
+
+**Resolución propuesta:** widget compartido `ErrorStateView(error, onRetry)` (mismo criterio que el `EmptyState` ya existente en `core/widgets/`) que mapee el error a un mensaje genérico amigable ("No pudimos cargar esto. Probá de nuevo.") con botón de reintento, ocultando el detalle técnico de la excepción salvo en modo debug.
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.

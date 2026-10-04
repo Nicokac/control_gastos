@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/formatters.dart';
 
 class ExpenseTile extends StatelessWidget {
@@ -54,7 +55,7 @@ class ExpenseTile extends StatelessWidget {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: Colors.red[700],
+              color: context.semanticColors.expense,
             ),
           ),
           if (onDelete != null) ...[

@@ -332,3 +332,5 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-10-02 | Fase 4 | Aviso de novedades al entrar al dashboard — `AlertDialog` comparando versión contra `shared_preferences` (DT-068) |
 | 2026-10-02 | Fix | Color del botón "Invitame un Cafecito" corregido — estaba en naranja (`#FF5C00`) en vez del violeta de marca `#7C64BF` (DT-069) |
 | 2026-10-02 | Fase 5 | Bump versión mobile a 1.16.0+10 |
+| 2026-10-03 | Fix | Colores semánticos centralizados en `ThemeExtension` (`AppSemanticColors`) — 21 archivos usaban literales hex repetidos para gastos/ingresos/ahorros/compartidos/vencimientos en vez de leer del tema (DT-071) |
+| 2026-10-03 | Fase 5 | Bump versión mobile a 1.16.1+11 |

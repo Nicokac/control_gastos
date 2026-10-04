@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/sensitive_text.dart';
 
@@ -59,14 +60,14 @@ class PendingRecurringCard extends StatelessWidget {
               children: [
                 _SummaryChip(
                   label: '$paid pagados',
-                  color: Colors.green[700]!,
+                  color: context.semanticColors.onTrack,
                   icon: Icons.check_circle_outline,
                 ),
                 const SizedBox(width: 8),
                 if (pendingCount > 0)
                   _SummaryChip(
                     label: '$pendingCount pendientes',
-                    color: Colors.orange[700]!,
+                    color: context.semanticColors.dueSoon,
                     icon: Icons.schedule,
                   ),
                 if (pendingCount > 0 && overdueCount > 0)
@@ -74,7 +75,7 @@ class PendingRecurringCard extends StatelessWidget {
                 if (overdueCount > 0)
                   _SummaryChip(
                     label: '$overdueCount vencidos',
-                    color: Colors.red[700]!,
+                    color: context.semanticColors.overdue,
                     icon: Icons.error_outline,
                   ),
               ],
@@ -163,11 +164,11 @@ class _RecurringRow extends StatelessWidget {
   final Map<String, dynamic> item;
   const _RecurringRow({required this.item});
 
-  Color _rowColor() {
+  Color _rowColor(BuildContext context) {
     final isOverdue = item['status'] == 'overdue';
     final days = item['days_until_due'] as int?;
-    if (isOverdue) return Colors.red[700]!;
-    if (days != null && days <= 3) return Colors.orange[700]!;
+    if (isOverdue) return context.semanticColors.overdue;
+    if (days != null && days <= 3) return context.semanticColors.dueSoon;
     return Colors.grey[600]!;
   }
 
@@ -184,7 +185,7 @@ class _RecurringRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = _rowColor();
+    final color = _rowColor(context);
     final amount = item['last_amount'] != null
         ? double.tryParse(item['last_amount'] as String)
         : null;

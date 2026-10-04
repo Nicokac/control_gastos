@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:control_gastos_app/core/theme/app_semantic_colors.dart';
 import 'package:control_gastos_app/features/dashboard/widgets/balance_card.dart';
 
 void main() {
@@ -11,6 +12,7 @@ void main() {
     VoidCallback? onTapExpenses,
   }) {
     return MaterialApp(
+      theme: ThemeData(extensions: const [AppSemanticColors.light]),
       home: Scaffold(
         body: BalanceCard(
           totalIncome: income,
@@ -35,7 +37,7 @@ void main() {
       expect(balanceText, findsWidgets);
 
       final richText = tester.widget<Text>(balanceText.first);
-      expect(richText.style?.color, equals(Colors.green[700]));
+      expect(richText.style?.color, equals(AppSemanticColors.light.success));
     });
 
     testWidgets('muestra balance negativo en rojo', (tester) async {
@@ -49,7 +51,7 @@ void main() {
       expect(balanceText, findsWidgets);
 
       final richText = tester.widget<Text>(balanceText.first);
-      expect(richText.style?.color, equals(Colors.red[700]));
+      expect(richText.style?.color, equals(AppSemanticColors.light.danger));
     });
 
     testWidgets('muestra labels de Ingresos y Gastos', (tester) async {

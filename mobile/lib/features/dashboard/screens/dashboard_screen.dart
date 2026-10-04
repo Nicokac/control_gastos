@@ -9,6 +9,7 @@ import '../widgets/recent_transactions_list.dart';
 import '../widgets/pending_recurring_card.dart';
 import '../widgets/dashboard_skeleton.dart';
 import '../widgets/last_updated_label.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/widgets/offline_banner.dart';
 import '../../../core/widgets/sensitive_text.dart';
 import '../../../core/providers/amounts_visibility_provider.dart';
@@ -164,8 +165,8 @@ class _DashboardContent extends StatelessWidget {
                 icon: const Icon(Icons.people, size: 16),
                 label: const Text('Compartidos'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF0d6efd),
-                  side: const BorderSide(color: Color(0xFF0d6efd)),
+                  foregroundColor: context.semanticColors.shared,
+                  side: BorderSide(color: context.semanticColors.shared),
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -180,8 +181,8 @@ class _DashboardContent extends StatelessWidget {
                 icon: const Icon(Icons.savings_outlined, size: 16),
                 label: const Text('Ahorros'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF28a745),
-                  side: const BorderSide(color: Color(0xFF28a745)),
+                  foregroundColor: context.semanticColors.savings,
+                  side: BorderSide(color: context.semanticColors.savings),
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -242,7 +243,9 @@ class _ProjectionBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final balanceValue = double.tryParse(projectedBalance) ?? 0;
     final isPositive = balanceValue >= 0;
-    final color = isPositive ? Colors.green[700]! : Colors.red[700]!;
+    final color = isPositive
+        ? context.semanticColors.success
+        : context.semanticColors.danger;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -308,8 +311,9 @@ class _NextMonthCommitmentCard extends ConsumerWidget {
         data['next_month_committed_unestimated'] as List<dynamic>? ?? [];
 
     final freeBalanceValue = double.tryParse(freeBalance) ?? 0;
-    final freeBalanceColor =
-        freeBalanceValue >= 0 ? Colors.green[700]! : Colors.red[700]!;
+    final freeBalanceColor = freeBalanceValue >= 0
+        ? context.semanticColors.success
+        : context.semanticColors.danger;
 
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

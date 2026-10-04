@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/income_provider.dart';
 import '../widgets/income_tile.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/empty_state.dart';
 
@@ -56,7 +57,7 @@ class IncomeListScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/income/new'),
-        backgroundColor: Colors.green[700],
+        backgroundColor: context.semanticColors.income,
         child: const Icon(Icons.add),
       ),
     );
@@ -87,7 +88,7 @@ class _IncomeListContent extends StatelessWidget {
         if (incomeList.isNotEmpty)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: Colors.green.withValues(alpha: 0.05),
+            color: context.semanticColors.income.withValues(alpha: 0.05),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -98,7 +99,7 @@ class _IncomeListContent extends StatelessWidget {
                 Text(
                   'Total: ${formatArs(_total)}',
                   style: TextStyle(
-                    color: Colors.green[700],
+                    color: context.semanticColors.income,
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
                   ),
@@ -114,7 +115,7 @@ class _IncomeListContent extends StatelessWidget {
                   subtitle: 'Tocá + para registrar tu primer ingreso',
                   actionLabel: 'Nuevo ingreso',
                   onAction: () => context.push('/income/new'),
-                  color: Colors.green[700],
+                  color: context.semanticColors.income,
                 )
               : ListView.separated(
                   itemCount: incomeList.length,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/income_provider.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/section_label.dart';
 
@@ -194,7 +195,7 @@ class _IncomeFormScreenState extends ConsumerState<IncomeFormScreen> {
                 prefixText: '\$ ',
                 border: const OutlineInputBorder(),
                 filled: true,
-                fillColor: Colors.green.withValues(alpha: 0.05),
+                fillColor: context.semanticColors.income.withValues(alpha: 0.05),
               ),
               validator: (v) {
                 if (v == null || v.isEmpty) return 'Ingresá el monto';
@@ -378,7 +379,7 @@ class _IncomeFormScreenState extends ConsumerState<IncomeFormScreen> {
               : const Icon(Icons.check),
           label: Text(_isEditing ? 'Guardar cambios' : 'Guardar ingreso'),
           style: FilledButton.styleFrom(
-            backgroundColor: const Color(0xFF28a745),
+            backgroundColor: context.semanticColors.income,
             padding: const EdgeInsets.symmetric(vertical: 14),
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12)),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/savings_provider.dart';
 import 'savings_list_screen.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/section_label.dart';
 
@@ -147,7 +148,7 @@ class _SavingFormScreenState extends ConsumerState<SavingFormScreen> {
                 prefixText: '\$ ',
                 border: const OutlineInputBorder(),
                 filled: true,
-                fillColor: const Color(0xFF28a745).withValues(alpha: 0.05),
+                fillColor: context.semanticColors.savings.withValues(alpha: 0.05),
               ),
               validator: (v) {
                 if (v == null || v.isEmpty) return 'Ingresá el monto objetivo';
@@ -294,7 +295,7 @@ class _SavingFormScreenState extends ConsumerState<SavingFormScreen> {
               : const Icon(Icons.check),
           label: Text(_isEditing ? 'Guardar cambios' : 'Crear meta'),
           style: FilledButton.styleFrom(
-            backgroundColor: const Color(0xFF28a745),
+            backgroundColor: context.semanticColors.savings,
             padding: const EdgeInsets.symmetric(vertical: 14),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),

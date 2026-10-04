@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/shared_expense_provider.dart';
 import '../widgets/shared_expense_tile.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/empty_state.dart';
 
@@ -95,7 +96,7 @@ class SharedExpenseListScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _goToNewExpense(context, ref),
-        backgroundColor: const Color(0xFF0d6efd),
+        backgroundColor: context.semanticColors.shared,
         child: const Icon(Icons.add),
       ),
     );
@@ -150,7 +151,7 @@ class _SharedExpenseContent extends StatelessWidget {
                   subtitle: 'Tocá + para registrar un gasto del hogar',
                   actionLabel: 'Nuevo gasto compartido',
                   onAction: onNew,
-                  color: const Color(0xFF0d6efd),
+                  color: context.semanticColors.shared,
                 )
               : ListView.separated(
                   itemCount: expenses.length,
@@ -222,9 +223,10 @@ class _TotalsCard extends StatelessWidget {
       margin: const EdgeInsets.all(12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF0d6efd).withValues(alpha: 0.06),
+        color: context.semanticColors.shared.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF0d6efd).withValues(alpha: 0.2)),
+        border: Border.all(
+            color: context.semanticColors.shared.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -264,7 +266,7 @@ class _TotalsCard extends StatelessWidget {
                   style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: const Color(0xFF0d6efd))),
+                      color: context.semanticColors.shared)),
             ],
           ),
         ],

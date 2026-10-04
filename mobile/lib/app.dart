@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'routing/app_router.dart';
 import 'core/providers/theme_provider.dart';
+import 'core/theme/app_semantic_colors.dart';
 
 class App extends ConsumerWidget {
   const App({super.key});
@@ -37,6 +38,7 @@ final _lightTheme = ThemeData(
     elevation: 2,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
   ),
+  extensions: const [AppSemanticColors.light],
 );
 
 final _darkTheme = ThemeData(
@@ -54,4 +56,5 @@ final _darkTheme = ThemeData(
     elevation: 2,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
   ),
+  extensions: const [AppSemanticColors.dark],
 );

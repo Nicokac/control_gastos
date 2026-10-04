@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/sensitive_text.dart';
 
@@ -170,8 +171,8 @@ class _TransactionTile extends StatelessWidget {
                   fontSize: 13,
                   fontWeight: FontWeight.bold,
                   color: transaction.isExpense
-                      ? Colors.red[700]
-                      : Colors.green[700],
+                      ? context.semanticColors.expense
+                      : context.semanticColors.income,
                 ),
               ),
               Text(

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/expense_provider.dart';
 import '../widgets/expense_tile.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/empty_state.dart';
 
@@ -86,7 +87,7 @@ class _ExpenseListContent extends StatelessWidget {
         if (expenses.isNotEmpty)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: Colors.red.withValues(alpha: 0.05),
+            color: context.semanticColors.expense.withValues(alpha: 0.05),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -97,7 +98,7 @@ class _ExpenseListContent extends StatelessWidget {
                 Text(
                   'Total: ${formatArs(_total)}',
                   style: TextStyle(
-                    color: Colors.red[700],
+                    color: context.semanticColors.expense,
                     fontWeight: FontWeight.bold,
                     fontSize: 13,
                   ),
@@ -113,7 +114,7 @@ class _ExpenseListContent extends StatelessWidget {
                   subtitle: 'Tocá + para registrar tu primer gasto',
                   actionLabel: 'Nuevo gasto',
                   onAction: () => context.push('/expenses/new'),
-                  color: Colors.red[700],
+                  color: context.semanticColors.expense,
                 )
               : ListView.separated(
                   itemCount: expenses.length,

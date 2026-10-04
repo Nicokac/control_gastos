@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/category_icons.dart';
 import '../../expenses/providers/expense_provider.dart';
 import '../../income/providers/income_provider.dart';
@@ -73,7 +74,7 @@ class _CategoriesList extends StatelessWidget {
       children: [
         _SectionHeader(
           title: 'Gastos',
-          color: Colors.red[700]!,
+          color: context.semanticColors.expense,
           onAdd: () => _showCreate(context, null, 'EXPENSE'),
         ),
         ...expenseGroups.map((group) => _GroupTile(
@@ -87,7 +88,7 @@ class _CategoriesList extends StatelessWidget {
         const SizedBox(height: 16),
         _SectionHeader(
           title: 'Ingresos',
-          color: Colors.green[700]!,
+          color: context.semanticColors.income,
           onAdd: () => _showCreate(context, null, 'INCOME'),
         ),
         ...incomeGroups.map((group) => _GroupTile(
@@ -291,7 +292,7 @@ class _SubcatTile extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('No se puede eliminar: tiene gastos asociados'),
-            backgroundColor: Colors.red[700],
+            backgroundColor: context.semanticColors.danger,
           ),
         );
       }
