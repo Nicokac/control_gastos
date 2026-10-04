@@ -342,3 +342,5 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-10-04 | Fase 5 | Bump versión mobile a 1.16.4+14 |
 | 2026-10-04 | Fix | Nombre accesible (`Semantics`) agregado a selectores de color e ícono de categorías y metas de ahorro, para lectores de pantalla (DT-075) |
 | 2026-10-04 | Fase 5 | Bump versión mobile a 1.16.5+15 |
+| 2026-10-04 | Fix | Validación de categoría movida al campo correcto y snackbar redundante eliminado en los 4 formularios de transacciones (DT-076) |
+| 2026-10-04 | Fase 5 | Bump versión mobile a 1.16.6+16 |

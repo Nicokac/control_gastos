@@ -1148,6 +1148,20 @@ Quinto hallazgo de la misma revisión con `flutter@flutter-skills` (ver DT-070 a
 
 ---
 
+### DT-076 — Mobile: validación de categoría duplicada (snackbar + inline) y en el campo equivocado
+
+**Estado:** ✅ Resuelto
+
+Sexto hallazgo de la misma revisión con `flutter@flutter-skills` (ver DT-070 a 075), tabla de superficie de `ui-states-and-feedback` (inline es lo recomendado para validación de formulario, no snackbar). Los 4 formularios de transacciones (`expense_form_screen`, `income_form_screen`, `recurring_form_screen`, `shared_expense_form_screen`) mostraban "Seleccioná una categoría" en un `SnackBar` desde `_submit()`, aun cuando ya existía un `FormField<int>` con `errorText` conectado — validación duplicada por dos canales distintos.
+
+Al revisar el código se encontró un segundo bug, más relevante: el `FormField` que validaba `_categoryId == null` estaba conectado al `errorText` del campo **"Grupo de categoría"**, no al campo **"Categoría"** (son dos selectores visuales distintos cuando el grupo tiene subcategorías). Si el usuario elegía bien el grupo pero no la subcategoría, el mensaje de error aparecía bajo "Grupo" — un campo ya correctamente completado — en vez de bajo "Categoría", que es el que realmente faltaba.
+
+**Why:** un snackbar es efímero y puede perderse si el usuario no lo ve a tiempo, mientras que el `errorText` inline queda visible hasta que se corrige — mostrar ambos para el mismo error es ruido, y mostrar el error en el campo equivocado directamente confunde sobre qué hay que corregir.
+
+**Resolución:** en los 4 formularios, el `FormField` de "Grupo de categoría" ahora valida `_groupId == null` (su propio campo). Se envolvió el bloque del selector de "Categoría" (el `InkWell`/`InputDecorator` que antes no tenía validación propia) en un nuevo `FormField<int>` que valida `_categoryId == null` y conecta su `errorText`. Se eliminó el chequeo manual + `SnackBar` redundante en `_submit()` de los 4 formularios, dejando solo `if (_categoryId == null) return;` como guarda silenciosa para el caso en que el grupo no tenga subcategorías (ahí no hay campo de "Categoría" visible al que atribuir el error, porque el grupo mismo se usa como categoría).
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.

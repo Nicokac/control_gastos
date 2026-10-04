@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [Mobile 1.16.6+16] — 2026-10-04
+
+### Fixed
+
+- **Mobile — Validación de categoría duplicada y en el campo equivocado (DT-076)**: los 4 formularios de transacciones (gastos, ingresos, gastos fijos, gastos compartidos) mostraban "Seleccioná una categoría" en un snackbar aunque ya había un error inline, y ese error inline aparecía bajo el campo "Grupo" en vez de "Categoría" cuando el grupo ya estaba bien elegido. Se movió la validación al campo correcto y se eliminó el snackbar redundante.
+
+---
+
 ## [Mobile 1.16.5+15] — 2026-10-04
 
 ### Fixed

@@ -142,12 +142,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_categoryId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Seleccioná una categoría')),
-      );
-      return;
-    }
+    if (_categoryId == null) return;
 
     setState(() => _loading = true);
 
@@ -288,9 +283,8 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
                   children: [
                     FormField<int>(
                       initialValue: _groupId,
-                      validator: (_) => _categoryId == null
-                          ? 'Seleccioná una categoría'
-                          : null,
+                      validator: (_) =>
+                          _groupId == null ? 'Seleccioná un grupo' : null,
                       builder: (field) => InkWell(
                         onTap: () => _pickFromBottomSheet(
                           context: context,
@@ -334,30 +328,37 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
                     ],
                     if (_groupId != null && subcats.isNotEmpty) ...[
                       const SizedBox(height: 16),
-                      InkWell(
-                        onTap: () => _pickFromBottomSheet(
-                          context: context,
-                          title: 'Categoría',
-                          items: subcats,
-                          selectedId: _categoryId,
-                          onSelected: (id) =>
-                              setState(() => _categoryId = id),
-                        ),
-                        child: InputDecorator(
-                          decoration: InputDecoration(
-                            labelText: 'Categoría *',
-                            border: const OutlineInputBorder(),
-                            prefixIcon: Icon(Icons.label_outline,
-                                color: catName == null
-                                    ? Colors.grey[500]
-                                    : catColor),
-                            suffixIcon: const Icon(Icons.arrow_drop_down),
+                      FormField<int>(
+                        initialValue: _categoryId,
+                        validator: (_) => _categoryId == null
+                            ? 'Seleccioná una categoría'
+                            : null,
+                        builder: (field) => InkWell(
+                          onTap: () => _pickFromBottomSheet(
+                            context: context,
+                            title: 'Categoría',
+                            items: subcats,
+                            selectedId: _categoryId,
+                            onSelected: (id) =>
+                                setState(() => _categoryId = id),
                           ),
-                          child: Text(
-                            catName ?? 'Seleccioná una categoría',
-                            style: TextStyle(
-                              color:
-                                  catName == null ? Colors.grey[500] : null,
+                          child: InputDecorator(
+                            decoration: InputDecoration(
+                              labelText: 'Categoría *',
+                              border: const OutlineInputBorder(),
+                              errorText: field.errorText,
+                              prefixIcon: Icon(Icons.label_outline,
+                                  color: catName == null
+                                      ? Colors.grey[500]
+                                      : catColor),
+                              suffixIcon: const Icon(Icons.arrow_drop_down),
+                            ),
+                            child: Text(
+                              catName ?? 'Seleccioná una categoría',
+                              style: TextStyle(
+                                color:
+                                    catName == null ? Colors.grey[500] : null,
+                              ),
                             ),
                           ),
                         ),
