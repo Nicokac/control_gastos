@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/expense_chart_view_provider.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/sensitive_text.dart';
 
@@ -11,6 +12,8 @@ class ExpenseChart extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final viewMode = ref.watch(expenseChartViewProvider);
+
     if (expensesByCategory.isEmpty) {
       return Card(
         elevation: 2,
@@ -73,9 +76,15 @@ class ExpenseChart extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Gastos por categoría',
-              style: Theme.of(context).textTheme.titleMedium,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Gastos por categoría',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                _ViewModeToggle(viewMode: viewMode, ref: ref),
+              ],
             ),
             const SizedBox(height: 20),
             Row(
@@ -113,13 +122,21 @@ class ExpenseChart extends ConsumerWidget {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            Text(
-                              '${pct.toStringAsFixed(0)}%',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                            viewMode == ExpenseChartViewMode.percentage
+                                ? Text(
+                                    '${pct.toStringAsFixed(0)}%',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  )
+                                : SensitiveText(
+                                    formatArs(s.value),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                           ],
                         ),
                       );
@@ -153,6 +170,37 @@ class ExpenseChart extends ConsumerWidget {
   Color _parseColor(String hex) {
     final clean = hex.replaceFirst('#', '');
     return Color(int.parse('FF$clean', radix: 16));
+  }
+}
+
+class _ViewModeToggle extends StatelessWidget {
+  final ExpenseChartViewMode viewMode;
+  final WidgetRef ref;
+
+  const _ViewModeToggle({required this.viewMode, required this.ref});
+
+  @override
+  Widget build(BuildContext context) {
+    return SegmentedButton<ExpenseChartViewMode>(
+      style: const ButtonStyle(
+        visualDensity: VisualDensity.compact,
+        padding: WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 8)),
+      ),
+      segments: const [
+        ButtonSegment(
+          value: ExpenseChartViewMode.percentage,
+          icon: Icon(Icons.percent, size: 16),
+        ),
+        ButtonSegment(
+          value: ExpenseChartViewMode.amount,
+          icon: Icon(Icons.attach_money, size: 16),
+        ),
+      ],
+      selected: {viewMode},
+      showSelectedIcon: false,
+      onSelectionChanged: (s) =>
+          ref.read(expenseChartViewProvider.notifier).setMode(s.first),
+    );
   }
 }
 
