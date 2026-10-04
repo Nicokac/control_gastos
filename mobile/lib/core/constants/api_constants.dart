@@ -8,6 +8,10 @@ class ApiConstants {
   static const String latestReleaseSummary =
       'Mejoras de categorías en Ingresos y Gastos, y correcciones varias.';
   static const String websiteUrl = 'https://control-gastos-fr8z.onrender.com';
+  static const String termsUrl =
+      'https://control-gastos-fr8z.onrender.com/terms/';
+  static const String privacyUrl =
+      'https://control-gastos-fr8z.onrender.com/privacy/';
   static const String developerName = 'Nicolás Kachuk';
   static const String developerEmail = 'kachuknm@gmail.com';
   static const String cafesitoUrl = 'https://cafecito.app/niicok';

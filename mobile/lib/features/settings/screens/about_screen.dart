@@ -19,6 +19,16 @@ class AboutScreen extends StatelessWidget {
     mode: LaunchMode.externalApplication,
   );
 
+  Future<void> _openTerms() => launchUrl(
+    Uri.parse(ApiConstants.termsUrl),
+    mode: LaunchMode.externalApplication,
+  );
+
+  Future<void> _openPrivacy() => launchUrl(
+    Uri.parse(ApiConstants.privacyUrl),
+    mode: LaunchMode.externalApplication,
+  );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,6 +97,18 @@ class AboutScreen extends StatelessWidget {
                   title: const Text('Contacto'),
                   subtitle: const Text(ApiConstants.developerEmail),
                   onTap: _sendEmail,
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.description_outlined),
+                  title: const Text('Términos y condiciones'),
+                  onTap: _openTerms,
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.privacy_tip_outlined),
+                  title: const Text('Política de privacidad'),
+                  onTap: _openPrivacy,
                 ),
               ],
             ),
