@@ -13,6 +13,11 @@ class SettingsScreen extends ConsumerStatefulWidget {
   ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
+const _inputBorder = OutlineInputBorder(
+  borderRadius: BorderRadius.all(Radius.circular(12)),
+);
+const _inputFontSize = 14.0;
+
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final _formKey = GlobalKey<FormState>();
   final _firstNameCtrl = TextEditingController();
@@ -144,12 +149,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 InputDecorator(
                   decoration: const InputDecoration(
                     labelText: 'Email',
-                    border: OutlineInputBorder(),
+                    border: _inputBorder,
                     suffixIcon: Icon(Icons.lock_outline, size: 16),
                   ),
                   child: Text(
                     user['email'] as String? ?? '',
-                    style: const TextStyle(color: Colors.grey),
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: _inputFontSize,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -157,9 +165,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // Nombre
                 TextFormField(
                   controller: _firstNameCtrl,
+                  style: const TextStyle(fontSize: _inputFontSize),
                   decoration: const InputDecoration(
                     labelText: 'Nombre',
-                    border: OutlineInputBorder(),
+                    border: _inputBorder,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -167,9 +176,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // Apellido
                 TextFormField(
                   controller: _lastNameCtrl,
+                  style: const TextStyle(fontSize: _inputFontSize),
                   decoration: const InputDecoration(
                     labelText: 'Apellido',
-                    border: OutlineInputBorder(),
+                    border: _inputBorder,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -177,9 +187,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // Username
                 TextFormField(
                   controller: _usernameCtrl,
+                  style: const TextStyle(fontSize: _inputFontSize),
                   decoration: const InputDecoration(
                     labelText: 'Nombre de usuario',
-                    border: OutlineInputBorder(),
+                    border: _inputBorder,
                   ),
                   validator: (v) => (v == null || v.trim().isEmpty)
                       ? 'El usuario no puede estar vacío'
@@ -193,9 +204,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // Moneda por defecto
                 DropdownButtonFormField<String>(
                   value: _defaultCurrency,
+                  style: const TextStyle(fontSize: _inputFontSize),
                   decoration: const InputDecoration(
                     labelText: 'Moneda por defecto',
-                    border: OutlineInputBorder(),
+                    border: _inputBorder,
                   ),
                   items: const [
                     DropdownMenuItem(
@@ -215,9 +227,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // Día de inicio del mes financiero
                 DropdownButtonFormField<int>(
                   value: _monthStartDay,
+                  style: const TextStyle(fontSize: _inputFontSize),
                   decoration: const InputDecoration(
                     labelText: 'Inicio del mes financiero',
-                    border: OutlineInputBorder(),
+                    border: _inputBorder,
                   ),
                   items: List.generate(28, (i) => i + 1)
                       .map(
