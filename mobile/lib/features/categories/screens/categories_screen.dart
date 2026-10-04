@@ -453,20 +453,26 @@ class _CreateCategorySheetState extends ConsumerState<_CreateCategorySheet> {
               final selected = _color == hex;
               return GestureDetector(
                 onTap: () => setState(() => _color = hex),
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: c,
-                    shape: BoxShape.circle,
-                    border: selected
-                        ? Border.all(color: Colors.black, width: 3)
-                        : null,
+                child: SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: Center(
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: c,
+                        shape: BoxShape.circle,
+                        border: selected
+                            ? Border.all(color: Colors.black, width: 3)
+                            : null,
+                      ),
+                      child: selected
+                          ? const Icon(Icons.check,
+                              color: Colors.white, size: 16)
+                          : null,
+                    ),
                   ),
-                  child: selected
-                      ? const Icon(Icons.check,
-                          color: Colors.white, size: 16)
-                      : null,
                 ),
               );
             }).toList(),
@@ -493,23 +499,25 @@ class _CreateCategorySheetState extends ConsumerState<_CreateCategorySheet> {
                     int.parse('FF${_color.replaceFirst('#', '')}', radix: 16));
                 return GestureDetector(
                   onTap: () => setState(() => _icon = name),
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: selected
-                          ? c.withValues(alpha: 0.2)
-                          : Colors.grey.withValues(alpha: 0.07),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: selected ? c : Colors.transparent,
-                        width: 2,
+                  child: Center(
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: selected
+                            ? c.withValues(alpha: 0.2)
+                            : Colors.grey.withValues(alpha: 0.07),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: selected ? c : Colors.transparent,
+                          width: 2,
+                        ),
                       ),
-                    ),
-                    child: Icon(
-                      categoryIconFromName(name),
-                      color: selected ? c : Colors.grey[600],
-                      size: 20,
+                      child: Icon(
+                        categoryIconFromName(name),
+                        color: selected ? c : Colors.grey[600],
+                        size: 20,
+                      ),
                     ),
                   ),
                 );

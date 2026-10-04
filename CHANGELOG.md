@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [Mobile 1.16.4+14] — 2026-10-04
+
+### Fixed
+
+- **Mobile — Targets táctiles menores a 44x44px (DT-074)**: los selectores de color de categorías y metas de ahorro (círculos de 32-36px) y el selector de ícono de categorías eran difíciles de tocar con precisión. Se amplió el área táctil a 44x44px sin cambiar el tamaño visual.
+
+---
+
 ## [Mobile 1.16.3+13] — 2026-10-03
 
 ### Changed

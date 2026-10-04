@@ -338,3 +338,5 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-10-03 | Fase 5 | Bump versión mobile a 1.16.2+12 |
 | 2026-10-03 | Fase 5 | Skeletons generalizados a listas (gastos, ingresos, fijos, ahorros, compartidos, miembros) — `ListSkeleton` reusando los bloques de `DashboardSkeleton` (DT-073) |
 | 2026-10-03 | Fase 5 | Bump versión mobile a 1.16.3+13 |
+| 2026-10-04 | Fix | Área táctil ampliada a 44x44px en selectores de color/ícono de categorías y metas de ahorro (DT-074) |
+| 2026-10-04 | Fase 5 | Bump versión mobile a 1.16.4+14 |

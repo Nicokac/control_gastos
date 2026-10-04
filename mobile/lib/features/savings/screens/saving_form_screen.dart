@@ -311,19 +311,26 @@ class _SavingFormScreenState extends ConsumerState<SavingFormScreen> {
     final selected = _color == hex;
 
     return InkWell(
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(22),
       onTap: () => setState(() => _color = hex),
-      child: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-          border: selected ? Border.all(color: Colors.black87, width: 2) : null,
+      child: SizedBox(
+        width: 44,
+        height: 44,
+        child: Center(
+          child: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+              border:
+                  selected ? Border.all(color: Colors.black87, width: 2) : null,
+            ),
+            child: selected
+                ? const Icon(Icons.check, color: Colors.white, size: 18)
+                : null,
+          ),
         ),
-        child: selected
-            ? const Icon(Icons.check, color: Colors.white, size: 18)
-            : null,
       ),
     );
   }

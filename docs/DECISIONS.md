@@ -1124,6 +1124,18 @@ Tercer hallazgo de mayor repetición de la misma revisión con `flutter@flutter-
 
 ---
 
+### DT-074 — Mobile: targets táctiles menores a 44x44px en selectores de color/ícono
+
+**Estado:** ✅ Resuelto
+
+Cuarto hallazgo de la revisión con `flutter@flutter-skills` (ver DT-070/071/072/073), regla 8 de `accessibility-as-code`: todo elemento interactivo debe tener un área táctil mínima de 44x44px, aunque el elemento visual sea más chico. Confirmado en `categories_screen.dart` (círculos de color 32x32 y celdas de ícono con `GestureDetector` colapsado al tamaño visual de 40x40 en vez de ocupar la celda del grid) y `saving_form_screen.dart` (círculos de color 36x36 con `InkWell`).
+
+**Why:** un círculo de 32-36px es un blanco difícil de tocar con precisión, sobre todo para usuarios con poca destreza motriz o pantallas grandes con dedos gruesos — el estándar de 44x44 (Apple HIG / Material) existe justamente para evitar toques fallidos en elementos pequeños agrupados.
+
+**Resolución:** en los 3 selectores de color (`categories_screen` grupo/subcategoría, `saving_form_screen`), se envolvió el círculo visual en un `SizedBox(width: 44, height: 44)` + `Center`, manteniendo el tamaño visual del círculo sin cambios — solo crece el área táctil, no el diseño. En el selector de ícono de `categories_screen` (dentro de un `GridView` de celdas ~48x48), el `GestureDetector` envolvía directamente el `Container` de 40x40 sin `Center`, por lo que colapsaba a ese tamaño en vez de ocupar la celda completa del grid — se agregó `Center` para que el `GestureDetector` se estire a toda la celda disponible. El selector de íconos de `saving_form_screen` (72px de ancho + ícono + texto + padding) ya superaba los 44px de alto real sumando su contenido, no requirió cambios.
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.
