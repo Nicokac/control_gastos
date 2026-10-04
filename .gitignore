@@ -56,6 +56,7 @@ resumen_*.pdf
 
 # Flutter mobile app (versionado en su propio repo o ignorado)
 mobile/build/
+mobile/android/build/
 mobile/.dart_tool/
 
 # Workspace de evaluación de skills (temporal, no versionar)

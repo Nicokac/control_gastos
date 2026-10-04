@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [Mobile 1.16.7+18] — 2026-10-04
+
+### Fixed
+
+- **Mobile — Versión mostrada en "Acerca de" desincronizada (DT-078)**: la pantalla mostraba una versión hardcodeada que había quedado desactualizada respecto al build real. Ahora se lee directamente del build instalado (`package_info_plus`), por lo que nunca puede volver a desincronizarse.
+
+---
+
 ## [Mobile 1.16.6+16] — 2026-10-04
 
 ### Fixed

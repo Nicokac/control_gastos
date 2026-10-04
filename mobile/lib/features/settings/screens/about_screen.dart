@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/api_constants.dart';
 
@@ -51,9 +52,15 @@ class AboutScreen extends StatelessWidget {
                   ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  'Versión ${ApiConstants.appVersion}',
-                  style: TextStyle(color: Colors.grey[600]),
+                FutureBuilder<PackageInfo>(
+                  future: PackageInfo.fromPlatform(),
+                  builder: (context, snapshot) {
+                    final version = snapshot.data?.version;
+                    return Text(
+                      version == null ? 'Versión…' : 'Versión $version',
+                      style: TextStyle(color: Colors.grey[600]),
+                    );
+                  },
                 ),
               ],
             ),

@@ -344,3 +344,5 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-10-04 | Fase 5 | Bump versión mobile a 1.16.5+15 |
 | 2026-10-04 | Fix | Validación de categoría movida al campo correcto y snackbar redundante eliminado en los 4 formularios de transacciones (DT-076) |
 | 2026-10-04 | Fase 5 | Bump versión mobile a 1.16.6+16 |
+| 2026-10-04 | Fix | Versión en "Acerca de" leída con `package_info_plus` en vez de constante manual desincronizada (DT-078) |
+| 2026-10-04 | Fase 5 | Bump versión mobile a 1.16.7+18 (build 17 descartado por Play Console, ya usado) |

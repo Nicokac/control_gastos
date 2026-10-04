@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/api_constants.dart';
 
@@ -10,7 +11,7 @@ const _kWhatsNewSeenKey = 'whats_new_seen_version';
 Future<void> maybeShowWhatsNewDialog(BuildContext context) async {
   final prefs = await SharedPreferences.getInstance();
   final seen = prefs.getString(_kWhatsNewSeenKey);
-  final current = ApiConstants.appVersion;
+  final current = (await PackageInfo.fromPlatform()).version;
 
   if (seen == current) return;
   if (!context.mounted) return;

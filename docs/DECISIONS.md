@@ -1174,6 +1174,18 @@ Caso borde detectado durante DT-072 pero dejado fuera de esa resolución porque 
 
 ---
 
+### DT-078 — Mobile: `ApiConstants.appVersion` hardcodeada se desincronizó de `pubspec.yaml`
+
+**Estado:** ✅ Resuelto
+
+Durante el release de hoy (DT-071 a 077, 6 bumps de versión: 1.16.0+10 → 1.16.6+17) se detectó que la pantalla "Acerca de" seguía mostrando "Versión 1.16.0" en un dispositivo real, pese a que `pubspec.yaml` ya estaba en 1.16.6. Causa: `about_screen.dart` no leía la versión real del build — usaba `ApiConstants.appVersion`, una constante de texto en `core/constants/api_constants.dart` que había que actualizar a mano en cada bump, y que quedó desactualizada durante toda la sesión (corregida recién al notarlo, fuera del flujo normal de `sync-docs`). `whats_new.dart` (DT-068) también dependía de la misma constante para comparar contra la versión ya vista.
+
+**Why:** es el mismo patrón de fondo que ya motivó DT-071 (colores hardcodeados) — un valor que debería tener una sola fuente de verdad (`pubspec.yaml`) estaba duplicado manualmente en otro archivo, sin nada que verificara la sincronización. Ninguna de las 4 skills de `flutter@flutter-skills` usadas hoy (`ui-states-and-feedback`, `design-system-structure`, `accessibility-as-code`, `adaptive-layout`) tiene jurisdicción sobre esto: analizan patrones de UI en el código, no el proceso de release ni constantes de versión duplicadas entre archivos sin relación estructural visible. La skill `sync-docs` tampoco lo cubre — su alcance es proponer el bump de versión en `pubspec.yaml`/`CHANGELOG.md`/`FLUTTER_ROADMAP.md`, pero nunca fue diseñada para verificar que *otros* archivos que hardcodean la versión (como este) queden sincronizados.
+
+**Resolución:** se agregó la dependencia `package_info_plus` y se eliminó `ApiConstants.appVersion` por completo. `about_screen.dart` ahora lee `PackageInfo.fromPlatform().version` dentro de un `FutureBuilder` (muestra "Versión…" mientras resuelve). `whats_new.dart` usa la misma lectura async para comparar contra la versión ya vista en `shared_preferences` — el formato del string (`version:` de `pubspec.yaml`, sin el build number) es idéntico al que devolvía la constante manual, así que no dispara el popup de novedades de forma espuria a usuarios que ya lo vieron. La pantalla "Acerca de" ya no puede desincronizarse de lo que realmente está compilado, sin depender de que alguien se acuerde de actualizar una constante en cada bump.
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.
