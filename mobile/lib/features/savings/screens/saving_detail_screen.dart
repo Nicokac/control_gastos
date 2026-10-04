@@ -5,6 +5,7 @@ import 'savings_list_screen.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/error_state_view.dart';
 
 class SavingDetailScreen extends ConsumerWidget {
   final Map<String, dynamic> saving;
@@ -116,12 +117,11 @@ class SavingDetailScreen extends ConsumerWidget {
                 padding: EdgeInsets.symmetric(vertical: 32),
                 child: Center(child: CircularProgressIndicator()),
               ),
-              error: (e, _) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 32),
-                child: Text(
-                  'Error cargando movimientos: $e',
-                  style: const TextStyle(color: Colors.red, fontSize: 12),
-                ),
+              error: (e, _) => ErrorStateView(
+                error: e,
+                onRetry: () => ref.invalidate(savingMovementsProvider(id)),
+                message: 'No pudimos cargar el historial.',
+                compact: true,
               ),
               data: (movements) => movements.isEmpty
                   ? const Padding(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/shared_expense_provider.dart';
 import '../../../core/theme/app_semantic_colors.dart';
+import '../../../core/widgets/error_state_view.dart';
 
 class HouseholdMembersScreen extends ConsumerStatefulWidget {
   const HouseholdMembersScreen({super.key});
@@ -119,21 +120,9 @@ class _HouseholdMembersScreenState
       ),
       body: membersAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
-              const SizedBox(height: 12),
-              Text(e.toString(),
-                  style: const TextStyle(color: Colors.grey, fontSize: 12)),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => ref.invalidate(householdMembersProvider),
-                child: const Text('Reintentar'),
-              ),
-            ],
-          ),
+        error: (e, _) => ErrorStateView(
+          error: e,
+          onRetry: () => ref.invalidate(householdMembersProvider),
         ),
         data: (members) => members.isEmpty
             ? Center(

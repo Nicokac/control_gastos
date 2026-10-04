@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [Mobile 1.16.2+12] — 2026-10-03
+
+### Fixed
+
+- **Mobile — Errores de red mostrados sin mapear (DT-072)**: 13 pantallas mostraban el mensaje técnico crudo de la excepción (`SocketException`, `DioException`, etc.) cuando fallaba una carga, en vez de un mensaje amigable — y varias no ofrecían forma de reintentar sin salir de la pantalla. Se agregó `ErrorStateView`, reusado en todas, con mensaje genérico, botón de reintento, y el detalle técnico visible solo en modo debug.
+
+---
+
 ## [Mobile 1.16.1+11] — 2026-10-03
 
 ### Fixed

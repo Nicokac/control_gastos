@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/income_provider.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/error_state_view.dart';
 import '../../../core/widgets/section_label.dart';
 
 class IncomeFormScreen extends ConsumerStatefulWidget {
@@ -245,8 +246,12 @@ class _IncomeFormScreenState extends ConsumerState<IncomeFormScreen> {
             const SizedBox(height: 8),
             categoriesAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Text('Error cargando categorías: $e',
-                  style: const TextStyle(color: Colors.red)),
+              error: (e, _) => ErrorStateView(
+                error: e,
+                onRetry: () => ref.invalidate(incomeCategoriesProvider),
+                message: 'No pudimos cargar las categorías.',
+                compact: true,
+              ),
               data: (cats) {
                 _resolveGroupFromCategories(cats);
 

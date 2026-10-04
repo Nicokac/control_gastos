@@ -6,6 +6,7 @@ import '../widgets/shared_expense_tile.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/error_state_view.dart';
 
 class SharedExpenseListScreen extends ConsumerWidget {
   const SharedExpenseListScreen({super.key});
@@ -70,20 +71,7 @@ class SharedExpenseListScreen extends ConsumerWidget {
       ),
       body: expensesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
-              const SizedBox(height: 12),
-              Text(e.toString(),
-                  style: const TextStyle(color: Colors.grey, fontSize: 12)),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                  onPressed: notifier.reload, child: const Text('Reintentar')),
-            ],
-          ),
-        ),
+        error: (e, _) => ErrorStateView(error: e, onRetry: notifier.reload),
         data: (expenses) => RefreshIndicator(
           onRefresh: notifier.reload,
           child: _SharedExpenseContent(

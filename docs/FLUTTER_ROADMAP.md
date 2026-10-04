@@ -334,3 +334,5 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-10-02 | Fase 5 | Bump versión mobile a 1.16.0+10 |
 | 2026-10-03 | Fix | Colores semánticos centralizados en `ThemeExtension` (`AppSemanticColors`) — 21 archivos usaban literales hex repetidos para gastos/ingresos/ahorros/compartidos/vencimientos en vez de leer del tema (DT-071) |
 | 2026-10-03 | Fase 5 | Bump versión mobile a 1.16.1+11 |
+| 2026-10-03 | Fix | Errores de red mostrados sin mapear — nuevo widget `ErrorStateView` (modo completo y compacto) reusado en 13 pantallas, con mensaje amigable, reintento y detalle técnico solo en debug (DT-072) |
+| 2026-10-03 | Fase 5 | Bump versión mobile a 1.16.2+12 |

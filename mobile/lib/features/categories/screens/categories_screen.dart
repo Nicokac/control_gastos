@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/category_icons.dart';
+import '../../../core/widgets/error_state_view.dart';
 import '../../expenses/providers/expense_provider.dart';
 import '../../income/providers/income_provider.dart';
 
@@ -31,7 +32,10 @@ class CategoriesScreen extends ConsumerWidget {
       ),
       body: catsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text(e.toString())),
+        error: (e, _) => ErrorStateView(
+          error: e,
+          onRetry: () => ref.invalidate(allCategoriesProvider),
+        ),
         data: (cats) => _CategoriesList(cats: cats, ref: ref),
       ),
     );

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/providers/theme_provider.dart';
 import '../../../core/theme/app_semantic_colors.dart';
+import '../../../core/widgets/error_state_view.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -122,7 +123,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
       body: userAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text(e.toString())),
+        error: (e, _) => ErrorStateView(
+          error: e,
+          onRetry: () => ref.invalidate(authProvider),
+        ),
         data: (user) {
           if (user == null) return const SizedBox.shrink();
           _initFromUser(user);

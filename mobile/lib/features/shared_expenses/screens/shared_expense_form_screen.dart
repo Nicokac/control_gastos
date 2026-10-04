@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/shared_expense_provider.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/error_state_view.dart';
 
 class SharedExpenseFormScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic>? existing;
@@ -276,7 +277,12 @@ class _SharedExpenseFormScreenState
             // ¿Quién pagó?
             membersAsync.when(
               loading: () => const SizedBox.shrink(),
-              error: (e, _) => const SizedBox.shrink(),
+              error: (e, _) => ErrorStateView(
+                error: e,
+                onRetry: () => ref.invalidate(householdMembersProvider),
+                message: 'No pudimos cargar quién puede pagar.',
+                compact: true,
+              ),
               data: (members) {
                 final paidByName = _paidById == null
                     ? 'Yo'
@@ -310,8 +316,12 @@ class _SharedExpenseFormScreenState
             // Categoría
             categoriesAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Text('Error cargando categorías: $e',
-                  style: const TextStyle(color: Colors.red)),
+              error: (e, _) => ErrorStateView(
+                error: e,
+                onRetry: () => ref.invalidate(sharedCategoriesProvider),
+                message: 'No pudimos cargar las categorías.',
+                compact: true,
+              ),
               data: (cats) {
                 _resolveGroupFromCategories(cats);
 

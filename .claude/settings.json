@@ -42,7 +42,9 @@
       "Bash(PYTHONIOENCODING=utf-8 python eval-viewer/generate_review.py '/c/Users/kachu/Python user/Django/control_gastos/sync-docs-workspace/iteration-1' --skill-name sync-docs --benchmark '/c/Users/kachu/Python user/Django/control_gastos/sync-docs-workspace/iteration-1/benchmark.json' --static '/c/Users/kachu/Python user/Django/control_gastos/sync-docs-workspace/iteration-1/review.html')",
       "Bash(PYTHONIOENCODING=utf-8 python eval-viewer/generate_review.py '/c/Users/kachu/Python user/Django/control_gastos/sync-docs-workspace/iteration-2' --skill-name sync-docs --benchmark '/c/Users/kachu/Python user/Django/control_gastos/sync-docs-workspace/iteration-2/benchmark.json' --previous-workspace '/c/Users/kachu/Python user/Django/control_gastos/sync-docs-workspace/iteration-1' --static '/c/Users/kachu/Python user/Django/control_gastos/sync-docs-workspace/iteration-2/review.html')",
       "Bash(python -m scripts.package_skill \"/c/Users/kachu/Python user/Django/control_gastos/.claude/skills/sync-docs\")",
-      "Bash(PYTHONIOENCODING=utf-8 python -m scripts.package_skill \"/c/Users/kachu/Python user/Django/control_gastos/.claude/skills/sync-docs\")"
+      "Bash(PYTHONIOENCODING=utf-8 python -m scripts.package_skill \"/c/Users/kachu/Python user/Django/control_gastos/.claude/skills/sync-docs\")",
+      "Bash(git stash *)",
+      "Bash(git checkout *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\kachu\\Python user\\Django\\control_gastos\\.claude\\skills",

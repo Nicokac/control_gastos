@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/recurring_provider.dart';
+import '../../../core/widgets/error_state_view.dart';
 
 class RecurringFormScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic>? existing;
@@ -291,8 +292,12 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
             // Categoría
             categoriesAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Text('Error: $e',
-                  style: const TextStyle(color: Colors.red)),
+              error: (e, _) => ErrorStateView(
+                error: e,
+                onRetry: () => ref.invalidate(recurringCategoriesProvider),
+                message: 'No pudimos cargar las categorías.',
+                compact: true,
+              ),
               data: (cats) {
                 _resolveGroupFromCategories(cats);
 
