@@ -236,8 +236,8 @@ class TestIncomeValidations:
 
         assert income.pk is not None
 
-    def test_description_required(self, user, income_category):
-        """Verifica que descripción sea requerida."""
+    def test_description_optional(self, user, income_category):
+        """Verifica que descripción sea opcional (consistente con Expense)."""
         income = Income(
             user=user,
             category=income_category,
@@ -248,8 +248,7 @@ class TestIncomeValidations:
             date=timezone.now().date(),
         )
 
-        with pytest.raises(ValidationError):
-            income.full_clean()
+        income.full_clean()
 
 
 @pytest.mark.django_db

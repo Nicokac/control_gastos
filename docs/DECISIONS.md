@@ -1206,6 +1206,26 @@ Lista de puntos relevados directamente por el usuario usando la app en el día a
 
 ---
 
+### DT-080 — Backend: no se podía cargar un ingreso con grupo sin subcategorías
+
+**Estado:** ✅ Resuelto
+
+Un usuario reportó en producción el error "Error al guardar el ingreso" al intentar cargar un ingreso usando un grupo de categoría sin subcategorías (ej. "Otros ingresos") como categoría directa — flujo que mobile permite explícitamente desde que se corrigió DT-049 relacionada (ver comentario en `income_form_screen.dart`: "los ingresos admiten esto, a diferencia de los gastos"). Reproducido en emulador contra producción con `flutter run`, capturando el `DioException` real (el `catch (_)` de `income_provider.dart` lo silenciaba sin loguear nada, dificultando el diagnóstico). El body de la respuesta 400 reveló **dos bugs de backend independientes**:
+
+1. **`description: ["Este campo no puede estar en blanco."]`**: `Income.description` nunca tuvo `blank=True` (a diferencia de `Expense.description`, que sí lo tiene), pese a que mobile etiqueta el campo como "Detalles opcionales" y lo deja vacío por defecto. La web nunca mostró este bug porque el HTML del form (`income_form.html`) tenía `required` explícito, exigiéndolo siempre — era intencional ahí, pero no en mobile.
+2. **`category: ["Categoría no válida para este usuario."]`**: `IncomeSerializer.validate_category` validaba contra `Category.get_user_categories()`, que excluye explícitamente los grupos ("los grupos no se asignan a transacciones"). Pero el endpoint de categorías que consume mobile (`CategoryViewSet`) no aplica ningún filtro de "válida para transacción" — devuelve todas las categorías del tipo pedido sin distinguir, incluyendo grupos sueltos. La web nunca mostró este bug porque `IncomeForm` usa `Category.get_income_categories()` directamente como queryset del campo (que sí incluye grupos de ingreso sin subcategorías) — mismo criterio para "mostrar" y "validar". La API tenía dos criterios distintos para la misma pregunta.
+
+**Why:** ambos bugs son el mismo patrón de fondo que ya se vio en DT-071/DT-078 — una regla de negocio (qué es una "categoría válida", si la descripción es obligatoria) duplicada en más de un lugar sin que nada garantizara que coincidieran. La API nunca reusó la lógica ya correcta de los forms web, reimplementó su propio criterio y quedó desalineada.
+
+**Resolución:**
+- `apps/income/models.py`: `description` ahora tiene `blank=True` (migración `0010_alter_income_description`), igual que `Expense`. Se quitó el `required` del HTML de `income_form.html` en la web, ya innecesario y redundante con la validación real.
+- `apps/api/v1/serializers/income.py`: `validate_category` ahora usa `Category.get_income_categories(user)` en vez de `get_user_categories(user, CategoryType.INCOME)` — mismo criterio que ya usaba la web en `IncomeForm`.
+- **`RecurringIncomeSerializer` no se tocó**: su `validate_category` también usa `get_user_categories()`, pero ahí es correcto — el form web de ingresos recurrentes (`RecurringIncomeForm`) usa el mismo criterio, y `recurring_form_screen.dart` en mobile nunca permite usar un grupo directo (siempre exige elegir subcategoría, a diferencia del ingreso puntual). No era el mismo bug.
+- Test nuevo `test_crear_ingreso_con_grupo_sin_subcategorias` en `apps/api/tests/test_income.py`, reproduciendo el escenario exacto reportado (grupo sin subcategorías + descripción vacía). Actualizados `test_description_required` → `test_description_optional` en `test_forms.py` y `test_models.py`, que afirmaban el comportamiento viejo.
+- Verificado end-to-end: suite completa (990 tests, 83.91% cobertura) + reproducción manual en emulador Android contra Django local con el fix aplicado, confirmando que el ingreso se guarda correctamente.
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.

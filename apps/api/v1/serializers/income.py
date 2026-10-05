@@ -30,9 +30,8 @@ class IncomeSerializer(serializers.ModelSerializer):
 
     def validate_category(self, category):
         user = self.context["request"].user
-        from apps.core.constants import CategoryType
 
-        allowed = Category.get_user_categories(user, CategoryType.INCOME)
+        allowed = Category.get_income_categories(user)
         if category not in allowed:
             raise serializers.ValidationError("Categoría no válida para este usuario.")
         return category

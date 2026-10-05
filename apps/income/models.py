@@ -32,7 +32,7 @@ class Income(TimestampMixin, CurrencyMixin, models.Model):
         related_name="incomes",
         verbose_name="Categoría",
     )
-    description = models.CharField(max_length=255, verbose_name="Descripción")
+    description = models.CharField(max_length=255, blank=True, verbose_name="Descripción")
     recurring = models.ForeignKey(
         "recurring_income.RecurringIncome",
         on_delete=models.SET_NULL,

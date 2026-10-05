@@ -62,8 +62,8 @@ class TestIncomeForm:
         assert not form.is_valid()
         assert "category" in form.errors
 
-    def test_description_required(self, user, income_category):
-        """Verifica que la descripción sea requerida."""
+    def test_description_optional(self, user, income_category):
+        """Verifica que la descripción sea opcional (consistente con Expense)."""
         form = IncomeForm(
             data={
                 "category": income_category.pk,
@@ -75,8 +75,7 @@ class TestIncomeForm:
             user=user,
         )
 
-        assert not form.is_valid()
-        assert "description" in form.errors
+        assert form.is_valid()
 
     def test_amount_required(self, user, income_category):
         """Verifica que el monto sea requerido."""

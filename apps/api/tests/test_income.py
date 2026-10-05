@@ -69,3 +69,19 @@ class TestIncomeCreateEndpoint:
         }
         response = client.post(self.url, data, content_type="application/json", **headers)
         assert response.status_code == 400
+
+    def test_crear_ingreso_con_grupo_sin_subcategorias(self, client, user, income_category_factory):
+        """Un grupo de ingreso sin subcategorías es una categoría válida (a
+        diferencia de gastos) — ver apps/categories/models.py::get_income_categories."""
+        group = income_category_factory(user, name="Otros ingresos", parent=None)
+        headers = auth_header(client, user)
+        data = {
+            "date": "2026-06-01",
+            "description": "",
+            "amount": "2000.00",
+            "currency": "ARS",
+            "category": group.pk,
+        }
+        response = client.post(self.url, data, content_type="application/json", **headers)
+        assert response.status_code == 201
+        assert Income.objects.filter(category=group, user=user).exists()

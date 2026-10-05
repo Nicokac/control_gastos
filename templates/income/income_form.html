@@ -171,8 +171,7 @@
                                        id="id_description"
                                        class="form-control {% if form.description.errors %}is-invalid{% endif %}"
                                        placeholder="Ej: Sueldo Diciembre, Freelance, Alquiler..."
-                                       value="{{ form.description.value|default:'' }}"
-                                       required>
+                                       value="{{ form.description.value|default:'' }}">
                                 {% if form.description.errors %}
                                 <div class="invalid-feedback">{{ form.description.errors.0 }}</div>
                                 {% endif %}

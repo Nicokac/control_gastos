@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.22.1] — 2026-10-05
+
+### Fixed
+
+- **No se podía cargar un ingreso con un grupo de categoría sin subcategorías (DT-080)**: un usuario reportó "Error al guardar el ingreso" al usar un grupo como "Otros ingresos" directamente como categoría (flujo permitido desde mobile). Causa: `description` exigida como obligatoria en el modelo pese a que mobile la trata como opcional, y la API validaba la categoría contra una lista que excluye grupos, distinta a la que efectivamente se le muestra al usuario para elegir.
+
+---
+
 ## [Mobile 1.17.0+19] — 2026-10-04
 
 ### Added
