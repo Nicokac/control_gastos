@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.23.0 / Mobile 1.19.0+21] — 2026-10-05
+
+### Added
+
+- **Recupero de contraseña en mobile (DT-083)**: la app no tenía forma de recuperar la contraseña si el usuario la olvidaba. Nuevo link "¿Olvidaste tu contraseña?" en el login, que pide el email y después un código (enviado por correo) para elegir una nueva contraseña, sin salir de la app. Mismo mecanismo de seguridad que ya usaba la recuperación por la web.
+
+---
+
 ## [1.22.1] — 2026-10-05
 
 ### Fixed

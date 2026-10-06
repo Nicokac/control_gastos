@@ -1242,6 +1242,37 @@ La pantalla de login usaba un ícono genérico de Material (`Icons.account_balan
 
 ---
 
+### DT-082 — Web: reset de password probablemente nunca usa Brevo (bug no confirmado)
+
+**Estado:** ⏳ Pendiente (a confirmar)
+
+Hallazgo incidental mientras se investigaba el mecanismo de `BrevoPasswordResetView` para construir el recupero de contraseña de mobile (ver DT-083). `BrevoPasswordResetView.send_mail` (en `apps/users/views.py`) sobrescribe el método `send_mail` con la firma de `PasswordResetView` (la vista), pero Django internamente invoca `form.save(**opts)` — y es `PasswordResetForm.save()` quien llama a `self.send_mail(...)`, el `send_mail` **del form**, no el de la vista. No hay ningún mecanismo visible de Django que conecte el `send_mail` sobrescrito en la vista con el que el form termina ejecutando.
+
+**Por qué no se confirma directamente:** los tests existentes (`test_password_reset_send_mail_uses_brevo_when_succeeds`, `test_password_reset_send_mail_falls_back_to_smtp_when_brevo_fails` en `apps/users/tests/test_views_coverage.py`) instancian `BrevoPasswordResetView` y llaman `view.send_mail(...)` **directamente** como unidad aislada — pasan en verde, pero no verifican que ese método se ejecute como parte del flujo real de `POST /users/password/reset/`. Es decir, el coverage es real pero puede no probar la integración real.
+
+**Why:** si el bug es real, el reset de contraseña de la web (producción) siempre envía el email por SMTP de Django en vez de Brevo — puede seguir funcionando (SMTP configurado como fallback real, no solo de emergencia) o puede estar fallando silenciosamente según cómo esté configurado `EMAIL_BACKEND` en producción. No se tocó nada hoy para no mezclar con la tarea de recupero en mobile (DT-083).
+
+**Camino de resolución:** escribir un test de integración real que haga `POST` al form de reset (`client.post(reverse("users:password_reset"), {"email": ...})`) con `send_brevo_email` mockeado, y verificar si el mock se llama. Si no se llama, confirma el bug — la solución sería sobrescribir `form_class` con una subclase de `PasswordResetForm` que tenga su propio `send_mail` usando Brevo, en vez de sobrescribirlo en la vista.
+
+---
+
+### DT-083 — Mobile: sin recupero de contraseña
+
+**Estado:** ✅ Resuelto
+
+La web tiene recupero de contraseña completo (Django `PasswordResetForm` + `default_token_generator`, email vía `BrevoPasswordResetView`), pero no había ningún endpoint de API ni pantallas en mobile — un usuario que olvidara la contraseña no tenía forma de recuperarla desde el celular.
+
+**Why:** discutido con el usuario — se evaluó el alcance completo (deep link automático desde el email) contra uno simplificado (el usuario copia un código del email a mano en la app). Se eligió el segundo por ser mucho más rápido de construir hoy sin requerir configurar Android App Links + verificación de dominio del servidor, que es trabajo real aparte.
+
+**Resolución:**
+- **Backend** (`apps/api/v1/serializers/auth.py`, `apps/api/v1/views/auth.py`): dos endpoints nuevos, `POST /api/v1/auth/password/reset/` (solicita el reset, nunca revela si el email existe — mismo criterio anti-enumeración que un login fallido) y `POST /api/v1/auth/password/reset/confirm/` (confirma con `uid` + `token` + nueva contraseña). Ambos reusan el mecanismo exacto de Django (`default_token_generator`, `SetPasswordForm`) que ya usa la web — un email generado por la API sirve también para confirmar vía el link web, y viceversa, porque el token es el mismo.
+- El email de reset (`templates/users/emails/password_reset.txt`) se extendió para mostrar, además del link de siempre, el `uid`/`token` como "Código 1"/"Código 2" en texto plano fácil de copiar — un solo email sirve para ambas plataformas, sin duplicar contenido.
+- **Mobile**: nuevo `password_reset_provider.dart` (mismo patrón de manejo de errores que `auth_provider.dart`, mapea el primer error del body de DRF a un mensaje legible), 2 pantallas nuevas (`forgot_password_screen.dart` para pedir el email, `reset_password_screen.dart` para ingresar los 2 códigos + nueva contraseña), y un link "¿Olvidaste tu contraseña?" agregado al login. Rutas `/forgot-password` y `/reset-password` agregadas al `redirect` del router como parte del grupo `onAuth` (accesibles sin sesión, pero redirigen a `/dashboard` si ya hay una activa).
+- 10 tests nuevos en `apps/api/tests/test_auth.py`, incluyendo uno que verifica que el token queda invalidado tras un uso exitoso (propiedad de seguridad de `PasswordResetTokenGenerator`, que incluye el hash de la password en el cálculo).
+- Verificado end-to-end: 998 tests de Django pasando (84.10% cobertura) + flujo completo reproducido manualmente en emulador contra Django local — solicitud de reset, confirmación con los códigos reales extraídos de la base, y login exitoso con la contraseña nueva.
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.

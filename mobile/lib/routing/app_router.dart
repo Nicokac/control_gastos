@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../features/auth/screens/splash_screen.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/register_screen.dart';
+import '../features/auth/screens/forgot_password_screen.dart';
+import '../features/auth/screens/reset_password_screen.dart';
 import '../features/dashboard/screens/dashboard_screen.dart';
 import '../features/expenses/screens/expense_list_screen.dart';
 import '../features/expenses/screens/expense_form_screen.dart';
@@ -73,7 +75,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isLoggedIn = authState.valueOrNull != null;
       final location = state.matchedLocation;
       final onSplash = location == '/splash';
-      final onAuth = location == '/login' || location == '/register';
+      final onAuth = location == '/login' ||
+          location == '/register' ||
+          location == '/forgot-password' ||
+          location == '/reset-password';
 
       if (onSplash) {
         return isLoggedIn ? '/dashboard' : '/login';
@@ -97,6 +102,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/register',
         pageBuilder: (c, s) =>
             _buildPage(context: c, state: s, child: const RegisterScreen()),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        pageBuilder: (c, s) => _buildPage(
+            context: c, state: s, child: const ForgotPasswordScreen()),
+      ),
+      GoRoute(
+        path: '/reset-password',
+        pageBuilder: (c, s) => _buildPage(
+            context: c, state: s, child: const ResetPasswordScreen()),
       ),
       GoRoute(
         path: '/dashboard',

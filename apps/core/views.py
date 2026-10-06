@@ -190,9 +190,17 @@ def exchange_rate_today(request):
         return JsonResponse({"error": "No se pudo obtener la cotización"}, status=503)
 
 
-APP_VERSION = "1.22.1"
+APP_VERSION = "1.23.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.23.0",
+        "date": "Octubre 2026",
+        "title": "Recupero de contraseña en la app móvil",
+        "items": [
+            "Si olvidaste tu contraseña, ahora podés recuperarla directo desde la app, sin tener que entrar a la web",
+        ],
+    },
     {
         "version": "1.22.0",
         "date": "Octubre 2026",

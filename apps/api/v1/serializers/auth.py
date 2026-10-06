@@ -1,5 +1,9 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_decode
 
 from rest_framework import serializers
 
@@ -34,6 +38,58 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop("password2")
         return User.objects.create_user(**validated_data)
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def get_user(self):
+        """Devuelve el usuario activo con ese email, o None si no existe.
+        No se expone si el email existe o no — evita enumeración de cuentas."""
+        email = self.validated_data["email"]
+        return User.objects.filter(email__iexact=email, is_active=True).first()
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField()
+    token = serializers.CharField()
+    new_password = serializers.CharField(write_only=True, validators=[validate_password])
+    new_password2 = serializers.CharField(write_only=True)
+
+    def validate(self, attrs):
+        if attrs["new_password"] != attrs["new_password2"]:
+            raise serializers.ValidationError(
+                {"new_password": "Las contraseñas no coinciden."}  # pragma: allowlist secret
+            )
+
+        try:
+            uid = force_bytes(urlsafe_base64_decode(attrs["uid"])).decode()
+            user = User.objects.get(pk=uid)
+        except (User.DoesNotExist, ValueError, TypeError, OverflowError) as err:
+            raise serializers.ValidationError({"uid": "Enlace de recuperación inválido."}) from err
+
+        if not default_token_generator.check_token(user, attrs["token"]):
+            raise serializers.ValidationError(
+                {"token": "El enlace de recuperación es inválido o expiró."}
+            )
+
+        form = SetPasswordForm(
+            user=user,
+            data={
+                "new_password1": attrs["new_password"],
+                "new_password2": attrs["new_password2"],
+            },
+        )
+        if not form.is_valid():
+            raise serializers.ValidationError(form.errors)
+
+        attrs["user"] = user
+        attrs["form"] = form
+        return attrs
+
+    def save(self):
+        self.validated_data["form"].save()
+        return self.validated_data["user"]
 
 
 class UserProfileSerializer(serializers.ModelSerializer):

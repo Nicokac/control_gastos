@@ -6,7 +6,7 @@ class ApiConstants {
 
   // Resumen de novedades de la versión actual (DT-068) — actualizar junto con el bump de pubspec.yaml.
   static const String latestReleaseSummary =
-      'Nuevo botón para ver el monto en Gastos por categoría, acceso a Términos y Privacidad, y mejoras visuales en Configuración.';
+      'Ahora podés recuperar tu contraseña directo desde la app si la olvidaste.';
   static const String websiteUrl = 'https://control-gastos-fr8z.onrender.com';
   static const String termsUrl =
       'https://control-gastos-fr8z.onrender.com/terms/';
@@ -20,6 +20,8 @@ class ApiConstants {
   static const String tokenRefresh = '/auth/token/refresh/';
   static const String register = '/auth/register/';
   static const String me = '/auth/me/';
+  static const String passwordResetRequest = '/auth/password/reset/';
+  static const String passwordResetConfirm = '/auth/password/reset/confirm/';
 
   static const String categories = '/categories/';
   static const String expenses = '/expenses/';

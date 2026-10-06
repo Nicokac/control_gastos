@@ -352,3 +352,5 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-10-04 | Fase 5 | Bump versión mobile a 1.17.0+19 |
 | 2026-10-05 | Fase 4 | Login rediseñado: logo real de la app, badge "BETA" y firma "Hecho con ❤️ by NK" (DT-081) |
 | 2026-10-05 | Fase 5 | Bump versión mobile a 1.18.0+20 |
+| 2026-10-05 | Fase 4 | Recupero de contraseña: endpoints de API (`auth/password/reset/` + `/confirm/`) y 2 pantallas nuevas en mobile (`forgot_password_screen`, `reset_password_screen`) (DT-083) |
+| 2026-10-05 | Fase 5 | Bump versión mobile a 1.19.0+21 |

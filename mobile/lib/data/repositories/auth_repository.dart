@@ -49,4 +49,28 @@ class AuthRepository {
   }
 
   Future<bool> isLoggedIn() => StorageService.hasTokens();
+
+  Future<void> requestPasswordReset(String email) async {
+    await ApiService.dio.post(
+      ApiConstants.passwordResetRequest,
+      data: {'email': email},
+    );
+  }
+
+  Future<void> confirmPasswordReset({
+    required String uid,
+    required String token,
+    required String newPassword,
+    required String newPassword2,
+  }) async {
+    await ApiService.dio.post(
+      ApiConstants.passwordResetConfirm,
+      data: {
+        'uid': uid,
+        'token': token,
+        'new_password': newPassword,
+        'new_password2': newPassword2,
+      },
+    );
+  }
 }
