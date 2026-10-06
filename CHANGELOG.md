@@ -13,6 +13,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [Mobile 1.18.0+20] — 2026-10-05
+
+### Added
+
+- **Pantalla de login rediseñada (DT-081)**: reemplazado el ícono genérico por el logo real de la app, agregado un badge "BETA" junto al título y una firma "Hecho con ❤️ by NK" al pie.
+
+---
+
 ## [Mobile 1.17.0+19] — 2026-10-04
 
 ### Added

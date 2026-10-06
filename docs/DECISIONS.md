@@ -1226,6 +1226,22 @@ Un usuario reportó en producción el error "Error al guardar el ingreso" al int
 
 ---
 
+### DT-081 — Mobile: pantalla de login genérica, sin identidad de marca
+
+**Estado:** ✅ Resuelto
+
+La pantalla de login usaba un ícono genérico de Material (`Icons.account_balance_wallet`) en vez del logo real de la app, y no comunicaba el estado de madurez del producto (app recién publicada, con usuarios reales pero todavía en etapa de pulido activo) ni quién la desarrolla.
+
+**Why:** discutido directamente con el usuario — mostrar la versión de la app en el login se descartó (no aporta nada al flujo de login, ya está en "Acerca de"); un badge de estado a nivel de feature puntual ya existe (DT-055, "Beta" en importación de resúmenes) pero no a nivel de toda la app; y la idea de sumar una firma de autor es un patrón común en apps indie/solo-dev para generar confianza.
+
+**Resolución:**
+- Reemplazado el ícono de Material por el logo real de la app (`assets/icons/app_icon.png`, el mismo usado por `flutter_launcher_icons`).
+- **Problema encontrado:** ese PNG tiene fondo blanco sólido (sin canal alfa) pensado para que el sistema operativo lo recorte como ícono de launcher — usado directo en una pantalla de fondo oscuro, se veía como un cuadrado blanco pegado. Se generó `assets/icons/app_icon_fg.png`, una copia con el fondo *exterior* removido (transparencia real, `RGBA`). El marco blanco redondeado que rodea la ilustración de la billetera es parte del diseño del logo en sí (no "fondo sobrante") y se mantiene a propósito, igual que el ícono de cualquier app real (WhatsApp, Gmail, etc. también tienen su propio marco de color).
+- Agregado un badge "BETA" (`Colors.amber`, texto oscuro) junto al título, mismo lenguaje visual que el badge "Beta" ya usado en la web para DT-055.
+- Agregada una firma "Hecho con ❤️ by NK" al pie de la pantalla.
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.

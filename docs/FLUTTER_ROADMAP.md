@@ -350,3 +350,5 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-10-04 | Fase 5 | Bordes redondeados y fuente más chica en campos de Configuración (DT-079) |
 | 2026-10-04 | Fase 4 | Toggle porcentaje/monto en el gráfico de Gastos por categoría del dashboard — `expenseChartViewProvider` (DT-079) |
 | 2026-10-04 | Fase 5 | Bump versión mobile a 1.17.0+19 |
+| 2026-10-05 | Fase 4 | Login rediseñado: logo real de la app, badge "BETA" y firma "Hecho con ❤️ by NK" (DT-081) |
+| 2026-10-05 | Fase 5 | Bump versión mobile a 1.18.0+20 |
