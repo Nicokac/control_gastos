@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.24.0 / Mobile 1.20.0+22] — 2026-10-06
+
+### Added
+
+- **Reportar un problema desde mobile (DT-084)**: nueva pantalla en Configuración para reportar bugs, sugerencias o preguntas, igual que ya existía en la web. Si hubo un error técnico reciente al usar la app, se ofrece incluirlo automáticamente en el reporte, para no tener que describirlo a mano.
+
+---
+
 ## [1.23.0 / Mobile 1.19.0+21] — 2026-10-05
 
 ### Added

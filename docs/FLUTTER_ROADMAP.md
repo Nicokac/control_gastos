@@ -354,3 +354,5 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-10-05 | Fase 5 | Bump versión mobile a 1.18.0+20 |
 | 2026-10-05 | Fase 4 | Recupero de contraseña: endpoints de API (`auth/password/reset/` + `/confirm/`) y 2 pantallas nuevas en mobile (`forgot_password_screen`, `reset_password_screen`) (DT-083) |
 | 2026-10-05 | Fase 5 | Bump versión mobile a 1.19.0+21 |
+| 2026-10-06 | Fase 4 | Reportar un problema en mobile: endpoint `feedback/`, captura automática del último `DioException` via interceptor, pantalla nueva en Configuración (DT-084) |
+| 2026-10-06 | Fase 5 | Bump versión mobile a 1.20.0+22 |

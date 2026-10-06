@@ -1,9 +1,15 @@
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import '../../../core/constants/api_constants.dart';
 import 'storage_service.dart';
 
 class ApiService {
   static Dio? _dio;
+
+  /// Último error de red capturado por la app, para adjuntar como contexto
+  /// técnico opcional en la pantalla de "Reportar un problema" (DT-084).
+  /// Se sobrescribe con cada DioException nuevo — solo guarda el último.
+  static final ValueNotifier<String?> lastError = ValueNotifier(null);
 
   static Dio get dio {
     _dio ??= _createDio();
@@ -21,7 +27,26 @@ class ApiService {
     );
 
     dio.interceptors.add(_AuthInterceptor(dio));
+    dio.interceptors.add(_LastErrorInterceptor());
     return dio;
+  }
+}
+
+class _LastErrorInterceptor extends Interceptor {
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    final method = err.requestOptions.method;
+    final path = err.requestOptions.path;
+    final statusCode = err.response?.statusCode;
+    final responseBody = err.response?.data;
+
+    final buffer = StringBuffer('$method $path');
+    if (statusCode != null) buffer.write(' → $statusCode');
+    buffer.write('\n${err.message}');
+    if (responseBody != null) buffer.write('\nRespuesta: $responseBody');
+
+    ApiService.lastError.value = buffer.toString();
+    handler.next(err);
   }
 }
 

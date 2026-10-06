@@ -250,11 +250,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 _SectionLabel('Información'),
                 const SizedBox(height: 8),
                 Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.info_outline),
-                    title: const Text('Acerca de'),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => context.push('/about'),
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.info_outline),
+                        title: const Text('Acerca de'),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => context.push('/about'),
+                      ),
+                      const Divider(height: 1),
+                      ListTile(
+                        leading: const Icon(Icons.flag_outlined),
+                        title: const Text('Reportar un problema'),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => context.push('/feedback'),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 32),

@@ -3,12 +3,10 @@ import json
 import logging
 import urllib.request
 
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.cache import cache
-from django.core.mail import send_mail
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse_lazy
 from django.views.generic import (
@@ -21,7 +19,7 @@ from django.views.generic import (
     UpdateView,
 )
 
-from apps.core.utils import send_brevo_email
+from apps.core.utils import send_feedback_email
 
 from .forms import FeedbackForm
 
@@ -127,32 +125,7 @@ class FeedbackView(LoginRequiredMixin, FormView):
 
         subject = f"[Control de Gastos] {tipo_label} — {user.username}"
         body = f"Usuario: {user.username}\nEmail: {user.email}\nTipo: {tipo_label}\n---\n{mensaje}"
-        recipient = getattr(settings, "FEEDBACK_EMAIL", "kachuknm@gmail.com")
-        from_email = getattr(
-            settings, "DEFAULT_FROM_EMAIL", "Control Gastos <noreply@controlmisfinanzas.com>"
-        )
-        sent = send_brevo_email(recipient, subject, body)
-        if not sent:
-            resend_api_key = getattr(settings, "RESEND_API_KEY", "")
-            try:
-                if resend_api_key:
-                    import resend
-
-                    resend.api_key = resend_api_key
-                    resend.Emails.send(
-                        {"from": from_email, "to": [recipient], "subject": subject, "text": body}
-                    )
-                else:
-                    send_mail(
-                        subject=subject,
-                        message=body,
-                        from_email=from_email,
-                        recipient_list=[recipient],
-                        fail_silently=False,
-                    )
-                sent = True
-            except Exception:
-                logger.exception("Error al enviar feedback de usuario %s", user.username)
+        sent = send_feedback_email(subject, body, log_context=f"usuario {user.username}")
 
         if sent:
             messages.success(self.request, "¡Gracias! Tu reporte fue enviado correctamente.")
@@ -190,9 +163,18 @@ def exchange_rate_today(request):
         return JsonResponse({"error": "No se pudo obtener la cotización"}, status=503)
 
 
-APP_VERSION = "1.23.0"
+APP_VERSION = "1.24.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.24.0",
+        "date": "Octubre 2026",
+        "title": "Reportar un problema desde la app móvil",
+        "items": [
+            "Ahora podés reportar un bug, sugerir una mejora o hacer una pregunta directo desde la app, igual que en la web",
+            "Si hubo un error técnico reciente, la app te ofrece incluirlo automáticamente en el reporte, sin tener que describirlo",
+        ],
+    },
     {
         "version": "1.23.0",
         "date": "Octubre 2026",

@@ -1273,6 +1273,23 @@ La web tiene recupero de contraseña completo (Django `PasswordResetForm` + `def
 
 ---
 
+### DT-084 — Mobile: reportar bugs/sugerencias sin tener que describir el error en palabras
+
+**Estado:** ✅ Resuelto
+
+La web tiene un formulario de Reportar/Sugerir (tipo: bug/mejora/pregunta/otro + mensaje, sin persistencia, directo por email — ver D-010), pero mobile no tenía nada equivalente. El usuario tenía que describir verbalmente cualquier error técnico, como pasó el día anterior con DT-080 (hubo que agregar `debugPrint` a mano y reproducir el bug juntos para ver el error real).
+
+**Why:** el objetivo explícito era que el usuario no tuviera que "contar en palabras" un error técnico. Se evaluaron 3 niveles de captura (solo errores de red, errores de red + UI, logs de sesión completos) y se eligió el más acotado: capturar únicamente el último `DioException` no manejado, que cubre la inmensa mayoría de los bugs reportables en esta app (casi todo pasa por la API) sin requerir un sistema de logging en memoria más invasivo.
+
+**Resolución:**
+- **Backend**: se extrajo la lógica de envío con fallback Brevo → Resend → SMTP de `FeedbackView` (que antes la tenía duplicada inline) a una función compartida `send_feedback_email()` en `apps/core/utils.py`, reusada tanto por la vista web existente como por el endpoint nuevo — evita triplicar la misma lógica de 3 intentos de envío. Nuevo endpoint `POST /api/v1/feedback/` (`apps/api/v1/views/feedback.py`), mismos 4 tipos que la web, con un campo opcional `technical_context` que se anexa al cuerpo del email como sección separada cuando viene presente.
+- **Mobile — captura automática del error**: un interceptor nuevo (`_LastErrorInterceptor` en `api_service.dart`) agregado *después* del `_AuthInterceptor` existente, para que un refresh de token exitoso (401 resuelto) nunca se reporte como error real. Guarda el último `DioException` (método + path + status code + mensaje + cuerpo de la respuesta) en un `ValueNotifier` estático simple — se evaluó pasar esto por un provider de Riverpod, pero `ApiService` es un singleton estático sin acceso al árbol de providers (se crea de forma lazy en la primera llamada), así que un `ValueNotifier` leído directo evita tocar la inicialización de la app.
+- **Mobile — pantalla nueva**: `feedback_screen.dart` con selector de tipo (`ChoiceChip`, mismos 4 tipos que la web), mensaje, y — solo si hay un error capturado — una casilla tildada por default "Incluir el último error técnico detectado" mostrando el detalle, que el usuario puede destildar. Acceso agregado en Configuración → Información, junto a "Acerca de".
+- 7 tests nuevos en `apps/api/tests/test_feedback.py` (incluye casos con y sin `technical_context`, tipo inválido, mensaje vacío, falla de envío → 502). Test existente de feedback web actualizado (`test_feedback.py`, el mock de `send_mail` ahora apunta a `apps.core.utils` en vez de `apps.core.views`, por el refactor).
+- Verificado end-to-end: 1005 tests de Django pasando (84.20% cobertura) + flujo completo reproducido manualmente en emulador — caso sin error previo (reporte simple, confirmado con banner verde) y caso con error real forzado (backend apagado → `DioException` de conexión rechazada capturado y mostrado correctamente en la pantalla de reporte, con el path `POST /income/` real incluido).
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.

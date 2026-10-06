@@ -13,6 +13,7 @@ from apps.api.v1.views.auth import (
 from apps.api.v1.views.categories import CategoryViewSet
 from apps.api.v1.views.dashboard import DashboardView
 from apps.api.v1.views.expenses import ExpenseViewSet
+from apps.api.v1.views.feedback import FeedbackView
 from apps.api.v1.views.income import IncomeViewSet
 from apps.api.v1.views.recurring import RecurringExpenseViewSet
 from apps.api.v1.views.recurring_income import RecurringIncomeViewSet
@@ -47,6 +48,8 @@ urlpatterns = [
     ),
     # Dashboard
     path("dashboard/", DashboardView.as_view(), name="api-dashboard"),
+    # Feedback
+    path("feedback/", FeedbackView.as_view(), name="feedback"),
     # Docs
     path("schema/", SpectacularAPIView.as_view(), name="schema"),
     path("docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),

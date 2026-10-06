@@ -81,7 +81,7 @@ class TestFeedbackView:
     def test_email_send_failure_shows_error(self, client, user):
         import unittest.mock as mock
 
-        with mock.patch("apps.core.views.send_mail", side_effect=Exception("SMTP error")):
+        with mock.patch("apps.core.utils.send_mail", side_effect=Exception("SMTP error")):
             client.force_login(user)
             response = client.post(
                 FEEDBACK_URL,

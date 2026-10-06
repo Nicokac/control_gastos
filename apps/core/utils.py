@@ -7,6 +7,7 @@ from datetime import date
 from decimal import Decimal
 
 from django.conf import settings
+from django.core.mail import send_mail
 from django.utils import timezone
 
 import requests
@@ -34,6 +35,40 @@ def send_brevo_email(to_email: str, subject: str, body: str) -> bool:
         return True
     except Exception:
         logger.exception("Error al enviar email via Brevo a %s", to_email)
+        return False
+
+
+def send_feedback_email(subject: str, body: str, log_context: str) -> bool:
+    """Envía un reporte de feedback con fallback Brevo -> Resend -> SMTP.
+    Usado por el formulario web y el endpoint de API de mobile (DT-084)."""
+    recipient = getattr(settings, "FEEDBACK_EMAIL", "kachuknm@gmail.com")
+    from_email = getattr(
+        settings, "DEFAULT_FROM_EMAIL", "Control Gastos <noreply@controlmisfinanzas.com>"
+    )
+    sent = send_brevo_email(recipient, subject, body)
+    if sent:
+        return True
+
+    resend_api_key = getattr(settings, "RESEND_API_KEY", "")
+    try:
+        if resend_api_key:
+            import resend
+
+            resend.api_key = resend_api_key
+            resend.Emails.send(
+                {"from": from_email, "to": [recipient], "subject": subject, "text": body}
+            )
+        else:
+            send_mail(
+                subject=subject,
+                message=body,
+                from_email=from_email,
+                recipient_list=[recipient],
+                fail_silently=False,
+            )
+        return True
+    except Exception:
+        logger.exception("Error al enviar feedback (%s)", log_context)
         return False
 
 
