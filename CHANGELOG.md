@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.27.0 / Mobile 1.23.0+25] — 2026-10-07
+
+### Added
+
+- **Umbral de alerta mensual por categoría (DT-088)**: se puede configurar un monto de referencia en una subcategoría de gasto; al superarlo en el mes en curso, aparece un badge junto a la categoría en la pantalla de Categorías (web y mobile) con lo gastado. Sin dashboard ni pantalla nueva, todo desde la administración de categorías existente.
+
+---
+
 ## [1.26.0 / Mobile 1.22.0+24] — 2026-10-06
 
 ### Added

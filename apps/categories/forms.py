@@ -38,7 +38,7 @@ class CategoryForm(forms.ModelForm):
 
     class Meta:
         model = Category
-        fields = ["name", "type", "parent", "icon", "color"]
+        fields = ["name", "type", "parent", "icon", "color", "monthly_alert_threshold"]
         widgets = {
             "name": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "Nombre de la categoría"}
@@ -47,6 +47,9 @@ class CategoryForm(forms.ModelForm):
             "parent": CategoryTypeSelect(attrs={"class": "form-select"}),
             "icon": forms.RadioSelect(
                 attrs={"class": "icon-radio"},
+            ),
+            "monthly_alert_threshold": forms.NumberInput(
+                attrs={"class": "form-control", "min": 0, "step": "0.01", "placeholder": "Opcional"}
             ),
         }
 
@@ -57,6 +60,7 @@ class CategoryForm(forms.ModelForm):
         self.fields["icon"].required = False
         self.fields["parent"].required = False
         self.fields["parent"].empty_label = "-- Sin grupo (crear grupo nuevo) --"
+        self.fields["monthly_alert_threshold"].required = False
         if user:
             self.fields["parent"].queryset = Category.get_groups(user)
             # Asignar user a la instancia para que model.clean() no falle en _post_clean

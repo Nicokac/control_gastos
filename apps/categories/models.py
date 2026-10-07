@@ -1,5 +1,7 @@
 """Modelo Category para clasificar gastos e ingresos."""
 
+from decimal import Decimal
+
 from django.core.exceptions import ValidationError
 from django.db import models
 
@@ -55,6 +57,14 @@ class Category(TimestampMixin, models.Model):
         blank=True,
         verbose_name="Color",
         help_text="Color hexadecimal (ej: #28a745)",
+    )
+    monthly_alert_threshold = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name="Umbral de alerta mensual",
+        help_text="Avisa cuando el gasto del mes en esta subcategoría supera este monto. Solo aplica a subcategorías de gasto.",
     )
 
     class Meta:
@@ -131,6 +141,21 @@ class Category(TimestampMixin, models.Model):
         if self.pk and self.parent_id == self.pk:
             raise ValidationError({"parent": "Una categoría no puede ser su propio grupo."})
 
+        # El umbral de alerta solo tiene sentido en subcategorías de gasto
+        if self.monthly_alert_threshold is not None:
+            if self.type != CategoryType.EXPENSE:
+                raise ValidationError(
+                    {
+                        "monthly_alert_threshold": "El umbral de alerta solo aplica a categorías de gasto."
+                    }
+                )
+            if self.is_group:
+                raise ValidationError(
+                    {
+                        "monthly_alert_threshold": "El umbral de alerta solo aplica a subcategorías, no a grupos."
+                    }
+                )
+
     @property
     def is_group(self):
         """Verdadero si es un grupo (sin parent)."""
@@ -150,6 +175,28 @@ class Category(TimestampMixin, models.Model):
     def is_deletable(self):
         """Indica si la categoría puede ser eliminada."""
         return not self.is_system
+
+    def current_month_spent(self, user):
+        """Total gastado por `user` en esta subcategoría durante el mes
+        en curso. El umbral es por categoría pero el gasto es por usuario
+        (una subcategoría de sistema puede estar compartida)."""
+        from django.db.models import Sum
+        from django.utils import timezone
+
+        from apps.core.utils import get_month_date_range_exclusive
+
+        today = timezone.localdate()
+        start, end = get_month_date_range_exclusive(today.month, today.year)
+        result = self.expenses.filter(user=user, date__gte=start, date__lt=end).aggregate(
+            total=Sum("amount_ars")
+        )
+        return result["total"] or Decimal("0")
+
+    def is_over_alert_threshold(self, user):
+        """Verdadero si el gasto del mes en curso ya superó el umbral configurado."""
+        if self.monthly_alert_threshold is None:
+            return False
+        return self.current_month_spent(user) >= self.monthly_alert_threshold
 
     @classmethod
     def _exclude_hidden(cls, queryset, user):

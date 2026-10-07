@@ -2,6 +2,8 @@
 Tests para el modelo Category.
 """
 
+from decimal import Decimal
+
 from django.core.exceptions import ValidationError
 
 import pytest
@@ -189,6 +191,66 @@ class TestCategoryHierarchy:
 
         with pytest.raises(django_models.ProtectedError):
             expense_category.parent.delete()
+
+
+@pytest.mark.django_db
+class TestMonthlyAlertThreshold:
+    """DT-088: umbral de alerta mensual por subcategoría de gasto."""
+
+    def test_umbral_no_puede_asignarse_a_un_grupo(self, user, expense_category):
+        group = expense_category.parent
+        group.monthly_alert_threshold = Decimal("10000")
+        with pytest.raises(ValidationError):
+            group.save()
+
+    def test_umbral_no_puede_asignarse_a_categoria_de_ingreso(self, user, income_category):
+        income_category.monthly_alert_threshold = Decimal("10000")
+        with pytest.raises(ValidationError):
+            income_category.save()
+
+    def test_umbral_valido_en_subcategoria_de_gasto(self, user, expense_category):
+        expense_category.monthly_alert_threshold = Decimal("10000")
+        expense_category.save()
+        expense_category.refresh_from_db()
+        assert expense_category.monthly_alert_threshold == Decimal("10000")
+
+    def test_current_month_spent_sin_gastos_es_cero(self, user, expense_category):
+        assert expense_category.current_month_spent(user) == Decimal("0")
+
+    def test_current_month_spent_suma_gastos_del_mes(self, user, expense_category, expense_factory):
+        expense_factory(user, expense_category, amount=Decimal("500"))
+        expense_factory(user, expense_category, amount=Decimal("300"))
+        assert expense_category.current_month_spent(user) == Decimal("800")
+
+    def test_is_over_alert_threshold_false_sin_umbral(
+        self, user, expense_category, expense_factory
+    ):
+        expense_factory(user, expense_category, amount=Decimal("999999"))
+        assert expense_category.is_over_alert_threshold(user) is False
+
+    def test_is_over_alert_threshold_false_por_debajo_del_umbral(
+        self, user, expense_category, expense_factory
+    ):
+        expense_category.monthly_alert_threshold = Decimal("1000")
+        expense_category.save()
+        expense_factory(user, expense_category, amount=Decimal("500"))
+        assert expense_category.is_over_alert_threshold(user) is False
+
+    def test_is_over_alert_threshold_true_al_superarlo(
+        self, user, expense_category, expense_factory
+    ):
+        expense_category.monthly_alert_threshold = Decimal("1000")
+        expense_category.save()
+        expense_factory(user, expense_category, amount=Decimal("1000"))
+        assert expense_category.is_over_alert_threshold(user) is True
+
+    def test_is_over_alert_threshold_no_cuenta_gastos_de_otro_usuario(
+        self, user, other_user, expense_category, expense_factory
+    ):
+        expense_category.monthly_alert_threshold = Decimal("1000")
+        expense_category.save()
+        expense_factory(other_user, expense_category, amount=Decimal("5000"))
+        assert expense_category.is_over_alert_threshold(user) is False
 
 
 @pytest.mark.django_db

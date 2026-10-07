@@ -1347,6 +1347,24 @@ Usuario reportó: "¿Por qué en Gastos Fijos no puedo poner el monto? (lo agreg
 
 ---
 
+### DT-088 — Umbral de alerta mensual por categoría
+
+**Estado:** ✅ Resuelto
+
+Usuario reportó: "me gusta que exista un umbral de alerta (¿se pueden agregar otros personalizados? ej, que me avise cuando en la categoría ropa llego a X monto)". La app ya tenía un sistema de presupuestos por categoría más completo en el pasado, descartado explícitamente (ver DTD-001) por agregar complejidad de configuración sin beneficio claro. El usuario pidió algo más simple esta vez.
+
+**Why:** decisión confirmada explícitamente — "badge/indicador simple en la categoría", sin dashboard ni dependencias nuevas. El umbral es una preferencia visual, no una regla de negocio que bloquee ni condicione nada (a diferencia del budget descartado).
+
+**Resolución:**
+- Campo nuevo `monthly_alert_threshold` (opcional) en `Category` (`apps/categories/models.py`). Migración `0014_category_monthly_alert_threshold`. Validado en `clean()`: solo aplica a subcategorías de gasto (no a grupos, no a categorías de ingreso) — un umbral en un grupo o en ingresos no tiene sentido en este diseño.
+- Dos métodos nuevos en el modelo (no properties, porque dependen del usuario — una categoría de sistema es compartida pero el gasto es por usuario): `current_month_spent(user)` (total gastado en el mes en curso en esa categoría) y `is_over_alert_threshold(user)` (booleano).
+- **Dónde se configura y se muestra**: decisión confirmada explícitamente — todo en la pantalla de Categorías ya existente, sin pantalla ni dashboard nuevo. El campo se agrega al mismo form de crear/editar categoría (`CategoryForm`), visible solo para subcategorías de gasto. El badge aparece en `category_list.html` junto a la subcategoría cuando se supera el umbral, con el monto gastado del mes y un tooltip con el umbral configurado.
+- `CategoryListView._build_full_tree()` calcula el gasto mensual de todas las categorías con una sola consulta (`Expense.get_by_category()`, ya existente) en vez de N+1 queries por subcategoría.
+- **API/mobile**: `CategorySerializer` expone `monthly_alert_threshold`, `current_month_spent` e `is_over_alert_threshold`. Mobile solo permite configurar el umbral al **crear** una subcategoría de gasto (`categories_screen.dart`) — no hay edición de categorías propias en mobile hoy, es una limitación preexistente de esa pantalla, no algo nuevo de esta tarea. El badge se muestra igual en la lista mobile.
+- Tests: 9 de modelo, 4 de vista web, 4 de API.
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.

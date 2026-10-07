@@ -163,9 +163,18 @@ def exchange_rate_today(request):
         return JsonResponse({"error": "No se pudo obtener la cotización"}, status=503)
 
 
-APP_VERSION = "1.26.0"
+APP_VERSION = "1.27.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.27.0",
+        "date": "Octubre 2026",
+        "title": "Umbral de alerta por categoría",
+        "items": [
+            "Ahora podés configurar un umbral de alerta mensual en tus categorías de gasto",
+            "Cuando lo superás, aparece un aviso junto a la categoría en la pantalla de Categorías con lo gastado en el mes",
+        ],
+    },
     {
         "version": "1.26.0",
         "date": "Octubre 2026",

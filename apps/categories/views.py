@@ -10,6 +10,7 @@ from django.db import models
 from django.db.models.deletion import ProtectedError
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.views import View
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
@@ -38,18 +39,26 @@ class CategoryListView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         from apps.core.constants import CategoryType
+        from apps.expenses.models import Expense
 
         hidden_ids = set(
             CategoryOverride.objects.filter(user=user, is_hidden=True).values_list(
                 "category_id", flat=True
             )
         )
-        context["expense_tree"] = self._build_full_tree(user, CategoryType.EXPENSE, hidden_ids)
-        context["income_tree"] = self._build_full_tree(user, CategoryType.INCOME, hidden_ids)
+        today = timezone.localdate()
+        spent_by_category = {
+            row["category__id"]: row["total"]
+            for row in Expense.get_by_category(user, today.month, today.year)
+        }
+        context["expense_tree"] = self._build_full_tree(
+            user, CategoryType.EXPENSE, hidden_ids, spent_by_category
+        )
+        context["income_tree"] = self._build_full_tree(user, CategoryType.INCOME, hidden_ids, {})
         return context
 
     @staticmethod
-    def _build_full_tree(user, category_type, hidden_ids):
+    def _build_full_tree(user, category_type, hidden_ids, spent_by_category):
         """
         Retorna lista de {group, subcategories} incluyendo grupos sin subcategorías.
         A diferencia de get_categories_by_group/get_groups (usados por los selectores
@@ -74,6 +83,14 @@ class CategoryListView(LoginRequiredMixin, ListView):
 
         for category in groups + subcats:
             category.is_hidden = category.pk in hidden_ids
+
+        for subcat in subcats:
+            spent = spent_by_category.get(subcat.pk, 0)
+            subcat.current_month_spent_value = spent
+            subcat.is_over_threshold = (
+                subcat.monthly_alert_threshold is not None
+                and spent >= subcat.monthly_alert_threshold
+            )
 
         tree = []
         for group in groups:

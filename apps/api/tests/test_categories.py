@@ -1,5 +1,7 @@
 """Tests para los endpoints de categorías de la API v1."""
 
+from decimal import Decimal
+
 import pytest
 
 from apps.categories.models import Category, CategoryOverride
@@ -241,3 +243,65 @@ class TestCategoryHideEndpoint:
         assert not CategoryOverride.objects.filter(
             user=user, category=system_expense_group, is_hidden=True
         ).exists()
+
+
+@pytest.mark.django_db
+class TestMonthlyAlertThresholdEndpoint:
+    """DT-088: umbral de alerta mensual vía API."""
+
+    url = "/api/v1/categories/"
+
+    def test_crear_subcategoria_con_umbral(self, client, user, system_expense_group):
+        headers = auth_header(client, user)
+        data = {
+            "name": "Ropa",
+            "type": CategoryType.EXPENSE,
+            "parent": system_expense_group.pk,
+            "icon": "bi-tag",
+            "color": "#dc3545",
+            "monthly_alert_threshold": "20000",
+        }
+        response = client.post(self.url, data, content_type="application/json", **headers)
+        assert response.status_code == 201
+        cat = Category.objects.get(name="Ropa", user=user)
+        assert cat.monthly_alert_threshold == 20000
+
+    def test_no_puede_asignar_umbral_a_un_grupo(self, client, user):
+        headers = auth_header(client, user)
+        data = {
+            "name": "Grupo con umbral",
+            "type": CategoryType.EXPENSE,
+            "icon": "bi-tag",
+            "color": "#dc3545",
+            "monthly_alert_threshold": "20000",
+        }
+        response = client.post(self.url, data, content_type="application/json", **headers)
+        assert response.status_code == 400
+
+    def test_no_puede_asignar_umbral_a_categoria_de_ingreso(
+        self, client, user, system_income_group
+    ):
+        headers = auth_header(client, user)
+        data = {
+            "name": "Ingreso con umbral",
+            "type": CategoryType.INCOME,
+            "parent": system_income_group.pk,
+            "icon": "bi-tag",
+            "color": "#28a745",
+            "monthly_alert_threshold": "20000",
+        }
+        response = client.post(self.url, data, content_type="application/json", **headers)
+        assert response.status_code == 400
+
+    def test_is_over_alert_threshold_true_al_superarlo(
+        self, client, user, expense_category, expense_factory
+    ):
+        expense_category.monthly_alert_threshold = Decimal("1000")
+        expense_category.save()
+        expense_factory(user, expense_category, amount=Decimal("1500"))
+
+        headers = auth_header(client, user)
+        response = client.get("/api/v1/categories/", **headers)
+        item = next(c for c in response.json()["results"] if c["id"] == expense_category.pk)
+        assert item["is_over_alert_threshold"] is True
+        assert Decimal(item["current_month_spent"]) == Decimal("1500.00")

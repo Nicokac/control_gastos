@@ -4,6 +4,7 @@ import '../../../core/constants/category_colors.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/category_icons.dart';
 import '../../../core/widgets/error_state_view.dart';
+import '../../../core/utils/formatters.dart';
 import '../../expenses/providers/expense_provider.dart';
 import '../../income/providers/income_provider.dart';
 
@@ -374,6 +375,7 @@ class _SubcatTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isSystem = subcat['is_system'] as bool? ?? false;
     final isHidden = subcat['is_hidden'] as bool? ?? false;
+    final isOverThreshold = subcat['is_over_alert_threshold'] as bool? ?? false;
 
     return ListTile(
       dense: true,
@@ -390,7 +392,20 @@ class _SubcatTile extends StatelessWidget {
               color: isHidden ? Colors.grey[400] : null)),
       subtitle: isHidden
           ? const Text('Oculta para mí', style: TextStyle(fontSize: 11))
-          : null,
+          : isOverThreshold
+              ? Row(
+                  children: [
+                    Icon(Icons.warning_amber_rounded,
+                        size: 12, color: context.semanticColors.danger),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${formatArsString(subcat['current_month_spent'] as String? ?? '0')} este mes',
+                      style: TextStyle(
+                          fontSize: 11, color: context.semanticColors.danger),
+                    ),
+                  ],
+                )
+              : null,
       trailing: isSystem
           ? IconButton(
               icon: Icon(
@@ -430,6 +445,7 @@ class _CreateCategorySheet extends ConsumerStatefulWidget {
 
 class _CreateCategorySheetState extends ConsumerState<_CreateCategorySheet> {
   final _nameCtrl = TextEditingController();
+  final _thresholdCtrl = TextEditingController();
   String _type = 'EXPENSE';
   String _color = '#6c757d';
   String _icon = 'bi-tag';
@@ -449,6 +465,7 @@ class _CreateCategorySheetState extends ConsumerState<_CreateCategorySheet> {
   @override
   void dispose() {
     _nameCtrl.dispose();
+    _thresholdCtrl.dispose();
     super.dispose();
   }
 
@@ -462,6 +479,10 @@ class _CreateCategorySheetState extends ConsumerState<_CreateCategorySheet> {
       'color': _color,
       'icon': _icon,
       if (widget.parentGroup != null) 'parent': widget.parentGroup!['id'],
+      if (widget.parentGroup != null &&
+          _type == 'EXPENSE' &&
+          _thresholdCtrl.text.trim().isNotEmpty)
+        'monthly_alert_threshold': parseArgentineAmount(_thresholdCtrl.text),
     };
 
     try {
@@ -616,6 +637,19 @@ class _CreateCategorySheetState extends ConsumerState<_CreateCategorySheet> {
               },
             ),
           ),
+          if (widget.parentGroup != null && _type == 'EXPENSE') ...[
+            const SizedBox(height: 16),
+            TextField(
+              controller: _thresholdCtrl,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                labelText: 'Umbral de alerta mensual (opcional)',
+                prefixText: '\$ ',
+                border: OutlineInputBorder(),
+                helperText: 'Te avisamos cuando el gasto del mes la supere',
+              ),
+            ),
+          ],
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,

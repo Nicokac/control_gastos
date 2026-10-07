@@ -3,6 +3,7 @@ Tests para las vistas de Category.
 """
 
 import json
+from decimal import Decimal
 
 from django.urls import reverse
 
@@ -727,3 +728,61 @@ class TestCategoryHideView:
         assert not CategoryOverride.objects.filter(
             user=user, category=system_expense_group, is_hidden=True
         ).exists()
+
+
+@pytest.mark.django_db
+class TestMonthlyAlertThresholdView:
+    """DT-088: umbral de alerta mensual, visto desde la vista de administración."""
+
+    def test_create_with_threshold(self, authenticated_client, user):
+        group = Category.objects.create(
+            name="Grupo Ropa", type=CategoryType.EXPENSE, user=user, parent=None
+        )
+        data = {
+            "name": "Ropa",
+            "type": "EXPENSE",
+            "parent": group.pk,
+            "icon": "bi-tag",
+            "color": "#dc3545",
+            "monthly_alert_threshold": "20000",
+        }
+        response = authenticated_client.post(reverse("categories:create"), data)
+        assert response.status_code == 302
+        cat = Category.objects.get(name="Ropa", user=user)
+        assert cat.monthly_alert_threshold == 20000
+
+    def test_threshold_is_optional(self, authenticated_client, user):
+        group = Category.objects.create(
+            name="Grupo Varios", type=CategoryType.EXPENSE, user=user, parent=None
+        )
+        data = {
+            "name": "Varios 2",
+            "type": "EXPENSE",
+            "parent": group.pk,
+            "icon": "bi-tag",
+            "color": "#dc3545",
+        }
+        response = authenticated_client.post(reverse("categories:create"), data)
+        assert response.status_code == 302
+        cat = Category.objects.get(name="Varios 2", user=user)
+        assert cat.monthly_alert_threshold is None
+
+    def test_list_shows_badge_when_over_threshold(
+        self, authenticated_client, user, expense_category, expense_factory
+    ):
+        expense_category.monthly_alert_threshold = Decimal("1000")
+        expense_category.save()
+        expense_factory(user, expense_category, amount=Decimal("1500"))
+
+        response = authenticated_client.get(reverse("categories:list"))
+        assert "este mes" in response.content.decode()
+
+    def test_list_no_badge_when_under_threshold(
+        self, authenticated_client, user, expense_category, expense_factory
+    ):
+        expense_category.monthly_alert_threshold = Decimal("1000")
+        expense_category.save()
+        expense_factory(user, expense_category, amount=Decimal("500"))
+
+        response = authenticated_client.get(reverse("categories:list"))
+        assert "este mes" not in response.content.decode()

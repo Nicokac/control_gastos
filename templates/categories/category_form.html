@@ -140,6 +140,18 @@
                         </div>
                     </div>
 
+                    {% if form.instance.type == 'EXPENSE' and form.instance.parent_id or preset_parent.type == 'EXPENSE' %}
+                    <!-- Umbral de alerta mensual -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Umbral de alerta mensual <span class="text-muted fw-normal">(opcional)</span></label>
+                        {{ form.monthly_alert_threshold }}
+                        <div class="form-text">Te avisamos en esta pantalla cuando el gasto del mes en esta categoría supere este monto.</div>
+                        {% if form.monthly_alert_threshold.errors %}
+                        <div class="text-danger small mt-1">{{ form.monthly_alert_threshold.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
                     <!-- Color -->
                     <div class="mb-4">
                         <label class="form-label fw-semibold">Color</label>

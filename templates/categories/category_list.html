@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load currency_filters %}
 
 {% block title %}Categorías - Control de Gastos{% endblock %}
 
@@ -77,6 +78,11 @@
                                     <span>{{ category.name }}</span>
                                     {% if category.is_system %}<span class="badge bg-secondary" style="font-size:0.65rem">Sistema</span>{% endif %}
                                     {% if category.is_hidden %}<span class="badge bg-light text-muted border" style="font-size:0.65rem">Oculta para mí</span>{% endif %}
+                                    {% if category.is_over_threshold %}
+                                    <span class="badge bg-danger-subtle text-danger-emphasis border border-danger-subtle" style="font-size:0.65rem" data-bs-toggle="tooltip" data-bs-title="Umbral: {{ category.monthly_alert_threshold|currency }}">
+                                        <i class="bi bi-exclamation-triangle-fill"></i> {{ category.current_month_spent_value|currency }} este mes
+                                    </span>
+                                    {% endif %}
                                 </div>
                                 {% if category.is_system %}
                                 <div>
