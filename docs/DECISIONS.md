@@ -1290,6 +1290,24 @@ La web tiene un formulario de Reportar/Sugerir (tipo: bug/mejora/pregunta/otro +
 
 ---
 
+### DT-085 — Usuario nuevo no podía cargar un gasto: grupo de sistema sin subcategorías
+
+**Estado:** ✅ Resuelto
+
+Usuario reportó en escritorio: "al querer cargar un gasto, no me aparecen las categorías del sistema". Investigado a fondo: la migración `0011_simplify_system_groups` (eliminación del módulo de presupuestos/simplificación de categorías) dejó un único grupo de sistema por tipo — **"Sin clasificar"** (EXPENSE) y **"Sueldo"** (INCOME) — pero **ninguno de los dos quedó con subcategorías de sistema propias**, solo recibieron subcategorías de usuario reasignadas desde los grupos eliminados. Confirmado en la base local (que corrió las mismas migraciones que producción): ambos grupos tenían 0 subcategorías de sistema.
+
+**Alcance real:** afecta a **Gastos en ambas plataformas** (web y mobile). `Category.get_user_categories()`/`get_expense_categories()` (usadas por `ExpenseForm` en la web y por la validación de categoría de la API que consume mobile) **solo devuelven subcategorías** (`parent__isnull=False`) — nunca grupos. Cualquier usuario que no cree manualmente al menos una subcategoría propia dentro de "Sin clasificar" se encuentra con el dropdown de categoría vacío, sin forma de cargar un gasto. Es un bug de onboarding crítico, no un caso borde: afecta a todo usuario nuevo real que no sepa que primero tiene que ir a crear una subcategoría.
+
+**Por qué Ingresos no mostraba el mismo síntoma:** `get_income_categories()` tiene un comportamiento distinto — si el grupo no tiene subcategorías, **incluye el grupo mismo** como opción válida ("los ingresos admiten esto, a diferencia de los gastos", ver DT-079/DT-080). Por eso "Sueldo" vacío no bloqueaba cargar un ingreso, aunque la experiencia seguía siendo pobre (una sola opción genérica en vez de subcategorías con sentido).
+
+**Why:** el problema no estaba en el flujo del formulario (que funciona correctamente en ambas plataformas), sino en los **datos faltantes** tras la migración 0011 — nunca se sembraron subcategorías de sistema de reemplazo cuando se simplificaron los grupos.
+
+**Resolución:** migración de datos nueva `0012_seed_default_subcategory` que agrega una subcategoría de sistema por grupo: **"Varios"** dentro de "Sin clasificar" (EXPENSE) y **"Otros"** dentro de "Sueldo" (INCOME), con color `#6c757d` (gris, de la paleta oficial `CATEGORY_COLOR_CHOICES` — el grupo original usaba `#adb5bd`, que no está en la paleta). Usa `get_or_create` para ser segura de re-ejecutar. No se tocó ningún código de frontend (web ni mobile) — el fix es 100% de datos, porque el flujo de ambos formularios ya era correcto una vez que existe al menos una subcategoría.
+
+4 tests nuevos en `apps/categories/tests/test_models.py` (`TestDefaultSystemSubcategories`). Importante: los tests de este proyecto corren con `--nomigrations` (`pyproject.toml`), así que los `RunPython` de datos —incluida esta migración— nunca se ejecutan en la suite de test; los tests recrean el escenario del bug manualmente (grupo de sistema sin subcategorías) en vez de depender de la migración 0012, para seguir protegiendo la regla aunque los datos reales cambien.
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.

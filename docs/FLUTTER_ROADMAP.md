@@ -356,3 +356,4 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-10-05 | Fase 5 | Bump versión mobile a 1.19.0+21 |
 | 2026-10-06 | Fase 4 | Reportar un problema en mobile: endpoint `feedback/`, captura automática del último `DioException` via interceptor, pantalla nueva en Configuración (DT-084) |
 | 2026-10-06 | Fase 5 | Bump versión mobile a 1.20.0+22 |
+| 2026-10-06 | Fix | No se podía cargar un gasto sin crear antes una subcategoría propia — grupos de sistema "Sin clasificar"/"Sueldo" sin subcategorías tras una simplificación anterior, corregido con datos (migración 0012), sin cambios de código mobile (DT-085) |

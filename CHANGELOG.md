@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.24.1] — 2026-10-06
+
+### Fixed
+
+- **No se podía cargar un gasto sin crear antes una subcategoría propia (DT-085)**: los grupos "Sin clasificar" y "Sueldo" quedaron sin ninguna subcategoría de sistema tras una simplificación anterior, dejando el selector de categoría vacío para cualquier usuario nuevo. Se agregaron subcategorías de sistema por defecto ("Varios" y "Otros"). Afecta tanto a la web como a la app móvil (ambas comparten los mismos datos de categorías).
+
+---
+
 ## [1.24.0 / Mobile 1.20.0+22] — 2026-10-06
 
 ### Added

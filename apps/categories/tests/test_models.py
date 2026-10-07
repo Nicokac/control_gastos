@@ -192,6 +192,77 @@ class TestCategoryHierarchy:
 
 
 @pytest.mark.django_db
+class TestDefaultSystemSubcategories:
+    """Verifica que un usuario nuevo, sin ninguna subcategoría propia, tenga
+    al menos una categoría válida disponible (DT-085) — reportado por un
+    usuario real: 'Sin clasificar' y 'Sueldo' quedaron sin subcategorías de
+    sistema tras la migración 0011, dejando el formulario sin opciones.
+
+    Los tests corren con --nomigrations (ver pyproject.toml), así que los
+    RunPython de datos (incluida la migración 0012 que sembró el fix) nunca
+    se ejecutan acá — estos tests recrean el escenario real a propósito,
+    para que sigan protegiendo la regla incluso si la data real cambia."""
+
+    @pytest.fixture
+    def sin_clasificar_vacio(self, db):
+        return Category.objects.create(
+            name="Sin clasificar",
+            type=CategoryType.EXPENSE,
+            is_system=True,
+            user=None,
+            parent=None,
+        )
+
+    @pytest.fixture
+    def sueldo_vacio(self, db):
+        return Category.objects.create(
+            name="Sueldo",
+            type=CategoryType.INCOME,
+            is_system=True,
+            user=None,
+            parent=None,
+        )
+
+    def test_grupo_de_sistema_sin_subcategorias_no_ofrece_categoria_de_gasto(
+        self, user, sin_clasificar_vacio
+    ):
+        """Reproduce el bug: sin ninguna subcategoría, el usuario no tiene
+        nada para elegir al cargar un gasto."""
+        result = list(Category.get_expense_categories(user))
+        assert result == []
+
+    def test_agregar_subcategoria_de_sistema_resuelve_el_bug(self, user, sin_clasificar_vacio):
+        Category.objects.create(
+            name="Varios",
+            type=CategoryType.EXPENSE,
+            is_system=True,
+            user=None,
+            parent=sin_clasificar_vacio,
+        )
+        result = list(Category.get_expense_categories(user))
+        assert len(result) == 1
+        assert result[0].name == "Varios"
+
+    def test_ingresos_permite_usar_el_grupo_directo_sin_subcategorias(self, user, sueldo_vacio):
+        """get_income_categories() sí incluye el grupo mismo cuando no tiene
+        subcategorías (a diferencia de gastos) — por eso este bug afectaba a
+        Gastos en la web/mobile, pero no de la misma forma a Ingresos."""
+        result = list(Category.get_income_categories(user))
+        assert result == [sueldo_vacio]
+
+    def test_agregar_subcategoria_a_sueldo_tambien_queda_disponible(self, user, sueldo_vacio):
+        Category.objects.create(
+            name="Otros",
+            type=CategoryType.INCOME,
+            is_system=True,
+            user=None,
+            parent=sueldo_vacio,
+        )
+        result = list(Category.get_income_categories(user))
+        assert len(result) == 2
+
+
+@pytest.mark.django_db
 class TestGetCategoriesByGroup:
     """Tests para el método get_categories_by_group."""
 
