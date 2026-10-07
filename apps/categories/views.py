@@ -17,7 +17,7 @@ from apps.core.constants import CATEGORY_COLOR_CHOICES, CategoryType
 from apps.core.views import UserFormKwargsMixin
 
 from .forms import CategoryForm
-from .models import Category
+from .models import Category, CategoryOverride
 
 
 class CategoryListView(LoginRequiredMixin, ListView):
@@ -39,23 +39,50 @@ class CategoryListView(LoginRequiredMixin, ListView):
         user = self.request.user
         from apps.core.constants import CategoryType
 
-        context["expense_tree"] = self._build_full_tree(user, CategoryType.EXPENSE)
-        context["income_tree"] = self._build_full_tree(user, CategoryType.INCOME)
+        hidden_ids = set(
+            CategoryOverride.objects.filter(user=user, is_hidden=True).values_list(
+                "category_id", flat=True
+            )
+        )
+        context["expense_tree"] = self._build_full_tree(user, CategoryType.EXPENSE, hidden_ids)
+        context["income_tree"] = self._build_full_tree(user, CategoryType.INCOME, hidden_ids)
         return context
 
     @staticmethod
-    def _build_full_tree(user, category_type):
+    def _build_full_tree(user, category_type, hidden_ids):
         """
         Retorna lista de {group, subcategories} incluyendo grupos sin subcategorías.
-        Los grupos del sistema sin subs se omiten; los del usuario siempre se incluyen.
+        A diferencia de get_categories_by_group/get_groups (usados por los selectores
+        de alta), esta vista de administración muestra TODAS las categorías propias y
+        de sistema, incluidas las que el usuario ocultó (DT-086) — si no, no habría
+        forma de revertir el ocultamiento.
         """
-        tree = Category.get_categories_by_group(user, category_type)
-        tree_group_pks = {entry["group"].pk for entry in tree}
+        groups = list(
+            Category.objects.filter(
+                models.Q(is_system=True) | models.Q(user=user),
+                type=category_type,
+                parent__isnull=True,
+            )
+        )
+        subcats = list(
+            Category.objects.filter(
+                models.Q(is_system=True) | models.Q(user=user),
+                type=category_type,
+                parent__isnull=False,
+            ).select_related("parent")
+        )
 
-        all_groups = Category.get_groups(user, category_type)
-        for group in all_groups:
-            if group.pk not in tree_group_pks:
-                tree.append({"group": group, "subcategories": []})
+        for category in groups + subcats:
+            category.is_hidden = category.pk in hidden_ids
+
+        tree = []
+        for group in groups:
+            tree.append(
+                {
+                    "group": group,
+                    "subcategories": [s for s in subcats if s.parent_id == group.pk],
+                }
+            )
 
         return sorted(tree, key=lambda e: (e["group"].order, e["group"].name))
 
@@ -272,6 +299,28 @@ class CategoryQuickCreateView(LoginRequiredMixin, View):
                 "label": f"{parent.name} › {new_cat.name}",
             }
         )
+
+
+class CategoryHideView(LoginRequiredMixin, View):
+    """Oculta una categoría de sistema de los selectores de este usuario,
+    sin afectar a otros usuarios ni a transacciones ya cargadas (DT-086)."""
+
+    def post(self, request, pk, *args, **kwargs):
+        category = Category.objects.filter(pk=pk, is_system=True).first()
+        if category is None:
+            return JsonResponse({"error": "Categoría no encontrada."}, status=404)
+        CategoryOverride.objects.update_or_create(
+            user=request.user, category=category, defaults={"is_hidden": True}
+        )
+        return JsonResponse({"ok": True})
+
+
+class CategoryUnhideView(LoginRequiredMixin, View):
+    """Revierte el ocultamiento de una categoría de sistema (DT-086)."""
+
+    def post(self, request, pk, *args, **kwargs):
+        CategoryOverride.objects.filter(user=request.user, category_id=pk, is_hidden=True).delete()
+        return JsonResponse({"ok": True})
 
 
 class CategoryReorderView(LoginRequiredMixin, View):

@@ -1308,6 +1308,28 @@ Usuario reportó en escritorio: "al querer cargar un gasto, no me aparecen las c
 
 ---
 
+### DT-086 — Ocultar categorías de sistema por usuario (fase 1)
+
+**Estado:** ✅ Resuelto (fase 1 — solo ocultar)
+
+Usuario reportó: "me gustaría poder editar las categorías de Sistema, hay unas preexistentes que no uso, o en mi cabeza las catalogo diferente". Editar una categoría de sistema directamente no es viable — modificaría el nombre/color para **todos** los usuarios, ya que es un registro compartido (`is_system=True, user=None`). Se dividió la solución en dos fases confirmadas con el usuario:
+
+- **Fase 1 (esta, resuelta):** ocultar una categoría de sistema de los selectores de alta, por usuario, sin tocar la categoría compartida.
+- **Fase 2 (diferida):** renombrar una categoría de sistema "para mí", reflejado en todos los lugares donde se muestra (serializers de Expense/Income, templates web, tiles mobile). Mayor alcance — se deja para una sesión aparte.
+
+**Why:** ocultar no afecta a otros usuarios ni a transacciones ya cargadas con esa categoría — decisión confirmada explícitamente: "siguen mostrándose normal, solo se oculta del selector al crear uno nuevo". Esto evita que ocultar una categoría rompa el historial de gastos/ingresos existentes.
+
+**Resolución:**
+- Modelo nuevo `CategoryOverride` (`apps/categories/models.py`): `user` + `category` + `is_hidden`, con constraint de unicidad por par usuario/categoría y validación en `clean()` de que solo se puede crear sobre una categoría `is_system=True` (una categoría propia no tiene sentido "ocultarla para mí", ya se puede borrar). Migración `0013_categoryoverride`.
+- `Category._exclude_hidden()` nuevo, usado por `get_user_categories()`, `get_income_categories()` y `get_groups()` — los tres métodos que alimentan los **selectores de alta** de gasto/ingreso en ambas plataformas. Una categoría oculta desaparece de esos selectores pero sigue existiendo y referenciada normalmente en cualquier transacción ya cargada.
+- **Importante:** `CategoryListView` (pantalla de administración de categorías, web) **no** usa esos métodos filtrados — se reescribió `_build_full_tree()` para consultar directo (sin pasar por `_exclude_hidden`), porque si no, una vez oculta, la categoría desaparecería también de la pantalla donde el usuario la administra, sin forma de revertir el ocultamiento.
+- **API** (`CategoryViewSet`): acciones `POST /api/v1/categories/{id}/hide/` y `.../unhide/`, bloqueadas con 403 si se intenta ocultar una categoría propia (no tiene sentido — se borra directamente). `CategorySerializer` expone `is_hidden` (calculado por usuario autenticado, siempre `False` para categorías no-sistema).
+- **Web**: `CategoryHideView`/`CategoryUnhideView` (`apps/categories/views.py`), mismo criterio 404 si la categoría no es de sistema. Botón ojo/ojo-tachado en `category_list.html` sobre cada grupo/subcategoría de sistema, handler en `category_list.js` (reusa `getCsrfToken()` de `main.js`).
+- **Mobile**: botones equivalentes en `categories_screen.dart` (`_GroupTile`, `_SubcatTile`), métodos `hideCategory()`/`unhideCategory()` en `ExpenseRepository`.
+- 7 tests de modelo (`TestCategoryOverride` en `test_models.py`), 5 tests de API (`TestCategoryHideEndpoint`), 4 tests de vista web (`TestCategoryHideView`).
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.

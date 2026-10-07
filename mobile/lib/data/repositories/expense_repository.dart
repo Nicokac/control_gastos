@@ -58,6 +58,14 @@ class ExpenseRepository {
     await ApiService.dio.delete('${ApiConstants.categories}$id/');
   }
 
+  Future<void> hideCategory(int id) async {
+    await ApiService.dio.post('${ApiConstants.categories}$id/hide/');
+  }
+
+  Future<void> unhideCategory(int id) async {
+    await ApiService.dio.post('${ApiConstants.categories}$id/unhide/');
+  }
+
   List<dynamic> _extractList(dynamic data) {
     if (data is List) return data;
     if (data is Map && data.containsKey('results')) {

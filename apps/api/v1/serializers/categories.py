@@ -12,6 +12,7 @@ class CategoryGroupSerializer(serializers.ModelSerializer):
 
 class CategorySerializer(serializers.ModelSerializer):
     parent_name = serializers.CharField(source="parent.name", read_only=True)
+    is_hidden = serializers.SerializerMethodField()
 
     class Meta:
         model = Category
@@ -24,8 +25,17 @@ class CategorySerializer(serializers.ModelSerializer):
             "is_system",
             "parent",
             "parent_name",
+            "is_hidden",
         ]
         read_only_fields = ["id", "is_system"]
+
+    def get_is_hidden(self, obj) -> bool:
+        if not obj.is_system:
+            return False
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return False
+        return obj.user_overrides.filter(user=request.user, is_hidden=True).exists()
 
     def validate(self, attrs):
         user = self.context["request"].user

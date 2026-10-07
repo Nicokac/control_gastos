@@ -163,9 +163,19 @@ def exchange_rate_today(request):
         return JsonResponse({"error": "No se pudo obtener la cotización"}, status=503)
 
 
-APP_VERSION = "1.24.1"
+APP_VERSION = "1.25.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.25.0",
+        "date": "Octubre 2026",
+        "title": "Ocultar categorías de sistema",
+        "items": [
+            "Si hay categorías predefinidas que no usás, ahora podés ocultarlas desde la pantalla de Categorías (web y mobile)",
+            "No afecta a otros usuarios ni a los gastos o ingresos que ya cargaste con esa categoría",
+            "Se puede revertir en cualquier momento con el mismo botón",
+        ],
+    },
     {
         "version": "1.24.0",
         "date": "Octubre 2026",

@@ -43,4 +43,27 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
     });
+
+    document.querySelectorAll('.category-toggle-hidden').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const pk = btn.dataset.pk;
+            const isHidden = btn.dataset.hidden === 'true';
+            const action = isHidden ? 'unhide' : 'hide';
+
+            fetch(`/categories/${pk}/${action}/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCsrfToken() },
+            }).then(function (res) {
+                if (res.ok) {
+                    window.location.reload();
+                } else if (typeof showToast === 'function') {
+                    showToast('No se pudo actualizar la categoría.', 'danger');
+                }
+            }).catch(function () {
+                if (typeof showToast === 'function') {
+                    showToast('Error al actualizar la categoría.', 'danger');
+                }
+            });
+        });
+    });
 });

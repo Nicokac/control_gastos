@@ -195,9 +195,33 @@ class _GroupTile extends StatelessWidget {
     return Color(int.parse('FF${hex.replaceFirst('#', '')}', radix: 16));
   }
 
+  Future<void> _toggleHidden(BuildContext context, bool isHidden) async {
+    try {
+      final repo = ref.read(expenseRepositoryProvider);
+      if (isHidden) {
+        await repo.unhideCategory(group['id'] as int);
+      } else {
+        await repo.hideCategory(group['id'] as int);
+      }
+      ref.invalidate(allCategoriesProvider);
+      ref.invalidate(categoriesProvider);
+      ref.invalidate(incomeCategoriesProvider);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('No se pudo actualizar la categoría'),
+            backgroundColor: context.semanticColors.danger,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isSystem = group['is_system'] as bool? ?? false;
+    final isHidden = group['is_hidden'] as bool? ?? false;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -205,14 +229,17 @@ class _GroupTile extends StatelessWidget {
       child: ExpansionTile(
         leading: CircleAvatar(
           radius: 16,
-          backgroundColor: _color.withValues(alpha: 0.15),
-          child: Icon(Icons.folder_outlined, size: 16, color: _color),
+          backgroundColor: _color.withValues(alpha: isHidden ? 0.07 : 0.15),
+          child: Icon(Icons.folder_outlined,
+              size: 16, color: isHidden ? Colors.grey[400] : _color),
         ),
         title: Row(
           children: [
             Text(group['name'] as String,
-                style: const TextStyle(
-                    fontSize: 14, fontWeight: FontWeight.w600)),
+                style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: isHidden ? Colors.grey[400] : null)),
             const SizedBox(width: 6),
             if (isSystem)
               Container(
@@ -226,11 +253,27 @@ class _GroupTile extends StatelessWidget {
                     style:
                         TextStyle(fontSize: 10, color: Colors.grey[600])),
               ),
+            if (isHidden)
+              Padding(
+                padding: const EdgeInsets.only(left: 6),
+                child: Text('oculta para mí',
+                    style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+              ),
           ],
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (isSystem)
+              IconButton(
+                icon: Icon(
+                    isHidden ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                    size: 18, color: Colors.grey[400]),
+                tooltip: isHidden ? 'Mostrar' : 'Ocultar para mí',
+                onPressed: () => _toggleHidden(context, isHidden),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
             IconButton(
               icon: const Icon(Icons.add, size: 18),
               onPressed: onAdd,
@@ -304,22 +347,60 @@ class _SubcatTile extends StatelessWidget {
     }
   }
 
+  Future<void> _toggleHidden(BuildContext context, bool isHidden) async {
+    try {
+      final repo = ref.read(expenseRepositoryProvider);
+      if (isHidden) {
+        await repo.unhideCategory(subcat['id'] as int);
+      } else {
+        await repo.hideCategory(subcat['id'] as int);
+      }
+      ref.invalidate(allCategoriesProvider);
+      ref.invalidate(categoriesProvider);
+      ref.invalidate(incomeCategoriesProvider);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('No se pudo actualizar la categoría'),
+            backgroundColor: context.semanticColors.danger,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isSystem = subcat['is_system'] as bool? ?? false;
+    final isHidden = subcat['is_hidden'] as bool? ?? false;
 
     return ListTile(
       dense: true,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
       leading: CircleAvatar(
         radius: 12,
-        backgroundColor: _color.withValues(alpha: 0.15),
-        child: Icon(Icons.label_outline, size: 12, color: _color),
+        backgroundColor: _color.withValues(alpha: isHidden ? 0.07 : 0.15),
+        child: Icon(Icons.label_outline,
+            size: 12, color: isHidden ? Colors.grey[400] : _color),
       ),
       title: Text(subcat['name'] as String,
-          style: const TextStyle(fontSize: 13)),
+          style: TextStyle(
+              fontSize: 13,
+              color: isHidden ? Colors.grey[400] : null)),
+      subtitle: isHidden
+          ? const Text('Oculta para mí', style: TextStyle(fontSize: 11))
+          : null,
       trailing: isSystem
-          ? null
+          ? IconButton(
+              icon: Icon(
+                  isHidden ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                  size: 18, color: Colors.grey[400]),
+              tooltip: isHidden ? 'Mostrar' : 'Ocultar para mí',
+              onPressed: () => _toggleHidden(context, isHidden),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            )
           : IconButton(
               icon: Icon(Icons.delete_outline,
                   size: 18, color: Colors.grey[400]),

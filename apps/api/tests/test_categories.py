@@ -2,7 +2,7 @@
 
 import pytest
 
-from apps.categories.models import Category
+from apps.categories.models import Category, CategoryOverride
 from apps.core.constants import CategoryType
 
 
@@ -187,3 +187,57 @@ class TestCategoryDeleteEndpoint:
         url = f"/api/v1/categories/{system_expense_group.pk}/"
         response = client.delete(url, **headers)
         assert response.status_code in [403, 404]
+
+
+@pytest.mark.django_db
+class TestCategoryHideEndpoint:
+    """DT-086 fase 1: ocultar una categoría de sistema por usuario."""
+
+    def test_ocultar_categoria_de_sistema(self, client, user, system_expense_group):
+        headers = auth_header(client, user)
+        url = f"/api/v1/categories/{system_expense_group.pk}/hide/"
+        response = client.post(url, **headers)
+        assert response.status_code == 204
+        assert CategoryOverride.objects.filter(
+            user=user, category=system_expense_group, is_hidden=True
+        ).exists()
+
+    def test_no_puede_ocultar_categoria_propia(self, client, user, expense_category):
+        headers = auth_header(client, user)
+        url = f"/api/v1/categories/{expense_category.pk}/hide/"
+        response = client.post(url, **headers)
+        assert response.status_code == 403
+
+    def test_ocultar_no_afecta_a_otro_usuario(self, client, user, other_user, system_expense_group):
+        headers = auth_header(client, user)
+        client.post(f"/api/v1/categories/{system_expense_group.pk}/hide/", **headers)
+
+        token_response = client.post(
+            "/api/v1/auth/token/",
+            {"username": other_user.email, "password": "otherpass123"},  # pragma: allowlist secret
+            content_type="application/json",
+        )
+        other_headers = {"HTTP_AUTHORIZATION": f"Bearer {token_response.json()['access']}"}
+        response = client.get("/api/v1/categories/", **other_headers)
+        ids = [c["id"] for c in response.json()["results"]]
+        assert system_expense_group.pk in ids
+
+    def test_categoria_oculta_no_aparece_al_listar_para_el_usuario(
+        self, client, user, system_expense_group
+    ):
+        headers = auth_header(client, user)
+        client.post(f"/api/v1/categories/{system_expense_group.pk}/hide/", **headers)
+
+        response = client.get("/api/v1/categories/", **headers)
+        hidden = next(c for c in response.json()["results"] if c["id"] == system_expense_group.pk)
+        assert hidden["is_hidden"] is True
+
+    def test_unhide_revierte_el_ocultamiento(self, client, user, system_expense_group):
+        headers = auth_header(client, user)
+        client.post(f"/api/v1/categories/{system_expense_group.pk}/hide/", **headers)
+
+        response = client.post(f"/api/v1/categories/{system_expense_group.pk}/unhide/", **headers)
+        assert response.status_code == 204
+        assert not CategoryOverride.objects.filter(
+            user=user, category=system_expense_group, is_hidden=True
+        ).exists()

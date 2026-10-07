@@ -1,10 +1,12 @@
-from rest_framework import viewsets
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from apps.api.v1.pagination import ConfigurablePageNumberPagination
 from apps.api.v1.serializers.categories import CategorySerializer
-from apps.categories.models import Category
+from apps.categories.models import Category, CategoryOverride
 from apps.core.constants import CategoryType
 
 
@@ -52,3 +54,24 @@ class CategoryViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         self._check_not_system(self.get_object())
         return super().destroy(request, *args, **kwargs)
+
+    @action(detail=True, methods=["post"], url_path="hide")
+    def hide(self, request, pk=None):
+        """Oculta una categoría de sistema de los selectores de este usuario,
+        sin afectar a otros usuarios ni a transacciones ya cargadas (DT-086)."""
+        category = self.get_object()
+        if not category.is_system:
+            raise PermissionDenied("Solo se pueden ocultar categorías del sistema.")
+        CategoryOverride.objects.update_or_create(
+            user=request.user, category=category, defaults={"is_hidden": True}
+        )
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=["post"], url_path="unhide")
+    def unhide(self, request, pk=None):
+        """Revierte el ocultamiento de una categoría de sistema (DT-086)."""
+        category = self.get_object()
+        CategoryOverride.objects.filter(
+            user=request.user, category=category, is_hidden=True
+        ).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

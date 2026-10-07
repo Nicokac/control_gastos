@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 
 import pytest
 
-from apps.categories.models import Category
+from apps.categories.models import Category, CategoryOverride
 from apps.core.constants import CategoryType
 
 
@@ -189,6 +189,70 @@ class TestCategoryHierarchy:
 
         with pytest.raises(django_models.ProtectedError):
             expense_category.parent.delete()
+
+
+@pytest.mark.django_db
+class TestCategoryOverride:
+    """Tests para CategoryOverride — ocultar categorías de sistema por
+    usuario sin afectar a otros usuarios ni a la categoría compartida
+    (DT-086, fase 1: solo ocultar)."""
+
+    def test_crear_override_de_categoria_de_sistema(self, user, system_expense_group):
+        override = CategoryOverride.objects.create(
+            user=user, category=system_expense_group, is_hidden=True
+        )
+        assert override.pk is not None
+        assert override.is_hidden is True
+
+    def test_no_se_puede_crear_override_de_categoria_de_usuario(self, user, expense_category):
+        with pytest.raises(ValidationError):
+            CategoryOverride.objects.create(user=user, category=expense_category, is_hidden=True)
+
+    def test_un_solo_override_por_usuario_y_categoria(self, user, system_expense_group):
+        CategoryOverride.objects.create(user=user, category=system_expense_group, is_hidden=True)
+        with pytest.raises(ValidationError):
+            CategoryOverride.objects.create(
+                user=user, category=system_expense_group, is_hidden=True
+            )
+
+    def test_categoria_oculta_no_aparece_en_get_groups(self, user, system_expense_group):
+        CategoryOverride.objects.create(user=user, category=system_expense_group, is_hidden=True)
+        result = list(Category.get_groups(user, CategoryType.EXPENSE))
+        assert system_expense_group not in result
+
+    def test_categoria_oculta_no_aparece_para_otro_usuario(
+        self, user, other_user, system_expense_group
+    ):
+        """Ocultar es por usuario — no afecta a nadie más."""
+        CategoryOverride.objects.create(user=user, category=system_expense_group, is_hidden=True)
+        result = list(Category.get_groups(other_user, CategoryType.EXPENSE))
+        assert system_expense_group in result
+
+    def test_subcategoria_oculta_no_aparece_en_get_expense_categories(
+        self, user, system_expense_group
+    ):
+        system_subcat = Category.objects.create(
+            name="Sub de sistema",
+            type=CategoryType.EXPENSE,
+            is_system=True,
+            user=None,
+            parent=system_expense_group,
+        )
+        CategoryOverride.objects.create(user=user, category=system_subcat, is_hidden=True)
+
+        result = list(Category.get_expense_categories(user))
+        assert system_subcat not in result
+
+    def test_no_afecta_gastos_ya_cargados_con_esa_categoria(
+        self, user, expense_category_factory, expense_factory
+    ):
+        """Ocultar solo afecta el selector al crear — el historial sigue igual."""
+        system_subcat = expense_category_factory(user=None, name="Sub de sistema 2", is_system=True)
+        expense = expense_factory(user, system_subcat)
+        CategoryOverride.objects.create(user=user, category=system_subcat, is_hidden=True)
+
+        expense.refresh_from_db()
+        assert expense.category_id == system_subcat.id
 
 
 @pytest.mark.django_db

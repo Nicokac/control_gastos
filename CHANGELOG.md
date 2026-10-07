@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.25.0 / Mobile 1.21.0+23] — 2026-10-06
+
+### Added
+
+- **Ocultar categorías de sistema (DT-086, fase 1)**: ahora se puede ocultar una categoría del sistema que no se usa (o que ya no se necesita ver) de los selectores al cargar un gasto o ingreso, sin afectar a otros usuarios ni a transacciones ya cargadas con esa categoría. Disponible en web y mobile, desde la pantalla de Categorías (botón de ojo). Se puede revertir en cualquier momento.
+
+---
+
 ## [1.24.1] — 2026-10-06
 
 ### Fixed

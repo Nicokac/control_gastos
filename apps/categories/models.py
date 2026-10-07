@@ -152,11 +152,20 @@ class Category(TimestampMixin, models.Model):
         return not self.is_system
 
     @classmethod
+    def _exclude_hidden(cls, queryset, user):
+        """Excluye categorías de sistema que el usuario ocultó (DT-086)."""
+        hidden_ids = CategoryOverride.objects.filter(user=user, is_hidden=True).values_list(
+            "category_id", flat=True
+        )
+        return queryset.exclude(pk__in=hidden_ids)
+
+    @classmethod
     def get_user_categories(cls, user, category_type=None):
         """
         Obtiene las subcategorías disponibles para un usuario.
         Solo retorna subcategorías (parent != null) — los grupos no se asignan a transacciones.
-        Incluye las del sistema y las propias del usuario.
+        Incluye las del sistema y las propias del usuario, excepto las que el
+        usuario haya ocultado.
         """
         queryset = cls.objects.filter(
             models.Q(is_system=True) | models.Q(user=user),
@@ -166,6 +175,7 @@ class Category(TimestampMixin, models.Model):
         if category_type:
             queryset = queryset.filter(type=category_type)
 
+        queryset = cls._exclude_hidden(queryset, user)
         return queryset.select_related("parent").order_by("parent__name", "name")
 
     @classmethod
@@ -178,26 +188,27 @@ class Category(TimestampMixin, models.Model):
         """
         Obtiene categorías de tipo INCOME para un usuario.
         Incluye tanto grupos como subcategorías porque los ingresos del sistema
-        son de un solo nivel (no tienen parent).
+        son de un solo nivel (no tienen parent), excepto las que el usuario
+        haya ocultado.
         """
-        return (
-            cls.objects.filter(
-                models.Q(is_system=True) | models.Q(user=user),
-                type=CategoryType.INCOME,
-            )
-            .select_related("parent")
-            .order_by("parent__name", "name")
+        queryset = cls.objects.filter(
+            models.Q(is_system=True) | models.Q(user=user),
+            type=CategoryType.INCOME,
         )
+        queryset = cls._exclude_hidden(queryset, user)
+        return queryset.select_related("parent").order_by("parent__name", "name")
 
     @classmethod
     def get_groups(cls, user, category_type=None):
-        """Obtiene los grupos disponibles para un usuario (sistema + propios)."""
+        """Obtiene los grupos disponibles para un usuario (sistema + propios),
+        excepto los que el usuario haya ocultado."""
         queryset = cls.objects.filter(
             models.Q(is_system=True) | models.Q(user=user),
             parent__isnull=True,
         )
         if category_type:
             queryset = queryset.filter(type=category_type)
+        queryset = cls._exclude_hidden(queryset, user)
         return queryset.order_by("name")
 
     @classmethod
@@ -214,3 +225,49 @@ class Category(TimestampMixin, models.Model):
                 groups[group.pk] = {"group": group, "subcategories": []}
             groups[group.pk]["subcategories"].append(sub)
         return list(groups.values())
+
+
+class CategoryOverride(TimestampMixin, models.Model):
+    """
+    Preferencia de un usuario sobre una categoría de SISTEMA, sin modificar
+    la categoría compartida (que afectaría a todos los usuarios). Hoy solo
+    soporta ocultarla de los selectores de creación — no afecta gastos/
+    ingresos ya cargados con esa categoría (DT-086).
+    """
+
+    user = models.ForeignKey(
+        "users.User",
+        on_delete=models.CASCADE,
+        related_name="category_overrides",
+        verbose_name="Usuario",
+    )
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.CASCADE,
+        related_name="user_overrides",
+        verbose_name="Categoría",
+    )
+    is_hidden = models.BooleanField(default=False, verbose_name="Oculta")
+
+    class Meta:
+        verbose_name = "Preferencia de categoría"
+        verbose_name_plural = "Preferencias de categoría"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "category"], name="unique_override_per_user_and_category"
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.user} — {self.category} (oculta={self.is_hidden})"
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def clean(self):
+        super().clean()
+        if self.category_id and not self.category.is_system:
+            raise ValidationError(
+                {"category": "Solo se puede personalizar una categoría del sistema."}
+            )

@@ -15,4 +15,6 @@ urlpatterns = [
     path("quick-create/", views.CategoryQuickCreateView.as_view(), name="quick_create"),
     path("<int:pk>/edit/", views.CategoryUpdateView.as_view(), name="update"),
     path("<int:pk>/delete/", views.CategoryDeleteView.as_view(), name="delete"),
+    path("<int:pk>/hide/", views.CategoryHideView.as_view(), name="hide"),
+    path("<int:pk>/unhide/", views.CategoryUnhideView.as_view(), name="unhide"),
 ]

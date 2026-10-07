@@ -681,3 +681,49 @@ class TestCategoryQuickCreateView:
             url, data="no-es-json", content_type="application/json"
         )
         assert response.status_code == 400
+
+
+@pytest.mark.django_db
+class TestCategoryHideView:
+    """DT-086 fase 1: ocultar una categoría de sistema por usuario (web)."""
+
+    def test_ocultar_categoria_de_sistema(self, authenticated_client, user, system_expense_group):
+        from apps.categories.models import CategoryOverride
+
+        url = reverse("categories:hide", args=[system_expense_group.pk])
+        response = authenticated_client.post(url)
+
+        assert response.status_code == 200
+        assert CategoryOverride.objects.filter(
+            user=user, category=system_expense_group, is_hidden=True
+        ).exists()
+
+    def test_no_puede_ocultar_categoria_propia(self, authenticated_client, expense_category):
+        url = reverse("categories:hide", args=[expense_category.pk])
+        response = authenticated_client.post(url)
+        assert response.status_code == 404
+
+    def test_sigue_apareciendo_en_la_lista_de_administracion(
+        self, authenticated_client, system_expense_group
+    ):
+        """A diferencia de los selectores de alta, la pantalla de Categorías debe
+        seguir mostrando la categoría oculta para poder revertir el ocultamiento."""
+        authenticated_client.post(reverse("categories:hide", args=[system_expense_group.pk]))
+
+        response = authenticated_client.get(reverse("categories:list"))
+        assert system_expense_group.name in response.content.decode()
+
+    def test_unhide_revierte_el_ocultamiento(
+        self, authenticated_client, user, system_expense_group
+    ):
+        from apps.categories.models import CategoryOverride
+
+        authenticated_client.post(reverse("categories:hide", args=[system_expense_group.pk]))
+
+        url = reverse("categories:unhide", args=[system_expense_group.pk])
+        response = authenticated_client.post(url)
+
+        assert response.status_code == 200
+        assert not CategoryOverride.objects.filter(
+            user=user, category=system_expense_group, is_hidden=True
+        ).exists()
