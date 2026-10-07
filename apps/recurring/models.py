@@ -60,6 +60,14 @@ class RecurringExpense(TimestampMixin, models.Model):
         verbose_name="Mes de inicio",
         help_text="Primer mes en que aplica este gasto (para el conteo de cuotas).",
     )
+    estimated_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name="Monto estimado",
+        help_text="Monto tentativo mientras no se registró ningún pago real.",
+    )
 
     class Meta:
         verbose_name = "Gasto recurrente"
@@ -102,6 +110,20 @@ class RecurringExpense(TimestampMixin, models.Model):
     def last_expense(self):
         """Último Expense vinculado a este recurrente."""
         return self.expenses.select_related("category").order_by("-date").first()
+
+    @property
+    def display_amount(self):
+        """Monto a mostrar: el real pagado manda siempre; el estimado es
+        solo un fallback mientras no hay ningún pago registrado."""
+        last = self.last_expense
+        if last:
+            return last.amount_ars
+        return self.estimated_amount
+
+    @property
+    def is_estimated_amount(self):
+        """Verdadero si display_amount viene del estimado, no de un pago real."""
+        return self.last_expense is None and self.estimated_amount is not None
 
     def is_paid_in(self, month, year):
         """Verdadero si hay al menos un Expense vinculado en el mes/año dado."""

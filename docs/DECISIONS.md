@@ -1330,6 +1330,23 @@ Usuario reportó: "me gustaría poder editar las categorías de Sistema, hay una
 
 ---
 
+### DT-087 — Monto estimado en Gastos Fijos
+
+**Estado:** ✅ Resuelto
+
+Usuario reportó: "¿Por qué en Gastos Fijos no puedo poner el monto? (lo agregué en Notas, siento que lo necesito ver)". El monto de un gasto fijo hoy solo existe una vez que se registra el primer pago real (`Expense` vinculado) — hasta ese momento, la lista no mostraba ninguna referencia de cuánto suele costar.
+
+**Why:** el usuario quería ver un monto de referencia al crear el gasto fijo, pero sin que compita con el monto real una vez que existe un pago. Decisión confirmada explícitamente: "se deja de usar, el monto real manda siempre" — el estimado es puramente un fallback de visualización mientras no hay ningún pago registrado, nunca se usa junto al real ni lo sobreescribe.
+
+**Resolución:**
+- Campo nuevo `estimated_amount` (opcional) en `RecurringExpense` (`apps/recurring/models.py`). Migración `0004_recurringexpense_estimated_amount`.
+- Dos properties nuevas en el modelo: `display_amount` (el monto real del último `Expense` vinculado si existe, sino `estimated_amount`, sino `None`) y `is_estimated_amount` (booleano, verdadero solo cuando `display_amount` viene del estimado). Toda la regla de negocio vive en el modelo — ni la web ni mobile la duplican.
+- **Web**: campo agregado a `RecurringExpenseForm` y al formulario, columna "Último pago" en `recurring_list.html` ahora muestra el estimado (con etiqueta "Estimado" y el signo `~`) cuando no hay pago real.
+- **API/mobile**: `RecurringExpenseSerializer` expone `estimated_amount`, `display_amount` y `is_estimated_amount`. La lista mobile (`recurring_list_screen.dart`) pinta el monto en gris con la etiqueta "Estimado" cuando corresponde; al marcar como pagado (`_markPaid`), el diálogo de monto ahora precompleta con el estimado si no hay pago previo, en vez de quedar vacío.
+- Tests: 3 de modelo (`display_amount`/`is_estimated_amount`), 3 de API, 4 de vista web.
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.

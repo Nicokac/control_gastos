@@ -37,6 +37,13 @@
                     </div>
 
                     <div class="mb-3">
+                        <label for="{{ form.estimated_amount.id_for_label }}" class="form-label fw-semibold">Monto estimado <span class="text-muted fw-normal">(opcional)</span></label>
+                        {{ form.estimated_amount }}
+                        <div class="form-text">Se muestra como referencia hasta que registrés el primer pago real. Una vez pagado, siempre manda el monto real.</div>
+                        {% if form.estimated_amount.errors %}<div class="invalid-feedback d-block">{{ form.estimated_amount.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
                         <label for="{{ form.notes.id_for_label }}" class="form-label fw-semibold">Notas <span class="text-muted fw-normal">(opcional)</span></label>
                         {{ form.notes }}
                         {% if form.notes.errors %}<div class="invalid-feedback d-block">{{ form.notes.errors.0 }}</div>{% endif %}

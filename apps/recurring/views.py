@@ -39,6 +39,8 @@ class RecurringExpenseListView(LoginRequiredMixin, ListView):
                     "rec": rec,
                     "status": rec.status_for(month, year),
                     "last_expense": last,
+                    "display_amount": rec.display_amount,
+                    "is_estimated_amount": rec.is_estimated_amount,
                 }
             )
 

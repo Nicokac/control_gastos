@@ -12,6 +12,8 @@ class RecurringExpenseSerializer(serializers.ModelSerializer):
     installments_remaining = serializers.IntegerField(read_only=True)
     last_expense_amount = serializers.SerializerMethodField()
     last_expense_date = serializers.SerializerMethodField()
+    display_amount = serializers.SerializerMethodField()
+    is_estimated_amount = serializers.BooleanField(read_only=True)
     status = serializers.SerializerMethodField()
 
     class Meta:
@@ -28,10 +30,13 @@ class RecurringExpenseSerializer(serializers.ModelSerializer):
             "total_installments",
             "starting_installment",
             "start_date",
+            "estimated_amount",
             "installments_paid",
             "installments_remaining",
             "last_expense_amount",
             "last_expense_date",
+            "display_amount",
+            "is_estimated_amount",
             "status",
             "created_at",
         ]
@@ -41,6 +46,8 @@ class RecurringExpenseSerializer(serializers.ModelSerializer):
             "installments_remaining",
             "last_expense_amount",
             "last_expense_date",
+            "display_amount",
+            "is_estimated_amount",
             "status",
             "created_at",
         ]
@@ -52,6 +59,10 @@ class RecurringExpenseSerializer(serializers.ModelSerializer):
     def get_last_expense_date(self, obj) -> str | None:
         last = obj.last_expense
         return str(last.date) if last else None
+
+    def get_display_amount(self, obj) -> str | None:
+        amount = obj.display_amount
+        return str(amount) if amount is not None else None
 
     def get_status(self, obj) -> str:
         from django.utils import timezone

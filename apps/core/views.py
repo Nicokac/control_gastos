@@ -163,9 +163,18 @@ def exchange_rate_today(request):
         return JsonResponse({"error": "No se pudo obtener la cotización"}, status=503)
 
 
-APP_VERSION = "1.25.0"
+APP_VERSION = "1.26.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.26.0",
+        "date": "Octubre 2026",
+        "title": "Monto estimado en Gastos Fijos",
+        "items": [
+            "Ahora podés indicar un monto estimado al crear un gasto fijo, para tenerlo de referencia antes de registrar el primer pago",
+            "Una vez que registrás un pago real, ese monto siempre tiene prioridad sobre el estimado",
+        ],
+    },
     {
         "version": "1.25.0",
         "date": "Octubre 2026",

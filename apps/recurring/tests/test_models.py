@@ -26,6 +26,41 @@ class TestRecurringExpenseModel:
     def test_last_expense_none_when_no_payments(self, recurring):
         assert recurring.last_expense is None
 
+    # --- display_amount / is_estimated_amount (DT-087) ---
+
+    def test_display_amount_none_without_estimate_or_payment(self, recurring):
+        assert recurring.display_amount is None
+        assert recurring.is_estimated_amount is False
+
+    def test_display_amount_uses_estimate_without_payment(self, user, expense_category):
+        rec = RecurringExpense.objects.create(
+            user=user,
+            name="Internet",
+            category=expense_category,
+            due_day=10,
+            estimated_amount=15000,
+        )
+        assert rec.display_amount == 15000
+        assert rec.is_estimated_amount is True
+
+    def test_display_amount_prefers_real_payment_over_estimate(
+        self, user, expense_category, expense_factory
+    ):
+        rec = RecurringExpense.objects.create(
+            user=user,
+            name="Internet",
+            category=expense_category,
+            due_day=10,
+            estimated_amount=15000,
+        )
+        expense = expense_factory(user, expense_category, date=date(2026, 5, 8))
+        expense.recurring = rec
+        expense.amount = 18000
+        expense.save()
+
+        assert rec.display_amount == expense.amount_ars
+        assert rec.is_estimated_amount is False
+
     def test_is_paid_in_false_when_no_expenses(self, recurring):
         assert recurring.is_paid_in(5, 2026) is False
 

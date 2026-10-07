@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.26.0 / Mobile 1.22.0+24] — 2026-10-06
+
+### Added
+
+- **Monto estimado en Gastos Fijos (DT-087)**: se puede indicar un monto tentativo al crear un gasto fijo, mostrado como referencia en la lista hasta que se registra el primer pago real. Una vez pagado, el monto real siempre tiene prioridad. Disponible en web y mobile.
+
+---
+
 ## [1.25.0 / Mobile 1.21.0+23] — 2026-10-06
 
 ### Added

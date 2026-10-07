@@ -210,3 +210,62 @@ class TestRecurringFormStartingInstallment:
         response = authenticated_client.post(reverse("recurring:create"), data)
         assert response.status_code == 200
         assert not RecurringExpense.objects.filter(name="Cuota sin total").exists()
+
+
+@pytest.mark.django_db
+class TestRecurringEstimatedAmount:
+    """DT-087: monto estimado como referencia mientras no hay pago real."""
+
+    def test_create_with_estimated_amount(self, authenticated_client, user, expense_category):
+        data = {
+            "name": "Internet",
+            "category": expense_category.pk,
+            "due_day": 15,
+            "notes": "",
+            "estimated_amount": "15000.00",
+        }
+        authenticated_client.post(reverse("recurring:create"), data)
+        rec = RecurringExpense.objects.get(name="Internet", user=user)
+        assert rec.estimated_amount == 15000
+
+    def test_estimated_amount_is_optional(self, authenticated_client, user, expense_category):
+        data = {
+            "name": "Cable",
+            "category": expense_category.pk,
+            "due_day": 15,
+            "notes": "",
+        }
+        response = authenticated_client.post(reverse("recurring:create"), data)
+        assert response.status_code == 302
+        rec = RecurringExpense.objects.get(name="Cable", user=user)
+        assert rec.estimated_amount is None
+
+    def test_list_shows_estimated_amount_without_payment(
+        self, authenticated_client, user, expense_category
+    ):
+        RecurringExpense.objects.create(
+            user=user,
+            name="Internet",
+            category=expense_category,
+            due_day=15,
+            estimated_amount=15000,
+        )
+        response = authenticated_client.get(reverse("recurring:list"))
+        content = response.content.decode()
+        assert "Estimado" in content
+
+    def test_list_prefers_real_payment_over_estimate(
+        self, authenticated_client, user, recurring, expense_factory
+    ):
+        from datetime import date
+
+        recurring.estimated_amount = 1000
+        recurring.save()
+        expense = expense_factory(user, recurring.category, date=date.today())
+        expense.recurring = recurring
+        expense.amount = 5000
+        expense.save()
+
+        response = authenticated_client.get(reverse("recurring:list"))
+        content = response.content.decode()
+        assert "Estimado" not in content

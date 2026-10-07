@@ -107,6 +107,9 @@
                         {% if item.last_expense %}
                             <strong>{{ item.last_expense.formatted_amount }}</strong>
                             <br><small class="text-muted">{{ item.last_expense.date|date:"d/m/Y" }}</small>
+                        {% elif item.is_estimated_amount %}
+                            <span class="text-muted">~{{ item.display_amount|currency }}</span>
+                            <br><small class="text-muted">Estimado</small>
                         {% else %}
                             <small class="text-muted">Sin pagos</small>
                         {% endif %}

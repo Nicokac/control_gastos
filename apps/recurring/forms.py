@@ -20,6 +20,7 @@ class RecurringExpenseForm(forms.ModelForm):
             "total_installments",
             "starting_installment",
             "start_date",
+            "estimated_amount",
         ]
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control"}),
@@ -33,6 +34,9 @@ class RecurringExpenseForm(forms.ModelForm):
                 attrs={"class": "form-control", "min": 1, "placeholder": "Ej: 4"}
             ),
             "start_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+            "estimated_amount": forms.NumberInput(
+                attrs={"class": "form-control", "min": 0, "step": "0.01", "placeholder": "Opcional"}
+            ),
         }
 
     def __init__(self, *args, user=None, **kwargs):
@@ -43,6 +47,7 @@ class RecurringExpenseForm(forms.ModelForm):
         self.fields["total_installments"].required = False
         self.fields["starting_installment"].required = False
         self.fields["start_date"].required = False
+        self.fields["estimated_amount"].required = False
 
     def clean(self):
         cleaned_data = super().clean()

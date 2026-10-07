@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/recurring_provider.dart';
 import '../../../core/widgets/error_state_view.dart';
+import '../../../core/utils/formatters.dart';
 
 class RecurringFormScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic>? existing;
@@ -20,6 +21,7 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
   final _notesCtrl = TextEditingController();
   final _totalInstCtrl = TextEditingController();
   final _startingInstCtrl = TextEditingController();
+  final _estimatedAmountCtrl = TextEditingController();
 
   int _dueDay = 1;
   int? _categoryId;
@@ -47,6 +49,14 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
         _startingInstCtrl.text =
             (e['starting_installment'] as int? ?? 1).toString();
       }
+      final estimated = e['estimated_amount'] as String?;
+      if (estimated != null) {
+        final parsed = double.tryParse(estimated);
+        if (parsed != null) {
+          _estimatedAmountCtrl.text =
+              parsed.toStringAsFixed(2).replaceAll('.', ',');
+        }
+      }
     }
   }
 
@@ -56,6 +66,7 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
     _notesCtrl.dispose();
     _totalInstCtrl.dispose();
     _startingInstCtrl.dispose();
+    _estimatedAmountCtrl.dispose();
     super.dispose();
   }
 
@@ -142,6 +153,8 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
         'total_installments': int.tryParse(_totalInstCtrl.text),
         'starting_installment': int.tryParse(_startingInstCtrl.text) ?? 1,
       },
+      if (_estimatedAmountCtrl.text.trim().isNotEmpty)
+        'estimated_amount': parseArgentineAmount(_estimatedAmountCtrl.text),
     };
 
     final notifier = ref.read(recurringListProvider.notifier);
@@ -216,6 +229,24 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
                       value: d, child: Text('Día $d')))
                   .toList(),
               onChanged: (v) => setState(() => _dueDay = v ?? 1),
+            ),
+            const SizedBox(height: 16),
+
+            // Monto estimado
+            TextFormField(
+              controller: _estimatedAmountCtrl,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                labelText: 'Monto estimado (opcional)',
+                prefixText: '\$ ',
+                border: OutlineInputBorder(),
+                helperText:
+                    'Se muestra como referencia hasta el primer pago real',
+              ),
+              validator: (v) {
+                if (v == null || v.trim().isEmpty) return null;
+                return parseArgentineAmount(v) == null ? 'Monto inválido' : null;
+              },
             ),
             const SizedBox(height: 16),
 

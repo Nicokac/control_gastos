@@ -157,15 +157,22 @@ class _RecurringTile extends StatelessWidget {
   }
 
   Future<void> _markPaid(BuildContext context) async {
-    final amountStr = item['last_expense_amount'] as String?;
+    final realAmountStr = item['last_expense_amount'] as String?;
+    final displayAmountStr = item['display_amount'] as String?;
     final lastAmount =
-        amountStr != null ? double.tryParse(amountStr) : null;
+        realAmountStr != null ? double.tryParse(realAmountStr) : null;
+    final prefillAmount =
+        displayAmountStr != null ? double.tryParse(displayAmountStr) : null;
 
     double? amount = lastAmount;
 
     if (lastAmount == null) {
-      // Pedir monto si no hay historial
-      final ctrl = TextEditingController();
+      // Pedir monto si no hay historial — precompletado con el estimado si existe
+      final ctrl = TextEditingController(
+        text: prefillAmount != null
+            ? prefillAmount.toStringAsFixed(2).replaceAll('.', ',')
+            : '',
+      );
       final result = await showDialog<double>(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -328,14 +335,24 @@ class _RecurringTile extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              if (item['last_expense_amount'] != null)
+              if (item['display_amount'] != null) ...[
                 Text(
-                  formatArs(double.tryParse(
-                          item['last_expense_amount'] as String) ??
-                      0),
-                  style: const TextStyle(
-                      fontSize: 13, fontWeight: FontWeight.bold),
+                  formatArs(
+                      double.tryParse(item['display_amount'] as String) ?? 0),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: (item['is_estimated_amount'] as bool? ?? false)
+                        ? Colors.grey[500]
+                        : null,
+                  ),
                 ),
+                if (item['is_estimated_amount'] as bool? ?? false)
+                  Text(
+                    'Estimado',
+                    style: TextStyle(fontSize: 10, color: Colors.grey[500]),
+                  ),
+              ],
               Container(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 6, vertical: 2),

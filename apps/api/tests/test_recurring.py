@@ -190,3 +190,50 @@ class TestRecurringPendingEndpoint:
         assert response.status_code == 200
         ids = [r["id"] for r in response.json()]
         assert recurring.pk in ids
+
+
+@pytest.mark.django_db
+class TestRecurringDisplayAmount:
+    """DT-087: monto estimado como fallback mientras no hay pago real."""
+
+    def test_crear_con_monto_estimado(self, client, user, expense_category):
+        headers = auth_header(client, user)
+        data = {
+            "name": "Internet",
+            "category": expense_category.pk,
+            "due_day": 15,
+            "estimated_amount": "15000.00",
+        }
+        response = client.post(
+            "/api/v1/recurring/", data, content_type="application/json", **headers
+        )
+        assert response.status_code == 201
+        rec = RecurringExpense.objects.get(name="Internet", user=user)
+        assert rec.estimated_amount == 15000
+
+    def test_display_amount_usa_estimado_sin_pago(self, client, user, expense_category):
+        headers = auth_header(client, user)
+        RecurringExpense.objects.create(
+            user=user,
+            name="Internet",
+            category=expense_category,
+            due_day=15,
+            estimated_amount=15000,
+        )
+        response = client.get("/api/v1/recurring/", **headers)
+        item = next(r for r in response.json()["results"] if r["name"] == "Internet")
+        assert item["display_amount"] == "15000.00"
+        assert item["is_estimated_amount"] is True
+
+    def test_display_amount_usa_pago_real_cuando_existe(self, client, user, recurring):
+        headers = auth_header(client, user)
+        client.post(
+            f"/api/v1/recurring/{recurring.pk}/mark-paid/",
+            {"amount": "5000.00"},
+            content_type="application/json",
+            **headers,
+        )
+        response = client.get("/api/v1/recurring/", **headers)
+        item = next(r for r in response.json()["results"] if r["id"] == recurring.pk)
+        assert item["display_amount"] == "5000.00"
+        assert item["is_estimated_amount"] is False
