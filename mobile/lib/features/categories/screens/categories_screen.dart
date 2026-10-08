@@ -524,7 +524,6 @@ class _CreateCategorySheetState extends ConsumerState<_CreateCategorySheet> {
             autofocus: true,
             decoration: const InputDecoration(
               labelText: 'Nombre *',
-              border: OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 16),
@@ -533,7 +532,6 @@ class _CreateCategorySheetState extends ConsumerState<_CreateCategorySheet> {
               value: _type,
               decoration: const InputDecoration(
                 labelText: 'Tipo',
-                border: OutlineInputBorder(),
               ),
               items: const [
                 DropdownMenuItem(value: 'EXPENSE', child: Text('Gasto')),
@@ -644,7 +642,6 @@ class _CreateCategorySheetState extends ConsumerState<_CreateCategorySheet> {
               decoration: const InputDecoration(
                 labelText: 'Umbral de alerta mensual (opcional)',
                 prefixText: '\$ ',
-                border: OutlineInputBorder(),
                 helperText: 'Te avisamos cuando el gasto del mes la supere',
               ),
             ),

@@ -188,7 +188,6 @@ class _RecurringTile extends StatelessWidget {
             decoration: const InputDecoration(
               labelText: 'Monto',
               prefixText: '\$ ',
-              border: OutlineInputBorder(),
             ),
             autofocus: true,
           ),

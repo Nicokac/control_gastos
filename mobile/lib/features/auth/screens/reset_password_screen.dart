@@ -81,7 +81,6 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                   controller: _uidController,
                   decoration: const InputDecoration(
                     labelText: 'Código 1',
-                    border: OutlineInputBorder(),
                   ),
                   validator: (v) =>
                       v == null || v.isEmpty ? 'Ingresá el código 1' : null,
@@ -91,7 +90,6 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                   controller: _tokenController,
                   decoration: const InputDecoration(
                     labelText: 'Código 2',
-                    border: OutlineInputBorder(),
                   ),
                   validator: (v) =>
                       v == null || v.isEmpty ? 'Ingresá el código 2' : null,
@@ -103,7 +101,6 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                   decoration: InputDecoration(
                     labelText: 'Nueva contraseña',
                     prefixIcon: const Icon(Icons.lock_outlined),
-                    border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
                       icon: Icon(
                           _obscure ? Icons.visibility : Icons.visibility_off),
@@ -121,7 +118,6 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                   decoration: const InputDecoration(
                     labelText: 'Repetir contraseña',
                     prefixIcon: Icon(Icons.lock_outlined),
-                    border: OutlineInputBorder(),
                   ),
                   validator: (v) {
                     if (v == null || v.isEmpty) return 'Repetí la contraseña';

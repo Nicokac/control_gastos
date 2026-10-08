@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/providers/theme_provider.dart';
+import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/widgets/error_state_view.dart';
 
@@ -14,7 +15,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 const _inputBorder = OutlineInputBorder(
-  borderRadius: BorderRadius.all(Radius.circular(12)),
+  borderRadius: BorderRadius.all(Radius.circular(AppRadius.card)),
 );
 const _inputFontSize = 14.0;
 

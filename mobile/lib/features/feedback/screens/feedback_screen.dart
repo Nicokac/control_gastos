@@ -107,7 +107,6 @@ class _FeedbackScreenState extends ConsumerState<FeedbackScreen> {
                     labelText: 'Mensaje',
                     hintText:
                         'Describí el problema o sugerencia con el mayor detalle posible...',
-                    border: OutlineInputBorder(),
                     alignLabelWithHint: true,
                   ),
                   validator: (v) => v == null || v.trim().isEmpty

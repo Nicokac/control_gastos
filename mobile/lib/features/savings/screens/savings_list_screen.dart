@@ -132,7 +132,6 @@ class _SavingCard extends StatelessWidget {
                 decoration: const InputDecoration(
                   labelText: 'Monto *',
                   prefixText: '\$ ',
-                  border: OutlineInputBorder(),
                 ),
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'Ingresá el monto';
@@ -146,7 +145,6 @@ class _SavingCard extends StatelessWidget {
                 controller: descCtrl,
                 decoration: const InputDecoration(
                   labelText: 'Descripción',
-                  border: OutlineInputBorder(),
                 ),
                 maxLength: 255,
               ),

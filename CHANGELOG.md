@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [Mobile 1.24.2+28] — 2026-10-08
+
+### Fixed
+
+- **Bordes de campos de texto inconsistentes con el resto de la app (DT-090)**: los inputs de todos los formularios (Nuevo Gasto, Nuevo Ingreso, etc.) usaban el radio chico por defecto, que contrastaba con las tarjetas redondeadas del resto de la app. Unificado a 16px en toda la app.
+
+---
+
 ## [1.28.1 / Mobile 1.24.1+27] — 2026-10-08
 
 ### Fixed

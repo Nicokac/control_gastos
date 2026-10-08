@@ -30,7 +30,6 @@ class _HouseholdMembersScreenState
             autofocus: true,
             decoration: const InputDecoration(
               labelText: 'Nombre',
-              border: OutlineInputBorder(),
             ),
             validator: (v) =>
                 (v == null || v.trim().isEmpty) ? 'Ingresá un nombre' : null,

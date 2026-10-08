@@ -213,7 +213,6 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
               controller: _nameCtrl,
               decoration: const InputDecoration(
                 labelText: 'Nombre *',
-                border: OutlineInputBorder(),
               ),
               validator: (v) =>
                   (v == null || v.trim().isEmpty) ? 'Ingresá un nombre' : null,
@@ -225,7 +224,6 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
               value: _dueDay,
               decoration: const InputDecoration(
                 labelText: 'Día de vencimiento *',
-                border: OutlineInputBorder(),
               ),
               items: List.generate(28, (i) => i + 1)
                   .map((d) => DropdownMenuItem(
@@ -253,7 +251,6 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
               decoration: const InputDecoration(
                 labelText: 'Monto estimado (opcional)',
                 prefixText: '\$ ',
-                border: OutlineInputBorder(),
                 helperText:
                     'Se muestra como referencia hasta el primer pago real',
               ),
@@ -291,7 +288,6 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
                         labelText: 'Total de cuotas',
-                        border: OutlineInputBorder(),
                       ),
                       validator: (v) {
                         if (!_hasCuotas) return null;
@@ -308,7 +304,6 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
                         labelText: '¿En qué cuota estás?',
-                        border: OutlineInputBorder(),
                       ),
                     ),
                   ),
@@ -322,7 +317,6 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
               controller: _notesCtrl,
               decoration: const InputDecoration(
                 labelText: 'Notas',
-                border: OutlineInputBorder(),
               ),
               maxLines: 2,
               maxLength: 255,
@@ -378,7 +372,6 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
                         child: InputDecorator(
                           decoration: InputDecoration(
                             labelText: 'Grupo de categoría *',
-                            border: const OutlineInputBorder(),
                             errorText: field.errorText,
                             suffixIcon: const Icon(Icons.arrow_drop_down),
                           ),
@@ -410,7 +403,6 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
                           child: InputDecorator(
                             decoration: InputDecoration(
                               labelText: 'Categoría *',
-                              border: const OutlineInputBorder(),
                               errorText: field.errorText,
                               suffixIcon: const Icon(Icons.arrow_drop_down),
                             ),

@@ -77,7 +77,6 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             decoration: const InputDecoration(
               labelText: 'Email',
               prefixIcon: Icon(Icons.email_outlined),
-              border: OutlineInputBorder(),
             ),
             validator: (v) =>
                 v == null || v.isEmpty ? 'Ingresá tu email' : null,

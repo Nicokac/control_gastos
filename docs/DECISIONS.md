@@ -1406,6 +1406,8 @@ Usuario reportó 6 problemas relevados por uso real:
 - Tests nuevos: 8 en Django (`TestFeedbackViewAnonymous`, `TestLegalPagesRenderForBothAuthStates`, `TestAppFooterLegalLinks`), 9 en Flutter (`register_screen_test.dart`, navegación + toggle de contraseña).
 - Al correr la suite completa se encontró además un test preexistente frágil (`TestRecurringAutoDebit::test_list_no_badge_for_regular_recurring`, de DT-089) que buscaba la cadena "débito automático" en toda la página en vez de solo en la tabla de gastos fijos — rompía apenas esa frase aparecía en el modal de "novedades" (`WHATS_NEW`) por cualquier otro motivo. Se acotó la búsqueda al `<tbody>` de la tabla.
 
+**Ampliación posterior — radio de los campos de texto:** el usuario preguntó si los campos de Nuevo Gasto/Ingreso también debían tener bordes redondeados. A diferencia del punto 2 (que era una inconsistencia real entre pantallas), los inputs ya eran consistentes entre sí — las 15 pantallas con formularios usaban `OutlineInputBorder()` sin personalizar, heredando el radio chico por defecto de Material 3 (~4px), que contrastaba visualmente con el radio 16 ya unificado en los `Card`. Decisión del usuario: unificar a 16px en toda la app, vía theme global en vez de archivo por archivo. Se agregó `inputDecorationTheme` en `app.dart` (mismo `AppRadius.card`) y se quitaron los 52 `border: OutlineInputBorder()` explícitos en 14 pantallas (el theme global no sobreescribe un `border` puesto a mano en el widget, así que había que eliminarlos para que el theme tomara efecto). `settings_screen.dart` tenía además su propia constante `_inputBorder` con radio 12 hardcodeado — corregida para usar `AppRadius.card`.
+
 ---
 
 ## D-015 — Deudas técnicas descartadas

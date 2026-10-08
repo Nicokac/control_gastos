@@ -213,7 +213,6 @@ class _SharedExpenseFormScreenState
               decoration: const InputDecoration(
                 labelText: 'Monto *',
                 prefixText: '\$ ',
-                border: OutlineInputBorder(),
               ),
               validator: (v) {
                 if (v == null || v.isEmpty) return 'Ingresá el monto';
@@ -230,7 +229,6 @@ class _SharedExpenseFormScreenState
               value: _currency,
               decoration: const InputDecoration(
                 labelText: 'Moneda',
-                border: OutlineInputBorder(),
               ),
               items: const [
                 DropdownMenuItem(value: 'ARS', child: Text('Peso Argentino')),
@@ -246,7 +244,6 @@ class _SharedExpenseFormScreenState
               child: InputDecorator(
                 decoration: const InputDecoration(
                   labelText: 'Fecha',
-                  border: OutlineInputBorder(),
                   suffixIcon: Icon(Icons.calendar_today, size: 18),
                 ),
                 child: Text(
@@ -263,7 +260,6 @@ class _SharedExpenseFormScreenState
               controller: _descCtrl,
               decoration: const InputDecoration(
                 labelText: 'Descripción',
-                border: OutlineInputBorder(),
               ),
               maxLength: 255,
             ),
@@ -298,7 +294,6 @@ class _SharedExpenseFormScreenState
                   child: InputDecorator(
                     decoration: const InputDecoration(
                       labelText: '¿Quién pagó?',
-                      border: OutlineInputBorder(),
                       suffixIcon: Icon(Icons.arrow_drop_down),
                     ),
                     child: Text(paidByName),
@@ -357,7 +352,6 @@ class _SharedExpenseFormScreenState
                         child: InputDecorator(
                           decoration: InputDecoration(
                             labelText: 'Grupo de categoría *',
-                            border: const OutlineInputBorder(),
                             errorText: field.errorText,
                             suffixIcon: const Icon(Icons.arrow_drop_down),
                           ),
@@ -389,7 +383,6 @@ class _SharedExpenseFormScreenState
                           child: InputDecorator(
                             decoration: InputDecoration(
                               labelText: 'Categoría *',
-                              border: const OutlineInputBorder(),
                               errorText: field.errorText,
                               suffixIcon: const Icon(Icons.arrow_drop_down),
                             ),

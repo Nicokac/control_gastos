@@ -189,7 +189,6 @@ class _IncomeFormScreenState extends ConsumerState<IncomeFormScreen> {
                 labelText: 'Monto *',
                 prefixIcon: const Icon(Icons.payments_outlined),
                 prefixText: '\$ ',
-                border: const OutlineInputBorder(),
                 filled: true,
                 fillColor: context.semanticColors.income.withValues(alpha: 0.05),
               ),
@@ -208,7 +207,6 @@ class _IncomeFormScreenState extends ConsumerState<IncomeFormScreen> {
               decoration: const InputDecoration(
                 labelText: 'Moneda',
                 prefixIcon: Icon(Icons.attach_money),
-                border: OutlineInputBorder(),
               ),
               items: const [
                 DropdownMenuItem(value: 'ARS', child: Text('Peso Argentino')),
@@ -225,7 +223,6 @@ class _IncomeFormScreenState extends ConsumerState<IncomeFormScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Fecha',
                   prefixIcon: Icon(Icons.calendar_today_outlined),
-                  border: OutlineInputBorder(),
                   suffixIcon: Icon(Icons.arrow_drop_down),
                 ),
                 child: Text(
@@ -297,7 +294,6 @@ class _IncomeFormScreenState extends ConsumerState<IncomeFormScreen> {
                         child: InputDecorator(
                           decoration: InputDecoration(
                             labelText: 'Grupo de categoría *',
-                            border: const OutlineInputBorder(),
                             errorText: field.errorText,
                             prefixIcon: Icon(Icons.folder_outlined,
                                 color: groupName == null
@@ -333,7 +329,6 @@ class _IncomeFormScreenState extends ConsumerState<IncomeFormScreen> {
                           child: InputDecorator(
                             decoration: InputDecoration(
                               labelText: 'Categoría *',
-                              border: const OutlineInputBorder(),
                               errorText: field.errorText,
                               prefixIcon: Icon(Icons.label_outline,
                                   color: catName == null
@@ -365,7 +360,6 @@ class _IncomeFormScreenState extends ConsumerState<IncomeFormScreen> {
               decoration: const InputDecoration(
                 labelText: 'Descripción',
                 prefixIcon: Icon(Icons.notes_outlined),
-                border: OutlineInputBorder(),
               ),
               maxLength: 255,
             ),

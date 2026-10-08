@@ -130,7 +130,6 @@ class _SavingFormScreenState extends ConsumerState<SavingFormScreen> {
               decoration: const InputDecoration(
                 labelText: 'Nombre *',
                 prefixIcon: Icon(Icons.flag_outlined),
-                border: OutlineInputBorder(),
               ),
               validator: (v) =>
                   (v == null || v.trim().isEmpty) ? 'Ingresá un nombre' : null,
@@ -147,7 +146,6 @@ class _SavingFormScreenState extends ConsumerState<SavingFormScreen> {
                 labelText: 'Monto objetivo *',
                 prefixIcon: const Icon(Icons.flag_circle_outlined),
                 prefixText: '\$ ',
-                border: const OutlineInputBorder(),
                 filled: true,
                 fillColor: context.semanticColors.savings.withValues(alpha: 0.05),
               ),
@@ -165,7 +163,6 @@ class _SavingFormScreenState extends ConsumerState<SavingFormScreen> {
               decoration: const InputDecoration(
                 labelText: 'Moneda',
                 prefixIcon: Icon(Icons.attach_money),
-                border: OutlineInputBorder(),
               ),
               items: const [
                 DropdownMenuItem(value: 'ARS', child: Text('Peso Argentino')),
@@ -184,7 +181,6 @@ class _SavingFormScreenState extends ConsumerState<SavingFormScreen> {
                 decoration: InputDecoration(
                   labelText: 'Fecha objetivo',
                   prefixIcon: const Icon(Icons.event_outlined),
-                  border: const OutlineInputBorder(),
                   suffixIcon: _targetDate != null
                       ? IconButton(
                           icon: const Icon(Icons.clear, size: 18),
@@ -272,7 +268,6 @@ class _SavingFormScreenState extends ConsumerState<SavingFormScreen> {
               decoration: const InputDecoration(
                 labelText: 'Descripción',
                 prefixIcon: Icon(Icons.notes_outlined),
-                border: OutlineInputBorder(),
               ),
               maxLines: 2,
               maxLength: 255,
