@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.28.0 / Mobile 1.24.0+26] — 2026-10-07
+
+### Added
+
+- **Débito automático en Gastos Fijos (DT-089)**: se puede marcar un gasto fijo como débito automático; cuando está marcado, ya no se muestra como vencido al pasar la fecha de vencimiento, porque se paga solo. Disponible en web y mobile.
+
+---
+
 ## [1.27.0 / Mobile 1.23.0+25] — 2026-10-07
 
 ### Added

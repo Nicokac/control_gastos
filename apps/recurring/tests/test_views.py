@@ -269,3 +269,48 @@ class TestRecurringEstimatedAmount:
         response = authenticated_client.get(reverse("recurring:list"))
         content = response.content.decode()
         assert "Estimado" not in content
+
+
+@pytest.mark.django_db
+class TestRecurringAutoDebit:
+    """DT-089: diferenciar débito automático de vencimiento con recordatorio."""
+
+    def test_create_with_auto_debit(self, authenticated_client, user, expense_category):
+        data = {
+            "name": "Tarjeta",
+            "category": expense_category.pk,
+            "due_day": 10,
+            "notes": "",
+            "is_auto_debit": True,
+        }
+        authenticated_client.post(reverse("recurring:create"), data)
+        rec = RecurringExpense.objects.get(name="Tarjeta", user=user)
+        assert rec.is_auto_debit is True
+
+    def test_auto_debit_defaults_to_false(self, authenticated_client, user, expense_category):
+        data = {
+            "name": "Alquiler",
+            "category": expense_category.pk,
+            "due_day": 5,
+            "notes": "",
+        }
+        authenticated_client.post(reverse("recurring:create"), data)
+        rec = RecurringExpense.objects.get(name="Alquiler", user=user)
+        assert rec.is_auto_debit is False
+
+    def test_list_shows_auto_debit_badge(self, authenticated_client, user, expense_category):
+        RecurringExpense.objects.create(
+            user=user,
+            name="Tarjeta",
+            category=expense_category,
+            due_day=10,
+            is_auto_debit=True,
+        )
+        response = authenticated_client.get(reverse("recurring:list"))
+        content = response.content.decode()
+        assert "débito automático" in content
+
+    def test_list_no_badge_for_regular_recurring(self, authenticated_client, recurring):
+        response = authenticated_client.get(reverse("recurring:list"))
+        content = response.content.decode()
+        assert "débito automático" not in content

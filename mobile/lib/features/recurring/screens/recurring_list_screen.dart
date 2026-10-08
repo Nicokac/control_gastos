@@ -122,6 +122,8 @@ class _RecurringTile extends StatelessWidget {
     required this.onEdit,
   });
 
+  bool get _isAutoDebit => item['is_auto_debit'] as bool? ?? false;
+
   Color _statusColor(BuildContext context) {
     switch (item['status'] as String? ?? '') {
       case 'paid':
@@ -129,7 +131,9 @@ class _RecurringTile extends StatelessWidget {
       case 'overdue':
         return context.semanticColors.overdue;
       default:
-        return context.semanticColors.dueSoon;
+        return _isAutoDebit
+            ? context.semanticColors.recurring
+            : context.semanticColors.dueSoon;
     }
   }
 
@@ -140,7 +144,7 @@ class _RecurringTile extends StatelessWidget {
       case 'overdue':
         return 'Vencido';
       default:
-        return 'Pendiente';
+        return _isAutoDebit ? 'Débito automático' : 'Pendiente';
     }
   }
 

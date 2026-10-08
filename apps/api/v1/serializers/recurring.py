@@ -31,6 +31,7 @@ class RecurringExpenseSerializer(serializers.ModelSerializer):
             "starting_installment",
             "start_date",
             "estimated_amount",
+            "is_auto_debit",
             "installments_paid",
             "installments_remaining",
             "last_expense_amount",

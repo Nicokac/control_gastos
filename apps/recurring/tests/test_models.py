@@ -89,6 +89,54 @@ class TestRecurringExpenseModel:
     def test_status_overdue_for_past_month(self, recurring):
         assert recurring.status_for(1, 2020) == "overdue"
 
+    # --- is_auto_debit (DT-089) ---
+
+    def test_auto_debit_nunca_es_overdue_mes_pasado(self, user, expense_category):
+        rec = RecurringExpense.objects.create(
+            user=user,
+            name="Tarjeta",
+            category=expense_category,
+            due_day=10,
+            is_auto_debit=True,
+        )
+        assert rec.status_for(1, 2020) == "pending"
+
+    def test_auto_debit_nunca_es_overdue_dia_pasado_del_mes_actual(
+        self, user, expense_category, monkeypatch
+    ):
+        import datetime
+
+        from django.utils import timezone
+
+        rec = RecurringExpense.objects.create(
+            user=user,
+            name="Tarjeta",
+            category=expense_category,
+            due_day=10,
+            is_auto_debit=True,
+        )
+        monkeypatch.setattr(timezone, "localdate", lambda: datetime.date(2026, 5, 15))
+        assert rec.status_for(5, 2026) == "pending"
+
+    def test_auto_debit_sigue_siendo_paid_si_tiene_pago(
+        self, user, expense_category, expense_factory
+    ):
+        rec = RecurringExpense.objects.create(
+            user=user,
+            name="Tarjeta",
+            category=expense_category,
+            due_day=10,
+            is_auto_debit=True,
+        )
+        expense = expense_factory(user, expense_category, date=date(2026, 5, 8))
+        expense.recurring = rec
+        expense.save()
+        assert rec.status_for(5, 2026) == "paid"
+
+    def test_sin_auto_debit_sigue_siendo_overdue(self, recurring):
+        assert recurring.is_auto_debit is False
+        assert recurring.status_for(1, 2020) == "overdue"
+
     # --- installments ---
 
     def test_is_installment_false_without_total(self, recurring):

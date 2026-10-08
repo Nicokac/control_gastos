@@ -68,6 +68,11 @@ class RecurringExpense(TimestampMixin, models.Model):
         verbose_name="Monto estimado",
         help_text="Monto tentativo mientras no se registró ningún pago real.",
     )
+    is_auto_debit = models.BooleanField(
+        default=False,
+        verbose_name="Débito automático",
+        help_text="Si se paga solo (débito automático), no se marca como vencido.",
+    )
 
     class Meta:
         verbose_name = "Gasto recurrente"
@@ -135,11 +140,18 @@ class RecurringExpense(TimestampMixin, models.Model):
         - 'paid': ya tiene pago registrado ese mes
         - 'overdue': no pagado y el día de vencimiento ya pasó (mes actual)
         - 'pending': no pagado y aún no venció (mes actual) o mes futuro
+
+        Si es débito automático, nunca devuelve 'overdue': se paga solo, así
+        que el vencimiento no es relevante como alerta — queda 'pending'
+        indefinidamente hasta que se registre el pago.
         """
         from django.utils import timezone
 
         if self.is_paid_in(month, year):
             return "paid"
+
+        if self.is_auto_debit:
+            return "pending"
 
         today = timezone.localdate()
         if year < today.year or (year == today.year and month < today.month):

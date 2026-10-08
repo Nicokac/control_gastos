@@ -237,3 +237,36 @@ class TestRecurringDisplayAmount:
         item = next(r for r in response.json()["results"] if r["id"] == recurring.pk)
         assert item["display_amount"] == "5000.00"
         assert item["is_estimated_amount"] is False
+
+
+@pytest.mark.django_db
+class TestRecurringAutoDebit:
+    """DT-089: débito automático nunca aparece vencido."""
+
+    def test_crear_con_auto_debit(self, client, user, expense_category):
+        headers = auth_header(client, user)
+        data = {
+            "name": "Tarjeta",
+            "category": expense_category.pk,
+            "due_day": 10,
+            "is_auto_debit": True,
+        }
+        response = client.post(
+            "/api/v1/recurring/", data, content_type="application/json", **headers
+        )
+        assert response.status_code == 201
+        rec = RecurringExpense.objects.get(name="Tarjeta", user=user)
+        assert rec.is_auto_debit is True
+
+    def test_status_nunca_overdue_con_auto_debit(self, client, user, expense_category):
+        headers = auth_header(client, user)
+        RecurringExpense.objects.create(
+            user=user,
+            name="Tarjeta vieja",
+            category=expense_category,
+            due_day=1,
+            is_auto_debit=True,
+        )
+        response = client.get("/api/v1/recurring/", **headers)
+        item = next(r for r in response.json()["results"] if r["name"] == "Tarjeta vieja")
+        assert item["status"] != "overdue"

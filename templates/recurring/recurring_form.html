@@ -37,6 +37,15 @@
                     </div>
 
                     <div class="mb-3">
+                        <div class="form-check">
+                            {{ form.is_auto_debit }}
+                            <label class="form-check-label" for="{{ form.is_auto_debit.id_for_label }}">Es débito automático</label>
+                        </div>
+                        <div class="form-text">Se paga solo, así que no te lo marcamos como vencido cuando pasa el día de vencimiento.</div>
+                        {% if form.is_auto_debit.errors %}<div class="invalid-feedback d-block">{{ form.is_auto_debit.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <div class="mb-3">
                         <label for="{{ form.estimated_amount.id_for_label }}" class="form-label fw-semibold">Monto estimado <span class="text-muted fw-normal">(opcional)</span></label>
                         {{ form.estimated_amount }}
                         <div class="form-text">Se muestra como referencia hasta que registrés el primer pago real. Una vez pagado, siempre manda el monto real.</div>

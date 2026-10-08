@@ -28,6 +28,7 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
   int? _groupId;
   bool _isActive = true;
   bool _hasCuotas = false;
+  bool _isAutoDebit = false;
   bool _loading = false;
 
   bool get _isEditing => widget.existing != null;
@@ -42,6 +43,7 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
       _dueDay = e['due_day'] as int? ?? 1;
       _categoryId = e['category'] as int?;
       _isActive = e['is_active'] as bool? ?? true;
+      _isAutoDebit = e['is_auto_debit'] as bool? ?? false;
       final total = e['total_installments'] as int?;
       if (total != null) {
         _hasCuotas = true;
@@ -148,6 +150,7 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
       'category': _categoryId,
       'due_day': _dueDay,
       'is_active': _isActive,
+      'is_auto_debit': _isAutoDebit,
       if (_notesCtrl.text.trim().isNotEmpty) 'notes': _notesCtrl.text.trim(),
       if (_hasCuotas && _totalInstCtrl.text.isNotEmpty) ...{
         'total_installments': int.tryParse(_totalInstCtrl.text),
@@ -229,6 +232,17 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
                       value: d, child: Text('Día $d')))
                   .toList(),
               onChanged: (v) => setState(() => _dueDay = v ?? 1),
+            ),
+            const SizedBox(height: 16),
+
+            // Débito automático
+            SwitchListTile(
+              value: _isAutoDebit,
+              onChanged: (v) => setState(() => _isAutoDebit = v),
+              title: const Text('Es débito automático'),
+              subtitle: const Text(
+                  'Se paga solo, no te lo marcamos como vencido'),
+              contentPadding: EdgeInsets.zero,
             ),
             const SizedBox(height: 16),
 

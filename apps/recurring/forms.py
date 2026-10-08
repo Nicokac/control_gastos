@@ -21,12 +21,14 @@ class RecurringExpenseForm(forms.ModelForm):
             "starting_installment",
             "start_date",
             "estimated_amount",
+            "is_auto_debit",
         ]
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control"}),
             "due_day": forms.NumberInput(attrs={"class": "form-control", "min": 1, "max": 31}),
             "notes": forms.TextInput(attrs={"class": "form-control", "placeholder": "Opcional"}),
             "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+            "is_auto_debit": forms.CheckboxInput(attrs={"class": "form-check-input"}),
             "total_installments": forms.NumberInput(
                 attrs={"class": "form-control", "min": 1, "placeholder": "Ej: 12"}
             ),

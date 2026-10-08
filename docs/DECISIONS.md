@@ -1365,6 +1365,23 @@ Usuario reportó: "me gusta que exista un umbral de alerta (¿se pueden agregar 
 
 ---
 
+### DT-089 — Diferenciar débito automático de vencimiento en Gastos Fijos
+
+**Estado:** ✅ Resuelto
+
+Usuario reportó: "en gastos fijos me salen alertas de vencimiento, pero yo lo tengo en débito automático, no quiero que me salga vencido porque se paga solo". `status_for()` marcaba `overdue` a cualquier gasto fijo no pagado cuyo día de vencimiento ya pasó, sin distinguir si el usuario necesita pagarlo manualmente o si se cobra solo.
+
+**Why:** decisión confirmada explícitamente — "queda como 'pendiente' sin alerta roja". Un débito automático no necesita recordatorio de vencimiento porque no depende de una acción del usuario; marcarlo vencido genera ansiedad injustificada.
+
+**Resolución:**
+- Campo nuevo `is_auto_debit` (default `False`) en `RecurringExpense` (`apps/recurring/models.py`). Migración `0005_recurringexpense_is_auto_debit`.
+- `status_for()` modificado: si `is_auto_debit=True`, nunca devuelve `"overdue"` — cae directo en `"pending"` sin importar cuánto tiempo pasó del vencimiento. Sigue devolviendo `"paid"` normalmente cuando hay un `Expense` vinculado ese mes.
+- **Web**: checkbox agregado al form (`RecurringExpenseForm`), junto al día de vencimiento. En la lista (`recurring_list.html`), un débito automático pendiente usa un ícono y badge distintos ("Débito automático", azul) en vez del ícono de reloj amarillo genérico de "Pendiente" — para que la ausencia de alerta se entienda como diseño, no como un estado raro.
+- **API/mobile**: `RecurringExpenseSerializer` expone `is_auto_debit` directo (campo simple, sin lógica adicional). Mobile: `SwitchListTile` en el form de creación/edición, mismo criterio visual que la web en la lista (`recurring_list_screen.dart`).
+- Tests: 4 de modelo (incluye que un recurrente sin `is_auto_debit` sigue comportándose igual que antes), 4 de vista web, 2 de API.
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.

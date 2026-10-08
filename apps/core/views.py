@@ -163,9 +163,18 @@ def exchange_rate_today(request):
         return JsonResponse({"error": "No se pudo obtener la cotización"}, status=503)
 
 
-APP_VERSION = "1.27.0"
+APP_VERSION = "1.28.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.28.0",
+        "date": "Octubre 2026",
+        "title": "Débito automático en Gastos Fijos",
+        "items": [
+            "Ahora podés marcar un gasto fijo como débito automático",
+            "Si lo marcás, ya no te va a aparecer como vencido cuando pasa la fecha, porque se paga solo",
+        ],
+    },
     {
         "version": "1.27.0",
         "date": "Octubre 2026",

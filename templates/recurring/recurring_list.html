@@ -75,6 +75,8 @@
                             <i class="bi bi-check-circle-fill text-success" data-bs-toggle="tooltip" data-bs-title="Pagado este mes"></i>
                         {% elif item.status == 'overdue' %}
                             <i class="bi bi-exclamation-circle-fill text-danger" data-bs-toggle="tooltip" data-bs-title="Vencido"></i>
+                        {% elif item.rec.is_auto_debit %}
+                            <i class="bi bi-arrow-repeat text-info" data-bs-toggle="tooltip" data-bs-title="Débito automático"></i>
                         {% else %}
                             <i class="bi bi-clock text-warning" data-bs-toggle="tooltip" data-bs-title="Pendiente"></i>
                         {% endif %}
@@ -84,6 +86,11 @@
                         {% if item.rec.is_installment %}
                         <span class="badge bg-info bg-opacity-10 text-info ms-1" style="font-size:0.7rem">
                             {% if item.rec.installments_paid %}cuota {{ item.rec.installments_paid }}/{{ item.rec.total_installments }}{% else %}{{ item.rec.total_installments }} cuotas{% endif %}
+                        </span>
+                        {% endif %}
+                        {% if item.rec.is_auto_debit %}
+                        <span class="badge bg-info bg-opacity-10 text-info ms-1" style="font-size:0.7rem">
+                            <i class="bi bi-arrow-repeat"></i> débito automático
                         </span>
                         {% endif %}
                         {% if item.rec.notes %}
