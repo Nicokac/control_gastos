@@ -6,28 +6,37 @@ import '../../../core/constants/api_constants.dart';
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
 
-  Future<void> _openWebsite() => launchUrl(
-    Uri.parse(ApiConstants.websiteUrl),
-    mode: LaunchMode.externalApplication,
-  );
+  Future<void> _openUrl(BuildContext context, Uri uri) async {
+    try {
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched && context.mounted) {
+        _showOpenError(context);
+      }
+    } catch (_) {
+      if (context.mounted) _showOpenError(context);
+    }
+  }
 
-  Future<void> _sendEmail() =>
-      launchUrl(Uri(scheme: 'mailto', path: ApiConstants.developerEmail));
+  void _showOpenError(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('No se pudo abrir el enlace.')),
+    );
+  }
 
-  Future<void> _openCafecito() => launchUrl(
-    Uri.parse(ApiConstants.cafesitoUrl),
-    mode: LaunchMode.externalApplication,
-  );
+  Future<void> _openWebsite(BuildContext context) =>
+      _openUrl(context, Uri.parse(ApiConstants.websiteUrl));
 
-  Future<void> _openTerms() => launchUrl(
-    Uri.parse(ApiConstants.termsUrl),
-    mode: LaunchMode.externalApplication,
-  );
+  Future<void> _sendEmail(BuildContext context) =>
+      _openUrl(context, Uri(scheme: 'mailto', path: ApiConstants.developerEmail));
 
-  Future<void> _openPrivacy() => launchUrl(
-    Uri.parse(ApiConstants.privacyUrl),
-    mode: LaunchMode.externalApplication,
-  );
+  Future<void> _openCafecito(BuildContext context) =>
+      _openUrl(context, Uri.parse(ApiConstants.cafesitoUrl));
+
+  Future<void> _openTerms(BuildContext context) =>
+      _openUrl(context, Uri.parse(ApiConstants.termsUrl));
+
+  Future<void> _openPrivacy(BuildContext context) =>
+      _openUrl(context, Uri.parse(ApiConstants.privacyUrl));
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +92,7 @@ class AboutScreen extends StatelessWidget {
                   leading: const Icon(Icons.public_outlined),
                   title: const Text('Sitio web'),
                   subtitle: const Text(ApiConstants.websiteUrl),
-                  onTap: _openWebsite,
+                  onTap: () => _openWebsite(context),
                 ),
                 const Divider(height: 1),
                 ListTile(
@@ -96,26 +105,26 @@ class AboutScreen extends StatelessWidget {
                   leading: const Icon(Icons.email_outlined),
                   title: const Text('Contacto'),
                   subtitle: const Text(ApiConstants.developerEmail),
-                  onTap: _sendEmail,
+                  onTap: () => _sendEmail(context),
                 ),
                 const Divider(height: 1),
                 ListTile(
                   leading: const Icon(Icons.description_outlined),
                   title: const Text('Términos y condiciones'),
-                  onTap: _openTerms,
+                  onTap: () => _openTerms(context),
                 ),
                 const Divider(height: 1),
                 ListTile(
                   leading: const Icon(Icons.privacy_tip_outlined),
                   title: const Text('Política de privacidad'),
-                  onTap: _openPrivacy,
+                  onTap: () => _openPrivacy(context),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 16),
           FilledButton.icon(
-            onPressed: _openCafecito,
+            onPressed: () => _openCafecito(context),
             icon: const Icon(Icons.coffee_outlined, color: Colors.white),
             label: const Text(
               'Invitame un Cafecito',

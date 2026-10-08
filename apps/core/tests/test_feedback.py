@@ -11,10 +11,11 @@ FEEDBACK_URL = reverse("core:feedback")
 
 @pytest.mark.django_db
 class TestFeedbackView:
-    def test_login_required(self, client):
+    def test_no_requiere_login(self, client):
+        """DT-090: alguien sin acceso a su cuenta debe poder pedir el
+        borrado de datos sin loguearse, como promete account_deletion.html."""
         response = client.get(FEEDBACK_URL)
-        assert response.status_code == 302
-        assert "/users/login/" in response["Location"]
+        assert response.status_code == 200
 
     def test_get_renders_form(self, client, user):
         client.force_login(user)
@@ -90,3 +91,42 @@ class TestFeedbackView:
             )
         messages = list(response.context["messages"])
         assert any("no se pudo" in str(m).lower() for m in messages)
+
+
+@pytest.mark.django_db
+class TestFeedbackViewAnonymous:
+    """DT-090: feedback sin login, requiere email para identificar la cuenta."""
+
+    def test_email_field_required_sin_login(self, client):
+        response = client.get(FEEDBACK_URL)
+        assert response.context["form"].fields["email"].required is True
+
+    def test_email_field_not_required_logueado(self, client, user):
+        client.force_login(user)
+        response = client.get(FEEDBACK_URL)
+        assert response.context["form"].fields["email"].required is False
+
+    def test_post_sin_login_sin_email_muestra_error(self, client, mailoutbox):
+        response = client.post(
+            FEEDBACK_URL,
+            {"tipo": "bug", "mensaje": "No puedo entrar a mi cuenta"},
+        )
+        assert response.status_code == 200
+        assert len(mailoutbox) == 0
+        assert "email" in response.context["form"].errors
+
+    def test_post_sin_login_con_email_envia_correctamente(self, client, mailoutbox):
+        response = client.post(
+            FEEDBACK_URL,
+            {
+                "tipo": "otro",
+                "email": "exusuario@example.com",
+                "mensaje": "Pido eliminar mi cuenta, perdí el acceso.",
+            },
+        )
+        assert response.status_code == 302
+        assert len(mailoutbox) == 1
+        mail = mailoutbox[0]
+        assert "exusuario@example.com" in mail.subject
+        assert "exusuario@example.com" in mail.body
+        assert "Pido eliminar mi cuenta" in mail.body

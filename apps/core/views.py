@@ -103,8 +103,13 @@ class UserOwnedDetailView(UserOwnedQuerysetMixin, DetailView):
     pass
 
 
-class FeedbackView(LoginRequiredMixin, FormView):
-    """Recibe feedback del usuario y lo envía por email al administrador."""
+class FeedbackView(FormView):
+    """Recibe feedback del usuario y lo envía por email al administrador.
+
+    No requiere login: alguien sin acceso a su cuenta (ej. perdió el email o
+    la contraseña) necesita poder pedir la eliminación de su cuenta desde
+    acá, como promete account_deletion.html. Si no hay sesión, el email es
+    obligatorio para poder identificar la cuenta."""
 
     template_name = "core/feedback.html"
     form_class = FeedbackForm
@@ -117,15 +122,29 @@ class FeedbackView(LoginRequiredMixin, FormView):
         "otro": "Otro",
     }
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["require_email"] = not self.request.user.is_authenticated
+        return kwargs
+
     def form_valid(self, form):
         user = self.request.user
         tipo = form.cleaned_data["tipo"]
         mensaje = form.cleaned_data["mensaje"]
+        email = form.cleaned_data.get("email")
         tipo_label = self.TIPO_LABELS.get(tipo, tipo)
 
-        subject = f"[Control de Gastos] {tipo_label} — {user.username}"
-        body = f"Usuario: {user.username}\nEmail: {user.email}\nTipo: {tipo_label}\n---\n{mensaje}"
-        sent = send_feedback_email(subject, body, log_context=f"usuario {user.username}")
+        if user.is_authenticated:
+            quien = user.username
+            body = (
+                f"Usuario: {user.username}\nEmail: {user.email}\nTipo: {tipo_label}\n---\n{mensaje}"
+            )
+        else:
+            quien = email
+            body = f"Usuario: (sin sesión)\nEmail: {email}\nTipo: {tipo_label}\n---\n{mensaje}"
+
+        subject = f"[Control de Gastos] {tipo_label} — {quien}"
+        sent = send_feedback_email(subject, body, log_context=f"usuario {quien}")
 
         if sent:
             messages.success(self.request, "¡Gracias! Tu reporte fue enviado correctamente.")
@@ -163,9 +182,20 @@ def exchange_rate_today(request):
         return JsonResponse({"error": "No se pudo obtener la cotización"}, status=503)
 
 
-APP_VERSION = "1.28.0"
+APP_VERSION = "1.28.1"
 
 WHATS_NEW = [
+    {
+        "version": "1.28.1",
+        "date": "Octubre 2026",
+        "title": "Correcciones varias",
+        "items": [
+            "Agregamos los links a Términos y Política de Privacidad en el pie de página de toda la app",
+            "Corregido: esas páginas no se veían si entrabas sin iniciar sesión",
+            "Mobile: ahora podés ver la contraseña al crear una cuenta, y volver atrás desde esa pantalla",
+            "Mobile: unificamos los bordes redondeados en varias pantallas",
+        ],
+    },
     {
         "version": "1.28.0",
         "date": "Octubre 2026",

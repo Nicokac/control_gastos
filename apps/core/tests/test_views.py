@@ -222,3 +222,72 @@ class TestHomeView:
             assert response.status_code in [200, 302]
         except NoReverseMatch:
             pass
+
+
+@pytest.mark.django_db
+class TestLegalPagesRenderForBothAuthStates:
+    """DT-090: terms/privacy/account_deletion deben mostrar su contenido
+    real tanto para visitantes anónimos como para usuarios logueados —
+    antes de este fix, un anónimo veía la página vacía porque el contenido
+    estaba solo en el bloque 'content' (que base.html solo renderiza para
+    usuarios autenticados)."""
+
+    def test_terms_muestra_contenido_sin_login(self, client):
+        response = client.get(reverse("core:terms"))
+        assert response.status_code == 200
+        assert "Términos y Condiciones" in response.content.decode()
+
+    def test_terms_muestra_contenido_logueado(self, authenticated_client):
+        response = authenticated_client.get(reverse("core:terms"))
+        assert response.status_code == 200
+        assert "Términos y Condiciones" in response.content.decode()
+
+    def test_privacy_muestra_contenido_sin_login(self, client):
+        response = client.get(reverse("core:privacy"))
+        assert response.status_code == 200
+        assert "Política de Privacidad" in response.content.decode()
+
+    def test_privacy_muestra_contenido_logueado(self, authenticated_client):
+        response = authenticated_client.get(reverse("core:privacy"))
+        assert response.status_code == 200
+        assert "Política de Privacidad" in response.content.decode()
+
+    def test_account_deletion_muestra_contenido_sin_login(self, client):
+        response = client.get(reverse("core:account_deletion"))
+        assert response.status_code == 200
+        assert "Eliminar tu cuenta o tus datos" in response.content.decode()
+
+    def test_account_deletion_muestra_contenido_logueado(self, authenticated_client):
+        response = authenticated_client.get(reverse("core:account_deletion"))
+        assert response.status_code == 200
+        assert "Eliminar tu cuenta o tus datos" in response.content.decode()
+
+    def test_terms_menciona_eliminacion_sin_login(self, client):
+        """El texto debe reflejar que la eliminación también se puede pedir
+        sin loguearse (DT-090)."""
+        response = client.get(reverse("core:terms"))
+        assert "sin loguearte" in response.content.decode()
+
+    def test_privacy_menciona_eliminacion_sin_login(self, client):
+        response = client.get(reverse("core:privacy"))
+        assert "sin loguearte" in response.content.decode()
+
+
+@pytest.mark.django_db
+class TestAppFooterLegalLinks:
+    """DT-090: los links a términos/privacidad deben estar accesibles
+    desde cualquier pantalla autenticada normal (footer global), no solo
+    desde landing o las páginas legales aisladas."""
+
+    def test_dashboard_incluye_links_legales_en_footer(self, authenticated_client):
+        url = reverse("reports:dashboard")
+        response = authenticated_client.get(url)
+        content = response.content.decode()
+        assert reverse("core:terms") in content
+        assert reverse("core:privacy") in content
+
+    def test_login_incluye_links_legales_en_footer(self, client):
+        response = client.get(reverse("users:login"))
+        content = response.content.decode()
+        assert reverse("core:terms") in content
+        assert reverse("core:privacy") in content

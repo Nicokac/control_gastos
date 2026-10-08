@@ -1,0 +1,81 @@
+<nav class="py-3 border-bottom bg-white">
+    <div class="container d-flex justify-content-between align-items-center">
+        <a href="{% url 'core:landing' %}" class="fw-bold fs-5 text-primary text-decoration-none">
+            <i class="bi bi-wallet2 me-2"></i>Control de Gastos
+        </a>
+        <div class="d-flex gap-2">
+            {% if user.is_authenticated %}
+            <a href="{% url 'reports:dashboard' %}" class="btn btn-outline-primary btn-sm">Ir al dashboard</a>
+            {% else %}
+            <a href="{% url 'users:login' %}" class="btn btn-outline-primary btn-sm">Iniciar sesión</a>
+            <a href="{% url 'users:register' %}" class="btn btn-primary btn-sm">Crear cuenta</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<div class="container py-5" style="max-width: 760px;">
+    <h1 class="h3 fw-bold mb-1">Eliminar tu cuenta o tus datos en Control de Gastos</h1>
+    <p class="text-muted small mb-5">Última actualización: septiembre 2026</p>
+
+    <h2 class="h5 fw-semibold mt-4 mb-2">Eliminar datos puntuales, sin borrar tu cuenta</h2>
+    <p>No hace falta eliminar toda la cuenta para borrar información específica. Dentro de la app, cada registro tiene su propia opción de eliminación:</p>
+    <ul>
+        <li><strong>Gastos e ingresos:</strong> desde la lista correspondiente, cada fila tiene un botón <strong>Eliminar</strong> que borra ese registro de forma inmediata.</li>
+        <li><strong>Categorías propias:</strong> desde <strong>Categorías</strong>, podés eliminar cualquier categoría que hayas creado (no aplica a las categorías del sistema).</li>
+        <li><strong>Metas de ahorro:</strong> desde <strong>Ahorros</strong>, podés eliminar una meta y sus movimientos asociados.</li>
+        <li><strong>Gastos fijos / recurrentes:</strong> desde <strong>Gastos Fijos</strong>, podés eliminar cualquier gasto recurrente que hayas configurado.</li>
+    </ul>
+    <p>Estas eliminaciones son inmediatas y permanentes, y no requieren contactarnos ni completar ningún formulario.</p>
+
+    <h2 class="h5 fw-semibold mt-4 mb-2">Eliminar tu cuenta completa</h2>
+    <p>Si tenés acceso a tu cuenta:</p>
+    <ol>
+        <li>Iniciá sesión en <a href="{% url 'users:login' %}">Control de Gastos</a>.</li>
+        <li>Andá a <strong>Mi Cuenta</strong>.</li>
+        <li>Hacé clic en <strong>Eliminar cuenta</strong> y confirmá la acción.</li>
+    </ol>
+    <p>Tu cuenta y todos los datos asociados se eliminan de forma <strong>inmediata y permanente</strong> — no hay período de espera ni posibilidad de recuperación posterior.</p>
+
+    <p>Si no podés acceder a tu cuenta (perdiste el acceso al email o la contraseña), escribinos desde el formulario de <a href="{% url 'core:feedback' %}">Reportar / Sugerir</a> indicando el email asociado a la cuenta, y procesamos la eliminación manualmente. No necesitás estar logueado para usar ese formulario.</p>
+
+    <h2 class="h5 fw-semibold mt-4 mb-2">Qué datos se eliminan</h2>
+    <p>Al eliminar tu cuenta se borran de forma permanente:</p>
+    <ul>
+        <li>Tu usuario, email y contraseña.</li>
+        <li>Todos tus gastos, ingresos y categorías personalizadas.</li>
+        <li>Tus metas de ahorro, movimientos y gastos fijos/recurrentes.</li>
+        <li>Cualquier otro dato financiero que hayas cargado en la app.</li>
+    </ul>
+
+    <h2 class="h5 fw-semibold mt-4 mb-2">Qué datos se conservan</h2>
+    <p>Por motivos de seguridad, conservamos durante un período limitado:</p>
+    <ul>
+        <li><strong>Registros técnicos de acceso</strong> (logs del servidor con IP y fecha de la eliminación) — se usan únicamente para prevenir abuso o fraude y se descartan con la rotación normal de logs.</li>
+        <li><strong>Copias de seguridad ya generadas</strong> antes de la eliminación — se sobrescriben con el ciclo normal de backups (no más de unos pocos días).</li>
+    </ul>
+    <p>No conservamos ningún dato financiero (gastos, ingresos, montos) más allá de lo indicado arriba. Podés ver el detalle completo en nuestra <a href="{% url 'core:privacy' %}">Política de Privacidad</a>.</p>
+
+    <div class="mt-5 pt-3 border-top">
+        {% if user.is_authenticated %}
+        <a href="{% url 'reports:dashboard' %}" class="text-muted small text-decoration-none">
+            <i class="bi bi-arrow-left me-1"></i>Volver al dashboard
+        </a>
+        {% else %}
+        <a href="{% url 'core:landing' %}" class="text-muted small text-decoration-none">
+            <i class="bi bi-arrow-left me-1"></i>Volver al inicio
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<footer class="py-4 border-top bg-light mt-auto">
+    <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+        <span class="text-muted small">&copy; {% now "Y" %} Control de Gastos</span>
+        <div class="d-flex gap-3">
+            <a href="{% url 'core:terms' %}" class="text-muted small text-decoration-none">Términos y condiciones</a>
+            <a href="{% url 'core:privacy' %}" class="text-muted small text-decoration-none">Política de privacidad</a>
+            <a href="{% url 'core:account_deletion' %}" class="text-muted small text-decoration-none">Eliminar cuenta y datos</a>
+        </div>
+    </div>
+</footer>

@@ -1382,6 +1382,32 @@ Usuario reportó: "en gastos fijos me salen alertas de vencimiento, pero yo lo t
 
 ---
 
+### DT-090 — Lote de correcciones: legales, bordes mobile y registro
+
+**Estado:** ✅ Resuelto
+
+Usuario reportó 6 problemas relevados por uso real:
+1. Web: faltan links a Términos/Privacidad en pantallas autenticadas.
+2. Mobile: sin criterio de bordes redondeados entre pantallas.
+3. General: las URLs de Términos/Privacidad "no funcionan".
+4. Mobile: no se puede tocar "ver contraseña" en Crear cuenta.
+5. Mobile: no hay botón de volver en Crear cuenta.
+6. General: aclarar en los legales que el borrado de cuenta también se puede pedir sin loguearse.
+
+**Hallazgo clave (puntos 1 y 3 resultaron ser el mismo bug):** `terms.html`, `privacy.html`, `account_deletion.html` y `feedback.html` ponían su contenido dentro de `{% block content %}`, pero `base.html` solo renderiza ese bloque para usuarios autenticados — un visitante anónimo cae en `{% block auth_content %}`, que estas páginas nunca sobreescribían. Resultado: cualquiera sin sesión que visitara `/terms/`, `/privacy/` o `/account-deletion/` veía la página **vacía** (sin contenido, sin error visible). Esto explica por qué el usuario percibía que las URLs "no funcionan" — Django respondía 200 OK igual, pero sin nada que mostrar. No es un bug nuevo introducido en esta tarea: es preexistente, nunca antes cubierto por tests.
+
+**Resolución:**
+- **Punto 1 y 3 (web):** el contenido de cada página legal se extrajo a un partial (`core/_terms_body.html`, `_privacy_body.html`, `_account_deletion_body.html`, `_feedback_body.html`), incluido desde **ambos** bloques (`content` y `auth_content`) para que se vea igual logueado o no. Footer global nuevo (`components/footer.html`) agregado a `base.html` con links a Términos/Privacidad/Reportar, visible en todas las pantallas (autenticadas y no), dentro de `<main>` para heredar el margen del sidebar sin CSS/JS adicional.
+- **Punto 3 (mobile):** `AndroidManifest.xml` no declaraba `<queries>` para `VIEW`+`https`, requerido en Android 11+ para que `url_launcher` pueda abrir links externos — agregado junto al de `PROCESS_TEXT` ya existente. `about_screen.dart` no manejaba ningún error al abrir un link (`launchUrl` sin try/catch ni chequeo de resultado); ahora muestra un snackbar si falla.
+- **Punto 2 (mobile):** constante nueva `AppRadius` (`core/theme/app_radius.dart`, solo `card = 16`). Se corrigieron 4 `Card` que pisaban el theme global (`CardThemeData` en `app.dart`, radio 16) con un radio hardcodeado de 12 (`savings_list_screen.dart`, `saving_detail_screen.dart`, `categories_screen.dart`, `dashboard_screen.dart`). Decisión explícita del usuario: no se tocaron las listas de Gastos/Ingresos (`ExpenseTile`/filas planas sin Card) — cambiar ese diseño a tarjetas individuales habría alterado el look de las pantallas más usadas de la app, fuera del alcance pedido ("solo unificar el radio existente").
+- **Punto 4 (mobile):** `register_screen.dart` directamente no tenía el ícono de mostrar/ocultar contraseña (a diferencia de `login_screen.dart`, que sí lo tenía) — no era un bug de icono roto, el botón no existía. Agregado en ambos campos (contraseña y confirmación), cada uno con su propio estado independiente.
+- **Punto 5 (mobile):** `login_screen.dart` navegaba a `/register` con `context.go(...)` en vez de `context.push(...)` — `go()` reemplaza el stack de navegación en vez de apilarlo, por eso Flutter no podía mostrar el botón de volver automático (no había nada debajo en el stack al cual volver). Cambiado a `push()`.
+- **Punto 6:** `account_deletion.html` ya prometía un flujo de borrado "sin loguearse" vía el formulario de Reportar/Sugerir, pero `FeedbackView` tenía `LoginRequiredMixin` — el texto legal prometía algo que el código no permitía. Se quitó el mixin; `FeedbackForm` ahora pide el email como campo obligatorio solo cuando no hay sesión (`require_email` en `__init__`), para poder identificar la cuenta a borrar. El texto de `terms.html` y `privacy.html` se actualizó para mencionar explícitamente esta vía sin loguearse en la sección de eliminación de cuenta (antes solo estaba en el footer de `account_deletion.html`, nunca en el cuerpo de los otros dos documentos).
+- Tests nuevos: 8 en Django (`TestFeedbackViewAnonymous`, `TestLegalPagesRenderForBothAuthStates`, `TestAppFooterLegalLinks`), 9 en Flutter (`register_screen_test.dart`, navegación + toggle de contraseña).
+- Al correr la suite completa se encontró además un test preexistente frágil (`TestRecurringAutoDebit::test_list_no_badge_for_regular_recurring`, de DT-089) que buscaba la cadena "débito automático" en toda la página en vez de solo en la tabla de gastos fijos — rompía apenas esa frase aparecía en el modal de "novedades" (`WHATS_NEW`) por cualquier otro motivo. Se acotó la búsqueda al `<tbody>` de la tabla.
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.

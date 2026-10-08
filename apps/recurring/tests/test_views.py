@@ -311,6 +311,11 @@ class TestRecurringAutoDebit:
         assert "débito automático" in content
 
     def test_list_no_badge_for_regular_recurring(self, authenticated_client, recurring):
+        """El badge de 'débito automático' en la tabla de gastos fijos no debe
+        aparecer para un recurrente normal — se busca dentro del <tbody> para
+        no depender de si el texto aparece en otro lado de la página (ej. el
+        modal de novedades, cuando esa es la última entrada del changelog)."""
         response = authenticated_client.get(reverse("recurring:list"))
         content = response.content.decode()
-        assert "débito automático" not in content
+        tbody = content.split("<tbody>")[1].split("</tbody>")[0]
+        assert "débito automático" not in tbody

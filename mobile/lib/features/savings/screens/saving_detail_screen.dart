@@ -34,9 +34,6 @@ class SavingDetailScreen extends ConsumerWidget {
           padding: const EdgeInsets.all(16),
           children: [
             Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(

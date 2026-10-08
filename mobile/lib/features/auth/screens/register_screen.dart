@@ -20,6 +20,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _password2Controller = TextEditingController();
   bool _loading = false;
+  bool _obscurePassword = true;
+  bool _obscurePassword2 = true;
 
   @override
   void dispose() {
@@ -110,10 +112,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _passwordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
+                  obscureText: _obscurePassword,
+                  decoration: InputDecoration(
                     labelText: 'Contraseña',
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscurePassword
+                          ? Icons.visibility
+                          : Icons.visibility_off),
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
+                    ),
                   ),
                   validator: (v) => v == null || v.length < 8
                       ? 'Mínimo 8 caracteres'
@@ -122,10 +131,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _password2Controller,
-                  obscureText: true,
-                  decoration: const InputDecoration(
+                  obscureText: _obscurePassword2,
+                  decoration: InputDecoration(
                     labelText: 'Confirmar contraseña',
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscurePassword2
+                          ? Icons.visibility
+                          : Icons.visibility_off),
+                      onPressed: () => setState(
+                          () => _obscurePassword2 = !_obscurePassword2),
+                    ),
                   ),
                   validator: (v) => v != _passwordController.text
                       ? 'Las contraseñas no coinciden'

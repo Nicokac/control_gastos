@@ -112,6 +112,14 @@ class FeedbackForm(forms.Form):
         label="Tipo de reporte",
         widget=forms.Select(attrs={"class": "form-select"}),
     )
+    email = forms.EmailField(
+        label="Tu email",
+        required=False,
+        widget=forms.EmailInput(
+            attrs={"class": "form-control", "placeholder": "nombre@ejemplo.com"}
+        ),
+        help_text="Para poder responderte o identificar tu cuenta (ej: eliminación de cuenta sin acceso).",
+    )
     mensaje = forms.CharField(
         label="Mensaje",
         widget=forms.Textarea(
@@ -124,6 +132,11 @@ class FeedbackForm(forms.Form):
         ),
         max_length=2000,
     )
+
+    def __init__(self, *args, require_email=False, **kwargs):
+        super().__init__(*args, **kwargs)
+        if require_email:
+            self.fields["email"].required = True
 
 
 class BaseFilterForm(forms.Form):

@@ -5,6 +5,21 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.28.1 / Mobile 1.24.1+27] — 2026-10-08
+
+### Fixed
+
+- **Links legales ausentes y páginas rotas sin login (DT-090)**: `terms.html`, `privacy.html`, `account_deletion.html` y `feedback.html` se renderizaban vacías para visitantes sin sesión (bug de bloques de template, preexistente). Se agregó un footer global con links a Términos/Privacidad/Reportar, visible en toda la app.
+- **Mobile: sin "ver contraseña" ni botón de volver en Crear cuenta (DT-090)**: el toggle de mostrar/ocultar contraseña no existía en esa pantalla; el botón de volver no aparecía porque la navegación usaba `go()` en vez de `push()`.
+- **Mobile: links a Términos/Privacidad podían no abrir (DT-090)**: faltaba declarar `<queries>` para abrir links `https` en Android 11+; ahora además se muestra un aviso si falla.
+- **Mobile: bordes inconsistentes entre pantallas (DT-090)**: unificados los `Card` que usaban un radio distinto al del tema general de la app.
+
+### Added
+
+- **Eliminación de cuenta sin loguearse (DT-090)**: el formulario de Reportar/Sugerir ya no requiere sesión, para poder pedir el borrado de una cuenta a la que no se tiene acceso (como ya prometían los términos y la política de privacidad).
+
+---
+
 ## [1.28.0 / Mobile 1.24.0+26] — 2026-10-07
 
 ### Added

@@ -316,7 +316,6 @@ class _NextMonthCommitmentCard extends ConsumerWidget {
         : context.semanticColors.danger;
 
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(

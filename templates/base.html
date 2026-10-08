@@ -39,11 +39,13 @@
         {% include 'components/sidebar.html' %}
         <main class="app-main app-main--with-sidebar px-md-4 py-4" id="appMain">
             {% block content %}{% endblock %}
+            {% block footer %}{% include 'components/footer.html' %}{% endblock footer %}
         </main>
     </div>
     {% else %}
     <main class="app-main">
         {% block auth_content %}{% endblock %}
+        {% block footer_auth %}{% include 'components/footer.html' %}{% endblock footer_auth %}
     </main>
     {% endif %}
 

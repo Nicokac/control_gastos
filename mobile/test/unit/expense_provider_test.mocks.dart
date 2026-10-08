@@ -107,6 +107,24 @@ class MockExpenseRepository extends _i1.Mock implements _i2.ExpenseRepository {
             returnValueForMissingStub: _i3.Future<void>.value(),
           )
           as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> hideCategory(int? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#hideCategory, [id]),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> unhideCategory(int? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#unhideCategory, [id]),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
 }
 
 /// A class which mocks [DashboardRepository].
