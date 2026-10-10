@@ -51,6 +51,9 @@ CLAUDE.md
 # Documentos privados de negocio
 docs/MONETIZACION.md
 
+# Guía local de testing mobile (entorno personal, no versionar)
+docs/ANDROID_STUDIO_TESTING.md
+
 # Resúmenes bancarios de prueba (datos financieros reales)
 resumen_*.pdf
 
