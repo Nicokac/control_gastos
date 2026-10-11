@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.29.3] — 2026-10-11
+
+### Changed
+
+- **Política de Privacidad actualizada: mención a Sentry**: al completar el formulario de Seguridad de Datos de Google Play, se detectó que los registros de fallos (Sentry) se envían a un tercero pero no estaban mencionados en la Política de Privacidad del sitio. Se agregó a la sección "Dónde se almacenan tus datos", aclarando que esos registros no incluyen información personal ni financiera (`send_default_pii=False`).
+
+---
+
 ## [1.29.2 / Mobile 1.25.2+31] — 2026-10-11
 
 ### Changed

@@ -182,7 +182,7 @@ def exchange_rate_today(request):
         return JsonResponse({"error": "No se pudo obtener la cotización"}, status=503)
 
 
-APP_VERSION = "1.29.2"
+APP_VERSION = "1.29.3"
 
 WHATS_NEW = [
     {

@@ -1437,6 +1437,18 @@ Encontrado probando DT-067 en local: en `/savings/new` (y presumiblemente `/savi
 
 ---
 
+### DT-092 — Política de Privacidad no mencionaba a Sentry como proveedor de terceros
+
+**Estado:** ✅ Resuelto (v1.29.3)
+
+Encontrado al completar el formulario de "Seguridad de los datos" de Google Play Console: la app declara (correctamente) que comparte "Registros de fallos" con un tercero con fines de "Análisis", porque Sentry está activo en producción (`SENTRY_DSN` configurado en Render, `config/settings/prod.py`). Pero `templates/core/_privacy_body.html` solo mencionaba a Render, Cloudflare R2 y Brevo como proveedores — Sentry nunca apareció, pese a que `sentry_sdk.init()` corre en cada deploy con esa variable seteada.
+
+**Why:** una Política de Privacidad que no coincide con lo declarado en el formulario de Data Safety de Google Play es un riesgo de rechazo en la revisión, y más importante, no es honesta con el usuario sobre a dónde van sus datos — aunque sea un dato técnico sin PII (`send_default_pii=False` ya estaba configurado, así que Sentry no recibe IP, nombre, email ni datos financieros).
+
+**Resolución:** se agregó una oración a la sección 3 ("Dónde se almacenan tus datos") nombrando a Sentry y aclarando que los registros de error no incluyen información personal ni financiera. Se actualizó también la sección 2 para reflejar que existe esa única excepción al "no compartimos con terceros". Fecha de "última actualización" del documento actualizada a octubre 2026.
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.

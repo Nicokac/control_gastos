@@ -54,6 +54,9 @@ docs/MONETIZACION.md
 # Guía local de testing mobile (entorno personal, no versionar)
 docs/ANDROID_STUDIO_TESTING.md
 
+# Credenciales reales: cuenta de revisión Google Play + connection string de producción
+docs/GOOGLE_PLAY_CONSOLE.md
+
 # Resúmenes bancarios de prueba (datos financieros reales)
 resumen_*.pdf
 
