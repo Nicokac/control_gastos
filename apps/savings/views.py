@@ -23,6 +23,7 @@ from apps.core.views import (
 
 from .forms import SavingFilterForm, SavingForm, SavingMovementForm
 from .models import RolloverSuggestion, RolloverSuggestionStatus, Saving, SavingStatus
+from .services import confirm_rollover_deposit
 
 
 class SavingListView(UserOwnedListView):
@@ -106,6 +107,17 @@ class SavingCreateView(UserOwnedCreateView):
 
     def get_success_message(self):
         return f'Meta de ahorro "{self.object.name}" creada correctamente.'
+
+    def get_success_url(self):
+        rollover_id = self.request.GET.get("rollover")
+        if (
+            rollover_id
+            and RolloverSuggestion.objects.filter(
+                pk=rollover_id, user=self.request.user, status=RolloverSuggestionStatus.PENDING
+            ).exists()
+        ):
+            return f"{reverse('savings:rollover_deposit', kwargs={'pk': rollover_id})}"
+        return super().get_success_url()
 
     def form_invalid(self, form):
         messages.error(
@@ -294,7 +306,7 @@ class RolloverDepositView(LoginRequiredMixin, View):
 
         if not active_savings.exists():
             messages.info(request, "Creá una meta de ahorro para poder destinar el sobrante.")
-            return redirect("savings:create")
+            return redirect(f"{reverse('savings:create')}?rollover={suggestion.pk}")
 
         if active_savings.count() == 1:
             return self._deposit(request, suggestion, active_savings.first())
@@ -316,11 +328,7 @@ class RolloverDepositView(LoginRequiredMixin, View):
         )
 
     def _deposit(self, request, suggestion, saving):
-        saving.add_deposit(
-            suggestion.amount,
-            description=f"Sobrante de {suggestion.period_start:%B %Y}",
-        )
-        suggestion.mark_deposited(saving)
+        confirm_rollover_deposit(suggestion, saving)
         messages.success(
             request,
             f"{format_currency(suggestion.amount)} destinado a {saving.name}.",

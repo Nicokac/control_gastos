@@ -141,7 +141,8 @@ class RolloverSuggestionBanner extends ConsumerWidget {
     if (!context.mounted) return;
 
     if (activeSavings.isEmpty) {
-      context.push('/savings/create');
+      final suggestionId = suggestion['id'] as int;
+      context.push('/savings/new?rollover=$suggestionId');
       return;
     }
 

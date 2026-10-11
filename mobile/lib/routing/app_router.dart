@@ -76,7 +76,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isLoggedIn = authState.valueOrNull != null;
       final location = state.matchedLocation;
       final onSplash = location == '/splash';
-      final onAuth = location == '/login' ||
+      final onAuth =
+          location == '/login' ||
           location == '/register' ||
           location == '/forgot-password' ||
           location == '/reset-password';
@@ -107,12 +108,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/forgot-password',
         pageBuilder: (c, s) => _buildPage(
-            context: c, state: s, child: const ForgotPasswordScreen()),
+          context: c,
+          state: s,
+          child: const ForgotPasswordScreen(),
+        ),
       ),
       GoRoute(
         path: '/reset-password',
         pageBuilder: (c, s) => _buildPage(
-            context: c, state: s, child: const ResetPasswordScreen()),
+          context: c,
+          state: s,
+          child: const ResetPasswordScreen(),
+        ),
       ),
       GoRoute(
         path: '/dashboard',
@@ -242,8 +249,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/savings/new',
-        pageBuilder: (c, s) =>
-            _buildPage(context: c, state: s, child: const SavingFormScreen()),
+        pageBuilder: (c, s) {
+          final rolloverParam = s.uri.queryParameters['rollover'];
+          return _buildPage(
+            context: c,
+            state: s,
+            child: SavingFormScreen(
+              rolloverSuggestionId: rolloverParam != null
+                  ? int.tryParse(rolloverParam)
+                  : null,
+            ),
+          );
+        },
       ),
       GoRoute(
         path: '/savings/edit/:id',

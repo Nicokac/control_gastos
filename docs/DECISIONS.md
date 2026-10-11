@@ -996,6 +996,10 @@ Al cerrar un mes, el balance positivo (ingresos − gastos) no se trasladaba com
 - **Costo de performance aceptado**: el chequeo agrega 5 queries fijas por carga de dashboard (balance del período anterior + 2 lookups de `RolloverSuggestion`), sin N+1 — documentado y ajustado en los tests de `django_assert_max_num_queries` existentes.
 - 17 tests de servicios, 10 de modelo, 19 de vistas/integración web, 14 de API — además de los tests de query count ajustados.
 
+**Ampliación posterior — 2 hallazgos de prueba manual real:**
+1. **Flujo de "crear meta" interrumpido**: si el usuario no tenía ninguna meta activa al tocar "Destinar a una meta", se lo mandaba a crear una pero el flujo terminaba ahí — tenía que volver manualmente al dashboard y repetir la acción. Se corrigió pasando el id de la sugerencia como query param (`?rollover=<id>` web, `?rollover=<id>` mobile) a través de la creación: `SavingCreateView.get_success_url()` (web) y `SavingFormScreen`/`app_router.dart` (mobile) detectan el parámetro y, tras crear la meta, redirigen directo al depósito en vez de a la lista.
+2. **Balance del período actual se iba a negativo al confirmar el traslado**: el `SavingMovement` de depósito se fecha en el período **actual** (hoy), pero el dinero conceptualmente "venía" del período anterior — sin una entrada compensatoria, el balance de "hoy" veía un retiro sin su correspondiente ingreso. Se corrigió creando, además del depósito, un `Income` por el mismo monto fechado el último día del período anterior, con una categoría de sistema nueva ("Sobrante de mes anterior", `is_system=True`, creada de forma lazy vía `get_or_create_rollover_income_category()` para no depender de `seed_categories`). Es un registro normal: el usuario puede editarlo o borrarlo como cualquier otro ingreso, sin restricciones especiales — decisión explícita para no agregar un caso "protegido" al sistema de ingresos.
+
 ---
 
 ### DT-068 — Pop-up de aviso de nuevas actualizaciones

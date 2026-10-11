@@ -289,6 +289,41 @@ class TestSavingCreateView:
         saving = Saving.objects.get(name="Mi Meta")
         assert saving.user == user
 
+    def test_create_with_rollover_param_redirects_to_deposit_flow(self, authenticated_client, user):
+        """DT-067: si venía del flujo de 'destinar sobrante' sin metas, al crear
+        la primera meta debe retomar ese flujo en vez de ir a la lista."""
+        suggestion = RolloverSuggestion.objects.create(
+            user=user,
+            period_start=date(2026, 1, 1),
+            period_end=date(2026, 2, 1),
+            amount=Decimal("1000.00"),
+        )
+        url = f"{reverse('savings:create')}?rollover={suggestion.pk}"
+        data = {
+            "name": "Meta del sobrante",
+            "target_amount": "100000.00",
+            "currency": "ARS",
+        }
+
+        response = authenticated_client.post(url, data)
+
+        assert response.status_code == 302
+        assert response.url == reverse("savings:rollover_deposit", kwargs={"pk": suggestion.pk})
+
+    def test_create_with_invalid_rollover_param_ignores_it(self, authenticated_client, user):
+        """Un rollover inexistente o ajeno no debe romper el alta normal."""
+        url = f"{reverse('savings:create')}?rollover=999999"
+        data = {
+            "name": "Meta normal",
+            "target_amount": "100000.00",
+            "currency": "ARS",
+        }
+
+        response = authenticated_client.post(url, data)
+
+        assert response.status_code == 302
+        assert response.url == reverse("savings:list")
+
 
 @pytest.mark.django_db
 class TestSavingUpdateView:
@@ -577,13 +612,15 @@ class TestRolloverDepositView:
         return RolloverSuggestion.objects.create(**defaults)
 
     def test_get_redirects_to_create_when_no_active_savings(self, authenticated_client, user):
+        """Al no haber metas, redirige a crear una pasando el id de la sugerencia (DT-067),
+        para poder retomar el flujo de depósito después de crearla sin perder el contexto."""
         suggestion = self._create_suggestion(user)
 
         url = reverse("savings:rollover_deposit", kwargs={"pk": suggestion.pk})
         response = authenticated_client.get(url)
 
         assert response.status_code == 302
-        assert response.url == reverse("savings:create")
+        assert response.url == f"{reverse('savings:create')}?rollover={suggestion.pk}"
 
     def test_get_deposits_directly_when_single_active_saving(
         self, authenticated_client, user, saving
@@ -600,6 +637,30 @@ class TestRolloverDepositView:
         assert saving.current_amount == Decimal("1000.00")
         assert suggestion.status == RolloverSuggestionStatus.DEPOSITED
         assert suggestion.saving == saving
+
+    def test_deposit_creates_compensating_income_so_balance_stays_positive(
+        self, authenticated_client, user, saving
+    ):
+        """DT-067: el depósito no debe dejar el balance del período actual en
+        negativo — se compensa con un Income fechado en el período anterior."""
+        from apps.income.models import Income
+        from apps.savings.services import get_period_balance
+
+        suggestion = self._create_suggestion(
+            user, period_start=date(2026, 1, 1), period_end=date(2026, 2, 1)
+        )
+
+        url = reverse("savings:rollover_deposit", kwargs={"pk": suggestion.pk})
+        authenticated_client.get(url)
+
+        income = Income.objects.get(user=user)
+        assert income.amount == Decimal("1000.00")
+        assert income.date == date(2026, 1, 31)
+        assert income.category.name == "Sobrante de mes anterior"
+        assert income.category.is_system is True
+
+        balance_current_period = get_period_balance(user, date(2026, 2, 1), date(2026, 3, 1))
+        assert balance_current_period == Decimal("0")
 
     def test_get_shows_selection_when_multiple_active_savings(
         self, authenticated_client, user, saving_factory

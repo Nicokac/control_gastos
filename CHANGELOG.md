@@ -5,6 +5,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.29.1 / Mobile 1.25.1+30] — 2026-10-11
+
+### Fixed
+
+- **Balance negativo al destinar el sobrante a una meta (DT-067)**: el depósito se fechaba en el período actual sin ninguna entrada que lo compensara, dejando el balance de ese período en negativo aunque el dinero ya estaba contado como sobrante del período anterior. Ahora se registra también un ingreso compensatorio (categoría de sistema "Sobrante de mes anterior") fechado el último día del período anterior.
+- **Flujo de "destinar a una meta" interrumpido sin metas creadas (DT-067)**: si el usuario no tenía ninguna meta activa, se lo mandaba a crearla pero el flujo terminaba ahí. Ahora, al crear la primera meta desde ese flujo, se retoma automáticamente y se confirma el depósito.
+
+---
+
 ## [1.29.0 / Mobile 1.25.0+29] — 2026-10-10
 
 ### Added

@@ -19,8 +19,9 @@ const _iconChoices = [
 
 class SavingFormScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic>? existing;
+  final int? rolloverSuggestionId;
 
-  const SavingFormScreen({super.key, this.existing});
+  const SavingFormScreen({super.key, this.existing, this.rolloverSuggestionId});
 
   @override
   ConsumerState<SavingFormScreen> createState() => _SavingFormScreenState();
@@ -95,17 +96,36 @@ class _SavingFormScreenState extends ConsumerState<SavingFormScreen> {
 
     final notifier = ref.read(savingsListProvider.notifier);
     bool ok;
+    int? createdSavingId;
     if (_isEditing) {
       ok = await notifier.editSaving(widget.existing!['id'] as int, data);
     } else {
-      ok = await notifier.create(data);
+      final created = await notifier.create(data);
+      ok = created != null;
+      createdSavingId = created?['id'] as int?;
     }
 
     setState(() => _loading = false);
 
-    if (ok && mounted) {
+    if (!mounted) return;
+
+    if (ok && widget.rolloverSuggestionId != null && createdSavingId != null) {
+      final error = await ref
+          .read(savingsListProvider.notifier)
+          .depositRollover(widget.rolloverSuggestionId!, createdSavingId);
+      if (!mounted) return;
       context.pop();
-    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error ?? 'Sobrante destinado correctamente.'),
+          backgroundColor: error == null
+              ? context.semanticColors.success
+              : context.semanticColors.danger,
+        ),
+      );
+    } else if (ok) {
+      context.pop();
+    } else {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Error al guardar la meta')));
@@ -147,7 +167,9 @@ class _SavingFormScreenState extends ConsumerState<SavingFormScreen> {
                 prefixIcon: const Icon(Icons.flag_circle_outlined),
                 prefixText: '\$ ',
                 filled: true,
-                fillColor: context.semanticColors.savings.withValues(alpha: 0.05),
+                fillColor: context.semanticColors.savings.withValues(
+                  alpha: 0.05,
+                ),
               ),
               validator: (v) {
                 if (v == null || v.isEmpty) return 'Ingresá el monto objetivo';

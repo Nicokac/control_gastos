@@ -256,20 +256,23 @@ class TestDashboardRolloverSuggestion:
         assert response.context["rollover_available_amount"] is None
 
     def test_banner_rendered_in_dashboard_html(self, client, user, income_category, income_factory):
+        """Busca el link de descartar el banner (URL exclusiva de este bloque)
+        en vez de un texto literal, que podría coincidir con el modal de
+        novedades si la entrada de WHATS_NEW menciona la misma funcionalidad."""
         prev_start, _ = self._previous_period(user)
         income_factory(user, income_category, amount=Decimal("1000.00"), date=prev_start)
         client.force_login(user)
 
         response = client.get(reverse("reports:dashboard"))
 
-        assert b"destinarlo a una meta de ahorro" in response.content
+        assert b"savings/rollover" in response.content
 
     def test_banner_not_rendered_without_suggestion(self, client, user):
         client.force_login(user)
 
         response = client.get(reverse("reports:dashboard"))
 
-        assert b"destinarlo a una meta de ahorro" not in response.content
+        assert b"savings/rollover" not in response.content
 
 
 @pytest.mark.django_db

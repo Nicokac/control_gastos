@@ -29,13 +29,15 @@ class SavingsListNotifier extends AsyncNotifier<List<dynamic>> {
     state = await AsyncValue.guard(_fetch);
   }
 
-  Future<bool> create(Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>?> create(Map<String, dynamic> data) async {
     try {
-      await ref.read(savingsRepositoryProvider).createSaving(data);
+      final created = await ref
+          .read(savingsRepositoryProvider)
+          .createSaving(data);
       await reload();
-      return true;
+      return created;
     } catch (_) {
-      return false;
+      return null;
     }
   }
 

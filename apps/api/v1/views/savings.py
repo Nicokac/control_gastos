@@ -19,6 +19,7 @@ from apps.savings.models import (
     SavingMovement,
     SavingStatus,
 )
+from apps.savings.services import confirm_rollover_deposit
 
 
 class SavingViewSet(viewsets.ModelViewSet):
@@ -101,8 +102,5 @@ class RolloverSuggestionViewSet(viewsets.GenericViewSet):
             user=request.user,
             status=SavingStatus.ACTIVE,
         )
-        saving.add_deposit(
-            suggestion.amount, description=f"Sobrante de {suggestion.period_start:%B %Y}"
-        )
-        suggestion.mark_deposited(saving)
+        confirm_rollover_deposit(suggestion, saving)
         return Response(RolloverSuggestionSerializer(suggestion).data)

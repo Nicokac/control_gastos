@@ -9,7 +9,9 @@ import pytest
 
 from apps.savings.models import RolloverSuggestion, RolloverSuggestionStatus, SavingMovement
 from apps.savings.services import (
+    confirm_rollover_deposit,
     get_dismissed_amount_for_current_period,
+    get_or_create_rollover_income_category,
     get_or_create_rollover_suggestion,
     get_period_balance,
     get_previous_period,
@@ -199,3 +201,75 @@ class TestGetDismissedAmountForCurrentPeriod:
         amount = get_dismissed_amount_for_current_period(user, month=2, year=2026, start_day=1)
 
         assert amount is None
+
+
+@pytest.mark.django_db
+class TestGetOrCreateRolloverIncomeCategory:
+    """Tests para get_or_create_rollover_income_category."""
+
+    def test_crea_categoria_de_sistema(self):
+        category = get_or_create_rollover_income_category()
+
+        assert category.name == "Sobrante de mes anterior"
+        assert category.is_system is True
+        assert category.user is None
+        assert category.type == "INCOME"
+
+    def test_no_duplica_categoria_en_llamadas_sucesivas(self):
+        first = get_or_create_rollover_income_category()
+        second = get_or_create_rollover_income_category()
+
+        assert first.pk == second.pk
+
+
+@pytest.mark.django_db
+class TestConfirmRolloverDeposit:
+    """Tests para confirm_rollover_deposit (DT-067)."""
+
+    def test_crea_deposito_y_marca_sugerencia(self, user, saving):
+        suggestion = RolloverSuggestion.objects.create(
+            user=user,
+            period_start=date(2026, 1, 1),
+            period_end=date(2026, 2, 1),
+            amount=Decimal("1000.00"),
+        )
+
+        confirm_rollover_deposit(suggestion, saving)
+
+        saving.refresh_from_db()
+        suggestion.refresh_from_db()
+        assert saving.current_amount == Decimal("1000.00")
+        assert suggestion.status == RolloverSuggestionStatus.DEPOSITED
+        assert suggestion.saving == saving
+
+    def test_crea_income_compensatorio_en_ultimo_dia_del_periodo_anterior(self, user, saving):
+        from apps.income.models import Income
+
+        suggestion = RolloverSuggestion.objects.create(
+            user=user,
+            period_start=date(2026, 1, 1),
+            period_end=date(2026, 2, 1),
+            amount=Decimal("1000.00"),
+        )
+
+        confirm_rollover_deposit(suggestion, saving)
+
+        income = Income.objects.get(user=user)
+        assert income.amount == Decimal("1000.00")
+        assert income.date == date(2026, 1, 31)
+        assert income.category.name == "Sobrante de mes anterior"
+
+    def test_balance_del_periodo_actual_no_se_ve_afectado(self, user, saving):
+        """El depósito es un retiro contable del período actual, pero el
+        Income compensatorio lo neutraliza para que el balance no quede negativo."""
+        suggestion = RolloverSuggestion.objects.create(
+            user=user,
+            period_start=date(2026, 1, 1),
+            period_end=date(2026, 2, 1),
+            amount=Decimal("1000.00"),
+        )
+
+        confirm_rollover_deposit(suggestion, saving)
+
+        balance = get_period_balance(user, date(2026, 2, 1), date(2026, 3, 1))
+        assert balance == Decimal("0")

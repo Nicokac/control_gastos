@@ -2,10 +2,13 @@
 Servicios de ahorro: traslado de sobrante de período financiero (DT-067).
 """
 
+from datetime import timedelta
 from decimal import Decimal
 
 from django.db.models import Sum
 
+from apps.categories.models import Category
+from apps.core.constants import ROLLOVER_INCOME_CATEGORY_NAME, CategoryType
 from apps.core.utils import get_financial_period
 from apps.expenses.models import Expense
 from apps.income.models import Income
@@ -88,3 +91,44 @@ def get_dismissed_amount_for_current_period(user, month: int, year: int, start_d
     ).first()
 
     return suggestion.amount if suggestion else None
+
+
+def get_or_create_rollover_income_category() -> Category:
+    """
+    Categoría de sistema usada para el ingreso compensatorio que se crea al
+    destinar el sobrante a una meta (ver confirm_rollover_deposit). Se crea
+    de forma lazy porque no todos los entornos corren seed_categories tras
+    un deploy.
+    """
+    category, _ = Category.objects.get_or_create(
+        name=ROLLOVER_INCOME_CATEGORY_NAME,
+        type=CategoryType.INCOME,
+        is_system=True,
+        parent=None,
+        defaults={"icon": "bi-piggy-bank", "color": "#20c997", "user": None},
+    )
+    return category
+
+
+def confirm_rollover_deposit(suggestion, saving):
+    """
+    Confirma el traslado del sobrante de `suggestion` a `saving`.
+
+    Crea el depósito en la meta y, para que el balance del período actual
+    no se vea afectado por un movimiento que en realidad es plata ya ganada
+    en el período anterior, registra un Income compensatorio por el mismo
+    monto fechado el último día de ese período anterior (la categoría de
+    sistema "Sobrante de mes anterior" lo distingue de ingresos reales).
+    """
+    period_label = f"{suggestion.period_start:%B %Y}"
+    saving.add_deposit(suggestion.amount, description=f"Sobrante de {period_label}")
+
+    Income.objects.create(
+        user=suggestion.user,
+        category=get_or_create_rollover_income_category(),
+        amount=suggestion.amount,
+        date=suggestion.period_end - timedelta(days=1),
+        description=f"Sobrante de {period_label} destinado a {saving.name}",
+    )
+
+    suggestion.mark_deposited(saving)

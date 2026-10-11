@@ -182,16 +182,25 @@ def exchange_rate_today(request):
         return JsonResponse({"error": "No se pudo obtener la cotización"}, status=503)
 
 
-APP_VERSION = "1.29.0"
+APP_VERSION = "1.29.1"
 
 WHATS_NEW = [
+    {
+        "version": "1.29.1",
+        "date": "Octubre 2026",
+        "title": "Correcciones al sobrante del mes",
+        "items": [
+            "Corregido: destinar el sobrante a una meta podía dejar el balance del mes en negativo",
+            "Corregido: si no tenías ninguna meta de ahorro creada, el flujo para destinar el sobrante se interrumpía",
+        ],
+    },
     {
         "version": "1.29.0",
         "date": "Octubre 2026",
         "title": "Qué hacer con el sobrante del mes",
         "items": [
-            "Si te sobró plata al cerrar el mes, ahora te lo mostramos en el dashboard con la opción de destinarlo a una meta de ahorro",
-            "Si preferís usarlo para gastar este mes, podés descartarlo y te avisamos cuánto tenés disponible",
+            "Si te sobró plata al cerrar el período, ahora te lo mostramos en el dashboard con la opción de destinarlo a una meta de ahorro",
+            "Si preferís usarlo para gastar, podés descartarlo y te avisamos cuánto tenés disponible",
         ],
     },
     {

@@ -172,6 +172,19 @@ class TestRolloverSuggestionDepositEndpoint:
         assert rollover_suggestion.status == RolloverSuggestionStatus.DEPOSITED
         assert rollover_suggestion.saving_id == saving.pk
 
+    def test_deposit_crea_income_compensatorio(self, client, user, saving, rollover_suggestion):
+        """DT-067: evita que el balance del período actual quede negativo."""
+        from apps.income.models import Income
+
+        headers = auth_header(client, user)
+        url = f"/api/v1/rollover-suggestions/{rollover_suggestion.pk}/deposit/"
+        client.post(url, {"saving_id": saving.pk}, content_type="application/json", **headers)
+
+        income = Income.objects.get(user=user)
+        assert income.amount == Decimal("1000.00")
+        assert income.date == date(2026, 1, 31)
+        assert income.category.name == "Sobrante de mes anterior"
+
     def test_no_puede_destinar_a_meta_ajena(self, client, user, other_user, rollover_suggestion):
         other_saving = Saving.objects.create(
             user=other_user, name="Ajena", target_amount=Decimal("10000.00"), currency="ARS"

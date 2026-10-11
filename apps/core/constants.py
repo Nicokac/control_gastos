@@ -120,8 +120,14 @@ SYSTEM_GROUPS = {
         {"name": "Inversiones", "icon": "bi-graph-up-arrow", "color": "#6f42c1"},
         {"name": "Otros ingresos", "icon": "bi-three-dots", "color": "#6c757d"},
         {"name": "Sin clasificar", "icon": "bi-question-circle", "color": "#adb5bd"},
+        {"name": "Sobrante de mes anterior", "icon": "bi-piggy-bank", "color": "#20c997"},
     ],
 }
+
+# Nombre de la categoría de sistema usada para compensar el traslado de
+# sobrante a una meta de ahorro (DT-067) — mantiene el balance del período
+# sin ir a negativo cuando se confirma la sugerencia.
+ROLLOVER_INCOME_CATEGORY_NAME = "Sobrante de mes anterior"
 
 # Retrocompatibilidad: SYSTEM_CATEGORIES apunta a SYSTEM_GROUPS
 SYSTEM_CATEGORIES = SYSTEM_GROUPS
