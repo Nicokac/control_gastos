@@ -6,7 +6,7 @@ class ApiConstants {
 
   // Resumen de novedades de la versión actual (DT-068) — actualizar junto con el bump de pubspec.yaml.
   static const String latestReleaseSummary =
-      'Nuevo: reportá un problema o sugerencia directo desde la app, en Configuración.';
+      'Nuevo: si te sobró plata al cerrar el mes, te lo mostramos en el dashboard para destinarlo a una meta de ahorro.';
   static const String websiteUrl = 'https://control-gastos-fr8z.onrender.com';
   static const String termsUrl =
       'https://control-gastos-fr8z.onrender.com/terms/';
@@ -27,6 +27,7 @@ class ApiConstants {
   static const String expenses = '/expenses/';
   static const String income = '/income/';
   static const String savings = '/savings/';
+  static const String rolloverSuggestions = '/rollover-suggestions/';
   static const String recurring = '/recurring/';
   static const String recurringIncome = '/recurring-income/';
   static const String sharedExpenses = '/shared-expenses/';

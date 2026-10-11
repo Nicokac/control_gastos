@@ -2,6 +2,7 @@
 Tests para las vistas de Saving.
 """
 
+from datetime import date
 from decimal import Decimal
 
 from django.urls import reverse
@@ -9,7 +10,7 @@ from django.urls import reverse
 import pytest
 
 from apps.savings.forms import SavingForm
-from apps.savings.models import Saving, SavingStatus
+from apps.savings.models import RolloverSuggestion, RolloverSuggestionStatus, Saving, SavingStatus
 
 
 @pytest.mark.django_db
@@ -507,3 +508,151 @@ class TestQuickDepositView:
         data = {"type": "DEPOSIT", "amount": "1000.00"}
         response = authenticated_client.post(url, data)
         assert response.status_code in [403, 404]
+
+
+@pytest.mark.django_db
+class TestRolloverDismissView:
+    """Tests para RolloverDismissView (DT-067)."""
+
+    def _create_suggestion(self, user, **kwargs):
+        defaults = {
+            "user": user,
+            "period_start": date(2026, 1, 1),
+            "period_end": date(2026, 2, 1),
+            "amount": Decimal("1000.00"),
+        }
+        defaults.update(kwargs)
+        return RolloverSuggestion.objects.create(**defaults)
+
+    def test_dismiss_marks_as_dismissed(self, authenticated_client, user):
+        suggestion = self._create_suggestion(user)
+
+        url = reverse("savings:rollover_dismiss", kwargs={"pk": suggestion.pk})
+        response = authenticated_client.post(url)
+
+        suggestion.refresh_from_db()
+        assert response.status_code == 302
+        assert response.url == reverse("reports:dashboard")
+        assert suggestion.status == RolloverSuggestionStatus.DISMISSED
+        assert suggestion.resolved_at is not None
+
+    def test_cannot_dismiss_other_user_suggestion(self, authenticated_client, other_user):
+        suggestion = self._create_suggestion(other_user)
+
+        url = reverse("savings:rollover_dismiss", kwargs={"pk": suggestion.pk})
+        response = authenticated_client.post(url)
+
+        assert response.status_code == 404
+
+    def test_cannot_dismiss_already_resolved_suggestion(self, authenticated_client, user):
+        suggestion = self._create_suggestion(user)
+        suggestion.mark_dismissed()
+
+        url = reverse("savings:rollover_dismiss", kwargs={"pk": suggestion.pk})
+        response = authenticated_client.post(url)
+
+        assert response.status_code == 404
+
+    def test_get_not_allowed(self, authenticated_client, user):
+        suggestion = self._create_suggestion(user)
+
+        url = reverse("savings:rollover_dismiss", kwargs={"pk": suggestion.pk})
+        response = authenticated_client.get(url)
+
+        assert response.status_code == 405
+
+
+@pytest.mark.django_db
+class TestRolloverDepositView:
+    """Tests para RolloverDepositView (DT-067)."""
+
+    def _create_suggestion(self, user, **kwargs):
+        defaults = {
+            "user": user,
+            "period_start": date(2026, 1, 1),
+            "period_end": date(2026, 2, 1),
+            "amount": Decimal("1000.00"),
+        }
+        defaults.update(kwargs)
+        return RolloverSuggestion.objects.create(**defaults)
+
+    def test_get_redirects_to_create_when_no_active_savings(self, authenticated_client, user):
+        suggestion = self._create_suggestion(user)
+
+        url = reverse("savings:rollover_deposit", kwargs={"pk": suggestion.pk})
+        response = authenticated_client.get(url)
+
+        assert response.status_code == 302
+        assert response.url == reverse("savings:create")
+
+    def test_get_deposits_directly_when_single_active_saving(
+        self, authenticated_client, user, saving
+    ):
+        suggestion = self._create_suggestion(user)
+
+        url = reverse("savings:rollover_deposit", kwargs={"pk": suggestion.pk})
+        response = authenticated_client.get(url)
+
+        saving.refresh_from_db()
+        suggestion.refresh_from_db()
+        assert response.status_code == 302
+        assert response.url == reverse("savings:detail", kwargs={"pk": saving.pk})
+        assert saving.current_amount == Decimal("1000.00")
+        assert suggestion.status == RolloverSuggestionStatus.DEPOSITED
+        assert suggestion.saving == saving
+
+    def test_get_shows_selection_when_multiple_active_savings(
+        self, authenticated_client, user, saving_factory
+    ):
+        s1 = saving_factory(user, name="Meta 1")
+        s2 = saving_factory(user, name="Meta 2")
+        suggestion = self._create_suggestion(user)
+
+        url = reverse("savings:rollover_deposit", kwargs={"pk": suggestion.pk})
+        response = authenticated_client.get(url)
+
+        assert response.status_code == 200
+        assert "savings/rollover_deposit_select.html" in [t.name for t in response.templates]
+        assert set(response.context["savings"]) == {s1, s2}
+
+    def test_post_deposits_into_selected_saving(self, authenticated_client, user, saving_factory):
+        saving_factory(user, name="Meta 1")
+        s2 = saving_factory(user, name="Meta 2")
+        suggestion = self._create_suggestion(user)
+
+        url = reverse("savings:rollover_deposit", kwargs={"pk": suggestion.pk})
+        response = authenticated_client.post(url, {"saving_id": s2.pk})
+
+        s2.refresh_from_db()
+        suggestion.refresh_from_db()
+        assert response.status_code == 302
+        assert response.url == reverse("savings:detail", kwargs={"pk": s2.pk})
+        assert s2.current_amount == Decimal("1000.00")
+        assert suggestion.status == RolloverSuggestionStatus.DEPOSITED
+        assert suggestion.saving == s2
+
+    def test_cannot_deposit_other_user_suggestion(self, authenticated_client, other_user, saving):
+        suggestion = self._create_suggestion(other_user)
+
+        url = reverse("savings:rollover_deposit", kwargs={"pk": suggestion.pk})
+        response = authenticated_client.get(url)
+
+        assert response.status_code == 404
+
+    def test_cannot_deposit_into_inactive_saving(self, authenticated_client, user, saving_factory):
+        inactive = saving_factory(user, name="Completada", status=SavingStatus.COMPLETED)
+        suggestion = self._create_suggestion(user)
+
+        url = reverse("savings:rollover_deposit", kwargs={"pk": suggestion.pk})
+        response = authenticated_client.post(url, {"saving_id": inactive.pk})
+
+        assert response.status_code == 404
+
+    def test_cannot_deposit_already_resolved_suggestion(self, authenticated_client, user, saving):
+        suggestion = self._create_suggestion(user)
+        suggestion.mark_deposited(saving)
+
+        url = reverse("savings:rollover_deposit", kwargs={"pk": suggestion.pk})
+        response = authenticated_client.get(url)
+
+        assert response.status_code == 404

@@ -17,7 +17,7 @@ from apps.api.v1.views.feedback import FeedbackView
 from apps.api.v1.views.income import IncomeViewSet
 from apps.api.v1.views.recurring import RecurringExpenseViewSet
 from apps.api.v1.views.recurring_income import RecurringIncomeViewSet
-from apps.api.v1.views.savings import SavingViewSet
+from apps.api.v1.views.savings import RolloverSuggestionViewSet, SavingViewSet
 from apps.api.v1.views.shared_expenses import HouseholdMemberViewSet, SharedExpenseViewSet
 
 router = DefaultRouter()
@@ -25,6 +25,7 @@ router.register(r"categories", CategoryViewSet, basename="category")
 router.register(r"expenses", ExpenseViewSet, basename="expense")
 router.register(r"income", IncomeViewSet, basename="income")
 router.register(r"savings", SavingViewSet, basename="saving")
+router.register(r"rollover-suggestions", RolloverSuggestionViewSet, basename="rollover-suggestion")
 router.register(r"recurring", RecurringExpenseViewSet, basename="recurring")
 router.register(r"recurring-income", RecurringIncomeViewSet, basename="recurring-income")
 router.register(r"shared-expenses", SharedExpenseViewSet, basename="shared-expense")

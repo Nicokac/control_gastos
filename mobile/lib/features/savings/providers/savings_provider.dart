@@ -84,6 +84,29 @@ class SavingsListNotifier extends AsyncNotifier<List<dynamic>> {
       return _errorDetail(e) ?? 'Error al registrar el retiro';
     }
   }
+
+  Future<String?> dismissRollover(int suggestionId) async {
+    try {
+      await ref.read(savingsRepositoryProvider).dismissRollover(suggestionId);
+      ref.invalidate(dashboardProvider);
+      return null;
+    } catch (e) {
+      return _errorDetail(e) ?? 'No pudimos descartar la sugerencia';
+    }
+  }
+
+  Future<String?> depositRollover(int suggestionId, int savingId) async {
+    try {
+      await ref
+          .read(savingsRepositoryProvider)
+          .depositRollover(suggestionId, savingId);
+      await reload();
+      ref.invalidate(dashboardProvider);
+      return null;
+    } catch (e) {
+      return _errorDetail(e) ?? 'No pudimos destinar el sobrante';
+    }
+  }
 }
 
 final savingsListProvider =

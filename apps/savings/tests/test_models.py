@@ -2,13 +2,21 @@
 Tests para los modelos Saving y SavingMovement.
 """
 
+from datetime import date
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 
 import pytest
 
-from apps.savings.models import Saving, SavingMovement, SavingStatus
+from apps.savings.models import (
+    RolloverSuggestion,
+    RolloverSuggestionStatus,
+    Saving,
+    SavingMovement,
+    SavingStatus,
+)
 
 
 @pytest.mark.django_db
@@ -416,3 +424,111 @@ class TestSavingMovementProperties:
 
         assert wd.is_deposit is False
         assert wd.is_withdrawal is True
+
+
+@pytest.mark.django_db
+class TestRolloverSuggestionModel:
+    """Tests para el modelo RolloverSuggestion (DT-067)."""
+
+    def _create(self, user, **kwargs):
+        defaults = {
+            "user": user,
+            "period_start": date(2026, 1, 1),
+            "period_end": date(2026, 2, 1),
+            "amount": Decimal("10000.00"),
+        }
+        defaults.update(kwargs)
+        return RolloverSuggestion.objects.create(**defaults)
+
+    def test_create_rollover_suggestion(self, user):
+        """Verifica creación con estado pendiente por defecto."""
+        suggestion = self._create(user)
+
+        assert suggestion.pk is not None
+        assert suggestion.status == RolloverSuggestionStatus.PENDING
+        assert suggestion.is_pending is True
+        assert suggestion.saving is None
+
+    def test_str_representation(self, user):
+        suggestion = self._create(user)
+
+        result = str(suggestion)
+
+        assert str(user) in result
+        assert "2026-01-01" in result
+
+    def test_formatted_amount(self, user):
+        suggestion = self._create(user, amount=Decimal("1500.00"))
+
+        assert "1.500" in suggestion.formatted_amount
+
+    def test_unique_constraint_per_user_and_period(self, user):
+        """No puede haber dos sugerencias para el mismo usuario y período."""
+        self._create(user)
+
+        with pytest.raises((ValidationError, IntegrityError)):
+            self._create(user)
+
+    def test_same_period_allowed_for_different_users(self, user, django_user_model):
+        """El mismo período puede existir para usuarios distintos."""
+        other_user = django_user_model.objects.create_user(
+            username="otro",
+            email="otro@test.com",
+            password="pass12345",  # pragma: allowlist secret
+        )
+        self._create(user)
+        other_suggestion = self._create(other_user)
+
+        assert other_suggestion.pk is not None
+
+    def test_amount_must_be_positive(self, user):
+        suggestion = RolloverSuggestion(
+            user=user,
+            period_start=date(2026, 1, 1),
+            period_end=date(2026, 2, 1),
+            amount=Decimal("0.00"),
+        )
+
+        with pytest.raises(ValidationError):
+            suggestion.full_clean()
+
+    def test_period_end_must_be_after_start(self, user):
+        suggestion = RolloverSuggestion(
+            user=user,
+            period_start=date(2026, 2, 1),
+            period_end=date(2026, 1, 1),
+            amount=Decimal("100.00"),
+        )
+
+        with pytest.raises(ValidationError):
+            suggestion.full_clean()
+
+    def test_deposited_requires_saving(self, user):
+        """No se puede marcar como depositada sin indicar la meta."""
+        suggestion = RolloverSuggestion(
+            user=user,
+            period_start=date(2026, 1, 1),
+            period_end=date(2026, 2, 1),
+            amount=Decimal("100.00"),
+            status=RolloverSuggestionStatus.DEPOSITED,
+        )
+
+        with pytest.raises(ValidationError):
+            suggestion.full_clean()
+
+    def test_mark_dismissed(self, user):
+        suggestion = self._create(user)
+
+        suggestion.mark_dismissed()
+
+        assert suggestion.status == RolloverSuggestionStatus.DISMISSED
+        assert suggestion.resolved_at is not None
+
+    def test_mark_deposited(self, user, saving):
+        suggestion = self._create(user)
+
+        suggestion.mark_deposited(saving)
+
+        assert suggestion.status == RolloverSuggestionStatus.DEPOSITED
+        assert suggestion.saving == saving
+        assert suggestion.resolved_at is not None

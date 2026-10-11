@@ -7,6 +7,7 @@ import '../widgets/balance_card.dart';
 import '../widgets/expense_chart.dart';
 import '../widgets/recent_transactions_list.dart';
 import '../widgets/pending_recurring_card.dart';
+import '../widgets/rollover_suggestion_banner.dart';
 import '../widgets/dashboard_skeleton.dart';
 import '../widgets/last_updated_label.dart';
 import '../../../core/theme/app_semantic_colors.dart';
@@ -51,8 +52,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           IconButton(
             icon: Icon(amountsHidden ? Icons.visibility_off : Icons.visibility),
             tooltip: amountsHidden ? 'Mostrar montos' : 'Ocultar montos',
-            onPressed: () =>
-                ref.read(amountsHiddenProvider.notifier).toggle(),
+            onPressed: () => ref.read(amountsHiddenProvider.notifier).toggle(),
           ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
@@ -66,46 +66,50 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           const OfflineBanner(),
           Expanded(
             child: dashboardAsync.when(
-        loading: () => const DashboardSkeleton(),
-        error: (e, _) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
-              const SizedBox(height: 12),
-              Text(
-                'Error al cargar el dashboard',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                e.toString(),
-                style: const TextStyle(color: Colors.grey, fontSize: 12),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: notifier.reload,
-                child: const Text('Reintentar'),
-              ),
-            ],
-          ),
-        ),
-        data: (data) => RefreshIndicator(
-          onRefresh: () async {
-            await notifier.reload();
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Datos actualizados'),
-                  duration: Duration(seconds: 2),
+              loading: () => const DashboardSkeleton(),
+              error: (e, _) => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: Colors.red,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Error al cargar el dashboard',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      e.toString(),
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: notifier.reload,
+                      child: const Text('Reintentar'),
+                    ),
+                  ],
                 ),
-              );
-            }
-          },
-          child: _DashboardContent(data: data, notifier: notifier),
-        ),
-      ),
+              ),
+              data: (data) => RefreshIndicator(
+                onRefresh: () async {
+                  await notifier.reload();
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Datos actualizados'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                },
+                child: _DashboardContent(data: data, notifier: notifier),
+              ),
+            ),
           ),
         ],
       ),
@@ -149,6 +153,17 @@ class _DashboardContent extends StatelessWidget {
           onTapIncome: () => context.push('/income'),
           onTapExpenses: () => context.push('/expenses'),
         ),
+        if (data['rollover_suggestion'] != null) ...[
+          const SizedBox(height: 8),
+          RolloverSuggestionBanner(
+            suggestion: data['rollover_suggestion'] as Map<String, dynamic>,
+          ),
+        ] else if (data['rollover_available_amount'] != null) ...[
+          const SizedBox(height: 8),
+          _RolloverAvailableBanner(
+            amount: data['rollover_available_amount'] as String,
+          ),
+        ],
         if (data['projection_available'] == true) ...[
           const SizedBox(height: 8),
           _ProjectionBanner(
@@ -294,6 +309,50 @@ class _ProjectionBanner extends StatelessWidget {
   }
 }
 
+class _RolloverAvailableBanner extends StatelessWidget {
+  final String amount;
+
+  const _RolloverAvailableBanner({required this.amount});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = context.semanticColors.savings;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.info_outline, size: 16, color: color),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Wrap(
+              children: [
+                Text(
+                  'Disponible este mes: incluye ',
+                  style: TextStyle(fontSize: 12, color: color),
+                ),
+                SensitiveText(
+                  formatArsString(amount),
+                  style: TextStyle(fontSize: 12, color: color),
+                ),
+                Text(
+                  ' que sobraron el período anterior.',
+                  style: TextStyle(fontSize: 12, color: color),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _NextMonthCommitmentCard extends ConsumerWidget {
   final Map<String, dynamic> data;
 
@@ -329,7 +388,11 @@ class _NextMonthCommitmentCard extends ConsumerWidget {
                     color: Colors.grey.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Icon(Icons.event_note, size: 18, color: Colors.grey[700]),
+                  child: Icon(
+                    Icons.event_note,
+                    size: 18,
+                    color: Colors.grey[700],
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -368,8 +431,10 @@ class _NextMonthCommitmentCard extends ConsumerWidget {
               runSpacing: 4,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                Text('Ingreso fijo esperado:',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                Text(
+                  'Ingreso fijo esperado:',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
                 SensitiveText(
                   formatArsString(expectedTotal),
                   style: const TextStyle(
@@ -378,8 +443,10 @@ class _NextMonthCommitmentCard extends ConsumerWidget {
                     color: Colors.green,
                   ),
                 ),
-                Text('· Te quedaría:',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                Text(
+                  '· Te quedaría:',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
                 SensitiveText(
                   formatArsString(freeBalance),
                   style: TextStyle(

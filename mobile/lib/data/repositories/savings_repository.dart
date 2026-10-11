@@ -11,13 +11,21 @@ class SavingsRepository {
   }
 
   Future<Map<String, dynamic>> createSaving(Map<String, dynamic> data) async {
-    final response = await ApiService.dio.post(ApiConstants.savings, data: data);
+    final response = await ApiService.dio.post(
+      ApiConstants.savings,
+      data: data,
+    );
     return response.data as Map<String, dynamic>;
   }
 
-  Future<Map<String, dynamic>> updateSaving(int id, Map<String, dynamic> data) async {
-    final response =
-        await ApiService.dio.put('${ApiConstants.savings}$id/', data: data);
+  Future<Map<String, dynamic>> updateSaving(
+    int id,
+    Map<String, dynamic> data,
+  ) async {
+    final response = await ApiService.dio.put(
+      '${ApiConstants.savings}$id/',
+      data: data,
+    );
     return response.data as Map<String, dynamic>;
   }
 
@@ -25,7 +33,11 @@ class SavingsRepository {
     await ApiService.dio.delete('${ApiConstants.savings}$id/');
   }
 
-  Future<Map<String, dynamic>> deposit(int id, double amount, String description) async {
+  Future<Map<String, dynamic>> deposit(
+    int id,
+    double amount,
+    String description,
+  ) async {
     final response = await ApiService.dio.post(
       '${ApiConstants.savings}$id/deposit/',
       data: {'amount': amount, 'description': description},
@@ -33,7 +45,11 @@ class SavingsRepository {
     return response.data as Map<String, dynamic>;
   }
 
-  Future<Map<String, dynamic>> withdraw(int id, double amount, String description) async {
+  Future<Map<String, dynamic>> withdraw(
+    int id,
+    double amount,
+    String description,
+  ) async {
     final response = await ApiService.dio.post(
       '${ApiConstants.savings}$id/withdraw/',
       data: {'amount': amount, 'description': description},
@@ -42,8 +58,28 @@ class SavingsRepository {
   }
 
   Future<List<dynamic>> getMovements(int id) async {
-    final response = await ApiService.dio.get('${ApiConstants.savings}$id/movements/');
+    final response = await ApiService.dio.get(
+      '${ApiConstants.savings}$id/movements/',
+    );
     return response.data as List<dynamic>;
+  }
+
+  Future<Map<String, dynamic>> dismissRollover(int suggestionId) async {
+    final response = await ApiService.dio.post(
+      '${ApiConstants.rolloverSuggestions}$suggestionId/dismiss/',
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> depositRollover(
+    int suggestionId,
+    int savingId,
+  ) async {
+    final response = await ApiService.dio.post(
+      '${ApiConstants.rolloverSuggestions}$suggestionId/deposit/',
+      data: {'saving_id': savingId},
+    );
+    return response.data as Map<String, dynamic>;
   }
 
   List<dynamic> _extractList(dynamic data) {

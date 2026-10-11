@@ -1,10 +1,11 @@
 """Tests para los endpoints de metas de ahorro de la API v1."""
 
+from datetime import date
 from decimal import Decimal
 
 import pytest
 
-from apps.savings.models import Saving
+from apps.savings.models import RolloverSuggestion, RolloverSuggestionStatus, Saving
 
 
 def auth_header(client, user):
@@ -109,4 +110,91 @@ class TestSavingDepositEndpoint:
         response = client.post(
             url, {"amount": "100.00"}, content_type="application/json", **headers
         )
+        assert response.status_code == 404
+
+
+@pytest.fixture
+def rollover_suggestion(user):
+    return RolloverSuggestion.objects.create(
+        user=user,
+        period_start=date(2026, 1, 1),
+        period_end=date(2026, 2, 1),
+        amount=Decimal("1000.00"),
+    )
+
+
+@pytest.mark.django_db
+class TestRolloverSuggestionDismissEndpoint:
+    def test_descarta_sugerencia(self, client, user, rollover_suggestion):
+        headers = auth_header(client, user)
+        url = f"/api/v1/rollover-suggestions/{rollover_suggestion.pk}/dismiss/"
+        response = client.post(url, **headers)
+
+        assert response.status_code == 200
+        rollover_suggestion.refresh_from_db()
+        assert rollover_suggestion.status == RolloverSuggestionStatus.DISMISSED
+
+    def test_no_puede_descartar_sugerencia_ajena(self, client, user, other_user):
+        other_suggestion = RolloverSuggestion.objects.create(
+            user=other_user,
+            period_start=date(2026, 1, 1),
+            period_end=date(2026, 2, 1),
+            amount=Decimal("500.00"),
+        )
+        headers = auth_header(client, user)
+        url = f"/api/v1/rollover-suggestions/{other_suggestion.pk}/dismiss/"
+        response = client.post(url, **headers)
+
+        assert response.status_code == 404
+
+    def test_no_puede_descartar_sugerencia_ya_resuelta(self, client, user, rollover_suggestion):
+        rollover_suggestion.mark_dismissed()
+        headers = auth_header(client, user)
+        url = f"/api/v1/rollover-suggestions/{rollover_suggestion.pk}/dismiss/"
+        response = client.post(url, **headers)
+
+        assert response.status_code == 404
+
+
+@pytest.mark.django_db
+class TestRolloverSuggestionDepositEndpoint:
+    def test_destina_sugerencia_a_meta(self, client, user, saving, rollover_suggestion):
+        headers = auth_header(client, user)
+        url = f"/api/v1/rollover-suggestions/{rollover_suggestion.pk}/deposit/"
+        response = client.post(
+            url, {"saving_id": saving.pk}, content_type="application/json", **headers
+        )
+
+        assert response.status_code == 200
+        saving.refresh_from_db()
+        rollover_suggestion.refresh_from_db()
+        assert saving.current_amount == Decimal("1000.00")
+        assert rollover_suggestion.status == RolloverSuggestionStatus.DEPOSITED
+        assert rollover_suggestion.saving_id == saving.pk
+
+    def test_no_puede_destinar_a_meta_ajena(self, client, user, other_user, rollover_suggestion):
+        other_saving = Saving.objects.create(
+            user=other_user, name="Ajena", target_amount=Decimal("10000.00"), currency="ARS"
+        )
+        headers = auth_header(client, user)
+        url = f"/api/v1/rollover-suggestions/{rollover_suggestion.pk}/deposit/"
+        response = client.post(
+            url, {"saving_id": other_saving.pk}, content_type="application/json", **headers
+        )
+
+        assert response.status_code == 404
+
+    def test_no_puede_destinar_sugerencia_ajena(self, client, user, other_user, saving):
+        other_suggestion = RolloverSuggestion.objects.create(
+            user=other_user,
+            period_start=date(2026, 1, 1),
+            period_end=date(2026, 2, 1),
+            amount=Decimal("500.00"),
+        )
+        headers = auth_header(client, user)
+        url = f"/api/v1/rollover-suggestions/{other_suggestion.pk}/deposit/"
+        response = client.post(
+            url, {"saving_id": saving.pk}, content_type="application/json", **headers
+        )
+
         assert response.status_code == 404

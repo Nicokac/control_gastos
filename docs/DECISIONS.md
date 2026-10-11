@@ -978,18 +978,23 @@ Se había reportado que no se podía editar el día de vencimiento (`due_day`) d
 
 ### DT-067 — Balance positivo de fin de mes no se traslada automáticamente
 
-**Estado:** ⏳ Pendiente (a definir enfoque)
+**Estado:** ✅ Resuelto (v1.29.0 web · Mobile 1.25.0+29)
 
-Al cerrar un mes, el balance positivo (ingresos − gastos) no se traslada como "sobrante" al mes siguiente ni se vincula a ninguna meta de ahorro. El usuario tiene que registrarlo manualmente como un ingreso o un depósito a una meta.
+Al cerrar un mes, el balance positivo (ingresos − gastos) no se trasladaba como "sobrante" al mes siguiente ni se vinculaba a ninguna meta de ahorro. El usuario tenía que registrarlo manualmente como un ingreso o un depósito a una meta.
 
-**Why:** es un paso manual repetitivo y fácil de olvidar — el dato (cuánto sobró) ya existe en el dashboard, solo falta un mecanismo para "hacer algo" con él automáticamente.
+**Why:** es un paso manual repetitivo y fácil de olvidar — el dato (cuánto sobró) ya existía en el dashboard, solo faltaba un mecanismo para "hacer algo" con él.
 
-**Opciones a evaluar (a decidir antes de implementar):**
-1. **Sugerencia pasiva**: al cierre de mes, el dashboard muestra un banner "Te sobraron $X este mes — ¿querés destinarlo a una meta de ahorro?" con un botón que pre-completa un `SavingMovement`. Cero automatismo, el usuario sigue confirmando cada vez.
-2. **Regla automática configurable**: el usuario define una vez "el sobrante de cada mes va a la meta Vacaciones" y el sistema lo aplica solo al cierre de cada período financiero (se conecta con DT-061, ahorro por reglas automáticas, que ya cubre un mecanismo similar para % de ingresos).
-3. **Categoría especial "Ahorro del mes"**: un `Expense` o `SavingMovement` especial que se genera automáticamente con el sobrante, sin pedir confirmación — más automático pero más arriesgado si el cálculo de "sobrante" no es exacto (gastos pendientes de registrar, por ejemplo).
+**Opción elegida:** de las 3 evaluadas originalmente, se implementó la **opción 1 (sugerencia pasiva)**. Se descartaron la 2 (regla automática configurable, que depende de DT-061 — ahorro por reglas automáticas — todavía no implementado) y la 3 (categoría especial automática sin confirmación) porque el usuario puede legítimamente querer gastar el sobrante en el período actual en vez de ahorrarlo, y un automatismo sin confirmación no deja ese camino abierto sin fricción.
 
-**Riesgo a resolver en cualquier opción:** definir qué es "balance positivo" con precisión — ¿ingresos menos gastos del período financiero completo? ¿se espera a que termine el mes o se puede anticipar? ¿qué pasa si el usuario carga gastos de ese mes después de haber trasladado el sobrante?
+**Resolución:**
+- Modelo nuevo `RolloverSuggestion` (`apps/savings/models.py`): `user`, `period_start`, `period_end`, `amount`, `status` (`PENDING`/`DEPOSITED`/`DISMISSED`), `saving` (FK nullable, se completa solo si se destina a una meta), `resolved_at`. Constraint de unicidad por `(user, period_start, period_end)` — nunca se duplica la sugerencia de un mismo período. Migración `0008_rollover_suggestion`.
+- `apps/savings/services.py` (nuevo): `get_period_balance` (ingresos − gastos − depósitos a ahorro de un rango de fechas, mismo criterio que ya usaba `DashboardView._get_balance_data`), `get_previous_period` (período financiero inmediatamente anterior, respetando `financial_month_start_day` por usuario — no necesariamente el mes calendario), `get_or_create_rollover_suggestion` (crea la sugerencia solo si el período anterior cerró con balance positivo y no existe ya una para ese período) y `get_dismissed_amount_for_current_period` (para el aviso informativo, ver abajo).
+- **Dashboard** (`DashboardView`, web): al entrar al período actual real (nunca al navegar un período histórico), se evalúa/crea la sugerencia del período anterior. Si está `PENDING`, se muestra un banner con "Destinar a una meta" / "Descartar". Si el usuario la descartó, el dashboard del período **siguiente** muestra un aviso informativo "Disponible este mes: incluye $X que sobraron el período anterior" — solo una vez, no se arrastra más de un período. El balance no se modifica en ningún caso: es puramente informativo, nunca se suma como ingreso real (evita doble conteo).
+- **Acciones** (`apps/savings/views.py`): `RolloverDismissView` (marca `DISMISSED`) y `RolloverDepositView` (si hay una sola meta activa deposita directo; si hay varias, pantalla de selección `rollover_deposit_select.html`; si no hay ninguna, redirige a crear una). El depósito usa `Saving.add_deposit()` ya existente, y marca la sugerencia `DEPOSITED` con la meta elegida.
+- **API** (`RolloverSuggestionViewSet`, `apps/api/v1/views/savings.py`): acciones `dismiss`/`deposit` sobre `/api/v1/rollover-suggestions/{id}/`. El endpoint de dashboard (`/api/v1/dashboard/`) expone `rollover_suggestion` y `rollover_available_amount` con el mismo criterio que la vista web.
+- **Mobile**: `RolloverSuggestionBanner` (nuevo widget) en el dashboard, con el mismo flujo de descartar/destinar (selector de meta vía diálogo si hay más de una activa). `SavingsListNotifier.dismissRollover`/`depositRollover` invalidan el `dashboardProvider` tras resolver, igual que ya hacían `deposit`/`withdraw`.
+- **Costo de performance aceptado**: el chequeo agrega 5 queries fijas por carga de dashboard (balance del período anterior + 2 lookups de `RolloverSuggestion`), sin N+1 — documentado y ajustado en los tests de `django_assert_max_num_queries` existentes.
+- 17 tests de servicios, 10 de modelo, 19 de vistas/integración web, 14 de API — además de los tests de query count ajustados.
 
 ---
 

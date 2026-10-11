@@ -7,6 +7,9 @@ from django.utils import timezone
 
 import pytest
 
+from apps.savings.models import RolloverSuggestion
+from apps.savings.services import get_previous_period
+
 
 def auth_header(client, user):
     response = client.post(
@@ -96,6 +99,72 @@ class TestDashboardEndpoint:
         assert data["projection_available"] is False
         assert data["projected_expense"] is None
         assert data["projected_balance"] is None
+
+
+@pytest.mark.django_db
+class TestDashboardRolloverSuggestionEndpoint:
+    url = "/api/v1/dashboard/"
+
+    def _previous_period(self, user):
+        today = timezone.localdate()
+        return get_previous_period(today.month, today.year, user.financial_month_start_day)
+
+    def test_incluye_sugerencia_si_periodo_anterior_tuvo_sobrante(
+        self, client, user, income_category, income_factory
+    ):
+        prev_start, _ = self._previous_period(user)
+        income_factory(user, income_category, amount=Decimal("1000.00"), date=prev_start)
+        headers = auth_header(client, user)
+
+        response = client.get(self.url, **headers)
+        data = response.json()
+
+        assert data["rollover_suggestion"] is not None
+        assert Decimal(data["rollover_suggestion"]["amount"]) == Decimal("1000.00")
+        assert data["rollover_available_amount"] is None
+
+    def test_sin_sugerencia_si_periodo_anterior_sin_sobrante(self, client, user):
+        headers = auth_header(client, user)
+
+        response = client.get(self.url, **headers)
+        data = response.json()
+
+        assert data["rollover_suggestion"] is None
+        assert data["rollover_available_amount"] is None
+
+    def test_disponible_este_mes_tras_descartar(
+        self, client, user, income_category, income_factory
+    ):
+        prev_start, prev_end = self._previous_period(user)
+        income_factory(user, income_category, amount=Decimal("1500.00"), date=prev_start)
+        headers = auth_header(client, user)
+
+        client.get(self.url, **headers)
+        suggestion = RolloverSuggestion.objects.get(
+            user=user, period_start=prev_start, period_end=prev_end
+        )
+        suggestion.mark_dismissed()
+
+        response = client.get(self.url, **headers)
+        data = response.json()
+
+        assert data["rollover_suggestion"] is None
+        assert Decimal(data["rollover_available_amount"]) == Decimal("1500.00")
+
+    def test_sin_sugerencia_en_periodo_historico_navegado(
+        self, client, user, income_category, income_factory
+    ):
+        prev_start, _ = self._previous_period(user)
+        income_factory(user, income_category, amount=Decimal("1000.00"), date=prev_start)
+        headers = auth_header(client, user)
+
+        response = client.get(
+            self.url + f"?month={prev_start.month}&year={prev_start.year}", **headers
+        )
+        data = response.json()
+
+        assert data["rollover_suggestion"] is None
+        assert RolloverSuggestion.objects.filter(user=user).count() == 0
 
     def test_proyeccion_no_disponible_sin_gastos(self, client, user):
         headers = auth_header(client, user)

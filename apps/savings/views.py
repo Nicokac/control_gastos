@@ -7,8 +7,9 @@ from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
+from django.views import View
 from django.views.generic.edit import FormView
 
 from apps.core.utils import format_currency
@@ -21,7 +22,7 @@ from apps.core.views import (
 )
 
 from .forms import SavingFilterForm, SavingForm, SavingMovementForm
-from .models import Saving, SavingStatus
+from .models import RolloverSuggestion, RolloverSuggestionStatus, Saving, SavingStatus
 
 
 class SavingListView(UserOwnedListView):
@@ -253,3 +254,75 @@ class SavingMovementCreateView(LoginRequiredMixin, FormView):
 
     def get_success_url(self):
         return reverse("savings:detail", kwargs={"pk": self.get_saving().pk})
+
+
+class RolloverDismissView(LoginRequiredMixin, View):
+    """Descarta la sugerencia de traslado de sobrante (DT-067): el usuario
+    decidió gastarlo en el período actual en vez de destinarlo a una meta."""
+
+    def post(self, request, pk):
+        suggestion = get_object_or_404(
+            RolloverSuggestion,
+            pk=pk,
+            user=request.user,
+            status=RolloverSuggestionStatus.PENDING,
+        )
+        suggestion.mark_dismissed()
+        messages.info(request, "Listo, el sobrante queda disponible para este período.")
+        return redirect("reports:dashboard")
+
+
+class RolloverDepositView(LoginRequiredMixin, View):
+    """
+    Destina el sobrante de un período financiero cerrado a una meta de ahorro (DT-067).
+
+    Si el usuario tiene una sola meta activa, confirma directo. Si tiene
+    varias, pide elegir. Si no tiene ninguna, lo manda a crear una.
+    """
+
+    def get_suggestion(self, request, pk):
+        return get_object_or_404(
+            RolloverSuggestion,
+            pk=pk,
+            user=request.user,
+            status=RolloverSuggestionStatus.PENDING,
+        )
+
+    def get(self, request, pk):
+        suggestion = self.get_suggestion(request, pk)
+        active_savings = Saving.objects.filter(user=request.user, status=SavingStatus.ACTIVE)
+
+        if not active_savings.exists():
+            messages.info(request, "Creá una meta de ahorro para poder destinar el sobrante.")
+            return redirect("savings:create")
+
+        if active_savings.count() == 1:
+            return self._deposit(request, suggestion, active_savings.first())
+
+        return self.render_selection(request, suggestion, active_savings)
+
+    def post(self, request, pk):
+        suggestion = self.get_suggestion(request, pk)
+        saving = get_object_or_404(
+            Saving, pk=request.POST.get("saving_id"), user=request.user, status=SavingStatus.ACTIVE
+        )
+        return self._deposit(request, suggestion, saving)
+
+    def render_selection(self, request, suggestion, active_savings):
+        return render(
+            request,
+            "savings/rollover_deposit_select.html",
+            {"suggestion": suggestion, "savings": active_savings},
+        )
+
+    def _deposit(self, request, suggestion, saving):
+        saving.add_deposit(
+            suggestion.amount,
+            description=f"Sobrante de {suggestion.period_start:%B %Y}",
+        )
+        suggestion.mark_deposited(saving)
+        messages.success(
+            request,
+            f"{format_currency(suggestion.amount)} destinado a {saving.name}.",
+        )
+        return redirect("savings:detail", pk=saving.pk)

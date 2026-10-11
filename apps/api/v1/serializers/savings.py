@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from rest_framework import serializers
 
-from apps.savings.models import Saving, SavingMovement
+from apps.savings.models import RolloverSuggestion, Saving, SavingMovement
 
 
 class SavingMovementSerializer(serializers.ModelSerializer):
@@ -49,3 +49,14 @@ class SavingSerializer(serializers.ModelSerializer):
 class DepositWithdrawSerializer(serializers.Serializer):
     amount = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=Decimal("0.01"))
     description = serializers.CharField(max_length=255, required=False, default="")
+
+
+class RolloverSuggestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RolloverSuggestion
+        fields = ["id", "period_start", "period_end", "amount", "status", "saving"]
+        read_only_fields = fields
+
+
+class RolloverDepositSerializer(serializers.Serializer):
+    saving_id = serializers.IntegerField()

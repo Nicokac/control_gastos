@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load currency_filters %}
+
+{% block title %}Destinar sobrante - Control de Gastos{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="mb-4">
+                <a href="{% url 'reports:dashboard' %}" class="text-muted text-decoration-none">
+                    <i class="bi bi-arrow-left me-1"></i>Volver al dashboard
+                </a>
+                <h1 class="h3 mt-2">
+                    <i class="bi bi-piggy-bank text-success me-2"></i>Destinar sobrante
+                </h1>
+                <p class="text-muted mb-0">
+                    Elegí a qué meta destinar {{ suggestion.formatted_amount }}.
+                </p>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="list-group mb-4">
+                    {% for s in savings %}
+                    <label class="list-group-item d-flex align-items-center gap-3">
+                        <input type="radio" name="saving_id" value="{{ s.pk }}"
+                               class="form-check-input flex-shrink-0" {% if forloop.first %}checked{% endif %}>
+                        <i class="{{ s.icon }} fs-4" data-color="{{ s.color }}"></i>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">{{ s.name }}</div>
+                            <small class="text-muted">
+                                {{ s.formatted_current }} / {{ s.formatted_target }} ({{ s.progress_percentage }}%)
+                            </small>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="{% url 'reports:dashboard' %}" class="btn btn-outline-secondary">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-success btn-lg px-5">
+                        <i class="bi bi-check-lg me-2"></i>Confirmar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -12,6 +12,8 @@ import pytest
 from apps.categories.models import Category, CategoryType
 from apps.expenses.models import Expense
 from apps.income.models import Income
+from apps.savings.models import RolloverSuggestion
+from apps.savings.services import get_previous_period
 
 
 @pytest.mark.django_db
@@ -163,6 +165,111 @@ class TestDashboardView:
         client.force_login(user)
         response = client.get(reverse("reports:dashboard"))
         assert timezone.localdate().year in response.context["year_choices"]
+
+
+@pytest.mark.django_db
+class TestDashboardRolloverSuggestion:
+    """Tests para la sugerencia de traslado de sobrante (DT-067)."""
+
+    def _previous_period(self, user):
+        today = timezone.localdate()
+        return get_previous_period(today.month, today.year, user.financial_month_start_day)
+
+    def test_creates_suggestion_when_previous_period_balance_positive(
+        self, client, user, income_category, income_factory
+    ):
+        prev_start, _ = self._previous_period(user)
+        income_factory(user, income_category, amount=Decimal("1000.00"), date=prev_start)
+        client.force_login(user)
+
+        response = client.get(reverse("reports:dashboard"))
+
+        assert response.context["rollover_suggestion"] is not None
+        assert response.context["rollover_suggestion"].amount == Decimal("1000.00")
+
+    def test_no_suggestion_when_previous_period_balance_not_positive(self, client, user):
+        client.force_login(user)
+
+        response = client.get(reverse("reports:dashboard"))
+
+        assert response.context["rollover_suggestion"] is None
+        assert RolloverSuggestion.objects.filter(user=user).count() == 0
+
+    def test_no_suggestion_shown_when_navigating_past_period(
+        self, client, user, income_category, income_factory
+    ):
+        """Navegar a un período histórico no debe disparar ni mostrar la sugerencia."""
+        prev_start, _ = self._previous_period(user)
+        income_factory(user, income_category, amount=Decimal("1000.00"), date=prev_start)
+        client.force_login(user)
+
+        response = client.get(
+            reverse("reports:dashboard"), {"month": prev_start.month, "year": prev_start.year}
+        )
+
+        assert response.context["rollover_suggestion"] is None
+        assert RolloverSuggestion.objects.filter(user=user).count() == 0
+
+    def test_no_suggestion_shown_once_dismissed(
+        self, client, user, income_category, income_factory
+    ):
+        prev_start, prev_end = self._previous_period(user)
+        income_factory(user, income_category, amount=Decimal("1000.00"), date=prev_start)
+        client.force_login(user)
+
+        client.get(reverse("reports:dashboard"))
+        suggestion = RolloverSuggestion.objects.get(
+            user=user, period_start=prev_start, period_end=prev_end
+        )
+        suggestion.mark_dismissed()
+
+        response = client.get(reverse("reports:dashboard"))
+
+        assert response.context["rollover_suggestion"] is None
+
+    def test_available_amount_shown_after_dismiss(
+        self, client, user, income_category, income_factory
+    ):
+        prev_start, prev_end = self._previous_period(user)
+        income_factory(user, income_category, amount=Decimal("1000.00"), date=prev_start)
+        client.force_login(user)
+
+        client.get(reverse("reports:dashboard"))
+        suggestion = RolloverSuggestion.objects.get(
+            user=user, period_start=prev_start, period_end=prev_end
+        )
+        suggestion.mark_dismissed()
+
+        response = client.get(reverse("reports:dashboard"))
+
+        assert response.context["rollover_available_amount"] == Decimal("1000.00")
+
+    def test_no_available_amount_when_suggestion_pending(
+        self, client, user, income_category, income_factory
+    ):
+        prev_start, _ = self._previous_period(user)
+        income_factory(user, income_category, amount=Decimal("1000.00"), date=prev_start)
+        client.force_login(user)
+
+        response = client.get(reverse("reports:dashboard"))
+
+        assert response.context["rollover_available_amount"] is None
+
+    def test_banner_rendered_in_dashboard_html(self, client, user, income_category, income_factory):
+        prev_start, _ = self._previous_period(user)
+        income_factory(user, income_category, amount=Decimal("1000.00"), date=prev_start)
+        client.force_login(user)
+
+        response = client.get(reverse("reports:dashboard"))
+
+        assert b"destinarlo a una meta de ahorro" in response.content
+
+    def test_banner_not_rendered_without_suggestion(self, client, user):
+        client.force_login(user)
+
+        response = client.get(reverse("reports:dashboard"))
+
+        assert b"destinarlo a una meta de ahorro" not in response.content
 
 
 @pytest.mark.django_db
@@ -473,7 +580,9 @@ class TestDashboardQueryPerformance:
 
         # Dashboard vacío debería usar pocas queries
         # Baseline: ~8 queries (session, user, balance, budgets, savings, etc.)
-        with django_assert_max_num_queries(19):
+        # +5 por sugerencia de traslado de sobrante (DT-067): balance del período
+        # anterior (3 queries) + check de sugerencia existente + check de descartada.
+        with django_assert_max_num_queries(24):
             authenticated_client.get(url_helper("dashboard"))
 
     def test_dashboard_with_data_query_count(
@@ -520,8 +629,8 @@ class TestDashboardQueryPerformance:
             )
 
         # Con datos, queries deberían mantenerse constantes (no N+1)
-        # Máximo 15 queries permitidas
-        with django_assert_max_num_queries(19):
+        # +5 por sugerencia de traslado de sobrante (DT-067, ver test_dashboard_empty_query_count)
+        with django_assert_max_num_queries(24):
             response = authenticated_client.get(url_helper("dashboard"))
 
         assert response.status_code == 200
@@ -574,7 +683,8 @@ class TestDashboardQueryPerformance:
 
         # Aún con más datos, queries deben mantenerse ~igual
         # Si hay N+1, esto fallaría (sería 50+ queries)
-        with django_assert_max_num_queries(19):
+        # +5 por sugerencia de traslado de sobrante (DT-067, ver test_dashboard_empty_query_count)
+        with django_assert_max_num_queries(24):
             response = authenticated_client.get(url_helper("dashboard"))
 
         assert response.status_code == 200

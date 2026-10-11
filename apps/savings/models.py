@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models, transaction
 from django.db.models import F
+from django.utils import timezone
 
 from apps.core.constants import Currency
 from apps.core.mixins import TimestampMixin
@@ -27,6 +28,14 @@ class MovementType(models.TextChoices):
 
     DEPOSIT = "DEPOSIT", "Depósito"
     WITHDRAWAL = "WITHDRAWAL", "Retiro"
+
+
+class RolloverSuggestionStatus(models.TextChoices):
+    """Estados posibles de una sugerencia de traslado de sobrante (DT-067)."""
+
+    PENDING = "PENDING", "Pendiente"
+    DEPOSITED = "DEPOSITED", "Destinado a meta"
+    DISMISSED = "DISMISSED", "Descartado"
 
 
 class Saving(TimestampMixin, models.Model):
@@ -279,3 +288,110 @@ class SavingMovement(TimestampMixin, models.Model):
     def is_withdrawal(self):
         """Indica si es un retiro."""
         return self.type == MovementType.WITHDRAWAL
+
+
+class RolloverSuggestion(TimestampMixin, models.Model):
+    """
+    Sugerencia de traslado del sobrante de un período financiero cerrado (DT-067).
+
+    Se crea en estado PENDING cuando el usuario entra al dashboard y el período
+    financiero inmediatamente anterior cerró con balance positivo. El usuario
+    decide si lo destina a una meta de ahorro (DEPOSITED) o lo descarta
+    (DISMISSED, el dinero queda disponible para gastar en el período actual).
+    """
+
+    user = models.ForeignKey(
+        "users.User",
+        on_delete=models.CASCADE,
+        related_name="rollover_suggestions",
+        verbose_name="Usuario",
+    )
+    period_start = models.DateField(verbose_name="Inicio del período")
+    period_end = models.DateField(verbose_name="Fin del período (exclusivo)")
+    amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal("0.01"))],
+        verbose_name="Monto del sobrante",
+    )
+    status = models.CharField(
+        max_length=10,
+        choices=RolloverSuggestionStatus.choices,
+        default=RolloverSuggestionStatus.PENDING,
+        verbose_name="Estado",
+    )
+    saving = models.ForeignKey(
+        Saving,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="rollover_suggestions",
+        verbose_name="Meta destino",
+    )
+    resolved_at = models.DateTimeField(null=True, blank=True, verbose_name="Resuelto el")
+
+    class Meta:
+        verbose_name = "Sugerencia de Traslado de Sobrante"
+        verbose_name_plural = "Sugerencias de Traslado de Sobrante"
+        ordering = ["-period_start"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "period_start", "period_end"],
+                name="rollover_suggestion_unique_period",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(amount__gt=0),
+                name="rollover_suggestion_amount_positive",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(period_end__gt=models.F("period_start")),
+                name="rollover_suggestion_end_after_start",
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.user} - {self.period_start} a {self.period_end} - {self.get_status_display()}"
+        )
+
+    def clean(self):
+        """Validaciones del modelo."""
+        super().clean()
+
+        if self.amount is not None and self.amount <= 0:
+            raise ValidationError({"amount": "El monto del sobrante debe ser mayor a cero."})
+
+        if (
+            self.period_start is not None
+            and self.period_end is not None
+            and self.period_end <= self.period_start
+        ):
+            raise ValidationError(
+                {"period_end": "El fin del período debe ser posterior al inicio."}
+            )
+
+        if self.status == RolloverSuggestionStatus.DEPOSITED and self.saving_id is None:
+            raise ValidationError(
+                {"saving": "Una sugerencia destinada a una meta debe indicar la meta."}
+            )
+
+    @property
+    def formatted_amount(self):
+        return format_currency(self.amount)
+
+    @property
+    def is_pending(self):
+        return self.status == RolloverSuggestionStatus.PENDING
+
+    def mark_dismissed(self):
+        """Descarta la sugerencia: el usuario decidió gastar el sobrante en el período actual."""
+        self.status = RolloverSuggestionStatus.DISMISSED
+        self.resolved_at = timezone.now()
+        self.save(update_fields=["status", "resolved_at", "updated_at"])
+
+    def mark_deposited(self, saving):
+        """Marca la sugerencia como destinada a una meta de ahorro."""
+        self.status = RolloverSuggestionStatus.DEPOSITED
+        self.saving = saving
+        self.resolved_at = timezone.now()
+        self.save(update_fields=["status", "saving", "resolved_at", "updated_at"])

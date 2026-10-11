@@ -66,7 +66,9 @@ class TestDashboardQueries:
 
         # Act + Assert (anti N+1): +3 queries por _get_monthly_evolution,
         # +2 por _get_next_month_commitment (RecurringExpense/RecurringIncome)
-        with django_assert_max_num_queries(19):
+        # +5 por sugerencia de traslado de sobrante (DT-067): balance del período
+        # anterior (3 queries) + check de sugerencia existente + check de descartada
+        with django_assert_max_num_queries(24):
             resp = client.get(url)
 
         assert resp.status_code == 200
@@ -90,7 +92,8 @@ class TestDashboardQueries:
 
         from apps.reports.views import DashboardView
 
-        with django_assert_max_num_queries(17):
+        # +5 por sugerencia de traslado de sobrante (DT-067, ver test de arriba)
+        with django_assert_max_num_queries(22):
             response = DashboardView.as_view()(request)
 
         assert response.status_code == 200

@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.29.0 / Mobile 1.25.0+29] — 2026-10-10
+
+### Added
+
+- **Sugerencia de traslado de sobrante de fin de mes (DT-067)**: si el período financiero anterior cerró con balance positivo, el dashboard muestra una sugerencia para destinar ese sobrante a una meta de ahorro. El usuario puede confirmarlo (elige la meta si tiene más de una activa) o descartarlo — en ese caso, el sobrante queda disponible para gastar, y el dashboard lo indica como informativo durante el período siguiente. Disponible en web y mobile.
+
+---
+
 ## [Mobile 1.24.2+28] — 2026-10-08
 
 ### Fixed

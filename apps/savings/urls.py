@@ -16,4 +16,14 @@ urlpatterns = [
     path("<int:pk>/delete/", views.SavingDeleteView.as_view(), name="delete"),
     path("<int:pk>/movement/", views.SavingMovementCreateView.as_view(), name="add_movement"),
     path("<int:pk>/quick-deposit/", views.QuickDepositView.as_view(), name="quick_deposit"),
+    path(
+        "rollover/<int:pk>/deposit/",
+        views.RolloverDepositView.as_view(),
+        name="rollover_deposit",
+    ),
+    path(
+        "rollover/<int:pk>/dismiss/",
+        views.RolloverDismissView.as_view(),
+        name="rollover_dismiss",
+    ),
 ]
