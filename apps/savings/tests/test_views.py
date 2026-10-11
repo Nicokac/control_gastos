@@ -571,6 +571,19 @@ class TestRolloverDismissView:
         assert suggestion.status == RolloverSuggestionStatus.DISMISSED
         assert suggestion.resolved_at is not None
 
+    def test_dismiss_creates_compensating_income(self, authenticated_client, user):
+        """DT-067: al descartar, el sobrante se registra como ingreso real
+        del período actual (el usuario eligió gastarlo, no ahorrarlo)."""
+        from apps.income.models import Income
+
+        suggestion = self._create_suggestion(user)
+
+        url = reverse("savings:rollover_dismiss", kwargs={"pk": suggestion.pk})
+        authenticated_client.post(url)
+
+        income = Income.objects.get(user=user, category__name="Sobrante de mes anterior")
+        assert income.amount == Decimal("1000.00")
+
     def test_cannot_dismiss_other_user_suggestion(self, authenticated_client, other_user):
         suggestion = self._create_suggestion(other_user)
 

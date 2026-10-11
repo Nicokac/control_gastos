@@ -49,8 +49,8 @@ class RolloverSuggestionBanner extends ConsumerWidget {
                     ),
                     Text(
                       periodLabel.isEmpty
-                          ? ' el período anterior.'
-                          : ' en $periodLabel.',
+                          ? ' el período anterior. ¿Lo destinás a una meta o lo usás este mes? Si lo usás, se suma como ingreso disponible.'
+                          : ' en $periodLabel. ¿Lo destinás a una meta o lo usás este mes? Si lo usás, se suma como ingreso disponible.',
                       style: TextStyle(fontSize: 13, color: color),
                     ),
                   ],
@@ -69,7 +69,7 @@ class RolloverSuggestionBanner extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(AppRadius.small),
                     ),
                   ),
-                  child: const Text('Descartar'),
+                  child: const Text('Usar este mes'),
                 ),
               ),
               const SizedBox(width: 8),
@@ -118,7 +118,8 @@ class RolloverSuggestionBanner extends ConsumerWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          error ?? 'Listo, el sobrante queda disponible para este período.',
+          error ??
+              'Listo, quedó registrado como ingreso disponible este período.',
         ),
         backgroundColor: error == null
             ? context.semanticColors.success

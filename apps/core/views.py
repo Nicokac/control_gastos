@@ -182,9 +182,18 @@ def exchange_rate_today(request):
         return JsonResponse({"error": "No se pudo obtener la cotización"}, status=503)
 
 
-APP_VERSION = "1.29.1"
+APP_VERSION = "1.29.2"
 
 WHATS_NEW = [
+    {
+        "version": "1.29.2",
+        "date": "Octubre 2026",
+        "title": "Más claridad sobre el sobrante del mes",
+        "items": [
+            "Si elegís usar el sobrante en el período actual, ahora queda registrado como un ingreso real — antes era solo informativo",
+            "El banner avisa de entrada qué pasa con el sobrante según la opción que elijas",
+        ],
+    },
     {
         "version": "1.29.1",
         "date": "Octubre 2026",

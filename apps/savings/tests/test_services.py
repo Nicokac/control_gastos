@@ -10,7 +10,7 @@ import pytest
 from apps.savings.models import RolloverSuggestion, RolloverSuggestionStatus, SavingMovement
 from apps.savings.services import (
     confirm_rollover_deposit,
-    get_dismissed_amount_for_current_period,
+    confirm_rollover_dismiss,
     get_or_create_rollover_income_category,
     get_or_create_rollover_suggestion,
     get_period_balance,
@@ -142,68 +142,6 @@ class TestGetOrCreateRolloverSuggestion:
 
 
 @pytest.mark.django_db
-class TestGetDismissedAmountForCurrentPeriod:
-    """Tests para get_dismissed_amount_for_current_period."""
-
-    def test_retorna_monto_si_hay_sugerencia_descartada_del_periodo_anterior(self, user):
-        suggestion = RolloverSuggestion.objects.create(
-            user=user,
-            period_start=date(2026, 1, 1),
-            period_end=date(2026, 2, 1),
-            amount=Decimal("1500.00"),
-        )
-        suggestion.mark_dismissed()
-
-        amount = get_dismissed_amount_for_current_period(user, month=2, year=2026, start_day=1)
-
-        assert amount == Decimal("1500.00")
-
-    def test_retorna_none_si_la_sugerencia_esta_pendiente(self, user):
-        RolloverSuggestion.objects.create(
-            user=user,
-            period_start=date(2026, 1, 1),
-            period_end=date(2026, 2, 1),
-            amount=Decimal("1500.00"),
-        )
-
-        amount = get_dismissed_amount_for_current_period(user, month=2, year=2026, start_day=1)
-
-        assert amount is None
-
-    def test_retorna_none_si_la_sugerencia_fue_depositada(self, user, saving):
-        suggestion = RolloverSuggestion.objects.create(
-            user=user,
-            period_start=date(2026, 1, 1),
-            period_end=date(2026, 2, 1),
-            amount=Decimal("1500.00"),
-        )
-        suggestion.mark_deposited(saving)
-
-        amount = get_dismissed_amount_for_current_period(user, month=2, year=2026, start_day=1)
-
-        assert amount is None
-
-    def test_retorna_none_un_periodo_despues_del_descarte(self, user):
-        """El dato informativo no se arrastra más de un período."""
-        suggestion = RolloverSuggestion.objects.create(
-            user=user,
-            period_start=date(2026, 1, 1),
-            period_end=date(2026, 2, 1),
-            amount=Decimal("1500.00"),
-        )
-        suggestion.mark_dismissed()
-
-        amount = get_dismissed_amount_for_current_period(user, month=3, year=2026, start_day=1)
-
-        assert amount is None
-
-    def test_retorna_none_sin_sugerencias(self, user):
-        amount = get_dismissed_amount_for_current_period(user, month=2, year=2026, start_day=1)
-
-        assert amount is None
-
-
-@pytest.mark.django_db
 class TestGetOrCreateRolloverIncomeCategory:
     """Tests para get_or_create_rollover_income_category."""
 
@@ -273,3 +211,62 @@ class TestConfirmRolloverDeposit:
 
         balance = get_period_balance(user, date(2026, 2, 1), date(2026, 3, 1))
         assert balance == Decimal("0")
+
+
+@pytest.mark.django_db
+class TestConfirmRolloverDismiss:
+    """Tests para confirm_rollover_dismiss (DT-067)."""
+
+    def test_marca_sugerencia_como_descartada(self, user):
+        suggestion = RolloverSuggestion.objects.create(
+            user=user,
+            period_start=date(2026, 1, 1),
+            period_end=date(2026, 2, 1),
+            amount=Decimal("1000.00"),
+        )
+
+        confirm_rollover_dismiss(suggestion)
+
+        suggestion.refresh_from_db()
+        assert suggestion.status == RolloverSuggestionStatus.DISMISSED
+        assert suggestion.resolved_at is not None
+
+    def test_crea_income_fechado_hoy(self, user):
+        from django.utils import timezone
+
+        from apps.income.models import Income
+
+        suggestion = RolloverSuggestion.objects.create(
+            user=user,
+            period_start=date(2026, 1, 1),
+            period_end=date(2026, 2, 1),
+            amount=Decimal("1000.00"),
+        )
+
+        confirm_rollover_dismiss(suggestion)
+
+        income = Income.objects.get(user=user)
+        assert income.amount == Decimal("1000.00")
+        assert income.date == timezone.localdate()
+        assert income.category.name == "Sobrante de mes anterior"
+
+    def test_el_sobrante_cuenta_como_ingreso_del_periodo_actual(self, user):
+        """El usuario eligió gastarlo, así que debe contar en el balance actual
+        (el período que contiene la fecha real de hoy, no el período de la
+        sugerencia, que ya pasó)."""
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        suggestion = RolloverSuggestion.objects.create(
+            user=user,
+            period_start=date(2026, 1, 1),
+            period_end=date(2026, 2, 1),
+            amount=Decimal("1000.00"),
+        )
+
+        confirm_rollover_dismiss(suggestion)
+
+        today = timezone.localdate()
+        balance = get_period_balance(user, today, today + timedelta(days=1))
+        assert balance == Decimal("1000.00")

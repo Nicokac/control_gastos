@@ -6,10 +6,11 @@ from datetime import timedelta
 from decimal import Decimal
 
 from django.db.models import Sum
+from django.utils import timezone
 
 from apps.categories.models import Category
 from apps.core.constants import ROLLOVER_INCOME_CATEGORY_NAME, CategoryType
-from apps.core.utils import get_financial_period
+from apps.core.utils import get_financial_period, get_month_name
 from apps.expenses.models import Expense
 from apps.income.models import Income
 
@@ -72,25 +73,9 @@ def get_or_create_rollover_suggestion(user, month: int, year: int, start_day: in
     )
 
 
-def get_dismissed_amount_for_current_period(user, month: int, year: int, start_day: int = 1):
-    """
-    Retorna el monto de una sugerencia DESCARTADA cuyo período terminó justo
-    donde empieza el período (month, year), o None si no corresponde.
-
-    Se usa para mostrar "Disponible este mes" una sola vez, en el período
-    inmediatamente siguiente al descarte.
-    """
-    from .models import RolloverSuggestionStatus
-
-    current_start, _ = get_financial_period(month, year, start_day)
-
-    suggestion = RolloverSuggestion.objects.filter(
-        user=user,
-        period_end=current_start,
-        status=RolloverSuggestionStatus.DISMISSED,
-    ).first()
-
-    return suggestion.amount if suggestion else None
+def _period_label(period_start) -> str:
+    """Nombre del período en español, ej. 'septiembre 2026' (DT-067)."""
+    return f"{get_month_name(period_start.month).lower()} {period_start.year}"
 
 
 def get_or_create_rollover_income_category() -> Category:
@@ -120,7 +105,7 @@ def confirm_rollover_deposit(suggestion, saving):
     monto fechado el último día de ese período anterior (la categoría de
     sistema "Sobrante de mes anterior" lo distingue de ingresos reales).
     """
-    period_label = f"{suggestion.period_start:%B %Y}"
+    period_label = _period_label(suggestion.period_start)
     saving.add_deposit(suggestion.amount, description=f"Sobrante de {period_label}")
 
     Income.objects.create(
@@ -132,3 +117,26 @@ def confirm_rollover_deposit(suggestion, saving):
     )
 
     suggestion.mark_deposited(saving)
+
+
+def confirm_rollover_dismiss(suggestion):
+    """
+    Confirma que el usuario descarta la sugerencia de `suggestion`: no lo
+    va a destinar a una meta, lo va a usar para gastar en el período actual.
+
+    Registra un Income por el sobrante fechado hoy, para que ese dinero
+    quede reconocido como disponible en el balance del período en curso
+    (la categoría de sistema "Sobrante de mes anterior" lo distingue de
+    ingresos reales).
+    """
+    period_label = _period_label(suggestion.period_start)
+
+    Income.objects.create(
+        user=suggestion.user,
+        category=get_or_create_rollover_income_category(),
+        amount=suggestion.amount,
+        date=timezone.localdate(),
+        description=f"Sobrante de {period_label}",
+    )
+
+    suggestion.mark_dismissed()

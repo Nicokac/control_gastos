@@ -51,25 +51,19 @@
         <i class="bi bi-piggy-bank fs-4"></i>
         <span>
             Te sobraron <strong>{{ rollover_suggestion.formatted_amount }}</strong> en
-            {{ rollover_suggestion.period_start|date:"F Y" }} — ¿querés destinarlo a una meta de ahorro?
+            {{ rollover_suggestion.period_start|date:"F Y" }} — ¿querés destinarlo a una meta de ahorro
+            o usarlo este período? Si lo usás, se suma como ingreso disponible de este mes.
         </span>
     </div>
     <div class="d-flex gap-2">
         <form method="post" action="{% url 'savings:rollover_dismiss' rollover_suggestion.pk %}">
             {% csrf_token %}
-            <button type="submit" class="btn btn-outline-secondary btn-sm">Descartar</button>
+            <button type="submit" class="btn btn-outline-secondary btn-sm">Usar este mes</button>
         </form>
         <a href="{% url 'savings:rollover_deposit' rollover_suggestion.pk %}" class="btn btn-success btn-sm">
             Destinar a una meta
         </a>
     </div>
-</div>
-{% elif rollover_available_amount %}
-<div class="alert alert-info d-flex align-items-center gap-2 mb-4">
-    <i class="bi bi-info-circle fs-5"></i>
-    <span>
-        Disponible este mes: incluye {{ rollover_available_amount|currency }} que sobraron el período anterior.
-    </span>
 </div>
 {% endif %}
 

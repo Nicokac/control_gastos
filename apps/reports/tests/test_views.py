@@ -227,9 +227,13 @@ class TestDashboardRolloverSuggestion:
 
         assert response.context["rollover_suggestion"] is None
 
-    def test_available_amount_shown_after_dismiss(
+    def test_dismiss_creates_income_for_current_period(
         self, client, user, income_category, income_factory
     ):
+        """Al descartar, el sobrante se registra como ingreso real del
+        período actual (DT-067) — no es solo un dato informativo."""
+        from apps.income.models import Income
+
         prev_start, prev_end = self._previous_period(user)
         income_factory(user, income_category, amount=Decimal("1000.00"), date=prev_start)
         client.force_login(user)
@@ -238,22 +242,13 @@ class TestDashboardRolloverSuggestion:
         suggestion = RolloverSuggestion.objects.get(
             user=user, period_start=prev_start, period_end=prev_end
         )
-        suggestion.mark_dismissed()
 
-        response = client.get(reverse("reports:dashboard"))
+        dismiss_url = reverse("savings:rollover_dismiss", kwargs={"pk": suggestion.pk})
+        client.post(dismiss_url)
 
-        assert response.context["rollover_available_amount"] == Decimal("1000.00")
-
-    def test_no_available_amount_when_suggestion_pending(
-        self, client, user, income_category, income_factory
-    ):
-        prev_start, _ = self._previous_period(user)
-        income_factory(user, income_category, amount=Decimal("1000.00"), date=prev_start)
-        client.force_login(user)
-
-        response = client.get(reverse("reports:dashboard"))
-
-        assert response.context["rollover_available_amount"] is None
+        rollover_income = Income.objects.get(user=user, category__name="Sobrante de mes anterior")
+        assert rollover_income.amount == Decimal("1000.00")
+        assert rollover_income.date == timezone.localdate()
 
     def test_banner_rendered_in_dashboard_html(self, client, user, income_category, income_factory):
         """Busca el link de descartar el banner (URL exclusiva de este bloque)

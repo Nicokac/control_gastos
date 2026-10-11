@@ -158,11 +158,6 @@ class _DashboardContent extends StatelessWidget {
           RolloverSuggestionBanner(
             suggestion: data['rollover_suggestion'] as Map<String, dynamic>,
           ),
-        ] else if (data['rollover_available_amount'] != null) ...[
-          const SizedBox(height: 8),
-          _RolloverAvailableBanner(
-            amount: data['rollover_available_amount'] as String,
-          ),
         ],
         if (data['projection_available'] == true) ...[
           const SizedBox(height: 8),
@@ -301,50 +296,6 @@ class _ProjectionBanner extends StatelessWidget {
               fontSize: 13,
               fontWeight: FontWeight.bold,
               color: color,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RolloverAvailableBanner extends StatelessWidget {
-  final String amount;
-
-  const _RolloverAvailableBanner({required this.amount});
-
-  @override
-  Widget build(BuildContext context) {
-    final color = context.semanticColors.savings;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.info_outline, size: 16, color: color),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Wrap(
-              children: [
-                Text(
-                  'Disponible este mes: incluye ',
-                  style: TextStyle(fontSize: 12, color: color),
-                ),
-                SensitiveText(
-                  formatArsString(amount),
-                  style: TextStyle(fontSize: 12, color: color),
-                ),
-                Text(
-                  ' que sobraron el período anterior.',
-                  style: TextStyle(fontSize: 12, color: color),
-                ),
-              ],
             ),
           ),
         ],

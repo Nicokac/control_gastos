@@ -14,10 +14,7 @@ from apps.expenses.models import Expense
 from apps.income.models import Income
 from apps.recurring.models import RecurringExpense
 from apps.savings.models import Saving, SavingStatus
-from apps.savings.services import (
-    get_dismissed_amount_for_current_period,
-    get_or_create_rollover_suggestion,
-)
+from apps.savings.services import get_or_create_rollover_suggestion
 
 
 @extend_schema(tags=["dashboard"], responses={(200, "application/json"): OpenApiTypes.OBJECT})
@@ -181,7 +178,6 @@ class DashboardView(APIView):
 
         # Sugerencia de traslado de sobrante del período anterior (DT-067, solo período actual real)
         rollover_suggestion = None
-        rollover_available_amount = None
         if is_current_period:
             start_day = getattr(user, "financial_month_start_day", 1)
             suggestion = get_or_create_rollover_suggestion(user, month, year, start_day)
@@ -192,12 +188,6 @@ class DashboardView(APIView):
                     "period_start": suggestion.period_start.isoformat(),
                     "period_end": suggestion.period_end.isoformat(),
                 }
-            else:
-                dismissed_amount = get_dismissed_amount_for_current_period(
-                    user, month, year, start_day
-                )
-                if dismissed_amount is not None:
-                    rollover_available_amount = str(dismissed_amount)
 
         return Response(
             {
@@ -253,6 +243,5 @@ class DashboardView(APIView):
                 "next_month_committed_items": next_month_committed_items,
                 "next_month_committed_unestimated": next_month_committed_unestimated,
                 "rollover_suggestion": rollover_suggestion,
-                "rollover_available_amount": rollover_available_amount,
             }
         )

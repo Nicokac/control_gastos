@@ -121,7 +121,6 @@ class TestDashboardRolloverSuggestionEndpoint:
 
         assert data["rollover_suggestion"] is not None
         assert Decimal(data["rollover_suggestion"]["amount"]) == Decimal("1000.00")
-        assert data["rollover_available_amount"] is None
 
     def test_sin_sugerencia_si_periodo_anterior_sin_sobrante(self, client, user):
         headers = auth_header(client, user)
@@ -130,11 +129,8 @@ class TestDashboardRolloverSuggestionEndpoint:
         data = response.json()
 
         assert data["rollover_suggestion"] is None
-        assert data["rollover_available_amount"] is None
 
-    def test_disponible_este_mes_tras_descartar(
-        self, client, user, income_category, income_factory
-    ):
+    def test_sin_sugerencia_tras_descartar(self, client, user, income_category, income_factory):
         prev_start, prev_end = self._previous_period(user)
         income_factory(user, income_category, amount=Decimal("1500.00"), date=prev_start)
         headers = auth_header(client, user)
@@ -149,7 +145,6 @@ class TestDashboardRolloverSuggestionEndpoint:
         data = response.json()
 
         assert data["rollover_suggestion"] is None
-        assert Decimal(data["rollover_available_amount"]) == Decimal("1500.00")
 
     def test_sin_sugerencia_en_periodo_historico_navegado(
         self, client, user, income_category, income_factory

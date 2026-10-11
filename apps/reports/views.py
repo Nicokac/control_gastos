@@ -20,10 +20,7 @@ from apps.core.utils import (
 from apps.expenses.models import Expense
 from apps.income.models import Income
 from apps.savings.models import MovementType, Saving, SavingMovement, SavingStatus
-from apps.savings.services import (
-    get_dismissed_amount_for_current_period,
-    get_or_create_rollover_suggestion,
-)
+from apps.savings.services import get_or_create_rollover_suggestion
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -113,17 +110,12 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         # Sugerencia de traslado de sobrante del período anterior (DT-067, solo período actual real)
         context["rollover_suggestion"] = None
-        context["rollover_available_amount"] = None
         if is_current_period:
             suggestion = get_or_create_rollover_suggestion(
                 user, selected_month, selected_year, start_day
             )
             if suggestion is not None and suggestion.is_pending:
                 context["rollover_suggestion"] = suggestion
-            else:
-                context["rollover_available_amount"] = get_dismissed_amount_for_current_period(
-                    user, selected_month, selected_year, start_day
-                )
 
         # Obtener datos de cada módulo
         context.update(

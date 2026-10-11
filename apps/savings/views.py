@@ -23,7 +23,7 @@ from apps.core.views import (
 
 from .forms import SavingFilterForm, SavingForm, SavingMovementForm
 from .models import RolloverSuggestion, RolloverSuggestionStatus, Saving, SavingStatus
-from .services import confirm_rollover_deposit
+from .services import confirm_rollover_deposit, confirm_rollover_dismiss
 
 
 class SavingListView(UserOwnedListView):
@@ -270,7 +270,8 @@ class SavingMovementCreateView(LoginRequiredMixin, FormView):
 
 class RolloverDismissView(LoginRequiredMixin, View):
     """Descarta la sugerencia de traslado de sobrante (DT-067): el usuario
-    decidió gastarlo en el período actual en vez de destinarlo a una meta."""
+    decidió gastarlo en el período actual en vez de destinarlo a una meta.
+    Registra el sobrante como ingreso real del período actual."""
 
     def post(self, request, pk):
         suggestion = get_object_or_404(
@@ -279,8 +280,11 @@ class RolloverDismissView(LoginRequiredMixin, View):
             user=request.user,
             status=RolloverSuggestionStatus.PENDING,
         )
-        suggestion.mark_dismissed()
-        messages.info(request, "Listo, el sobrante queda disponible para este período.")
+        confirm_rollover_dismiss(suggestion)
+        messages.info(
+            request,
+            f"{format_currency(suggestion.amount)} quedó registrado como ingreso disponible este período.",
+        )
         return redirect("reports:dashboard")
 
 

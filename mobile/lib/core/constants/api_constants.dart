@@ -6,7 +6,7 @@ class ApiConstants {
 
   // Resumen de novedades de la versión actual (DT-068) — actualizar junto con el bump de pubspec.yaml.
   static const String latestReleaseSummary =
-      'Corregido: al destinar el sobrante del mes a una meta, el balance ya no queda en negativo.';
+      'Si elegís usar el sobrante del mes anterior, ahora queda registrado como ingreso real.';
   static const String websiteUrl = 'https://control-gastos-fr8z.onrender.com';
   static const String termsUrl =
       'https://control-gastos-fr8z.onrender.com/terms/';

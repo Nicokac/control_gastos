@@ -5,6 +5,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.29.2 / Mobile 1.25.2+31] — 2026-10-11
+
+### Changed
+
+- **"Descartar" el sobrante ahora registra un ingreso real (DT-067)**: antes, al no destinarlo a una meta, el sobrante solo se mostraba como un dato informativo ("Disponible este mes") sin impacto real en el balance. Ahora se registra como un `Income` real fechado hoy, con la categoría de sistema "Sobrante de mes anterior" — se suma al balance del período como cualquier otro ingreso. El botón pasó de "Descartar" a "Usar este mes", y el banner aclara de entrada la consecuencia de cada opción.
+
+### Fixed
+
+- **Mes en inglés en la descripción del movimiento (DT-067)**: `confirm_rollover_deposit`/`confirm_rollover_dismiss` usaban `strftime("%B")`, que depende del locale del sistema operativo en vez de la configuración de idioma de Django — en Windows sin locale español mostraba "Sobrante de September 2026". Reemplazado por el helper existente `get_month_name()`.
+
+---
+
 ## [1.29.1 / Mobile 1.25.1+30] — 2026-10-11
 
 ### Fixed

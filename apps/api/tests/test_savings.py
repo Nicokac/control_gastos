@@ -134,6 +134,18 @@ class TestRolloverSuggestionDismissEndpoint:
         rollover_suggestion.refresh_from_db()
         assert rollover_suggestion.status == RolloverSuggestionStatus.DISMISSED
 
+    def test_descartar_crea_income_del_sobrante(self, client, user, rollover_suggestion):
+        """DT-067: descartar registra el sobrante como ingreso real del
+        período actual, no solo un dato informativo."""
+        from apps.income.models import Income
+
+        headers = auth_header(client, user)
+        url = f"/api/v1/rollover-suggestions/{rollover_suggestion.pk}/dismiss/"
+        client.post(url, **headers)
+
+        income = Income.objects.get(user=user, category__name="Sobrante de mes anterior")
+        assert income.amount == rollover_suggestion.amount
+
     def test_no_puede_descartar_sugerencia_ajena(self, client, user, other_user):
         other_suggestion = RolloverSuggestion.objects.create(
             user=other_user,

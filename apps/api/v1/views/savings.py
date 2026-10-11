@@ -19,7 +19,7 @@ from apps.savings.models import (
     SavingMovement,
     SavingStatus,
 )
-from apps.savings.services import confirm_rollover_deposit
+from apps.savings.services import confirm_rollover_deposit, confirm_rollover_dismiss
 
 
 class SavingViewSet(viewsets.ModelViewSet):
@@ -86,7 +86,7 @@ class RolloverSuggestionViewSet(viewsets.GenericViewSet):
     @action(detail=True, methods=["post"])
     def dismiss(self, request, pk=None):
         suggestion = self.get_pending_object()
-        suggestion.mark_dismissed()
+        confirm_rollover_dismiss(suggestion)
         return Response(RolloverSuggestionSerializer(suggestion).data)
 
     @action(detail=True, methods=["post"])
