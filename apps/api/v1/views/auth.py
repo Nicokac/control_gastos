@@ -25,6 +25,7 @@ User = get_user_model()
 class RegisterView(APIView):
     permission_classes = [AllowAny]
     serializer_class = RegisterSerializer
+    throttle_scope = "register"
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -45,6 +46,7 @@ class PasswordResetRequestView(APIView):
 
     permission_classes = [AllowAny]
     serializer_class = PasswordResetRequestSerializer
+    throttle_scope = "password_reset"
 
     def post(self, request):
         serializer = PasswordResetRequestSerializer(data=request.data)
@@ -80,6 +82,7 @@ class PasswordResetConfirmView(APIView):
 
     permission_classes = [AllowAny]
     serializer_class = PasswordResetConfirmSerializer
+    throttle_scope = "password_reset"
 
     def post(self, request):
         serializer = PasswordResetConfirmSerializer(data=request.data)

@@ -11,6 +11,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 - **Política de Privacidad actualizada: mención a Sentry**: al completar el formulario de Seguridad de Datos de Google Play, se detectó que los registros de fallos (Sentry) se envían a un tercero pero no estaban mencionados en la Política de Privacidad del sitio. Se agregó a la sección "Dónde se almacenan tus datos", aclarando que esos registros no incluyen información personal ni financiera (`send_default_pii=False`).
 
+### Security
+
+- **Rate limiting en registro y password-reset de la API (DT-093)**: sin límite previo, un script podía crear cuentas o disparar emails de reset sin tope (abuso de cuota de Brevo). `RegisterView`, `PasswordResetRequestView` y `PasswordResetConfirmView` ahora limitan a 5 requests/hora por IP (`ScopedRateThrottle`). Sin impacto visible — backend/API únicamente, no requiere bump de versión de la app.
+
 ---
 
 ## [1.29.2 / Mobile 1.25.2+31] — 2026-10-11

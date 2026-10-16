@@ -5,6 +5,7 @@ Configuración global de pytest y fixtures compartidas.
 from datetime import date, timedelta
 from decimal import Decimal
 
+from django.core.cache import cache
 from django.utils import timezone
 
 import pytest
@@ -12,6 +13,15 @@ import pytest
 from apps.categories.models import Category
 from apps.core.constants import CategoryType, Currency
 from apps.users.models import User
+
+
+@pytest.fixture(autouse=True)
+def _clear_throttle_cache():
+    """Evita que el rate limiting de DRF (LocMemCache) contamine tests entre sí."""
+    cache.clear()
+    yield
+    cache.clear()
+
 
 # =============================================================================
 # USER FIXTURES

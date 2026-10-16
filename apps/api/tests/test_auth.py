@@ -173,6 +173,67 @@ class TestPasswordResetConfirmEndpoint:
 
 
 @pytest.mark.django_db
+class TestAuthEndpointsThrottling:
+    """DT: rate limiting en registro y password-reset de la API (sin límite
+    antes, permitía abuso de cuota de Brevo y spam de cuentas).
+
+    Usa los límites reales configurados en REST_FRAMEWORK (ver base.py) en vez
+    de override_settings: SimpleRateThrottle.THROTTLE_RATES se fija como
+    atributo de clase al importar el módulo de DRF, así que un override no
+    recalcula el límite efectivo dentro del test.
+    """
+
+    def test_registro_bloquea_tras_superar_el_limite(self, client, settings):
+        limit = int(settings.REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]["register"].split("/")[0])
+
+        for i in range(limit):
+            response = client.post(
+                "/api/v1/auth/register/",
+                {
+                    "email": f"user{i}@test.com",
+                    "username": f"user{i}",
+                    "password": "TestPass123!",  # pragma: allowlist secret
+                    "password2": "TestPass123!",  # pragma: allowlist secret
+                },
+                content_type="application/json",
+            )
+            assert response.status_code == 201
+
+        blocked = client.post(
+            "/api/v1/auth/register/",
+            {
+                "email": "userblocked@test.com",
+                "username": "userblocked",
+                "password": "TestPass123!",  # pragma: allowlist secret
+                "password2": "TestPass123!",  # pragma: allowlist secret
+            },
+            content_type="application/json",
+        )
+        assert blocked.status_code == 429
+
+    def test_password_reset_bloquea_tras_superar_el_limite(self, client, user, settings):
+        limit = int(
+            settings.REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]["password_reset"].split("/")[0]
+        )
+
+        with patch("apps.api.v1.views.auth.send_brevo_email", return_value=True):
+            for _ in range(limit):
+                response = client.post(
+                    "/api/v1/auth/password/reset/",
+                    {"email": user.email},
+                    content_type="application/json",
+                )
+                assert response.status_code == 200
+
+            blocked = client.post(
+                "/api/v1/auth/password/reset/",
+                {"email": user.email},
+                content_type="application/json",
+            )
+            assert blocked.status_code == 429
+
+
+@pytest.mark.django_db
 class TestMeEndpoint:
     url = "/api/v1/auth/me/"
 

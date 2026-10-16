@@ -1449,6 +1449,24 @@ Encontrado al completar el formulario de "Seguridad de los datos" de Google Play
 
 ---
 
+### DT-093 — API: sin rate limiting en registro y password-reset
+
+**Estado:** ✅ Resuelto (parcial — solo API, ver nota)
+
+Encontrado en una auditoría de seguridad de 20 puntos pedida por el usuario (checklist genérico de un video, contrastada contra el código real). `django-axes` protege el login (web y, por transitividad, también el login de la API, porque `TokenObtainPairSerializer.validate()` pasa por `django.contrib.auth.authenticate()` → `AxesStandaloneBackend`), pero `RegisterView`, `PasswordResetRequestView` y `PasswordResetConfirmView` (`apps/api/v1/views/auth.py`) eran `AllowAny` sin ningún límite de requests.
+
+**Why:** sin límite, un script simple puede crear cuentas en loop o disparar `PasswordResetRequestView` repetidamente — cada llamada exitosa manda un email real vía Brevo, con costo y cuota limitada. Es un vector de abuso barato de explotar y barato de cerrar.
+
+**Resolución:**
+- `REST_FRAMEWORK` (`config/settings/base.py`) gana `DEFAULT_THROTTLE_CLASSES` (`ScopedRateThrottle`) y `DEFAULT_THROTTLE_RATES` (`register: 5/hour`, `password_reset: 5/hour`). `ScopedRateThrottle` solo actúa sobre vistas que declaran `throttle_scope` explícitamente — no afecta a ningún otro endpoint existente.
+- `RegisterView.throttle_scope = "register"`; `PasswordResetRequestView` y `PasswordResetConfirmView` comparten `throttle_scope = "password_reset"` (mismo límite, mismo "bucket" — tiene sentido porque ambos pasos del mismo flujo deberían contar juntos).
+- **Gotcha de testing descubierto en el camino:** `SimpleRateThrottle.THROTTLE_RATES` (clase base de `ScopedRateThrottle`, en DRF) se fija como atributo de **clase** al importar el módulo — lee `api_settings.DEFAULT_THROTTLE_RATES` una sola vez. La señal `setting_changed` recarga `api_settings`, pero no reasigna ese atributo ya fijado, así que `override_settings(REST_FRAMEWORK=...)` dentro de un test individual **no cambia el límite efectivo** en ese test — sigue rigiendo el valor real de `base.py`. Los tests de throttling se escribieron contra el límite real (`settings.REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"][...]`, leído dinámicamente) en vez de intentar sobreescribirlo.
+- Se agregó una fixture `autouse=True` en `conftest.py` raíz (`_clear_throttle_cache`) que limpia `django.core.cache.cache` antes y después de cada test — sin esto, el `LocMemCache` (backend de cache del proyecto) persiste hits de throttling entre tests de toda la suite, no solo entre los de auth, y podía bloquear tests no relacionados que pegan varias veces al mismo endpoint en la misma corrida de pytest.
+- **Alcance diferido explícitamente:** las vistas web equivalentes (`apps/users/views.py::RegisterView`, `BrevoPasswordResetView`) son Django CBVs normales, no DRF — `ScopedRateThrottle` no aplica ahí. Decisión confirmada con el usuario: queda fuera de esta tarea: usar la UI no es tan barato de scriptear a mano como golpear la API de login mobile, y el fix equivalente requeriría otra herramienta (`django-ratelimit` o un mecanismo casero con cache). Si se retoma, el camino de resolución es ese.
+- 2 tests nuevos en `apps/api/tests/test_auth.py` (`TestAuthEndpointsThrottling`): confirman que tras `N` requests exitosos (`N` = el límite real configurado) el siguiente devuelve `429`.
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.

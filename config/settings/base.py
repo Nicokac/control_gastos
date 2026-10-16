@@ -370,6 +370,15 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 50,
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    # Throttling por scope — solo aplica a vistas que declaran throttle_scope
+    # explícitamente (registro y password reset de la API, ver apps/api/v1/views/auth.py).
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.ScopedRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "register": "5/hour",
+        "password_reset": "5/hour",
+    },
 }
 
 SPECTACULAR_SETTINGS = {
