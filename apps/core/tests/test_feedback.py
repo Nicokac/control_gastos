@@ -39,6 +39,21 @@ class TestFeedbackView:
         assert "El gráfico no carga correctamente." in mail.body
         assert user.username in mail.body
 
+    def test_post_bloqueado_por_honeypot(self, client, user, mailoutbox):
+        """DT: si el campo trampa 'website' viene completado, se rechaza
+        el envío sin mandar ningún email."""
+        client.force_login(user)
+        response = client.post(
+            FEEDBACK_URL,
+            {
+                "tipo": "bug",
+                "mensaje": "Mensaje de spam automatizado.",
+                "website": "http://spam.example.com",
+            },
+        )
+        assert response.status_code == 200  # Se queda en la página
+        assert len(mailoutbox) == 0
+
     def test_post_invalid_tipo_shows_error(self, client, user, mailoutbox):
         client.force_login(user)
         response = client.post(

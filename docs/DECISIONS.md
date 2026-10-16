@@ -1482,6 +1482,24 @@ Otro hallazgo de la misma auditoría de seguridad: `ExpenseImportView.post()` (`
 
 ---
 
+### DT-095 — Sin protección contra bots en registro y feedback
+
+**Estado:** ✅ Resuelto
+
+Tercer y último punto de la auditoría de seguridad de 20 puntos: ni `RegisterForm` (alta de cuenta, web) ni `FeedbackForm` (reporte/sugerencia, accesible sin login) tenían ningún mecanismo contra bots — ningún captcha, ningún honeypot. Ambos son formularios públicos: `RegisterView` es de alta libre, y `FeedbackView` perdió su `LoginRequiredMixin` en DT-090 para permitir pedir eliminación de cuenta sin sesión.
+
+**Why:** sin protección, un bot puede completar cualquiera de los dos formularios en loop. El de registro ya está mitigado parcialmente por el rate limiting de DT-093 (API) y por `django-axes` en el login, pero el formulario web de registro y el de feedback seguían abiertos. Un captcha real (reCAPTCHA/hCaptcha/Turnstile) agrega fricción real al usuario y una dependencia de un servicio de terceros — para el volumen de tráfico actual de la app, un honeypot es la opción de menor costo que igual corta el tipo de bot más común (uno que completa todos los campos del formulario, sin lógica para detectar ni evitar campos ocultos).
+
+**Resolución:**
+- `HoneypotMixin` nuevo en `apps/core/forms.py`: agrega un campo `website` (`CharField`, `required=False`) a cualquier form que lo herede. `clean_website()` rechaza el envío con un `ValidationError` genérico si el campo llega con contenido — sin decirle al bot específicamente que fue el honeypot el que lo detectó.
+- El campo se oculta en el template, no en el form: `style="position:absolute; left:-9999px; top:-9999px;"` en vez de `type="hidden"`, porque algunos bots más sofisticados saltean específicamente los campos `hidden`. `tabindex="-1"` y `aria-hidden="true"` evitan además que quede en el flujo de tabulación o que un lector de pantalla lo anuncie a un usuario real con alguna necesidad de accesibilidad.
+- `RegisterForm` (`apps/users/forms.py`) y `FeedbackForm` (`apps/core/forms.py`) ahora heredan de `HoneypotMixin`. `templates/users/register.html` y `templates/core/_feedback_body.html` renderizan `{{ form.website }}` dentro del wrapper oculto.
+- `FeedbackForm` se renderiza desde un único partial (`_feedback_body.html`, incluido tanto en el bloque `content` como `auth_content` del template padre — ver DT-090), así que un solo honeypot cubre el formulario con y sin sesión.
+- Alcance explícitamente acotado a estos 2 formularios (los únicos públicos sin ya tener otra mitigación): el login ya tiene `django-axes`, y los endpoints de la API ya tienen el throttling de DT-093 — un honeypot no aplica a una API JSON (no hay HTML que un bot "vea" ni evite).
+- Tests nuevos: `apps/core/tests/test_forms.py` (nuevo archivo, 3 tests directos del mixin con un form dummy, sin necesitar DB), más 1 test en `apps/users/tests/test_views.py` y 1 en `apps/core/tests/test_feedback.py` confirmando que el envío con el honeypot completado no crea el usuario / no manda el email.
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.

@@ -15,6 +15,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 - **Rate limiting en registro y password-reset de la API (DT-093)**: sin límite previo, un script podía crear cuentas o disparar emails de reset sin tope (abuso de cuota de Brevo). `RegisterView`, `PasswordResetRequestView` y `PasswordResetConfirmView` ahora limitan a 5 requests/hora por IP (`ScopedRateThrottle`). Sin impacto visible — backend/API únicamente, no requiere bump de versión de la app.
 - **Validación real del PDF en el importador de resúmenes (DT-094)**: antes solo se chequeaba que el nombre del archivo terminara en `.pdf`. Ahora se valida la firma real del archivo (magic bytes `%PDF-`) antes de escribirlo a disco, y se declara explícitamente un límite de tamaño de upload de 5MB (antes dependía del default implícito de Django). Sin impacto visible.
+- **Honeypot contra bots en registro y feedback (DT-095)**: ninguno de los 2 formularios públicos (alta de cuenta, reporte/sugerencia sin login) tenía protección contra bots. Se agregó un campo trampa invisible (`HoneypotMixin`) que un bot que completa todos los campos cae, pero un usuario real nunca ve ni completa. Sin captcha ni dependencias externas — impacto mínimo pero real para el usuario (ningún campo visible nuevo).
 
 ---
 

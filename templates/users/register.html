@@ -20,6 +20,11 @@
                 <form method="post" novalidate>
                     {% csrf_token %}
 
+                    <!-- Campo trampa para bots (honeypot) — invisible para usuarios reales -->
+                    <div style="position:absolute; left:-9999px; top:-9999px;" aria-hidden="true">
+                        {{ form.website }}
+                    </div>
+
                     <!-- Errores generales -->
                     {% if form.non_field_errors %}
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">

@@ -5,6 +5,8 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.db.models import Q
 
+from apps.core.forms import HoneypotMixin
+
 from .models import User
 
 
@@ -85,7 +87,7 @@ class LoginForm(AuthenticationForm):
         return cleaned
 
 
-class RegisterForm(UserCreationForm):
+class RegisterForm(HoneypotMixin, UserCreationForm):
     """Formulario de registro de nuevos usuarios."""
 
     email = forms.EmailField(

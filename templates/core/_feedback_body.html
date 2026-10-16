@@ -14,6 +14,11 @@
                 <form method="post" novalidate>
                     {% csrf_token %}
 
+                    <!-- Campo trampa para bots (honeypot) — invisible para usuarios reales -->
+                    <div style="position:absolute; left:-9999px; top:-9999px;" aria-hidden="true">
+                        {{ form.website }}
+                    </div>
+
                     <!-- Tipo -->
                     <div class="mb-3">
                         <label for="{{ form.tipo.id_for_label }}" class="form-label fw-semibold">

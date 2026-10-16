@@ -140,6 +140,23 @@ class TestRegisterView:
         assert response.status_code == 302  # Redirect después de registro
         assert User.objects.filter(email="nuevo@test.com").exists()
 
+    def test_register_bloqueado_por_honeypot(self, client):
+        """DT: si el campo trampa 'website' viene completado, se rechaza
+        el registro — un usuario real nunca lo ve ni lo completa."""
+        data = {
+            "email": "bot@test.com",
+            "username": "botuser",
+            "password1": "TestPass123!",
+            "password2": "TestPass123!",
+            "accept_terms": True,
+            "website": "http://spam.example.com",
+        }
+
+        response = client.post(reverse("users:register"), data)
+
+        assert response.status_code == 200  # Se queda en la página, no redirige
+        assert not User.objects.filter(email="bot@test.com").exists()
+
     def test_register_with_mismatched_passwords(self, client):
         """Verifica que contraseñas diferentes fallan."""
         data = {

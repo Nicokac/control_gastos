@@ -10,6 +10,37 @@ from apps.categories.models import Category
 from apps.core.constants import Currency
 
 
+class HoneypotMixin(forms.Form):
+    """
+    Agrega un campo trampa invisible a cualquier form público (sin login).
+
+    Un bot que completa todos los campos de un formulario cae en este; un
+    usuario real nunca lo ve (oculto por CSS, no por type="hidden" — algunos
+    bots lo detectan y lo saltean) y por lo tanto nunca lo completa. Si llega
+    con contenido, se rechaza con un error genérico de validación: no hay que
+    decirle al bot que fue detectado específicamente por el honeypot.
+    """
+
+    website = forms.CharField(
+        required=False,
+        label="",
+        widget=forms.TextInput(
+            attrs={
+                "autocomplete": "off",
+                "tabindex": "-1",
+                "class": "hp-field",
+                "aria-hidden": "true",
+            }
+        ),
+    )
+
+    def clean_website(self):
+        value = self.cleaned_data.get("website")
+        if value:
+            raise forms.ValidationError("No se pudo procesar el formulario.")
+        return value
+
+
 class ARSDecimalField(forms.DecimalField):
     """
     DecimalField que acepta formato argentino: "1.500,50" o "1500,50".
@@ -97,7 +128,7 @@ class CurrencyFormMixin:
         return Decimal("1.0000")
 
 
-class FeedbackForm(forms.Form):
+class FeedbackForm(HoneypotMixin, forms.Form):
     """Formulario para que el usuario reporte bugs, mejoras u otros comentarios."""
 
     TIPO_CHOICES = [
