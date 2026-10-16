@@ -357,6 +357,17 @@ CACHES = {
 }
 
 # =============================================================================
+# UPLOADS
+# =============================================================================
+# Límite explícito para el único endpoint de upload del proyecto (importador
+# de resúmenes de tarjeta, apps/expenses/views.py::ExpenseImportView). Antes
+# dependía del default implícito de Django (2.5MB); se declara a propósito
+# para que sea mantenible y para que el límite sea una decisión documentada,
+# no un accidente de configuración.
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024  # 5 MB
+
+# =============================================================================
 # DJANGO REST FRAMEWORK
 # =============================================================================
 

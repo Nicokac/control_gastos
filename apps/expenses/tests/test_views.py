@@ -1351,6 +1351,54 @@ class TestBuildImportPreviewRecurringMatch:
 
 
 @pytest.mark.django_db
+class TestExpenseImportViewFileValidation:
+    """DT-093: valida la firma real del archivo (magic bytes), no solo el
+    nombre — un .pdf falso se rechaza antes de llegar al parser."""
+
+    def test_sin_archivo(self, authenticated_client):
+        url = reverse("expenses:import")
+        response = authenticated_client.post(url, {}, follow=True)
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "Seleccioná un archivo PDF." in content
+
+    def test_nombre_sin_extension_pdf(self, authenticated_client):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        fake_file = SimpleUploadedFile("resumen.txt", b"contenido cualquiera")
+        url = reverse("expenses:import")
+        response = authenticated_client.post(url, {"pdf_file": fake_file}, follow=True)
+
+        assert response.status_code == 200
+        assert "El archivo debe ser un PDF." in response.content.decode()
+
+    def test_contenido_falso_con_nombre_pdf_se_rechaza(self, authenticated_client):
+        """Nombre .pdf pero el contenido no empieza con la firma real de un PDF."""
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        fake_file = SimpleUploadedFile("resumen.pdf", b"esto no es un pdf real")
+        url = reverse("expenses:import")
+        response = authenticated_client.post(url, {"pdf_file": fake_file}, follow=True)
+
+        assert response.status_code == 200
+        assert "El archivo no es un PDF válido." in response.content.decode()
+
+    def test_pdf_real_pasa_la_validacion_de_firma(self, authenticated_client):
+        """Firma válida pero sin contenido parseable: debe pasar la validación
+        de magic bytes y fallar recién en el parseo (error distinto)."""
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        fake_pdf = SimpleUploadedFile("resumen.pdf", b"%PDF-1.4\nno hay transacciones reales")
+        url = reverse("expenses:import")
+        response = authenticated_client.post(url, {"pdf_file": fake_pdf}, follow=True)
+
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "El archivo no es un PDF válido." not in content
+
+
+@pytest.mark.django_db
 class TestExpenseImportConfirmView:
     """Tests para la confirmación de importación, incluida la creación de recurrentes."""
 

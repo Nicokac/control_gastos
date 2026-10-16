@@ -1467,6 +1467,21 @@ Encontrado en una auditoría de seguridad de 20 puntos pedida por el usuario (ch
 
 ---
 
+### DT-094 — Importador de PDF: validación solo por extensión del nombre
+
+**Estado:** ✅ Resuelto
+
+Otro hallazgo de la misma auditoría de seguridad: `ExpenseImportView.post()` (`apps/expenses/views.py`) validaba el PDF del resumen de tarjeta solo chequeando que el nombre del archivo terminara en `.pdf` (`pdf_file.name.lower().endswith(".pdf")`). Un archivo con extensión falsa llegaba a escribirse a disco (`NamedTemporaryFile`) y recién fallaba al intentar parsearlo con `pdfplumber`.
+
+**Why:** el riesgo real resultó menor de lo que sugería el checklist genérico de origen — el `try/except Exception` ya capturaba el fallo de `pdfplumber` sin crashear ni filtrar detalles al usuario, y Django ya limitaba el tamaño de upload a 2.5MB por el default implícito (`DATA_UPLOAD_MAX_MEMORY_SIZE`/`FILE_UPLOAD_MAX_MEMORY_SIZE`, nunca declarados explícitamente). Aun así, validar solo por nombre es una práctica floja fácil de mejorar, y el límite de tamaño implícito no documentado es un accidente de configuración, no una decisión.
+
+**Resolución:**
+- `ExpenseImportView.post()` ahora valida la firma real del archivo (magic bytes) antes de escribirlo a disco: los primeros 5 bytes deben ser `%PDF-` (la firma estándar de cualquier PDF válido, independiente del nombre). Si no coincide, se rechaza con un mensaje claro ("El archivo no es un PDF válido.") sin llegar a tocar el filesystem ni a `pdfplumber`.
+- `config/settings/base.py` declara explícitamente `DATA_UPLOAD_MAX_MEMORY_SIZE` y `FILE_UPLOAD_MAX_MEMORY_SIZE` en 5MB — mismo orden de magnitud que el default implícito de Django, pero ahora es una decisión documentada en vez de un accidente. Es el único endpoint de upload del proyecto, así que el límite global no afecta nada más.
+- 4 tests nuevos en `apps/expenses/tests/test_views.py` (`TestExpenseImportViewFileValidation`): sin archivo, nombre sin extensión `.pdf`, contenido falso con nombre `.pdf` (rechazado por la firma), y un PDF con firma válida pero sin transacciones parseables (debe pasar la validación de firma y fallar después, en el parseo — error distinto).
+
+---
+
 ## D-015 — Deudas técnicas descartadas
 
 Ítems evaluados y descartados conscientemente. Se registran para evitar re-evaluarlos sin contexto.

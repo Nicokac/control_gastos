@@ -770,6 +770,14 @@ class ExpenseImportView(LoginRequiredMixin, View):
             messages.error(request, "El archivo debe ser un PDF.")
             return redirect("expenses:import")
 
+        # Validar la firma real del archivo (magic bytes), no solo la extensión
+        # del nombre — un .pdf falso se rechaza acá en vez de fallar recién al
+        # parsearlo con pdfplumber.
+        if pdf_file.read(5) != b"%PDF-":
+            messages.error(request, "El archivo no es un PDF válido.")
+            return redirect("expenses:import")
+        pdf_file.seek(0)
+
         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
             for chunk in pdf_file.chunks():
                 tmp.write(chunk)
