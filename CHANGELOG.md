@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **Notificaciones push — Fase A: registro de token de dispositivo (D-019)**: nueva app `apps/notifications` con el modelo `DeviceToken` y el endpoint `POST/DELETE /api/v1/notifications/device-token/` para que la app mobile registre/desregistre su token FCM. Primer paso de la construcción por fases de recordatorios push de gastos fijos próximos a vencer — todavía no se envía ningún push. Sin impacto visible.
+
+---
+
 ## [1.29.3] — 2026-10-11
 
 ### Changed

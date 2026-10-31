@@ -1754,3 +1754,30 @@ Implementar `HouseholdMember` como un modelo simple de nombre, sin cuenta en la 
 
 ### Riesgo aceptado
 El miembro no puede cargar gastos por su cuenta ni ver el historial. Si el dueño de la cuenta borra un miembro, los gastos quedan sin pagador asignado (campo `paid_by` en NULL). Aceptable para el MVP.
+
+---
+
+## D-019 — Notificaciones push: diseño y Fase A (registro de token)
+
+**Fecha:** 2026-10-30
+**Estado:** 🚧 En progreso (Fase A completa)
+
+### Contexto
+El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, ni recordatorios programados) — todo lo relacionado a "alertas" (`monthly_alert_threshold`, `alert_threshold`) es puramente pasivo: se calcula y muestra solo cuando el usuario abre el dashboard. Se decidió construir la primera notificación proactiva real: recordatorio push de gastos fijos próximos a vencer.
+
+### Diseño de producto acordado
+- **Canal**: push notification (mobile), vía Firebase Cloud Messaging (FCM). No email para esta fase.
+- **Anticipación**: 3 días antes del `due_day` del gasto fijo.
+- **Mensaje diferenciado por `is_auto_debit`** (ver DT-089): un gasto fijo normal recibe un tono de acción pendiente ("Tu [nombre] vence en 3 días"); uno marcado como débito automático recibe un mensaje informativo sin urgencia ("Tu [nombre] se debita automáticamente en 3 días") — coherente con el criterio ya aplicado en DT-089 de no tratar el débito automático como algo que el usuario deba "hacer".
+- **Disparador**: GitHub Actions cron diario (mismo patrón que `.github/workflows/backup.yml`), no Celery — evita agregar un broker/worker nuevo a la infraestructura para una tarea que corre una vez al día.
+
+### Plan de fases
+- **Fase A (✅ completa, esta entrada)**: app `apps/notifications` nueva, modelo `DeviceToken` (token FCM por usuario/dispositivo, único a nivel global porque Firebase puede reasignar un token a otra instalación), endpoint `POST/DELETE /api/v1/notifications/device-token/` para que mobile registre/desregistre su token al loguearse/desloguearse. Sin envío de ningún push todavía — solo la base de datos de tokens.
+- **Fase B (pendiente)**: integración real de Firebase (SDK en Flutter, `google-services.json`, credenciales de servidor en Django para enviar vía `firebase-admin`).
+- **Fase C (pendiente)**: management command que recorre `RecurringExpense` activos, calcula vencimientos a 3 días, dispara el push diferenciado, y evita reenvíos duplicados para el mismo gasto fijo en el mismo período.
+- **Fase D (pendiente)**: workflow de GitHub Actions con el cron diario contra producción.
+
+### Fase A — Resolución técnica
+- `apps/notifications/models.py`: `DeviceToken` (`user` FK, `token` único, `platform` choices ANDROID/IOS default ANDROID, `is_active`, `last_used_at` auto_now). `unique=True` en `token` en vez de `unique_together` con `user`, porque el mismo token físico de Firebase puede pertenecer a usuarios distintos a lo largo del tiempo (reinstalación en otro dispositivo/cuenta) — nunca a dos usuarios a la vez.
+- `apps/api/v1/views/notifications.py::DeviceTokenView`: `POST` usa `update_or_create` por `token` — si el token ya existe (de otro usuario o inactivo), lo reasigna/reactiva en vez de fallar por duplicado. `DELETE` desactiva (no borra) el token del usuario autenticado al desloguearse, y es un no-op silencioso si el token no le pertenece (evita que un usuario pueda desactivar el dispositivo de otro a través del endpoint).
+- 16 tests nuevos (`apps/notifications/tests/test_models.py`, `apps/api/tests/test_notifications.py`), cubriendo: creación, unicidad del token, reasignación entre usuarios, reactivación, y que no se pueda desactivar un token ajeno.
