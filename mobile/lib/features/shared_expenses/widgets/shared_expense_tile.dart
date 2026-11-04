@@ -48,9 +48,12 @@ class SharedExpenseTile extends StatelessWidget {
       ),
       subtitle: Row(
         children: [
-          Text(
-            '$categoryName · $date',
-            style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+          Expanded(
+            child: Text(
+              '$categoryName · $date',
+              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
           const SizedBox(width: 6),
           Container(

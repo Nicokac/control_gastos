@@ -233,7 +233,22 @@ class _DashboardContent extends StatelessWidget {
         ],
         ExpenseChart(expensesByCategory: expensesByCategory),
         const SizedBox(height: 12),
-        RecentTransactionsList(expenses: recentExpenses, income: recentIncome),
+        RecentTransactionsList(
+          expenses: recentExpenses,
+          income: recentIncome,
+          onTapExpense: (id) {
+            final expense = recentExpenses
+                .cast<Map<String, dynamic>>()
+                .firstWhere((e) => e['id'] == id);
+            context.push('/expenses/edit/$id', extra: expense);
+          },
+          onTapIncome: (id) {
+            final income = recentIncome
+                .cast<Map<String, dynamic>>()
+                .firstWhere((e) => e['id'] == id);
+            context.push('/income/edit/$id', extra: income);
+          },
+        ),
         const SizedBox(height: 16),
       ],
     );

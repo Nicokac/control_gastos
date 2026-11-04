@@ -7,11 +7,15 @@ import '../../../core/widgets/sensitive_text.dart';
 class RecentTransactionsList extends StatelessWidget {
   final List<dynamic> expenses;
   final List<dynamic> income;
+  final ValueChanged<int>? onTapExpense;
+  final ValueChanged<int>? onTapIncome;
 
   const RecentTransactionsList({
     super.key,
     required this.expenses,
     required this.income,
+    this.onTapExpense,
+    this.onTapIncome,
   });
 
   @override
@@ -43,8 +47,11 @@ class RecentTransactionsList extends StatelessWidget {
                 child: Center(
                   child: Column(
                     children: [
-                      Icon(Icons.swap_vert_outlined,
-                          size: 40, color: Colors.black12),
+                      Icon(
+                        Icons.swap_vert_outlined,
+                        size: 40,
+                        color: Colors.black12,
+                      ),
                       SizedBox(height: 8),
                       Text(
                         'Sin movimientos recientes',
@@ -55,7 +62,16 @@ class RecentTransactionsList extends StatelessWidget {
                 ),
               )
             else
-              ...items.map((t) => _TransactionTile(transaction: t)),
+              ...items.map(
+                (t) => _TransactionTile(
+                  transaction: t,
+                  onTap: t.isExpense
+                      ? (onTapExpense == null
+                            ? null
+                            : () => onTapExpense!(t.id))
+                      : (onTapIncome == null ? null : () => onTapIncome!(t.id)),
+                ),
+              ),
           ],
         ),
       ),
@@ -64,6 +80,7 @@ class RecentTransactionsList extends StatelessWidget {
 }
 
 class _Transaction {
+  final int id;
   final String description;
   final double amount;
   final bool isExpense;
@@ -72,6 +89,7 @@ class _Transaction {
   final Color categoryColor;
 
   const _Transaction({
+    required this.id,
     required this.description,
     required this.amount,
     required this.isExpense,
@@ -82,6 +100,7 @@ class _Transaction {
 
   factory _Transaction.fromExpense(Map<String, dynamic> e) {
     return _Transaction(
+      id: e['id'] as int,
       description: e['description'] as String? ?? '',
       amount: double.tryParse(e['amount_ars'].toString()) ?? 0,
       isExpense: true,
@@ -93,6 +112,7 @@ class _Transaction {
 
   factory _Transaction.fromIncome(Map<String, dynamic> e) {
     return _Transaction(
+      id: e['id'] as int,
       description: e['description'] as String? ?? '',
       amount: double.tryParse(e['amount_ars'].toString()) ?? 0,
       isExpense: false,
@@ -110,8 +130,9 @@ class _Transaction {
 
 class _TransactionTile extends StatelessWidget {
   final _Transaction transaction;
+  final VoidCallback? onTap;
 
-  const _TransactionTile({required this.transaction});
+  const _TransactionTile({required this.transaction, this.onTap});
 
   String get _formattedDate {
     return DateFormat('dd/MM', 'es').format(transaction.date);
@@ -124,64 +145,71 @@ class _TransactionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: transaction.categoryColor.withValues(alpha: 0.15),
-              shape: BoxShape.circle,
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: transaction.categoryColor.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                transaction.isExpense
+                    ? Icons.arrow_downward
+                    : Icons.arrow_upward,
+                color: transaction.categoryColor,
+                size: 18,
+              ),
             ),
-            child: Icon(
-              transaction.isExpense
-                  ? Icons.arrow_downward
-                  : Icons.arrow_upward,
-              color: transaction.categoryColor,
-              size: 18,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    transaction.description.isNotEmpty
+                        ? transaction.description
+                        : transaction.categoryName,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    transaction.categoryName,
+                    style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                  transaction.description.isNotEmpty
-                      ? transaction.description
-                      : transaction.categoryName,
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                  overflow: TextOverflow.ellipsis,
+                SensitiveText(
+                  _formattedAmount,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: transaction.isExpense
+                        ? context.semanticColors.expense
+                        : context.semanticColors.income,
+                  ),
                 ),
                 Text(
-                  transaction.categoryName,
+                  _formattedDate,
                   style: TextStyle(fontSize: 11, color: Colors.grey[500]),
                 ),
               ],
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              SensitiveText(
-                _formattedAmount,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: transaction.isExpense
-                      ? context.semanticColors.expense
-                      : context.semanticColors.income,
-                ),
-              ),
-              Text(
-                _formattedDate,
-                style: TextStyle(fontSize: 11, color: Colors.grey[500]),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

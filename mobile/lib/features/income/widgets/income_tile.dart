@@ -46,6 +46,7 @@ class IncomeTile extends StatelessWidget {
       subtitle: Text(
         '$categoryName · $date',
         style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+        overflow: TextOverflow.ellipsis,
       ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,

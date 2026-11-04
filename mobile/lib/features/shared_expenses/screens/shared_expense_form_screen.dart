@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/shared_expense_provider.dart';
+import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/error_state_view.dart';
 
@@ -364,7 +365,17 @@ class _SharedExpenseFormScreenState
                         ),
                       ),
                     ),
-                    if (_groupId != null) ...[
+                    if (_groupId != null && subcats.isEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        'Este grupo todavía no tiene subcategorías. '
+                        'Creá una desde Categorías para poder usarla acá.',
+                        style: TextStyle(
+                            color: context.semanticColors.shared,
+                            fontSize: 13),
+                      ),
+                    ],
+                    if (_groupId != null && subcats.isNotEmpty) ...[
                       const SizedBox(height: 16),
                       FormField<int>(
                         initialValue: _categoryId,

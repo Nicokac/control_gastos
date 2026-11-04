@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/repositories/savings_repository.dart';
@@ -34,7 +36,7 @@ class SavingsListNotifier extends AsyncNotifier<List<dynamic>> {
       final created = await ref
           .read(savingsRepositoryProvider)
           .createSaving(data);
-      await reload();
+      unawaited(_reloadAfterPop());
       return created;
     } catch (_) {
       return null;
@@ -44,11 +46,24 @@ class SavingsListNotifier extends AsyncNotifier<List<dynamic>> {
   Future<bool> editSaving(int id, Map<String, dynamic> data) async {
     try {
       await ref.read(savingsRepositoryProvider).updateSaving(id, data);
-      await reload();
+      unawaited(_reloadAfterPop());
       return true;
     } catch (_) {
       return false;
     }
+  }
+
+  // Diferido al próximo microtask: evita reconstruir la pantalla mientras
+  // el caller todavía está cerrando el formulario/modal actual (DT-098).
+  Future<void> _reloadAfterPop() async {
+    await Future<void>.delayed(Duration.zero);
+    await reload();
+  }
+
+  Future<void> _reloadAndInvalidateDashboardAfterPop() async {
+    await Future<void>.delayed(Duration.zero);
+    await reload();
+    ref.invalidate(dashboardProvider);
   }
 
   Future<bool> delete(int id) async {
@@ -102,8 +117,7 @@ class SavingsListNotifier extends AsyncNotifier<List<dynamic>> {
       await ref
           .read(savingsRepositoryProvider)
           .depositRollover(suggestionId, savingId);
-      await reload();
-      ref.invalidate(dashboardProvider);
+      unawaited(_reloadAndInvalidateDashboardAfterPop());
       return null;
     } catch (e) {
       return _errorDetail(e) ?? 'No pudimos destinar el sobrante';

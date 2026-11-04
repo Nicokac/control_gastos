@@ -72,6 +72,9 @@ void main() {
       await container.read(expenseListProvider.future);
       final notifier = container.read(expenseListProvider.notifier);
       final result = await notifier.create(newExpense);
+      // El reload se dispara en el próximo microtask (DT-098) para no
+      // reconstruir la pantalla mientras el caller todavía está navegando.
+      await Future<void>.delayed(Duration.zero);
 
       expect(result, isTrue);
       verify(mockRepo.getExpenses(month: anyNamed('month'), year: anyNamed('year')))

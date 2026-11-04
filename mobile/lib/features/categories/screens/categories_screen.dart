@@ -235,11 +235,14 @@ class _GroupTile extends StatelessWidget {
         ),
         title: Row(
           children: [
-            Text(group['name'] as String,
-                style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: isHidden ? Colors.grey[400] : null)),
+            Expanded(
+              child: Text(group['name'] as String,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: isHidden ? Colors.grey[400] : null)),
+            ),
             const SizedBox(width: 6),
             if (isSystem)
               Container(
@@ -386,6 +389,7 @@ class _SubcatTile extends StatelessWidget {
             size: 12, color: isHidden ? Colors.grey[400] : _color),
       ),
       title: Text(subcat['name'] as String,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
               fontSize: 13,
               color: isHidden ? Colors.grey[400] : null)),
@@ -449,6 +453,7 @@ class _CreateCategorySheetState extends ConsumerState<_CreateCategorySheet> {
   String _color = '#6c757d';
   String _icon = 'bi-tag';
   bool _loading = false;
+  String? _nameError;
 
   static const _colors = [
     '#dc3545', '#fd7e14', '#ffc107', '#28a745', '#20c997',
@@ -469,8 +474,14 @@ class _CreateCategorySheetState extends ConsumerState<_CreateCategorySheet> {
   }
 
   Future<void> _submit() async {
-    if (_nameCtrl.text.trim().isEmpty) return;
-    setState(() => _loading = true);
+    if (_nameCtrl.text.trim().isEmpty) {
+      setState(() => _nameError = 'Ingresá un nombre');
+      return;
+    }
+    setState(() {
+      _nameError = null;
+      _loading = true;
+    });
 
     final data = {
       'name': _nameCtrl.text.trim(),
@@ -487,8 +498,8 @@ class _CreateCategorySheetState extends ConsumerState<_CreateCategorySheet> {
     try {
       final repo = ref.read(expenseRepositoryProvider);
       await repo.createCategory(data);
-      widget.onCreated();
       if (mounted) Navigator.pop(context);
+      widget.onCreated();
     } catch (e) {
       setState(() => _loading = false);
       if (mounted) {
@@ -522,9 +533,13 @@ class _CreateCategorySheetState extends ConsumerState<_CreateCategorySheet> {
           TextField(
             controller: _nameCtrl,
             autofocus: true,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Nombre *',
+              errorText: _nameError,
             ),
+            onChanged: (_) {
+              if (_nameError != null) setState(() => _nameError = null);
+            },
           ),
           const SizedBox(height: 16),
           if (!isSubcat && widget.forceType == null) ...[

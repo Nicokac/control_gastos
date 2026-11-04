@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/repositories/recurring_repository.dart';
 import '../../dashboard/providers/dashboard_provider.dart';
@@ -22,8 +24,7 @@ class RecurringListNotifier extends AsyncNotifier<List<dynamic>> {
   Future<bool> create(Map<String, dynamic> data) async {
     try {
       await ref.read(recurringRepositoryProvider).createRecurring(data);
-      await reload();
-      ref.invalidate(dashboardProvider);
+      unawaited(_reloadAfterPop());
       return true;
     } catch (_) {
       return false;
@@ -33,12 +34,19 @@ class RecurringListNotifier extends AsyncNotifier<List<dynamic>> {
   Future<bool> editRecurring(int id, Map<String, dynamic> data) async {
     try {
       await ref.read(recurringRepositoryProvider).updateRecurring(id, data);
-      await reload();
-      ref.invalidate(dashboardProvider);
+      unawaited(_reloadAfterPop());
       return true;
     } catch (_) {
       return false;
     }
+  }
+
+  // Diferido al próximo microtask: evita reconstruir la pantalla mientras
+  // el caller todavía está cerrando el formulario/modal actual (DT-098).
+  Future<void> _reloadAfterPop() async {
+    await Future<void>.delayed(Duration.zero);
+    await reload();
+    ref.invalidate(dashboardProvider);
   }
 
   Future<bool> delete(int id) async {

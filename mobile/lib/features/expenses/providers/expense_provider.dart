@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/repositories/expense_repository.dart';
 import '../../dashboard/providers/dashboard_provider.dart';
@@ -34,8 +36,7 @@ class ExpenseListNotifier extends AsyncNotifier<List<dynamic>> {
   Future<bool> create(Map<String, dynamic> data) async {
     try {
       await ref.read(expenseRepositoryProvider).createExpense(data);
-      await reload();
-      ref.invalidate(dashboardProvider);
+      unawaited(_reloadAfterPop());
       return true;
     } catch (_) {
       return false;
@@ -45,12 +46,19 @@ class ExpenseListNotifier extends AsyncNotifier<List<dynamic>> {
   Future<bool> editExpense(int id, Map<String, dynamic> data) async {
     try {
       await ref.read(expenseRepositoryProvider).updateExpense(id, data);
-      await reload();
-      ref.invalidate(dashboardProvider);
+      unawaited(_reloadAfterPop());
       return true;
     } catch (_) {
       return false;
     }
+  }
+
+  // Diferido al próximo microtask: evita reconstruir la pantalla mientras
+  // el caller todavía está cerrando el formulario/modal actual (DT-098).
+  Future<void> _reloadAfterPop() async {
+    await Future<void>.delayed(Duration.zero);
+    await reload();
+    ref.invalidate(dashboardProvider);
   }
 
   Future<bool> delete(int id) async {

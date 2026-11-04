@@ -11,6 +11,16 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 - **Notificaciones push — Fase A: registro de token de dispositivo (D-019)**: nueva app `apps/notifications` con el modelo `DeviceToken` y el endpoint `POST/DELETE /api/v1/notifications/device-token/` para que la app mobile registre/desregistre su token FCM. Primer paso de la construcción por fases de recordatorios push de gastos fijos próximos a vencer — todavía no se envía ningún push. Sin impacto visible.
 
+### Fixed
+
+- **Mobile — Categorías: ícono de ojo y botón "+" superpuestos con el nombre (DT-096)**: reportado por testers de la prueba cerrada. El nombre de grupo/subcategoría no se truncaba y empujaba contra los íconos de acción cuando era largo. Ahora se trunca con `ellipsis` y cede espacio correctamente.
+- **Mobile — Configuración: campos de "Preferencias" poco legibles en modo claro (DT-097)**: reportado por testers de la prueba cerrada. Los selectores de moneda y día de inicio del mes financiero no declaraban color de texto explícito y podían verse casi invisibles en modo claro.
+- **Mobile — Crash general al crear/editar gastos, ingresos, ahorro, recurrentes, categorías y compartidos (DT-098)**: encontrado en verificación manual, reclasifica el bug de "categoría en blanco al crear gasto compartido" reportado por testers. Invalidar los providers de la lista antes de cerrar la pantalla/modal producía un crash (`'_dependents.isEmpty': is not true`) al reconstruirse la pantalla con el formulario todavía montado. Ahora la pantalla se cierra primero y recién después se recargan los datos.
+- **Mobile — Crear categoría/subcategoría sin nombre fallaba en silencio (DT-099)**: encontrado en verificación manual. Tocar "Crear" sin completar el nombre no hacía nada, sin ningún aviso. Ahora muestra "Ingresá un nombre" en el campo.
+- **Mobile — Gastos compartidos: overflow con categoría de nombre largo (DT-100)**: encontrado en verificación manual. El subtítulo de cada fila no cedía espacio al badge de quién pagó. Ahora se trunca con `ellipsis`.
+- **Mobile — Gastos compartidos: selector de categoría sin aviso cuando el grupo no tiene subcategorías (DT-101)**: mismo fix ya aplicado antes en Gastos (DT-080/DT-085), nunca replicado en este formulario. Ahora muestra "Este grupo todavía no tiene subcategorías" en vez de un selector vacío sin explicación. El formulario sigue exigiendo una subcategoría real para guardar, igual que en Gastos.
+- **Mobile — Dashboard: transacciones de "Últimos movimientos" ahora navegables (DT-102)**: reportado por testers de la prueba cerrada. Tocar una transacción reciente del dashboard no hacía nada. Ahora navega a editarla, igual que en la lista completa de Gastos/Ingresos.
+
 ---
 
 ## [1.29.3] — 2026-10-11

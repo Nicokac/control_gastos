@@ -1781,3 +1781,150 @@ El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, 
 - `apps/notifications/models.py`: `DeviceToken` (`user` FK, `token` único, `platform` choices ANDROID/IOS default ANDROID, `is_active`, `last_used_at` auto_now). `unique=True` en `token` en vez de `unique_together` con `user`, porque el mismo token físico de Firebase puede pertenecer a usuarios distintos a lo largo del tiempo (reinstalación en otro dispositivo/cuenta) — nunca a dos usuarios a la vez.
 - `apps/api/v1/views/notifications.py::DeviceTokenView`: `POST` usa `update_or_create` por `token` — si el token ya existe (de otro usuario o inactivo), lo reasigna/reactiva en vez de fallar por duplicado. `DELETE` desactiva (no borra) el token del usuario autenticado al desloguearse, y es un no-op silencioso si el token no le pertenece (evita que un usuario pueda desactivar el dispositivo de otro a través del endpoint).
 - 16 tests nuevos (`apps/notifications/tests/test_models.py`, `apps/api/tests/test_notifications.py`), cubriendo: creación, unicidad del token, reasignación entre usuarios, reactivación, y que no se pueda desactivar un token ajeno.
+
+---
+
+## D-020 — Dominio propio (controldegastos.ar) y cuentas de terceros del proyecto
+
+**Fecha:** 2026-11-01 / Actualizado 2026-11-01
+**Estado:** 🚧 En progreso (plan de conexión definido)
+
+### Contexto
+El proyecto hoy se sirve desde la URL por defecto de Render (`control-gastos-fr8z.onrender.com`). Se registró un dominio propio, `controldegastos.ar`, vía Trámites a Distancia (ARCA) / NIC Argentina. Vencimiento: 29/9/2027. La delegación de DNS todavía no se configuró — el dominio no está conectado a ningún servicio.
+
+### Cuentas usadas en el proyecto
+- **`kachuknm@gmail.com`** (personal): email de recuperación/admin. `FEEDBACK_EMAIL` y `SERVER_EMAIL` en Django.
+- **`controldegastos.dev@gmail.com`**: cuenta de Google dedicada a servicios de terceros del proyecto (TestersCommunity, TestFi), para no vincular la cuenta personal — ver sección "Cuenta de Google separada para servicios de terceros" en `docs/GOOGLE_PLAY_CONSOLE.md`.
+- **Gestión del dominio en NIC Argentina/ARCA**: cuenta no documentada aún.
+- **Cloudflare (DNS + R2)**: cuenta asociada a `kachuknm@gmail.com`, no a `controldegastos.dev@gmail.com`. La cuenta de Cloudflare para R2 ya existía desde antes de crear la cuenta separada de servicios de terceros — se decidió no migrarla para evitar tocar infraestructura de backups ya funcionando sin necesidad real.
+
+### Para qué sirve el dominio
+- **URL propia de la app web**: reemplazar la URL de Render por `controldegastos.ar` (o un subdominio como `app.controldegastos.ar`).
+- **Verificación de dominio para Brevo**: email transaccional con remitente propio (`noreply@controldegastos.ar`) y registros SPF/DKIM, en vez de depender del dominio por defecto del proveedor — mejora entregabilidad.
+- **Ficha de Google Play Console**: sitio web de contacto/soporte.
+- No es necesario para Firebase Cloud Messaging (FCM no depende del dominio). Solo sería relevante si en el futuro se implementan Android App Links / deep links reales desde email (descartado por complejidad, ver nota sobre verificación de dominio en la entrada de recuperación de contraseña).
+
+### Decisiones tomadas para la conexión (2026-11-01)
+- **Forma del dominio**: `controldegastos.ar` directo (sin `www`, sin subdominio) como URL principal.
+- **URL de Render**: se mantiene activa en paralelo (`control-gastos-fr8z.onrender.com` sigue funcionando como fallback). Ambos hosts quedan en `ALLOWED_HOSTS`/`CSRF_TRUSTED_ORIGINS`.
+- **Proveedor DNS intermedio**: Cloudflare, reusando la cuenta ya existente del proyecto (la misma usada para Cloudflare R2 — ver DT-abajo). NIC Argentina no permite crear registros A/CNAME propios, solo delega a nameservers externos; Render tampoco ofrece nameservers propios — por eso hace falta un DNS intermedio. Cloudflare resuelve además el problema de apex domain (dominio raíz) sin depender de que NIC Argentina soporte ALIAS/ANAME.
+
+### Plan de conexión (pendiente de ejecución manual del usuario)
+1. Cloudflare: agregar `controldegastos.ar` a la cuenta existente (plan Free), obtener los 2 nameservers asignados.
+2. NIC Argentina: delegar el dominio a esos nameservers de Cloudflare (vía Trámites a Distancia/ARCA).
+3. Render: Web Service → Settings → Custom Domains → agregar `controldegastos.ar`. Render indica el registro DNS exacto a crear (normalmente `A` → `216.24.57.1` para dominio raíz).
+4. Cloudflare: crear ese registro DNS con el proxy desactivado ("DNS only"), para que el certificado SSL lo emita Render sin conflicto.
+5. Una vez verificado en Render: agregar `controldegastos.ar` a la variable de entorno `ALLOWED_HOSTS` en Render (sin quitar el host de Render existente). No requiere cambios de código — `config/settings/prod.py:62-75` ya construye `ALLOWED_HOSTS` y `CSRF_TRUSTED_ORIGINS` dinámicamente desde esa env var.
+6. (Opcional, aparte) verificar el dominio en Brevo para remitente propio (`noreply@controldegastos.ar`).
+
+### Riesgo aceptado
+Mientras no se complete la delegación, no hay riesgo — es solo un dominio registrado sin uso. Si no se delega antes del vencimiento (29/9/2027), se pierde el registro.
+
+---
+
+## D-021 — Feedback de testers de la prueba cerrada de Google Play (14 días, 8 reportes)
+
+**Fecha:** 2026-11-03
+**Estado:** 🚧 Relevado, pendiente de implementación
+
+### Contexto
+Se recibieron 8 reportes de los testers de la prueba cerrada (TestFi, 16 testers, 14 días). Se revisó el código actual para confirmar cuáles de los bugs reportados siguen vigentes antes de registrarlos como deuda técnica.
+
+### DT-096 — Categorías: ícono de ojo y botón "+" se superponen con el nombre
+
+**Estado:** ✅ Resuelto (2026-11-03)
+
+Reportado por 2 testers independientes (#1 y #7: "eye icon, + icon is overlapping text" / "categories - eye icon, + icon overlapping text"). Confirmado en código: en `mobile/lib/features/categories/screens/categories_screen.dart`, el `title` del `ExpansionTile` era un `Row` con el `Text` del nombre sin `Expanded`, mientras que el `trailing` tiene hasta 3 elementos de ancho fijo (ícono de ojo, botón `+`, flecha de expandir). Con nombres largos o pantallas angostas, el texto no se truncaba y empujaba contra el `trailing`, causando superposición. Mismo patrón en `_SubcatTile`. Fix: `Text` del nombre del grupo envuelto en `Expanded` + `overflow: TextOverflow.ellipsis`; `Text` del nombre de la subcategoría con `overflow: TextOverflow.ellipsis` (el `ListTile` ya maneja el espacio con `trailing` por sí mismo, solo faltaba el truncado).
+
+### DT-097 — Configuración: campos de "Preferencias" poco legibles en modo claro
+
+**Estado:** ✅ Resuelto (2026-11-03)
+
+Reportado por tester #7 ("settings - preferences fields are text not visible in light mode"). Confirmado en código: en `mobile/lib/features/settings/screens/settings_screen.dart`, los `DropdownMenuItem` de "Moneda por defecto" y "Inicio del mes financiero" usaban `Text(...)` sin `style` propio, y el `style` del `DropdownButtonFormField` tampoco definía `color` — solo `fontSize`. El popup del dropdown no tenía garantizado el contraste contra su fondo en modo claro al no haber un `DropdownMenuTheme` definido en el tema de la app. Fix: agregar `color: Theme.of(context).colorScheme.onSurface` tanto al `style` del `DropdownButtonFormField` (texto del campo cerrado) como al `style` de cada `Text` dentro de los `DropdownMenuItem` (texto del popup abierto).
+
+### DT-098 — Crash general al crear/editar: `'_dependents.isEmpty': is not true`
+
+**Estado:** ✅ Resuelto (2026-11-03)
+
+Encontrado durante la verificación manual de DT-096/097 con el usuario de prueba QA (`qatest2026b`). Al crear una subcategoría nueva desde el bottom sheet de Categorías, la app crasheaba con `'package:flutter/src/widgets/framework.dart': Failed assertion: line 6268 pos 12: '_dependents.isEmpty': is not true`. Al repetir la prueba en el flujo de **gastos compartidos**, el mismo crash apareció ahí también — lo que reclasifica el reporte original del tester #1 ("categoría en blanco al crear gasto compartido", ver más abajo): no era un problema transitorio de backend, era este bug.
+
+**Causa:** patrón repetido en los providers de listas (`*_provider.dart` de categories, expenses, income, savings, recurring, shared_expenses): los métodos `create`/`edit*` invalidaban providers y hacían `await reload()` **antes** de que la pantalla llamante hiciera `Navigator.pop()`/`context.pop()`. Esto reconstruía el árbol de la pantalla padre mientras el formulario/bottom sheet todavía estaba montado encima (agravado si el teclado estaba abierto, como se ve en la captura del bug original), dejando un `Element` en estado inconsistente.
+
+**Fix aplicado en todos los módulos con el mismo patrón:**
+- `categories_screen.dart` (`_CreateCategorySheetState._submit`): invertido el orden — primero `Navigator.pop(context)`, recién después `widget.onCreated()`.
+- `expense_provider.dart`, `income_provider.dart`, `recurring_provider.dart`, `shared_expense_provider.dart`: `create`/`edit*` ahora llaman a un `reload()`+`invalidate()` diferido un microtask (`Future<void>.delayed(Duration.zero)`) en vez de esperarlo antes de retornar — así la pantalla llamante ya alcanzó a hacer su `context.pop()` cuando el provider dispara el rebuild.
+- `savings_provider.dart`: mismo fix en `create`, `editSaving` y `depositRollover` (los únicos que navegan/popean después del await; `deposit`, `withdraw`, `dismissRollover` ya cerraban su diálogo antes de llamar al notifier, no se tocaron).
+- No se tocaron los métodos que solo muestran un `SnackBar` sin navegar (`markPaid`, `unmarkPaid`, `delete` en todos los módulos) — esos ya cerraban su diálogo de confirmación antes de llamar al notifier, o no navegan a otra pantalla, así que no tenían el mismo riesgo.
+- Test ajustado: `expense_provider_test.dart` — el test de `create` esperaba el `reload()` de forma síncrona; se agregó `await Future<void>.delayed(Duration.zero)` antes del `verify()` para reflejar el nuevo timing diferido.
+
+**Riesgo residual:** este patrón pudo existir en otros lugares no cubiertos por la revisión manual (p. ej. flujos sin confirmar por el usuario). Si reaparece un crash similar, buscar primero un `reload()`/`invalidate()` await-eado antes de un `pop()`/`context.pop()` en el mismo flujo.
+
+### Bug reclasificado: categorías en blanco al crear gasto compartido → era DT-098
+
+Reportado por tester #1 (TestFi): durante los días 1–13, al crear un gasto en la sección "Compartidos", el selector de categoría mostraba una página en blanco y no dejaba crear el gasto; para el día 14, sin cambios de la app, ya funcionaba. En la primera investigación (antes de reproducir DT-098) no se encontró causa en el código y se atribuyó a un problema transitorio de backend. Al reproducir manualmente el crash de DT-098 en el mismo flujo de "Compartidos", se confirma que es la causa real: el crash probablemente dejaba la UI en un estado roto que el tester percibió como "página en blanco", no un fallo del endpoint de categorías. Resuelto junto con DT-098.
+
+### DT-099 — Crear categoría/subcategoría sin nombre falla en silencio
+
+**Estado:** ✅ Resuelto (2026-11-03)
+
+Encontrado durante la verificación manual (coincide en espíritu con "dificultad para crear categorías" del tester #8, día 7). En el bottom sheet de "Nueva categoría"/"Nueva subcategoría", si se toca "Crear" sin completar el campo Nombre, no pasaba nada — ni mensaje de error, ni indicación visual, el botón simplemente no hacía nada.
+
+**Causa:** `_CreateCategorySheetState._submit()` (`categories_screen.dart`) hacía `if (_nameCtrl.text.trim().isEmpty) return;` sin ningún feedback al usuario.
+
+**Fix:** agregado estado `_nameError` que se setea al intentar enviar vacío y se muestra como `errorText` del `TextField` del nombre (se limpia al tipear). Patrón acotado a este campo — no se convirtió la sheet completa a `Form`/`TextFormField` porque es el único campo obligatorio del formulario.
+
+### DT-100 — Gastos compartidos: overflow de 44px en nombre de categoría largo
+
+**Estado:** ✅ Resuelto (2026-11-03)
+
+Encontrado durante la verificación manual de DT-098, al crear un gasto compartido con una categoría de nombre largo ("Soyunacategoriadeprueba"): la fila mostraba la etiqueta de overflow de Flutter (`RIGHT OVERFLOWED BY 44 PIXELS`).
+
+**Causa:** mismo patrón estructural que DT-096 pero en otro archivo. En `SharedExpenseTile` (`mobile/lib/features/shared_expenses/widgets/shared_expense_tile.dart`), el `subtitle` es un `Row` con `Text('$categoryName · $date', ...)` sin `Expanded`, seguido de un `Container` de ancho fijo (badge de quién pagó) — con nombre de categoría largo, el texto no cede espacio y desborda.
+
+**Fix:** `Text` de categoría/fecha envuelto en `Expanded` + `overflow: TextOverflow.ellipsis`. De paso, se revisaron `ExpenseTile` e `IncomeTile` (mismo patrón de tile): usan `subtitle: Text(...)` directo sin `Row` manual, así que `ListTile` ya gestiona el espacio con `trailing` — no tenían el mismo riesgo de overflow duro, pero se les agregó `overflow: TextOverflow.ellipsis` por consistencia preventiva (evita wrap a 2 líneas con nombres largos).
+
+### DT-101 — Gastos compartidos: formulario bloqueado al elegir un grupo sin subcategorías
+
+**Estado:** ✅ Resuelto (2026-11-03)
+
+Reportado por el usuario, recordando el mismo bug ya resuelto para Gastos e Ingresos (DT-080, DT-085): si el grupo de categoría elegido no tiene subcategorías, el formulario queda bloqueado porque exige elegir una subcategoría que no existe.
+
+**Investigación:** el backend está bien — `SharedExpenseSerializer.validate_category` (`apps/api/v1/serializers/shared_expenses.py`) usa `Category.get_user_categories(user)`, el mismo método que `ExpenseSerializer` y que ya excluye grupos (`parent__isnull=False`) devolviendo solo subcategorías. No hay bug de backend ni inconsistencia con el resto de la app ahí. El bug estaba en el frontend: `shared_expense_form_screen.dart` mostraba el selector de "Categoría" obligatorio (`FormField` con `validator: _categoryId == null`) con la condición `if (_groupId != null)`, sin considerar si ese grupo tenía subcategorías. A diferencia de `expense_form_screen.dart`, que desde DT-080/DT-085 ya distingue `subcats.isEmpty` (muestra un aviso en vez del selector bloqueado) de `subcats.isNotEmpty` (muestra el selector normal) — ese fix nunca se replicó en el formulario de gastos compartidos cuando se creó esa pantalla después.
+
+**Fix:** mismo patrón que `expense_form_screen.dart` — `if (_groupId != null && subcats.isEmpty)` muestra el texto "Este grupo todavía no tiene subcategorías. Creá una desde Categorías para poder usarla acá."; `if (_groupId != null && subcats.isNotEmpty)` muestra el selector de categoría.
+
+**Nota sobre el comportamiento resultante (comportamiento esperado, no bug):** con el grupo sin subcategorías, el formulario sigue sin dejar guardar — el aviso informa, no desbloquea. Esto es intencional y consistente con `expense_form_screen.dart`: `_submit()` tiene `if (_categoryId == null) return;` en ambos formularios, y el backend (`SharedExpenseSerializer`/`ExpenseSerializer`) solo acepta subcategorías reales para tipo EXPENSE — nunca el grupo. Confirmado con el usuario (2026-11-03): se mantiene este criterio en vez de replicar el comportamiento de Ingresos (que sí permite guardar contra el grupo cuando no tiene subcategorías). La solución real para destrabar la carga es crear subcategorías reales en el grupo desde Categorías, tal como indica el aviso.
+
+**Labels "Grupo de categoría" / "Categoría" (consultado, sin cambios):** el usuario notó que los dos selectores usan nombres distintos y preguntó si era inconsistente con el resto de la app. Se confirmó que es el mismo label exacto en los 4 formularios que usan esta jerarquía (Gastos, Ingresos, Recurrentes, Compartidos) — no era una inconsistencia de este formulario. Se decidió no renombrar por ahora (quedaría como mejora de UX aparte, fuera del alcance de esta tanda de bugs).
+
+### DT-102 — Dashboard: transacciones de "Últimos movimientos" no navegables
+
+**Estado:** ✅ Resuelto (2026-11-03)
+
+Reportado por Geri Rampersad (tester TestFi): las transacciones en "Últimos movimientos" del dashboard estaban "completamente congeladas" — tocar o hacer swipe no hacía nada, sin forma de editar o eliminar desde ahí.
+
+**Investigación:** no era una regresión — `RecentTransactionsList`/`_TransactionTile` (`mobile/lib/features/dashboard/widgets/recent_transactions_list.dart`) nunca tuvo `onTap` ni ningún gesture handler, a diferencia de `ExpenseTile`/`IncomeTile` (listas completas en Gastos/Ingresos), que sí navegan a editar. El endpoint de dashboard (`apps/api/v1/views/dashboard.py`, `recent_expenses`/`recent_income`) ya incluía `id` en los datos devueltos, así que la info necesaria para navegar siempre estuvo disponible — solo faltaba conectarla.
+
+**Fix:** agregados `onTapExpense`/`onTapIncome` (`ValueChanged<int>?`) a `RecentTransactionsList`, conectados en `dashboard_screen.dart` para navegar a `/expenses/edit/:id` o `/income/edit/:id` (mismo patrón que las listas completas), buscando el mapa completo de la transacción por `id` en `recentExpenses`/`recentIncome` para pasarlo como `extra`. `_TransactionTile` envuelto en `InkWell`. No se agregó swipe-to-delete — es una vista resumen, no la lista completa; eliminar sigue siendo una acción de la lista completa de Gastos/Ingresos.
+
+### No reproducido: selector de ícono en "Apariencia" de Ahorro no responde al tap
+
+Reportado por Geri Rampersad: en la pantalla de crear meta de ahorro, los color dots del picker de color funcionan, pero los íconos de categoría (auto, casa, avión) arriba de ellos no responden al tocarlos.
+
+**Investigación:** revisado `mobile/lib/features/savings/screens/saving_form_screen.dart` — el `InkWell` con `onTap: () => setState(() => _icon = choice.$1)` (línea ~236) envuelve correctamente el `Container` con el ícono, mismo patrón usado en el resto de la app. No se encontró una causa concreta en la revisión estática del código.
+
+**Verificado manualmente (2026-11-03):** probado en emulador con el usuario de prueba QA (`qatest2026b`) — el selector de ícono funciona correctamente, se puede tocar cualquier ícono y queda seleccionado con el resaltado de color esperado. No se reproduce el bug reportado. Se cierra como probable confusión del tester o versión vieja de la app durante TestFi (14 días de prueba) — consistente con el reporte de otro tester sobre "tracking de un viaje", que tampoco corresponde a ninguna funcionalidad de esta app, sugiriendo que al menos algunos reportes de esta tanda tienen baja señal. No se abre DT activa; si se repite con un paso a paso reproducible, reabrir investigación.
+
+### Sugerencias de producto relevadas (no son bugs)
+
+- **Internacionalización / idioma inglés** (5 testers de ambas tandas: Tijani, Rhoda, Oderhohwo, y los 2 ya contados antes): interfaz solo en español, recomendación recurrente. No hay i18n implementado en mobile hoy. Es el pedido más repetido de toda la ronda de feedback.
+- **Dashboard "muy simple"** (Joshua): pedido genérico de mejorar el dashboard, sin detalle concreto de qué agregar.
+- **Performance de reportes mensuales** (Shenouda, y Oderhohwo en su segunda nota: "occasional slow loading on reports"): el gráfico de reportes mensuales tarda al cambiar entre categorías — candidato a revisar si hay re-fetch innecesario o falta de memoización en el provider del gráfico. Reportado por 2 testers independientes, sube de prioridad frente al relevamiento anterior.
+- **Creación de categorías/subcategorías confusa** (Chedi blessings, día 7): coincide con DT-098/DT-099 ya resueltos.
+- **Editar gastos "podría ser más fácil"** (Oderhohwo, segunda nota): comentario genérico sin detalle accionable.
+- **Setear metas de ahorro "poco claro"** (Oderhohwo, segunda nota): posiblemente relacionado al bug del selector de ícono reportado por Geri Rampersad — sin confirmar.
+- Feedback positivo sin acción: Shenouda, Abdullahi, "Slimruth" (parcial, con reserva de idioma) calificaron la app como sólida, fácil de navegar y sin errores/crashes encontrados.
+- **"Tracking de viaje" (Slimruth)**: mención de rastreo de un viaje que no se mueve — no corresponde a ninguna funcionalidad de Control de Gastos (la app no tiene tracking de ubicación/viajes). Posible confusión del tester con otra app que estaba probando en paralelo. No se investiga.
+
+### Riesgo aceptado
+DT-096 y DT-097 son bugs visuales confirmados pero de bajo impacto funcional (no bloquean ninguna acción). Se documentan sin fecha de resolución comprometida hasta que el usuario decida priorizarlos.

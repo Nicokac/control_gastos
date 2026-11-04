@@ -205,19 +205,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // Moneda por defecto
                 DropdownButtonFormField<String>(
                   value: _defaultCurrency,
-                  style: const TextStyle(fontSize: _inputFontSize),
+                  style: TextStyle(
+                    fontSize: _inputFontSize,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                   decoration: const InputDecoration(
                     labelText: 'Moneda por defecto',
                     border: _inputBorder,
                   ),
-                  items: const [
+                  items: [
                     DropdownMenuItem(
                       value: 'ARS',
-                      child: Text('Peso Argentino'),
+                      child: Text(
+                        'Peso Argentino',
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface),
+                      ),
                     ),
                     DropdownMenuItem(
                       value: 'USD',
-                      child: Text('Dólar Estadounidense'),
+                      child: Text(
+                        'Dólar Estadounidense',
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface),
+                      ),
                     ),
                   ],
                   onChanged: (v) =>
@@ -228,15 +239,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 // Día de inicio del mes financiero
                 DropdownButtonFormField<int>(
                   value: _monthStartDay,
-                  style: const TextStyle(fontSize: _inputFontSize),
+                  style: TextStyle(
+                    fontSize: _inputFontSize,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                   decoration: const InputDecoration(
                     labelText: 'Inicio del mes financiero',
                     border: _inputBorder,
                   ),
                   items: List.generate(28, (i) => i + 1)
                       .map(
-                        (d) =>
-                            DropdownMenuItem(value: d, child: Text('Día $d')),
+                        (d) => DropdownMenuItem(
+                          value: d,
+                          child: Text(
+                            'Día $d',
+                            style: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurface),
+                          ),
+                        ),
                       )
                       .toList(),
                   onChanged: (v) => setState(() => _monthStartDay = v ?? 1),
