@@ -6,6 +6,7 @@ __pycache__/
 *.so
 .Python
 venv/
+.venv/
 ENV/
 
 # Django
@@ -47,6 +48,7 @@ backups/
 
 # Agent instructions (local only)
 CLAUDE.md
+.claude/settings.local.json
 
 # Documentos privados de negocio
 docs/MONETIZACION.md
@@ -56,6 +58,9 @@ docs/ANDROID_STUDIO_TESTING.md
 
 # Credenciales reales: cuenta de revisión Google Play + connection string de producción
 docs/GOOGLE_PLAY_CONSOLE.md
+
+# Backlog de ideas de producto sin decidir (uso personal, no versionar)
+docs/IDEAS.md
 
 # Resúmenes bancarios de prueba (datos financieros reales)
 resumen_*.pdf
