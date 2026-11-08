@@ -10,6 +10,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 ### Added
 
 - **Notificaciones push — Fase A: registro de token de dispositivo (D-019)**: nueva app `apps/notifications` con el modelo `DeviceToken` y el endpoint `POST/DELETE /api/v1/notifications/device-token/` para que la app mobile registre/desregistre su token FCM. Primer paso de la construcción por fases de recordatorios push de gastos fijos próximos a vencer — todavía no se envía ningún push. Sin impacto visible.
+- **Notificaciones push — Fase B1: envío desde el backend (D-019)**: integración con Firebase Cloud Messaging vía `firebase-admin`. El servicio `send_push_to_user` envía a todos los dispositivos activos del usuario y desactiva solo los tokens que Firebase reporta como inválidos (app desinstalada), no los que fallan por un error transitorio. Nuevo comando `send_test_push <username>` para verificar el circuito. Requiere la variable `FIREBASE_CREDENTIALS_PATH`; sin ella el envío queda desactivado. Sin impacto visible hasta que la app mobile registre su token (Fase B2).
 
 ### Fixed
 

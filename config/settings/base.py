@@ -421,3 +421,11 @@ SIMPLE_JWT = {
 
 CORS_ALLOWED_ORIGINS = []  # Se define por entorno (dev.py / prod.py)
 CORS_ALLOW_CREDENTIALS = True
+
+# =============================================================================
+# FIREBASE (notificaciones push, D-019)
+# =============================================================================
+
+# Ruta al JSON de la cuenta de servicio. Vacía = envío de push desactivado.
+# En Render se monta como Secret File en /etc/secrets/.
+FIREBASE_CREDENTIALS_PATH = config("FIREBASE_CREDENTIALS_PATH", default="")

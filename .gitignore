@@ -65,6 +65,9 @@ docs/IDEAS.md
 # Resúmenes bancarios de prueba (datos financieros reales)
 resumen_*.pdf
 
+# Configuración de Firebase del cliente Android (se descarga de la consola de Firebase)
+mobile/android/app/google-services.json
+
 # Flutter mobile app (versionado en su propio repo o ignorado)
 mobile/build/
 mobile/android/build/

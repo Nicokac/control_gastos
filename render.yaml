@@ -41,6 +41,8 @@ services:
         sync: false
       - key: FEEDBACK_EMAIL
         sync: false
+      - key: FIREBASE_CREDENTIALS_PATH
+        sync: false
     healthCheckPath: /healthz/
 
 databases:

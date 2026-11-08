@@ -1760,7 +1760,7 @@ El miembro no puede cargar gastos por su cuenta ni ver el historial. Si el dueñ
 ## D-019 — Notificaciones push: diseño y Fase A (registro de token)
 
 **Fecha:** 2026-10-30
-**Estado:** 🚧 En progreso (Fase A completa)
+**Estado:** 🚧 En progreso (Fase A completa, Fase B en curso: B1 backend completo)
 
 ### Contexto
 El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, ni recordatorios programados) — todo lo relacionado a "alertas" (`monthly_alert_threshold`, `alert_threshold`) es puramente pasivo: se calcula y muestra solo cuando el usuario abre el dashboard. Se decidió construir la primera notificación proactiva real: recordatorio push de gastos fijos próximos a vencer.
@@ -1773,7 +1773,9 @@ El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, 
 
 ### Plan de fases
 - **Fase A (✅ completa, esta entrada)**: app `apps/notifications` nueva, modelo `DeviceToken` (token FCM por usuario/dispositivo, único a nivel global porque Firebase puede reasignar un token a otra instalación), endpoint `POST/DELETE /api/v1/notifications/device-token/` para que mobile registre/desregistre su token al loguearse/desloguearse. Sin envío de ningún push todavía — solo la base de datos de tokens.
-- **Fase B (pendiente)**: integración real de Firebase (SDK en Flutter, `google-services.json`, credenciales de servidor en Django para enviar vía `firebase-admin`).
+- **Fase B (en curso)**: integración real de Firebase, dividida en dos entregas:
+  - **B1 (✅ completa)**: envío desde Django vía `firebase-admin`.
+  - **B2 (pendiente)**: SDK en Flutter (`firebase_core`, `firebase_messaging`), `google-services.json`, permiso de notificaciones y registro/desregistro del token contra el endpoint de la Fase A.
 - **Fase C (pendiente)**: management command que recorre `RecurringExpense` activos, calcula vencimientos a 3 días, dispara el push diferenciado, y evita reenvíos duplicados para el mismo gasto fijo en el mismo período.
 - **Fase D (pendiente)**: workflow de GitHub Actions con el cron diario contra producción.
 
@@ -1781,6 +1783,15 @@ El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, 
 - `apps/notifications/models.py`: `DeviceToken` (`user` FK, `token` único, `platform` choices ANDROID/IOS default ANDROID, `is_active`, `last_used_at` auto_now). `unique=True` en `token` en vez de `unique_together` con `user`, porque el mismo token físico de Firebase puede pertenecer a usuarios distintos a lo largo del tiempo (reinstalación en otro dispositivo/cuenta) — nunca a dos usuarios a la vez.
 - `apps/api/v1/views/notifications.py::DeviceTokenView`: `POST` usa `update_or_create` por `token` — si el token ya existe (de otro usuario o inactivo), lo reasigna/reactiva en vez de fallar por duplicado. `DELETE` desactiva (no borra) el token del usuario autenticado al desloguearse, y es un no-op silencioso si el token no le pertenece (evita que un usuario pueda desactivar el dispositivo de otro a través del endpoint).
 - 16 tests nuevos (`apps/notifications/tests/test_models.py`, `apps/api/tests/test_notifications.py`), cubriendo: creación, unicidad del token, reasignación entre usuarios, reactivación, y que no se pueda desactivar un token ajeno.
+
+### Fase B1 — Resolución técnica (envío desde backend)
+- **Proyecto Firebase**: `control-de-gastos-3a281`, app Android `app.controlgastos`. Solo Android en esta fase.
+- **Credenciales**: `FIREBASE_CREDENTIALS_PATH` apunta al JSON de la cuenta de servicio, guardado fuera del repo. En Render se carga como Secret File (`/etc/secrets/`) en vez de pegar el JSON en una variable de entorno: evita problemas de saltos de línea en la clave privada y permite usar el mismo mecanismo (ruta a archivo) en local y en producción. Vacía = envío desactivado, con un warning en el log; no rompe nada.
+- `apps/notifications/services.py::send_push_to_user(user, title, body, data)`: envía con `send_each_for_multicast` a todos los tokens activos del usuario y devuelve cuántos lo recibieron. La app de Firebase se inicializa de forma perezosa en el primer envío, no al arrancar Django, para que un problema de credenciales no tumbe el servidor web.
+- **Limpieza de tokens**: solo `UnregisteredError` y `SenderIdMismatchError` desactivan el token (app desinstalada o token de otro proyecto). Un error transitorio (`UnavailableError`, cuota) no lo desactiva, para no perder dispositivos válidos por una caída momentánea de FCM.
+- `send_test_push <username>`: management command para verificar el circuito de punta a punta antes de la Fase C.
+- `google-services.json` en `.gitignore`: no es un secreto fuerte, pero se descarga de la consola de Firebase y no hace falta versionarlo (el build de mobile es local).
+- 9 tests nuevos (`apps/notifications/tests/test_services.py`), mockeando solo la llamada a Firebase (API externa): envío desactivado sin credenciales, sin tokens activos, aislamiento por usuario, contenido del mensaje, desactivación de tokens inválidos, errores transitorios y el comando.
 
 ---
 
