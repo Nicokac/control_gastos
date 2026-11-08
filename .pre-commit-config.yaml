@@ -90,7 +90,7 @@ repos:
 
 # Configuración global
 default_language_version:
-  python: python3.11
+  python: python3.12
 
 # CI: no instalar hooks automáticamente
 ci:
