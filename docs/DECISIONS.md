@@ -1778,7 +1778,7 @@ El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, 
   - **B2 (✅ completa)**: SDK en Flutter (`firebase_core`, `firebase_messaging`), `google-services.json`, permiso de notificaciones y registro/desregistro del dispositivo contra el endpoint de la Fase A.
 - **Fase C (en curso)**: recordatorios reales, divididos en dos entregas:
   - **C1 (✅ completa)**: management command que recorre `RecurringExpense` activos, calcula vencimientos a 3 días, dispara el push y evita reenvíos duplicados.
-  - **C2 (pendiente)**: cómo se ve el aviso en mobile (ícono, canal propio, app en primer plano, navegación al tocarlo).
+  - **C2 (✅ completa)**: cómo se ve el aviso en mobile (ícono, canal propio, app en primer plano, navegación al tocarlo).
 - **Fase D (pendiente)**: workflow de GitHub Actions con el cron diario contra producción.
 
 ### Fase A — Resolución técnica
@@ -1812,10 +1812,13 @@ El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, 
 - Comando `send_recurring_reminders [--date AAAA-MM-DD]`: `--date` permite simular otro "hoy" para probar sin esperar a un vencimiento real.
 - 21 tests nuevos (`apps/notifications/tests/test_reminders.py`): selección (vence/no vence, inactivo, pagado, pago del mes anterior, inicio posterior, sin dispositivo), fechas (día 31 en mes de 30, días 29-31 en febrero, cambio de mes y de año), envío (agrupación con débito automático mezclado, aislamiento entre usuarios, doble ejecución, reintento si no se entregó, hora local por defecto) y el comando.
 
-**Pendiente para la Fase C2** (todo sobre cómo se ve el recordatorio en mobile):
-- Ícono monocromo propio para la notificación (`com.google.firebase.messaging.default_notification_icon`); hoy Android muestra un círculo vacío.
-- Canal de notificación propio (ej. "Recordatorios de gastos fijos") en vez del canal genérico `fcm_fallback_notification_channel`, para que el usuario pueda silenciarlo por separado.
-- Mostrar el push cuando la app está en primer plano: FCM no muestra la notificación del sistema en ese caso (requiere `onMessage` + aviso en la UI o notificación local).
+### Fase C2 — Resolución técnica (cómo se ve el aviso en mobile)
+- **Ícono**: `res/drawable/ic_stat_notification.xml`, vector blanco sobre transparente (billetera de Material Icons) declarado como `default_notification_icon`, con `default_notification_color` en el azul de marca `#0d6efd`. Android pinta el ícono pequeño como silueta: el ícono de la app a color se veía como un círculo vacío.
+- **Canal propio** `recurring_reminders` ("Recordatorios de gastos fijos"), creado en `MainActivity.onCreate` y declarado como `default_notification_channel_id`. El usuario puede silenciar solo los recordatorios desde los ajustes de Android. El id no debe cambiar nunca: Android guarda la configuración del usuario por id de canal.
+- **App en primer plano**: Android no muestra la notificación del sistema; se muestra un `SnackBar` con botón "Ver" vía un `ScaffoldMessenger` global en `app.dart`. Se prefirió a `flutter_local_notifications` para no sumar una dependencia nativa por un caso que dura segundos.
+- **Al tocar la notificación** (`onMessageOpenedApp` en segundo plano, `getInitialMessage` con la app cerrada): `routeForPushData` traduce el `type` del payload a una ruta (`recurring_reminder` → `/recurring`). Se espera a que resuelva la sesión antes de navegar; en arranque en frío se arma `/dashboard` debajo para que "atrás" vuelva al dashboard en vez de cerrar la app.
+- **Verificado end-to-end en emulador** en los tres estados: app abierta (aviso con "Ver"), minimizada (ícono y canal correctos, abre Gastos fijos) y cerrada desde recientes (arranca y abre Gastos fijos con el dashboard detrás).
+- Sin dependencias nuevas. 3 tests nuevos de `routeForPushData`; el resto (canal nativo, `SnackBar`, navegación) se cubrió con la verificación manual.
 
 ---
 

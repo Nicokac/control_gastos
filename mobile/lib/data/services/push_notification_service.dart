@@ -8,6 +8,14 @@ import '../repositories/notification_repository.dart';
 
 const _kRegisteredFidKey = 'push_registered_fid';
 
+/// Pantalla a abrir según el `type` que manda el backend en el push.
+String? routeForPushData(Map<String, dynamic> data) {
+  return switch (data['type']) {
+    'recurring_reminder' => '/recurring',
+    _ => null,
+  };
+}
+
 /// Registra el dispositivo en Firebase y le informa al backend su
 /// Firebase Installation ID (FID) para recibir push (D-019).
 ///

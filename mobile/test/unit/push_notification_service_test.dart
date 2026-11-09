@@ -90,6 +90,20 @@ void main() {
     });
   });
 
+  group('routeForPushData', () {
+    test('el recordatorio de gastos fijos abre Gastos fijos', () {
+      expect(routeForPushData({'type': 'recurring_reminder'}), '/recurring');
+    });
+
+    test('un tipo desconocido no navega', () {
+      expect(routeForPushData({'type': 'otro'}), isNull);
+    });
+
+    test('sin tipo no navega', () {
+      expect(routeForPushData({}), isNull);
+    });
+  });
+
   group('PushNotificationService — unregisterDevice', () {
     test('desactiva el FID guardado en el backend y lo borra', () async {
       SharedPreferences.setMockInitialValues({'push_registered_fid': 'fid-guardado'});

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Canal de notificaciones de recordatorios (D-019). El id no debe cambiar:
+         Android guarda la configuración del usuario por id de canal. -->
+    <string name="recurring_reminders_channel_id" translatable="false">recurring_reminders</string>
+    <string name="recurring_reminders_channel_name">Recordatorios de gastos fijos</string>
+    <string name="recurring_reminders_channel_description">Avisos de gastos fijos que vencen en los próximos días.</string>
+</resources>
