@@ -34,5 +34,8 @@ class ApiConstants {
   static const String householdMembers = '/household-members/';
   static const String dashboard = '/dashboard/';
   static const String feedback = '/feedback/';
+  static const String notifications = '/notifications/';
+  static const String notificationsUnreadCount = '/notifications/unread-count/';
+  static const String notificationsMarkRead = '/notifications/mark-read/';
   static const String deviceToken = '/notifications/device-token/';
 }

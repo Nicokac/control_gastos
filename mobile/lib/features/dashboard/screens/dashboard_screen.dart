@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../notifications/providers/notifications_provider.dart';
 import '../providers/dashboard_provider.dart';
 import '../widgets/balance_card.dart';
 import '../widgets/expense_chart.dart';
@@ -40,6 +41,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final dashboardAsync = ref.watch(dashboardProvider);
     final notifier = ref.read(dashboardProvider.notifier);
     final amountsHidden = ref.watch(amountsHiddenProvider);
+    final unreadNotifications = ref.watch(unreadNotificationsProvider).valueOrNull ?? 0;
 
     return Scaffold(
       appBar: AppBar(
@@ -53,6 +55,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             icon: Icon(amountsHidden ? Icons.visibility_off : Icons.visibility),
             tooltip: amountsHidden ? 'Mostrar montos' : 'Ocultar montos',
             onPressed: () => ref.read(amountsHiddenProvider.notifier).toggle(),
+          ),
+          IconButton(
+            icon: Badge(
+              isLabelVisible: unreadNotifications > 0,
+              child: const Icon(Icons.notifications_outlined),
+            ),
+            tooltip: unreadNotifications > 0
+                ? 'Notificaciones ($unreadNotifications sin leer)'
+                : 'Notificaciones',
+            onPressed: () => context.push('/notifications'),
           ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
@@ -97,6 +109,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               ),
               data: (data) => RefreshIndicator(
                 onRefresh: () async {
+                  ref.invalidate(unreadNotificationsProvider);
                   await notifier.reload();
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(

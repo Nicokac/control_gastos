@@ -16,6 +16,7 @@ import '../features/shared_expenses/screens/shared_expense_form_screen.dart';
 import '../features/shared_expenses/screens/household_members_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
 import '../features/settings/screens/about_screen.dart';
+import '../features/notifications/screens/notifications_screen.dart';
 import '../features/feedback/screens/feedback_screen.dart';
 import '../features/categories/screens/categories_screen.dart';
 import '../features/recurring/screens/recurring_list_screen.dart';
@@ -200,6 +201,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/settings',
         pageBuilder: (c, s) =>
             _buildPage(context: c, state: s, child: const SettingsScreen()),
+      ),
+      GoRoute(
+        path: '/notifications',
+        pageBuilder: (c, s) =>
+            _buildPage(context: c, state: s, child: const NotificationsScreen()),
       ),
       GoRoute(
         path: '/about',

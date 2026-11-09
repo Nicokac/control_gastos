@@ -9,6 +9,7 @@ import 'core/theme/app_radius.dart';
 import 'core/theme/app_semantic_colors.dart';
 import 'data/services/push_notification_service.dart';
 import 'features/auth/providers/auth_provider.dart';
+import 'features/notifications/providers/notifications_provider.dart';
 
 class App extends ConsumerStatefulWidget {
   const App({super.key});
@@ -42,6 +43,7 @@ class _AppState extends ConsumerState<App> {
 
   /// Push tocado con la app en segundo plano o cerrada (D-019).
   Future<void> _openFromPush(RemoteMessage message, {bool coldStart = false}) async {
+    ref.invalidate(unreadNotificationsProvider);
     final route = routeForPushData(message.data);
     if (route == null) return;
     final profile = await ref.read(authProvider.future);
@@ -54,6 +56,7 @@ class _AppState extends ConsumerState<App> {
 
   /// Con la app abierta Android no muestra la notificación del sistema: se avisa dentro de la app.
   void _showInAppNotice(RemoteMessage message) {
+    ref.invalidate(unreadNotificationsProvider);
     final notification = message.notification;
     if (notification == null) return;
     final route = routeForPushData(message.data);

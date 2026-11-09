@@ -305,6 +305,31 @@ class MockNotificationRepository extends _i1.Mock
             returnValueForMissingStub: _i5.Future<void>.value(),
           )
           as _i5.Future<void>);
+
+  @override
+  _i5.Future<List<dynamic>> getNotifications() =>
+      (super.noSuchMethod(
+            Invocation.method(#getNotifications, []),
+            returnValue: _i5.Future<List<dynamic>>.value(<dynamic>[]),
+          )
+          as _i5.Future<List<dynamic>>);
+
+  @override
+  _i5.Future<int> getUnreadCount() =>
+      (super.noSuchMethod(
+            Invocation.method(#getUnreadCount, []),
+            returnValue: _i5.Future<int>.value(0),
+          )
+          as _i5.Future<int>);
+
+  @override
+  _i5.Future<void> markAllRead() =>
+      (super.noSuchMethod(
+            Invocation.method(#markAllRead, []),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
 }
 
 /// A class which mocks [NotificationSettings].

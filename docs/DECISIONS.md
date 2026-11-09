@@ -1760,7 +1760,7 @@ El miembro no puede cargar gastos por su cuenta ni ver el historial. Si el dueñ
 ## D-019 — Notificaciones push: diseño y Fase A (registro de token)
 
 **Fecha:** 2026-10-30
-**Estado:** 🚧 En progreso (Fases A, B, C1, C2, C3a y D completas; pendiente C3b y el deploy a producción)
+**Estado:** 🚧 En progreso (todas las fases completas en `develop`; pendiente el deploy a producción y el build mobile 1.26.0)
 
 ### Contexto
 El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, ni recordatorios programados) — todo lo relacionado a "alertas" (`monthly_alert_threshold`, `alert_threshold`) es puramente pasivo: se calcula y muestra solo cuando el usuario abre el dashboard. Se decidió construir la primera notificación proactiva real: recordatorio push de gastos fijos próximos a vencer.
@@ -1780,7 +1780,7 @@ El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, 
   - **C1 (✅ completa)**: management command que recorre `RecurringExpense` activos, calcula vencimientos a 3 días, dispara el push y evita reenvíos duplicados.
   - **C2 (✅ completa)**: cómo se ve el aviso en mobile (ícono, canal propio, app en primer plano, navegación al tocarlo).
   - **C3a (✅ completa)**: historial de avisos y preferencia para desactivar los recordatorios (backend).
-  - **C3b (pendiente)**: campanita en el dashboard mobile con punto de no leídos y pantalla de notificaciones.
+  - **C3b (✅ completa)**: campanita en el dashboard mobile con punto de no leídos y pantalla de notificaciones.
 - **Fase D (✅ completa)**: workflow de GitHub Actions con el cron diario contra producción.
 
 ### Fase A — Resolución técnica
@@ -1836,6 +1836,14 @@ El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, 
 - **Preferencia `User.recurring_reminders_enabled`** (activada por defecto, así nadie deja de recibir avisos con el deploy). Se edita con el `PUT /auth/me/` existente en vez de un endpoint nuevo. Con la preferencia apagada el usuario queda fuera de la selección: no recibe push ni entrada en el historial. Es independiente del canal de Android: el canal silencia el sonido en ese dispositivo; la preferencia deja de enviar en todos.
 - **Endpoints**: `GET /notifications/` (historial paginado, más recientes primero), `GET /notifications/unread-count/` (liviano, para el punto de la campanita sin bajar el historial en cada carga del dashboard) y `POST /notifications/mark-read/` (marca todo como leído al abrir la pantalla; no pisa la fecha de los ya leídos). Leído por aviso individual no se implementó: con un aviso diario como máximo, "abrir la pantalla = leído" alcanza.
 - 15 tests nuevos: 4 en `test_reminders.py` (preferencia apagada, historial guardado, no guardado sin entrega, sin duplicado) y 11 en `apps/api/tests/test_notifications.py` (autenticación, aislamiento entre usuarios, orden, queries, conteo, marcado y preferencia por `/auth/me/`).
+
+### Fase C3b — Resolución técnica (campanita en mobile)
+- **Campanita entre el ojo y el engranaje** del dashboard, con un `Badge` de punto (sin número) si hay avisos sin leer. El contador (`unreadNotificationsProvider`) depende del id del usuario logueado, así que se recalcula solo al cambiar de cuenta y nunca muestra el punto de la sesión anterior. También se recalcula al recibir un push (en primer plano o al tocarlo) y en el pull-to-refresh del dashboard.
+- **Pantalla `/notifications`**: arriba el interruptor "Recordatorios de gastos fijos" (guarda con el `updateProfile` existente; si falla, avisa y el interruptor vuelve a su estado), abajo el historial. Se agrupó por fecha en cada fila ("Hoy 09:00", "Ayer", "07/11/2026") en vez de con encabezados por día: llega como máximo un aviso por día, así que los encabezados repetirían la fecha de cada fila.
+- **Leído al abrir**: el historial se trae primero y recién después se marca todo como leído, para que en esa visita los nuevos sigan en negrita y con punto. El provider es `autoDispose`, así cada visita trae el historial actualizado. Si el marcado falla, el historial se muestra igual.
+- **Tocar un aviso** reutiliza `routeForPushData`, así el historial navega igual que la notificación del sistema.
+- 14 tests nuevos: `test/unit/notifications_provider_test.dart` (contador con y sin sesión, marcado al abrir, recálculo del punto, sin marcado si ya estaban leídos, falla de red, formato de fecha) y `test/widget/notifications_screen_test.dart` (vacío, historial, interruptor reflejando y guardando la preferencia, error al guardar).
+- Verificado en emulador: punto en la campanita, aviso nuevo resaltado, punto que desaparece al volver, interruptor persistido en el backend y navegación a Gastos fijos.
 
 ---
 
