@@ -1933,10 +1933,10 @@ Mientras no se complete la delegación, no hay riesgo — es solo un dominio reg
 
 ---
 
-## D-021 — Feedback de testers de la prueba cerrada de Google Play (14 días, 8 reportes)
+## D-021 — Feedback de testers de la prueba cerrada de Google Play (14 días, 14 reportes)
 
 **Fecha:** 2026-11-03
-**Estado:** 🚧 Relevado, pendiente de implementación
+**Estado:** 🚧 DT-096 a DT-102 resueltos (Mobile 1.25.3+33); DT-103 a DT-106 pendientes o por confirmar
 
 ### Contexto
 Se recibieron 8 reportes de los testers de la prueba cerrada (TestFi, 16 testers, 14 días). Se revisó el código actual para confirmar cuáles de los bugs reportados siguen vigentes antes de registrarlos como deuda técnica.
@@ -2018,6 +2018,58 @@ Reportado por Geri Rampersad (tester TestFi): las transacciones en "Últimos mov
 
 **Fix:** agregados `onTapExpense`/`onTapIncome` (`ValueChanged<int>?`) a `RecentTransactionsList`, conectados en `dashboard_screen.dart` para navegar a `/expenses/edit/:id` o `/income/edit/:id` (mismo patrón que las listas completas), buscando el mapa completo de la transacción por `id` en `recentExpenses`/`recentIncome` para pasarlo como `extra`. `_TransactionTile` envuelto en `InkWell`. No se agregó swipe-to-delete — es una vista resumen, no la lista completa; eliminar sigue siendo una acción de la lista completa de Gastos/Ingresos.
 
+### Revisión final de los 14 reportes (2026-11-09)
+
+Al aprobar los pagos en TestFi se volvieron a cruzar los 14 reportes con lo relevado. Todo lo anterior seguía cubierto, salvo un reporte que se había pasado por alto (DT-103) y otro que no estaba registrado (DT-104). Los pedidos de producto que se repiten y los reportes dudosos se registran también como deuda (DT-105, DT-106) para que no queden solo como lista de sugerencias.
+
+### DT-103 — Dashboard: el texto "Compartidos" no entra en su botón en pantallas angostas
+
+**Estado:** ⏳ Pendiente
+
+Reportado por Achbavlo ("homepage - compartidos text does not fit"), junto con DT-096 y DT-097; se pasó por alto en la primera revisión. Confirmado en código: en `dashboard_screen.dart` los tres accesos directos (Compartidos, Ahorros, Categorías) son `OutlinedButton.icon` dentro de `Expanded` con `padding` solo vertical. En un Pixel 8 (411 dp) el texto entra justo; en un ancho de 360 dp (gama baja, el más común) cada botón tiene ~104 dp y "Compartidos" con su ícono necesita ~110 dp, así que el texto se corta o pasa a dos líneas. Con tamaño de fuente del sistema agrandado empeora.
+
+**Why:** es la primera pantalla de la app y el problema se ve en los celulares más comunes del público objetivo, justo antes del lanzamiento oficial.
+
+**Camino de resolución:** que el contenido del botón se achique en vez de cortarse (`FittedBox(fit: BoxFit.scaleDown)` en el label, o un ícono arriba y el texto abajo), y verificarlo en el emulador con un ancho de 360 dp (`adb shell wm size` / `wm density`) y con la fuente del sistema agrandada.
+
+---
+
+### DT-104 — Gastos fijos: "el selector de fecha se traba" (por confirmar)
+
+**Estado:** ⏳ Pendiente de reproducir
+
+Reportado por Tukur Bukar: "when adding recurring expense, date picker sometimes freezes". El formulario de gastos fijos (`recurring_form_screen.dart`) no tiene selector de fecha: el día de vencimiento es un `DropdownButtonFormField` con 31 opciones. El reporte puede referirse a ese desplegable (una lista larga sin `menuMaxHeight` que ocupa toda la pantalla y puede parecer trabada) o ser poco preciso: el mismo texto dice "Works in Spanish, easy to understand", al revés de casi todos los demás testers.
+
+**Why:** si se confirma, bloquea la carga de un gasto fijo, que es la base de los recordatorios push (D-019).
+
+**Camino de resolución:** probarlo en el emulador abriendo y cerrando el desplegable varias veces, incluso con el teclado abierto en el campo de monto. Si no se reproduce, pasarlo a `DTD-XXX` (descartado). Si se reproduce, limitar la altura del menú (`menuMaxHeight`) o reemplazarlo por una grilla de días en un bottom sheet.
+
+---
+
+### DT-105 — Internacionalización: interfaz en inglés
+
+**Estado:** ⏳ Pendiente (decisión de producto)
+
+Es el pedido más repetido de la prueba cerrada: 8 de 14 testers (Tijani, Rhoda, Oderhohwo, Eddie, Nicolas, Slimruth, Geri y Tukur) mencionan que la interfaz está solo en español. Hoy no hay i18n: todos los textos están escritos directamente en los widgets de Flutter y en los templates y mensajes de Django.
+
+**Why:** los testers de TestFi no son el público objetivo (la app está pensada para Argentina: pesos, dólar, formato de montos local), así que el pedido pesa menos de lo que sugiere el número. Pero si se apunta a usuarios fuera de Argentina, es la barrera principal.
+
+**Camino de resolución:** decidir primero si el público objetivo incluye usuarios de habla no hispana. Si sí: en mobile, `flutter_localizations` + `intl` con archivos ARB, extrayendo los textos por pantalla. En la web, `gettext` de Django. Lo mismo para los textos de los push (D-019), que se generan en el backend y necesitarían el idioma del usuario. Es un trabajo grande y transversal: conviene hacerlo por fases (mobile primero) y solo si se decide ampliar el público.
+
+---
+
+### DT-106 — Carga lenta de "reportes" o del gráfico (por confirmar)
+
+**Estado:** ⏳ Pendiente de reproducir
+
+Mencionado por Shenouda ("monthly reports chart loaded a bit faster when switching between categories") y Oderhohwo ("occasional slow loading on reports"). La app mobile no tiene una pantalla de reportes: lo más parecido es el gráfico "Gastos por categoría" del dashboard. Su alternancia entre porcentaje y monto es estado local (`expense_chart_view_provider.dart`) y no vuelve a pedir datos, así que no puede ser lenta por red. Lo que sí pide datos es cambiar de mes en el dashboard.
+
+**Why:** la causa más probable no está en la app sino en el hosting. El plan free de Render apaga el servicio sin tráfico y el primer pedido tarda ~1 minuto en despertarlo. Para un usuario real eso se ve como "la app tarda en cargar".
+
+**Camino de resolución:** medir en producción el tiempo de `GET /dashboard/` en caliente y en frío. Si el problema es el arranque en frío, las opciones son pasar a un plan pago de Render o mantener el servicio despierto con un ping periódico (por ejemplo, el mismo patrón de GitHub Actions de `reminders.yml`), teniendo en cuenta las horas mensuales del plan free. Si en caliente también es lento, revisar las consultas de `DashboardView` con `django_assert_max_num_queries`.
+
+---
+
 ### No reproducido: selector de ícono en "Apariencia" de Ahorro no responde al tap
 
 Reportado por Geri Rampersad: en la pantalla de crear meta de ahorro, los color dots del picker de color funcionan, pero los íconos de categoría (auto, casa, avión) arriba de ellos no responden al tocarlos.
@@ -2028,9 +2080,9 @@ Reportado por Geri Rampersad: en la pantalla de crear meta de ahorro, los color 
 
 ### Sugerencias de producto relevadas (no son bugs)
 
-- **Internacionalización / idioma inglés** (5 testers de ambas tandas: Tijani, Rhoda, Oderhohwo, y los 2 ya contados antes): interfaz solo en español, recomendación recurrente. No hay i18n implementado en mobile hoy. Es el pedido más repetido de toda la ronda de feedback.
+- **Internacionalización / idioma inglés**: registrado como DT-105 (8 de 14 testers).
 - **Dashboard "muy simple"** (Joshua): pedido genérico de mejorar el dashboard, sin detalle concreto de qué agregar.
-- **Performance de reportes mensuales** (Shenouda, y Oderhohwo en su segunda nota: "occasional slow loading on reports"): el gráfico de reportes mensuales tarda al cambiar entre categorías — candidato a revisar si hay re-fetch innecesario o falta de memoización en el provider del gráfico. Reportado por 2 testers independientes, sube de prioridad frente al relevamiento anterior.
+- **Performance de reportes mensuales** (Shenouda, Oderhohwo): registrado como DT-106, por confirmar.
 - **Creación de categorías/subcategorías confusa** (Chedi blessings, día 7): coincide con DT-098/DT-099 ya resueltos.
 - **Editar gastos "podría ser más fácil"** (Oderhohwo, segunda nota): comentario genérico sin detalle accionable.
 - **Setear metas de ahorro "poco claro"** (Oderhohwo, segunda nota): posiblemente relacionado al bug del selector de ícono reportado por Geri Rampersad — sin confirmar.
@@ -2038,4 +2090,4 @@ Reportado por Geri Rampersad: en la pantalla de crear meta de ahorro, los color 
 - **"Tracking de viaje" (Slimruth)**: mención de rastreo de un viaje que no se mueve — no corresponde a ninguna funcionalidad de Control de Gastos (la app no tiene tracking de ubicación/viajes). Posible confusión del tester con otra app que estaba probando en paralelo. No se investiga.
 
 ### Riesgo aceptado
-DT-096 y DT-097 son bugs visuales confirmados pero de bajo impacto funcional (no bloquean ninguna acción). Se documentan sin fecha de resolución comprometida hasta que el usuario decida priorizarlos.
+Los comentarios genéricos sin detalle accionable ("dashboard muy simple", "editar gastos podría ser más fácil", "metas de ahorro poco claras") no se registran como deuda: no hay forma de saber qué cambiar. Si se repiten con usuarios reales después del lanzamiento, se vuelven a evaluar con más contexto.
