@@ -1528,6 +1528,14 @@ Tercer y último punto de la auditoría de seguridad de 20 puntos: ni `RegisterF
 
 ---
 
+### DTD-004 — Gastos fijos: "el selector de fecha se traba" (DT-104)
+
+**Estado:** 🚫 Descartado
+
+**Motivo:** reporte de un tester de TestFi (D-021). El formulario de gastos fijos no tiene selector de fecha: el día de vencimiento es un desplegable de 28 opciones. Se probó en el emulador a 360 dp: abrirlo, desplazarse y elegir un día; abrirlo y cerrarlo varias veces seguidas con "atrás"; y abrirlo con el teclado visible. Nunca se trabó. Lo único raro era que el menú ocupaba casi toda la pantalla y tapaba el formulario, lo que pudo dar la impresión de una app "congelada". Por eso, aunque no es un bug, se limitó la altura del menú (`menuMaxHeight: 400`, unos 8 días visibles) para que el formulario siga viéndose detrás.
+
+---
+
 ## D-017 — Arquitectura de infraestructura en producción
 
 **Fecha:** 2026-05-13
@@ -1936,7 +1944,7 @@ Mientras no se complete la delegación, no hay riesgo — es solo un dominio reg
 ## D-021 — Feedback de testers de la prueba cerrada de Google Play (14 días, 14 reportes)
 
 **Fecha:** 2026-11-03
-**Estado:** 🚧 DT-096 a DT-102 resueltos (Mobile 1.25.3+33); DT-103 a DT-106 pendientes o por confirmar
+**Estado:** 🚧 DT-096 a DT-103 resueltos; DT-104 descartado (DTD-004); DT-105 a DT-107 pendientes o por confirmar
 
 ### Contexto
 Se recibieron 8 reportes de los testers de la prueba cerrada (TestFi, 16 testers, 14 días). Se revisó el código actual para confirmar cuáles de los bugs reportados siguen vigentes antes de registrarlos como deuda técnica.
@@ -2024,25 +2032,41 @@ Al aprobar los pagos en TestFi se volvieron a cruzar los 14 reportes con lo rele
 
 ### DT-103 — Dashboard: el texto "Compartidos" no entra en su botón en pantallas angostas
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (2026-11-09, sale con la próxima versión mobile)
 
 Reportado por Achbavlo ("homepage - compartidos text does not fit"), junto con DT-096 y DT-097; se pasó por alto en la primera revisión. Confirmado en código: en `dashboard_screen.dart` los tres accesos directos (Compartidos, Ahorros, Categorías) son `OutlinedButton.icon` dentro de `Expanded` con `padding` solo vertical. En un Pixel 8 (411 dp) el texto entra justo; en un ancho de 360 dp (gama baja, el más común) cada botón tiene ~104 dp y "Compartidos" con su ícono necesita ~110 dp, así que el texto se corta o pasa a dos líneas. Con tamaño de fuente del sistema agrandado empeora.
 
 **Why:** es la primera pantalla de la app y el problema se ve en los celulares más comunes del público objetivo, justo antes del lanzamiento oficial.
 
-**Camino de resolución:** que el contenido del botón se achique en vez de cortarse (`FittedBox(fit: BoxFit.scaleDown)` en el label, o un ícono arriba y el texto abajo), y verificarlo en el emulador con un ancho de 360 dp (`adb shell wm size` / `wm density`) y con la fuente del sistema agrandada.
+**Resolución:** reproducido en el emulador a 360 dp (720 px, densidad 320): "Compartidos" se partía en "Compartido / s" y su botón quedaba más alto que los otros. Se probaron las dos opciones:
+- **`FittedBox` con el ícono al costado**: evitaba el corte, pero con el ícono al lado quedaban ~64 dp para el texto y cada botón achicaba su texto por separado, así que los tres se veían de tamaños distintos. Descartado.
+- **Ícono arriba y texto abajo** (elegida): el texto tiene casi todo el ancho del botón (~96 dp). A 360 dp con fuente normal los tres textos entran sin achicarse y se ven iguales. El `FittedBox(scaleDown)` queda solo como resguardo para casos extremos: con la fuente del sistema al 130% únicamente "Compartidos" se achica un poco.
+
+Los tres botones pasaron a un widget común, `DashboardShortcutButton` (`dashboard/widgets/dashboard_shortcut_button.dart`), en vez de tres bloques de `OutlinedButton` copiados. La fila usa `IntrinsicHeight` + `CrossAxisAlignment.stretch` para que los tres tengan siempre la misma altura, aunque alguno achique su texto. Test nuevo, `dashboard_shortcut_button_test.dart`, a 360 dp (fuente normal y al 130%) y a 411 dp: ningún texto se corta (`didExceedMaxLines`) ni hay overflow. Se verificó que el test falla con el código anterior. Verificado en el emulador a 360 dp con fuente normal y al 130%.
 
 ---
 
 ### DT-104 — Gastos fijos: "el selector de fecha se traba" (por confirmar)
 
-**Estado:** ⏳ Pendiente de reproducir
+**Estado:** 🚫 Descartado: no se reproduce (ver DTD-004). Se mejoró igual el desplegable.
 
 Reportado por Tukur Bukar: "when adding recurring expense, date picker sometimes freezes". El formulario de gastos fijos (`recurring_form_screen.dart`) no tiene selector de fecha: el día de vencimiento es un `DropdownButtonFormField` con 31 opciones. El reporte puede referirse a ese desplegable (una lista larga sin `menuMaxHeight` que ocupa toda la pantalla y puede parecer trabada) o ser poco preciso: el mismo texto dice "Works in Spanish, easy to understand", al revés de casi todos los demás testers.
 
 **Why:** si se confirma, bloquea la carga de un gasto fijo, que es la base de los recordatorios push (D-019).
 
 **Camino de resolución:** probarlo en el emulador abriendo y cerrando el desplegable varias veces, incluso con el teclado abierto en el campo de monto. Si no se reproduce, pasarlo a `DTD-XXX` (descartado). Si se reproduce, limitar la altura del menú (`menuMaxHeight`) o reemplazarlo por una grilla de días en un bottom sheet.
+
+---
+
+### DT-107 — Dashboard: el banner "Proyección al cierre" se desborda con la fuente agrandada
+
+**Estado:** ⏳ Pendiente
+
+Encontrado al verificar DT-103 en el emulador: a 360 dp con la fuente del sistema al 130%, el banner `_ProjectionBanner` del dashboard se desborda 17 px (franja amarilla y negra de overflow de Flutter) y el monto de gastos proyectados desaparece ("Proyección al cierre: en gastos"). Con la fuente normal se ve bien. Ya pasaba antes de DT-103; no se tocó para no mezclar arreglos.
+
+**Why:** usar la fuente agrandada es común en personas mayores o con baja visión, y el banner es una de las cifras clave del dashboard.
+
+**Camino de resolución:** que el texto del banner pueda pasar a dos líneas (`Expanded` + sin `maxLines` en la parte descriptiva) o que el monto vaya debajo del texto en pantallas angostas. Verificar a 360 dp con la fuente al 130%, igual que DT-103.
 
 ---
 

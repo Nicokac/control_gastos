@@ -10,6 +10,7 @@ import '../widgets/recent_transactions_list.dart';
 import '../widgets/pending_recurring_card.dart';
 import '../widgets/rollover_suggestion_banner.dart';
 import '../widgets/dashboard_skeleton.dart';
+import '../widgets/dashboard_shortcut_button.dart';
 import '../widgets/last_updated_label.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/widgets/offline_banner.dart';
@@ -180,56 +181,40 @@ class _DashboardContent extends StatelessWidget {
           ),
         ],
         const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () => context.push('/shared-expenses'),
-                icon: const Icon(Icons.people, size: 16),
-                label: const Text('Compartidos'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: context.semanticColors.shared,
-                  side: BorderSide(color: context.semanticColors.shared),
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+        // Misma altura para los tres aunque alguno achique su texto (DT-103).
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: DashboardShortcutButton(
+                  icon: Icons.people,
+                  label: 'Compartidos',
+                  color: context.semanticColors.shared,
+                  onPressed: () => context.push('/shared-expenses'),
                 ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () => context.push('/savings'),
-                icon: const Icon(Icons.savings_outlined, size: 16),
-                label: const Text('Ahorros'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: context.semanticColors.savings,
-                  side: BorderSide(color: context.semanticColors.savings),
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: DashboardShortcutButton(
+                  icon: Icons.savings_outlined,
+                  label: 'Ahorros',
+                  color: context.semanticColors.savings,
+                  onPressed: () => context.push('/savings'),
                 ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () => context.push('/categories'),
-                icon: const Icon(Icons.label_outline, size: 16),
-                label: const Text('Categorías'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.grey[700],
-                  side: BorderSide(color: Colors.grey[400]!),
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: DashboardShortcutButton(
+                  icon: Icons.label_outline,
+                  label: 'Categorías',
+                  color: Colors.grey[700]!,
+                  borderColor: Colors.grey[400],
+                  onPressed: () => context.push('/categories'),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         const SizedBox(height: 12),
         if (totalRecurring > 0) ...[

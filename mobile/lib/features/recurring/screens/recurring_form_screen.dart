@@ -225,6 +225,8 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
               decoration: const InputDecoration(
                 labelText: 'Día de vencimiento *',
               ),
+              // Sin límite, el menú de 28 días tapaba todo el formulario (DT-104).
+              menuMaxHeight: 400,
               items: List.generate(28, (i) => i + 1)
                   .map((d) => DropdownMenuItem(
                       value: d, child: Text('Día $d')))

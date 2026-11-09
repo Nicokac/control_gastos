@@ -11,6 +11,11 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 - **Política de Privacidad actualizada: notificaciones push**: con la Mobile 1.26.0 la app guarda el identificador de instalación de Firebase del dispositivo y envía avisos a través de Firebase Cloud Messaging (Google). Se agregan el dato recopilado, su uso (con cómo desactivarlo) y el proveedor, para que la política coincida con el formulario de seguridad de los datos de Google Play antes de pedir el acceso a producción.
 
+
+### Fixed
+
+- **Mobile — Dashboard: "Compartidos" se partía en dos líneas en pantallas angostas (DT-103)**: reportado por un tester de la prueba cerrada. A 360 dp de ancho el texto no entraba en su botón. Los tres accesos directos (Compartidos, Ahorros, Categorías) pasan a tener el ícono arriba y el texto abajo, con la misma altura, y el texto se achica en vez de partirse si la fuente del sistema está muy agrandada.
+- **Mobile — Gastos fijos: el desplegable del día de vencimiento tapaba todo el formulario (DT-104)**: el "selector de fecha que se traba" que reportó un tester no se reproduce (DTD-004), pero el menú de 28 días ocupaba casi toda la pantalla. Ahora muestra unos 8 días y deja ver el formulario.
 ---
 
 ## [Mobile 1.27.0+35] — 2026-11-09
