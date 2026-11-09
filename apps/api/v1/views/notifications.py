@@ -3,8 +3,8 @@ import hmac
 from django.conf import settings
 from django.utils import timezone
 
-from drf_spectacular.utils import extend_schema
-from rest_framework import generics, status
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import generics, serializers, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -78,6 +78,11 @@ class NotificationUnreadCountView(APIView):
 
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        responses=inline_serializer(
+            "NotificationUnreadCount", {"unread": serializers.IntegerField()}
+        )
+    )
     def get(self, request):
         unread = Notification.objects.filter(user=request.user, read_at__isnull=True).count()
         return Response({"unread": unread})
@@ -89,6 +94,7 @@ class NotificationMarkReadView(APIView):
 
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(request=None, responses={204: None})
     def post(self, request):
         Notification.objects.filter(user=request.user, read_at__isnull=True).update(
             read_at=timezone.now()
