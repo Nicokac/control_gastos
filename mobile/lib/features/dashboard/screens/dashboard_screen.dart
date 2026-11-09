@@ -11,6 +11,7 @@ import '../widgets/pending_recurring_card.dart';
 import '../widgets/rollover_suggestion_banner.dart';
 import '../widgets/dashboard_skeleton.dart';
 import '../widgets/dashboard_shortcut_button.dart';
+import '../widgets/projection_banner.dart';
 import '../widgets/last_updated_label.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/widgets/offline_banner.dart';
@@ -175,7 +176,7 @@ class _DashboardContent extends StatelessWidget {
         ],
         if (data['projection_available'] == true) ...[
           const SizedBox(height: 8),
-          _ProjectionBanner(
+          ProjectionBanner(
             projectedExpense: data['projected_expense'] as String,
             projectedBalance: data['projected_balance'] as String,
           ),
@@ -249,70 +250,6 @@ class _DashboardContent extends StatelessWidget {
         ),
         const SizedBox(height: 16),
       ],
-    );
-  }
-}
-
-class _ProjectionBanner extends StatelessWidget {
-  final String projectedExpense;
-  final String projectedBalance;
-
-  const _ProjectionBanner({
-    required this.projectedExpense,
-    required this.projectedBalance,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final balanceValue = double.tryParse(projectedBalance) ?? 0;
-    final isPositive = balanceValue >= 0;
-    final color = isPositive
-        ? context.semanticColors.success
-        : context.semanticColors.danger;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.trending_up, size: 16, color: color),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Proyección al cierre: ',
-                  style: TextStyle(fontSize: 12, color: color),
-                ),
-                Flexible(
-                  child: SensitiveText(
-                    formatArsString(projectedExpense),
-                    style: TextStyle(fontSize: 12, color: color),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Text(
-                  ' en gastos',
-                  style: TextStyle(fontSize: 12, color: color),
-                ),
-              ],
-            ),
-          ),
-          SensitiveText(
-            formatArsString(projectedBalance),
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

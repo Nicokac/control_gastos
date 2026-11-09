@@ -1944,7 +1944,7 @@ Mientras no se complete la delegación, no hay riesgo — es solo un dominio reg
 ## D-021 — Feedback de testers de la prueba cerrada de Google Play (14 días, 14 reportes)
 
 **Fecha:** 2026-11-03
-**Estado:** 🚧 DT-096 a DT-103 resueltos; DT-104 descartado (DTD-004); DT-105 a DT-107 pendientes o por confirmar
+**Estado:** 🚧 DT-096 a DT-103 y DT-107 resueltos; DT-104 descartado (DTD-004); DT-105 y DT-106 pendientes o por confirmar
 
 ### Contexto
 Se recibieron 8 reportes de los testers de la prueba cerrada (TestFi, 16 testers, 14 días). Se revisó el código actual para confirmar cuáles de los bugs reportados siguen vigentes antes de registrarlos como deuda técnica.
@@ -2060,13 +2060,15 @@ Reportado por Tukur Bukar: "when adding recurring expense, date picker sometimes
 
 ### DT-107 — Dashboard: el banner "Proyección al cierre" se desborda con la fuente agrandada
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (2026-11-09, sale en la próxima versión de mobile)
 
-Encontrado al verificar DT-103 en el emulador: a 360 dp con la fuente del sistema al 130%, el banner `_ProjectionBanner` del dashboard se desborda 17 px (franja amarilla y negra de overflow de Flutter) y el monto de gastos proyectados desaparece ("Proyección al cierre: en gastos"). Con la fuente normal se ve bien. Ya pasaba antes de DT-103; no se tocó para no mezclar arreglos.
+Encontrado al verificar DT-103 en el emulador: a 360 dp con la fuente del sistema al 130%, el banner del dashboard se desbordaba 17 px (franja amarilla y negra de overflow de Flutter) y el monto de gastos proyectados desaparecía ("Proyección al cierre: en gastos"). Con la fuente normal se veía bien. Ya pasaba antes de DT-103.
 
 **Why:** usar la fuente agrandada es común en personas mayores o con baja visión, y el banner es una de las cifras clave del dashboard.
 
-**Camino de resolución:** que el texto del banner pueda pasar a dos líneas (`Expanded` + sin `maxLines` en la parte descriptiva) o que el monto vaya debajo del texto en pantallas angostas. Verificar a 360 dp con la fuente al 130%, igual que DT-103.
+**Resolución:** el banner tenía tres textos en fila ("Proyección al cierre: ", el monto y " en gastos") y solo el monto podía achicarse; con la fuente agrandada los dos textos fijos ya no entraban, el monto quedaba en 0 px y aun así sobraban 17 px. Ahora es un solo `Text` dentro de un `Expanded`, que pasa a dos líneas cuando no entra; el saldo proyectado sigue a la derecha. El monto usa espacio no separable para que el corte no deje el "$" solo al final de la línea. Con los montos ocultos se muestra `••••••`, igual que antes. El banner salió de `dashboard_screen.dart` a `widgets/projection_banner.dart` (`ProjectionBanner`) para poder testearlo: `test/widget/projection_banner_test.dart` cubre 360 dp con fuente ×1.0 y ×1.3 (falla con el layout anterior) y los montos ocultos. Verificado en el emulador a 360 dp con fuente ×1.3 y ×1.0.
+
+**Riesgo aceptado:** a 360 dp con la fuente normal el texto también ocupa dos líneas ("…en / gastos"); en pantallas más anchas entra en una. Se prefiere eso a achicar la letra.
 
 ---
 
