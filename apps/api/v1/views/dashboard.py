@@ -100,7 +100,7 @@ class DashboardView(APIView):
                 for rec in all_recurring
                 if rec.status_for(month, year) in ("pending", "overdue")
             ],
-            key=lambda r: (r["days_until_due"] if r["days_until_due"] is not None else 999),
+            key=lambda r: r["days_until_due"] if r["days_until_due"] is not None else 999,
         )
 
         recent_expenses = list(

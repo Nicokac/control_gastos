@@ -38,7 +38,8 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: 📦 Install Ruff
-        run: pip install ruff
+        # Misma versión que pre-commit y requirements/dev.txt: cada versión de ruff formatea distinto.
+        run: pip install ruff==0.17.4
 
       - name: 🔍 Run Ruff linter
         run: ruff check apps/ --output-format=github
