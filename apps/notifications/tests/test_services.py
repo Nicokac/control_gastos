@@ -82,6 +82,14 @@ class TestSendPushToUser:
         assert message.notification.title == "Vence tu alquiler"
         assert message.notification.body == "En 3 días"
         assert message.data == {"recurring_id": "7"}
+        assert message.android is None
+
+    def test_envia_por_el_canal_indicado(self, firebase_enabled, user, fake_send):
+        DeviceToken.objects.create(user=user, token="fcm-1")
+
+        send_push_to_user(user, "Alerta", "Texto", channel_id="spending_alerts")
+
+        assert fake_send["messages"][0].android.notification.channel_id == "spending_alerts"
 
     @pytest.mark.parametrize(
         "error",

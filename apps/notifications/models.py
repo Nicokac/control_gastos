@@ -100,6 +100,8 @@ class RecurringReminderLog(TimestampMixin, models.Model):
 class NotificationType(models.TextChoices):
     RECURRING_REMINDER = "recurring_reminder", "Recordatorio de gastos fijos"
     RECURRING_OVERDUE = "recurring_overdue", "Gastos fijos vencidos sin pagar"
+    SPENDING_THRESHOLD = "spending_threshold", "Umbral de gastos del período superado"
+    CATEGORY_THRESHOLD = "category_threshold", "Límite de subcategoría superado"
 
 
 class Notification(TimestampMixin, models.Model):
@@ -129,3 +131,51 @@ class Notification(TimestampMixin, models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.title}"
+
+
+class SpendingAlertKind(models.TextChoices):
+    GLOBAL = "global", "Umbral del período"
+    CATEGORY = "category", "Límite de subcategoría"
+
+
+class SpendingAlertLog(TimestampMixin, models.Model):
+    """Alerta de gastos ya enviada, para avisar una sola vez por período (y por subcategoría)."""
+
+    user = models.ForeignKey(
+        "users.User",
+        on_delete=models.CASCADE,
+        related_name="spending_alert_logs",
+        verbose_name="Usuario",
+    )
+    kind = models.CharField(max_length=20, choices=SpendingAlertKind.choices, verbose_name="Tipo")
+    category = models.ForeignKey(
+        "categories.Category",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="spending_alert_logs",
+        verbose_name="Subcategoría",
+    )
+    period_start = models.DateField(verbose_name="Inicio del período")
+
+    class Meta:
+        verbose_name = "Alerta de gastos enviada"
+        verbose_name_plural = "Alertas de gastos enviadas"
+        ordering = ["-period_start"]
+        # Dos restricciones condicionales: en una única con `category` nula, NULL no se
+        # considera repetido y la alerta global podría registrarse dos veces.
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "period_start"],
+                condition=models.Q(kind="global"),
+                name="unique_global_spending_alert_per_period",
+            ),
+            models.UniqueConstraint(
+                fields=["user", "category", "period_start"],
+                condition=models.Q(kind="category"),
+                name="unique_category_spending_alert_per_period",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.user} - {self.get_kind_display()} ({self.period_start})"

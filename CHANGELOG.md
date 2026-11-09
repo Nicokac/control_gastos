@@ -10,6 +10,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 ### Added
 
 - **Notificaciones push — Fase E1: gasto fijo vencido sin pagar (D-019)**: el cron diario también avisa, al día siguiente del vencimiento, los gastos fijos que no se pagaron (los de débito automático no, porque se pagan solos). Lo controla el mismo interruptor de recordatorios de gastos fijos. `RecurringReminderLog` suma el tipo de aviso para no mezclar los "por vencer" con los "vencidos". Se publica junto con la Mobile 1.27.0.
+- **Notificaciones push — Fase E2: alertas de gastos (D-019)**: aviso al cargar o editar un gasto que hace cruzar el umbral de gastos del período (80% de los ingresos por defecto, el mismo de la advertencia del dashboard) o el límite mensual de una subcategoría. Cada alerta llega una sola vez por período, sin montos en el texto, por un canal de Android propio ("Alertas de gastos") y con su propio interruptor (`spending_alerts_enabled`). Se publica junto con la Mobile 1.27.0.
 
 ### Changed
 

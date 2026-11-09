@@ -315,3 +315,18 @@ class TestRecurringRemindersPreference:
         assert response.json()["recurring_reminders_enabled"] is False
         user.refresh_from_db()
         assert user.recurring_reminders_enabled is False
+
+    def test_alertas_de_gastos_se_pueden_desactivar_desde_el_perfil(self, client, user):
+        headers = auth_header(client, user)
+        assert client.get(self.url, **headers).json()["spending_alerts_enabled"] is True
+
+        response = client.put(
+            self.url,
+            {"spending_alerts_enabled": False},
+            content_type="application/json",
+            **headers,
+        )
+
+        assert response.json()["spending_alerts_enabled"] is False
+        user.refresh_from_db()
+        assert user.spending_alerts_enabled is False

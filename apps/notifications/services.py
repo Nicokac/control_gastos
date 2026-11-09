@@ -23,7 +23,9 @@ def _get_firebase_app():
         return firebase_admin.initialize_app(cred)
 
 
-def send_push_to_user(user, title: str, body: str, data: dict | None = None) -> int:
+def send_push_to_user(
+    user, title: str, body: str, data: dict | None = None, channel_id: str | None = None
+) -> int:
     """Envía un push a todos los dispositivos activos del usuario y devuelve cuántos lo recibieron."""
     if not settings.FIREBASE_CREDENTIALS_PATH:
         logger.warning("PUSH_DISABLED | FIREBASE_CREDENTIALS_PATH vacío | user_id=%s", user.pk)
@@ -41,6 +43,14 @@ def send_push_to_user(user, title: str, body: str, data: dict | None = None) -> 
         fids=tokens,
         notification=messaging.Notification(title=title, body=body),
         data=data or {},
+        # Sin canal explícito, Android usa el canal por defecto del manifest (recordatorios).
+        android=(
+            messaging.AndroidConfig(
+                notification=messaging.AndroidNotification(channel_id=channel_id)
+            )
+            if channel_id
+            else None
+        ),
     )
     response = messaging.send_each_for_multicast(message, app=_get_firebase_app())
 
