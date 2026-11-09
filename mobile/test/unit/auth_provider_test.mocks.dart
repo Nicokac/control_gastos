@@ -7,6 +7,8 @@ import 'dart:async' as _i3;
 
 import 'package:control_gastos_app/data/repositories/auth_repository.dart'
     as _i2;
+import 'package:control_gastos_app/data/services/push_notification_service.dart'
+    as _i4;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -119,6 +121,34 @@ class MockAuthRepository extends _i1.Mock implements _i2.AuthRepository {
               #newPassword: newPassword,
               #newPassword2: newPassword2,
             }),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
+}
+
+/// A class which mocks [PushNotificationService].
+///
+/// See the documentation for Mockito's code generation for more information.
+class MockPushNotificationService extends _i1.Mock
+    implements _i4.PushNotificationService {
+  MockPushNotificationService() {
+    _i1.throwOnMissingStub(this);
+  }
+
+  @override
+  _i3.Future<void> registerDevice() =>
+      (super.noSuchMethod(
+            Invocation.method(#registerDevice, []),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> unregisterDevice() =>
+      (super.noSuchMethod(
+            Invocation.method(#unregisterDevice, []),
             returnValue: _i3.Future<void>.value(),
             returnValueForMissingStub: _i3.Future<void>.value(),
           )

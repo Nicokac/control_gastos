@@ -3,21 +3,28 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+import 'package:control_gastos_app/core/providers/push_notification_provider.dart';
 import 'package:control_gastos_app/data/repositories/auth_repository.dart';
+import 'package:control_gastos_app/data/services/push_notification_service.dart';
 import 'package:control_gastos_app/features/auth/providers/auth_provider.dart';
 
 import 'auth_provider_test.mocks.dart';
 
-@GenerateMocks([AuthRepository])
+@GenerateMocks([AuthRepository, PushNotificationService])
 void main() {
   late MockAuthRepository mockRepo;
+  late MockPushNotificationService mockPush;
   late ProviderContainer container;
 
   setUp(() {
     mockRepo = MockAuthRepository();
+    mockPush = MockPushNotificationService();
+    when(mockPush.registerDevice()).thenAnswer((_) async {});
+    when(mockPush.unregisterDevice()).thenAnswer((_) async {});
     container = ProviderContainer(
       overrides: [
         authRepositoryProvider.overrideWithValue(mockRepo),
+        pushNotificationServiceProvider.overrideWithValue(mockPush),
       ],
     );
   });
@@ -49,6 +56,23 @@ void main() {
       when(mockRepo.login(email: 'nicolas@test.com', password: '1234'))
           .thenAnswer((_) async => {});
       when(mockRepo.getProfile()).thenAnswer((_) async => profile);
+
+      await container.read(authProvider.future);
+      final notifier = container.read(authProvider.notifier);
+      final error = await notifier.login(email: 'nicolas@test.com', password: '1234');
+
+      expect(error, isNull);
+      expect(container.read(authProvider).valueOrNull, equals(profile));
+      verify(mockPush.registerDevice()).called(1);
+    });
+
+    test('login exitoso aunque falle el registro del push', () async {
+      final profile = {'id': 1, 'username': 'nicolas'};
+      when(mockRepo.isLoggedIn()).thenAnswer((_) async => false);
+      when(mockRepo.login(email: anyNamed('email'), password: anyNamed('password')))
+          .thenAnswer((_) async => {});
+      when(mockRepo.getProfile()).thenAnswer((_) async => profile);
+      when(mockPush.registerDevice()).thenThrow(Exception('sin Firebase'));
 
       await container.read(authProvider.future);
       final notifier = container.read(authProvider.notifier);
@@ -104,6 +128,31 @@ void main() {
       final notifier = container.read(authProvider.notifier);
       await notifier.logout();
 
+      expect(container.read(authProvider).valueOrNull, isNull);
+      verify(mockPush.unregisterDevice()).called(1);
+    });
+
+    test('desregistra el push antes de borrar el JWT', () async {
+      final calls = <String>[];
+      when(mockRepo.isLoggedIn()).thenAnswer((_) async => false);
+      when(mockPush.unregisterDevice()).thenAnswer((_) async => calls.add('push'));
+      when(mockRepo.logout()).thenAnswer((_) async => calls.add('jwt'));
+
+      await container.read(authProvider.future);
+      await container.read(authProvider.notifier).logout();
+
+      expect(calls, ['push', 'jwt']);
+    });
+
+    test('logout completa aunque falle el desregistro del push', () async {
+      when(mockRepo.isLoggedIn()).thenAnswer((_) async => false);
+      when(mockRepo.logout()).thenAnswer((_) async => {});
+      when(mockPush.unregisterDevice()).thenThrow(Exception('sin red'));
+
+      await container.read(authProvider.future);
+      await container.read(authProvider.notifier).logout();
+
+      verify(mockRepo.logout()).called(1);
       expect(container.read(authProvider).valueOrNull, isNull);
     });
   });

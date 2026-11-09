@@ -1760,7 +1760,7 @@ El miembro no puede cargar gastos por su cuenta ni ver el historial. Si el dueñ
 ## D-019 — Notificaciones push: diseño y Fase A (registro de token)
 
 **Fecha:** 2026-10-30
-**Estado:** 🚧 En progreso (Fase A completa, Fase B en curso: B1 backend completo)
+**Estado:** 🚧 En progreso (Fases A y B completas; pendientes C y D)
 
 ### Contexto
 El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, ni recordatorios programados) — todo lo relacionado a "alertas" (`monthly_alert_threshold`, `alert_threshold`) es puramente pasivo: se calcula y muestra solo cuando el usuario abre el dashboard. Se decidió construir la primera notificación proactiva real: recordatorio push de gastos fijos próximos a vencer.
@@ -1773,9 +1773,9 @@ El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, 
 
 ### Plan de fases
 - **Fase A (✅ completa, esta entrada)**: app `apps/notifications` nueva, modelo `DeviceToken` (token FCM por usuario/dispositivo, único a nivel global porque Firebase puede reasignar un token a otra instalación), endpoint `POST/DELETE /api/v1/notifications/device-token/` para que mobile registre/desregistre su token al loguearse/desloguearse. Sin envío de ningún push todavía — solo la base de datos de tokens.
-- **Fase B (en curso)**: integración real de Firebase, dividida en dos entregas:
+- **Fase B (✅ completa)**: integración real de Firebase, dividida en dos entregas:
   - **B1 (✅ completa)**: envío desde Django vía `firebase-admin`.
-  - **B2 (pendiente)**: SDK en Flutter (`firebase_core`, `firebase_messaging`), `google-services.json`, permiso de notificaciones y registro/desregistro del token contra el endpoint de la Fase A.
+  - **B2 (✅ completa)**: SDK en Flutter (`firebase_core`, `firebase_messaging`), `google-services.json`, permiso de notificaciones y registro/desregistro del dispositivo contra el endpoint de la Fase A.
 - **Fase C (pendiente)**: management command que recorre `RecurringExpense` activos, calcula vencimientos a 3 días, dispara el push diferenciado, y evita reenvíos duplicados para el mismo gasto fijo en el mismo período.
 - **Fase D (pendiente)**: workflow de GitHub Actions con el cron diario contra producción.
 
@@ -1792,6 +1792,19 @@ El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, 
 - `send_test_push <username>`: management command para verificar el circuito de punta a punta antes de la Fase C.
 - `google-services.json` en `.gitignore`: no es un secreto fuerte, pero se descarga de la consola de Firebase y no hace falta versionarlo (el build de mobile es local).
 - 9 tests nuevos (`apps/notifications/tests/test_services.py`), mockeando solo la llamada a Firebase (API externa): envío desactivado sin credenciales, sin tokens activos, aislamiento por usuario, contenido del mensaje, desactivación de tokens inválidos, errores transitorios y el comando.
+
+### Fase B2 — Resolución técnica (registro desde mobile)
+- **FID en vez de token FCM**: `firebase_messaging` 17 deprecó `getToken()`/`onTokenRefresh` y `firebase-admin` 7 deprecó `MulticastMessage(tokens=)`. Ambos reemplazos apuntan al mismo identificador: el Firebase Installation ID (FID). Se adoptó FID en las dos puntas (`register()`/`onRegistered`/`unregister()` en Flutter, `MulticastMessage(fids=)` en Django) para no construir la feature sobre APIs ya deprecadas. No hizo falta migrar datos: ningún dispositivo se había registrado todavía. El campo `DeviceToken.token` guarda el FID; no se renombró para no generar una migración solo cosmética.
+- **Flag obligatorio en el manifest**: el registro por FID está deshabilitado por defecto en Android. Sin `<meta-data android:name="firebase_messaging_installation_id_enabled" android:value="true"/>` en `AndroidManifest.xml`, `register()` falla con `IllegalStateException: API disabled`.
+- **FID persistido en el dispositivo** (`SharedPreferences`, clave `push_registered_fid`): Android no garantiza volver a emitir `onRegistered` en cada arranque si la app ya estaba registrada. Guardarlo permite reenviarlo al backend en cada arranque con sesión (reactiva el dispositivo y actualiza `last_used_at`) y saber cuál desactivar en el logout. Si el envío al backend falla por red, el FID queda guardado igual y se reintenta en el próximo arranque.
+- **Ciclo de vida**: el registro se dispara tras el login y al arrancar con sesión, sin bloquear la UI (`unawaited`). El push nunca rompe el login: cualquier error se registra con `debugPrint` y se sigue. En el logout se desregistra **antes** de borrar el JWT (el `DELETE` del backend necesita saber qué usuario desactiva) y con un timeout de 5 s para que un backend caído no trabe el cierre de sesión.
+- **Verificación end-to-end en emulador** (Pixel 8, API 34 con Google Play, backend local): registro del FID, push de `send_test_push` recibido con la app en segundo plano, y logout que desactiva el dispositivo (un segundo envío llega a 0 dispositivos).
+- 11 tests nuevos en mobile: `test/unit/push_notification_service_test.dart` (permiso denegado, registro, envío y persistencia del FID, reenvío del FID guardado, falla de red, desregistro) y 3 en `auth_provider_test.dart` (registro tras login, login exitoso aunque falle el push, desregistro antes del JWT y logout aunque falle el push).
+
+**Pendiente para la Fase C** (todo sobre cómo se ve el recordatorio, por eso no se resolvió acá):
+- Ícono monocromo propio para la notificación (`com.google.firebase.messaging.default_notification_icon`); hoy Android muestra un círculo vacío.
+- Canal de notificación propio (ej. "Recordatorios de gastos fijos") en vez del canal genérico `fcm_fallback_notification_channel`, para que el usuario pueda silenciarlo por separado.
+- Mostrar el push cuando la app está en primer plano: FCM no muestra la notificación del sistema en ese caso (requiere `onMessage` + aviso en la UI o notificación local).
 
 ---
 

@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/providers/push_notification_provider.dart';
 import '../../../data/repositories/auth_repository.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
@@ -20,7 +24,19 @@ class AuthNotifier extends AsyncNotifier<Map<String, dynamic>?> {
     final repo = ref.read(authRepositoryProvider);
     final loggedIn = await repo.isLoggedIn();
     if (!loggedIn) return null;
-    return repo.getProfile();
+    final profile = await repo.getProfile();
+    unawaited(_registerPushDevice());
+    return profile;
+  }
+
+  /// El push nunca debe bloquear ni romper el login: sin permiso, sin red o
+  /// sin Firebase, la app sigue funcionando igual.
+  Future<void> _registerPushDevice() async {
+    try {
+      await ref.read(pushNotificationServiceProvider).registerDevice();
+    } catch (e) {
+      debugPrint('Push: no se pudo registrar el dispositivo: $e');
+    }
   }
 
   Future<String?> login({required String email, required String password}) async {
@@ -31,6 +47,7 @@ class AuthNotifier extends AsyncNotifier<Map<String, dynamic>?> {
       _failureCount = 0;
       final profile = await repo.getProfile();
       state = AsyncData(profile);
+      unawaited(_registerPushDevice());
       return null;
     } catch (e) {
       state = const AsyncData(null);
@@ -70,6 +87,15 @@ class AuthNotifier extends AsyncNotifier<Map<String, dynamic>?> {
   }
 
   Future<void> logout() async {
+    // Antes de borrar el JWT: el backend necesita saber quién desactiva el dispositivo.
+    try {
+      await ref
+          .read(pushNotificationServiceProvider)
+          .unregisterDevice()
+          .timeout(const Duration(seconds: 5));
+    } catch (e) {
+      debugPrint('Push: no se pudo desregistrar el dispositivo: $e');
+    }
     final repo = ref.read(authRepositoryProvider);
     await repo.logout();
     state = const AsyncData(null);

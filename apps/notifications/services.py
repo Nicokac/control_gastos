@@ -35,8 +35,10 @@ def send_push_to_user(user, title: str, body: str, data: dict | None = None) -> 
     if not tokens:
         return 0
 
+    # El campo `token` guarda el Firebase Installation ID (FID) que registra la app;
+    # `tokens=` (tokens de registro FCM) está deprecado en firebase-admin 7.
     message = messaging.MulticastMessage(
-        tokens=tokens,
+        fids=tokens,
         notification=messaging.Notification(title=title, body=body),
         data=data or {},
     )

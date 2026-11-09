@@ -31,7 +31,7 @@ def fake_send(monkeypatch):
 
     def _send(message, app=None):
         state["messages"].append(message)
-        results = state["results"] or [_ok() for _ in message.tokens]
+        results = state["results"] or [_ok() for _ in message.fids]
         return SimpleNamespace(
             responses=results,
             success_count=sum(1 for r in results if r.success),
@@ -69,7 +69,9 @@ class TestSendPushToUser:
         sent = send_push_to_user(user, "Título", "Cuerpo")
 
         assert sent == 2
-        assert sorted(fake_send["messages"][0].tokens) == ["fcm-propio-1", "fcm-propio-2"]
+        message = fake_send["messages"][0]
+        assert sorted(message.fids) == ["fcm-propio-1", "fcm-propio-2"]
+        assert message.tokens is None
 
     def test_envia_titulo_cuerpo_y_data(self, firebase_enabled, user, fake_send):
         DeviceToken.objects.create(user=user, token="fcm-1")

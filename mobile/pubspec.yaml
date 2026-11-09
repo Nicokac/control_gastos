@@ -53,6 +53,8 @@ dependencies:
   # Modelos inmutables
   freezed_annotation: ^3.0.0
   json_annotation: ^4.9.0
+  firebase_core: ^5.1.0
+  firebase_messaging: ^17.0.1
 
 dev_dependencies:
   flutter_test:
