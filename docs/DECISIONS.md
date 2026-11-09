@@ -1760,7 +1760,7 @@ El miembro no puede cargar gastos por su cuenta ni ver el historial. Si el dueñ
 ## D-019 — Notificaciones push: diseño y Fase A (registro de token)
 
 **Fecha:** 2026-10-30
-**Estado:** 🚧 En progreso (Fases A, B, C y D completas; pendiente el deploy a producción)
+**Estado:** 🚧 En progreso (Fases A, B, C1, C2, C3a y D completas; pendiente C3b y el deploy a producción)
 
 ### Contexto
 El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, ni recordatorios programados) — todo lo relacionado a "alertas" (`monthly_alert_threshold`, `alert_threshold`) es puramente pasivo: se calcula y muestra solo cuando el usuario abre el dashboard. Se decidió construir la primera notificación proactiva real: recordatorio push de gastos fijos próximos a vencer.
@@ -1779,6 +1779,8 @@ El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, 
 - **Fase C (✅ completa)**: recordatorios reales, divididos en dos entregas:
   - **C1 (✅ completa)**: management command que recorre `RecurringExpense` activos, calcula vencimientos a 3 días, dispara el push y evita reenvíos duplicados.
   - **C2 (✅ completa)**: cómo se ve el aviso en mobile (ícono, canal propio, app en primer plano, navegación al tocarlo).
+  - **C3a (✅ completa)**: historial de avisos y preferencia para desactivar los recordatorios (backend).
+  - **C3b (pendiente)**: campanita en el dashboard mobile con punto de no leídos y pantalla de notificaciones.
 - **Fase D (✅ completa)**: workflow de GitHub Actions con el cron diario contra producción.
 
 ### Fase A — Resolución técnica
@@ -1827,6 +1829,13 @@ El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, 
 - **Render dormido**: el plan free apaga el servicio sin tráfico y el primer request puede tardar ~1 min. El `curl` usa `--max-time 120` y `--retry 3`; reintentar es seguro porque `RecurringReminderLog` evita duplicados.
 - Requiere `CRON_SECRET` en Render (variable de entorno) y en GitHub (secret), con el mismo valor; `PRODUCTION_URL` ya existía para `smoke.yml`.
 - 7 tests nuevos (`apps/api/tests/test_notifications.py`): secreto correcto, incorrecto, ausente, sin configurar, JWT de usuario no alcanza, GET no permitido e integración sin dispositivos.
+
+### Fase C3a — Resolución técnica (historial y preferencia, backend)
+- **Modelo `Notification` propio** en vez de reconstruir el historial desde `RecurringReminderLog`: el log es por gasto fijo (sirve para no duplicar) y el historial es por aviso enviado, con el texto exacto que recibió el usuario y su estado de lectura (`read_at`). Así el historial no depende de que el gasto fijo siga existiendo, y queda listo para otros tipos de aviso (`NotificationType`).
+- **Se guarda solo si el push se entregó**, en el mismo punto que el log: si no llegó, se reintenta en otra ejecución y no queda una entrada duplicada.
+- **Preferencia `User.recurring_reminders_enabled`** (activada por defecto, así nadie deja de recibir avisos con el deploy). Se edita con el `PUT /auth/me/` existente en vez de un endpoint nuevo. Con la preferencia apagada el usuario queda fuera de la selección: no recibe push ni entrada en el historial. Es independiente del canal de Android: el canal silencia el sonido en ese dispositivo; la preferencia deja de enviar en todos.
+- **Endpoints**: `GET /notifications/` (historial paginado, más recientes primero), `GET /notifications/unread-count/` (liviano, para el punto de la campanita sin bajar el historial en cada carga del dashboard) y `POST /notifications/mark-read/` (marca todo como leído al abrir la pantalla; no pisa la fecha de los ya leídos). Leído por aviso individual no se implementó: con un aviso diario como máximo, "abrir la pantalla = leído" alcanza.
+- 15 tests nuevos: 4 en `test_reminders.py` (preferencia apagada, historial guardado, no guardado sin entrega, sin duplicado) y 11 en `apps/api/tests/test_notifications.py` (autenticación, aislamiento entre usuarios, orden, queries, conteo, marcado y preferencia por `/auth/me/`).
 
 ---
 

@@ -29,6 +29,11 @@ class User(AbstractUser):
     )
     email_verified = models.BooleanField(default=False, verbose_name="Email verificado")
     has_seen_tour = models.BooleanField(default=False, verbose_name="Tour visto")
+    recurring_reminders_enabled = models.BooleanField(
+        default=True,
+        verbose_name="Recordatorios de gastos fijos",
+        help_text="Aviso push en mobile 3 días antes del vencimiento de cada gasto fijo.",
+    )
 
     class Meta:
         verbose_name = "Usuario"

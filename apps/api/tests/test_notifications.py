@@ -1,8 +1,12 @@
 """Tests para el endpoint de registro de token de dispositivo (push, mobile)."""
 
+from datetime import timedelta
+
+from django.utils import timezone
+
 import pytest
 
-from apps.notifications.models import DeviceToken
+from apps.notifications.models import DeviceToken, Notification
 
 
 def auth_header(client, user):
@@ -187,3 +191,127 @@ class TestRecurringRemindersCronEndpoint:
         response = client.post(self.url, HTTP_X_CRON_SECRET=self.secret)
         assert response.status_code == 200
         assert response.json() == {"sent": 0}
+
+
+@pytest.fixture
+def make_notification(user):
+    def _make(owner=None, body="En 3 días vence Alquiler.", read_at=None):
+        return Notification.objects.create(
+            user=owner or user,
+            type="recurring_reminder",
+            title="Gastos fijos por vencer",
+            body=body,
+            read_at=read_at,
+        )
+
+    return _make
+
+
+@pytest.mark.django_db
+class TestNotificationListEndpoint:
+    url = "/api/v1/notifications/"
+
+    def test_requiere_autenticacion(self, client):
+        assert client.get(self.url).status_code == 401
+
+    def test_lista_solo_las_del_usuario_mas_recientes_primero(
+        self, client, user, other_user, make_notification
+    ):
+        vieja = make_notification(body="vieja")
+        nueva = make_notification(body="nueva")
+        make_notification(owner=other_user, body="ajena")
+
+        response = client.get(self.url, **auth_header(client, user))
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["count"] == 2
+        assert [n["id"] for n in data["results"]] == [nueva.id, vieja.id]
+        assert set(data["results"][0]) == {"id", "type", "title", "body", "created_at", "read_at"}
+
+    def test_sin_avisos_devuelve_lista_vacia(self, client, user):
+        response = client.get(self.url, **auth_header(client, user))
+        assert response.json()["results"] == []
+
+    def test_cantidad_de_queries_no_crece_con_los_avisos(
+        self, client, user, make_notification, django_assert_max_num_queries
+    ):
+        headers = auth_header(client, user)
+        for i in range(10):
+            make_notification(body=f"aviso {i}")
+        with django_assert_max_num_queries(4):
+            client.get(self.url, **headers)
+
+
+@pytest.mark.django_db
+class TestNotificationUnreadCountEndpoint:
+    url = "/api/v1/notifications/unread-count/"
+
+    def test_requiere_autenticacion(self, client):
+        assert client.get(self.url).status_code == 401
+
+    def test_cuenta_solo_las_no_leidas_del_usuario(
+        self, client, user, other_user, make_notification
+    ):
+        make_notification()
+        make_notification()
+        make_notification(read_at=timezone.now())
+        make_notification(owner=other_user)
+
+        response = client.get(self.url, **auth_header(client, user))
+
+        assert response.status_code == 200
+        assert response.json() == {"unread": 2}
+
+
+@pytest.mark.django_db
+class TestNotificationMarkReadEndpoint:
+    url = "/api/v1/notifications/mark-read/"
+
+    def test_requiere_autenticacion(self, client):
+        assert client.post(self.url).status_code == 401
+
+    def test_marca_leidas_las_del_usuario_sin_tocar_las_ajenas(
+        self, client, user, other_user, make_notification
+    ):
+        propia = make_notification()
+        ajena = make_notification(owner=other_user)
+
+        response = client.post(self.url, **auth_header(client, user))
+
+        assert response.status_code == 204
+        propia.refresh_from_db()
+        ajena.refresh_from_db()
+        assert propia.read_at is not None
+        assert ajena.read_at is None
+
+    def test_no_pisa_la_fecha_de_las_ya_leidas(self, client, user, make_notification):
+        leida_antes = timezone.now() - timedelta(days=5)
+        notification = make_notification(read_at=leida_antes)
+
+        client.post(self.url, **auth_header(client, user))
+
+        notification.refresh_from_db()
+        assert notification.read_at == leida_antes
+
+
+@pytest.mark.django_db
+class TestRecurringRemindersPreference:
+    url = "/api/v1/auth/me/"
+
+    def test_por_defecto_estan_activados(self, client, user):
+        response = client.get(self.url, **auth_header(client, user))
+        assert response.json()["recurring_reminders_enabled"] is True
+
+    def test_se_pueden_desactivar_desde_el_perfil(self, client, user):
+        response = client.put(
+            self.url,
+            {"recurring_reminders_enabled": False},
+            content_type="application/json",
+            **auth_header(client, user),
+        )
+
+        assert response.status_code == 200
+        assert response.json()["recurring_reminders_enabled"] is False
+        user.refresh_from_db()
+        assert user.recurring_reminders_enabled is False

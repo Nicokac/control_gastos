@@ -6,7 +6,7 @@ from django.core.management import CommandError, call_command
 import pytest
 
 from apps.notifications import reminders
-from apps.notifications.models import DeviceToken, RecurringReminderLog
+from apps.notifications.models import DeviceToken, Notification, RecurringReminderLog
 from apps.notifications.reminders import build_reminder_body, send_recurring_reminders
 from apps.recurring.models import RecurringExpense
 
@@ -114,6 +114,49 @@ class TestRecurringRemindersSeleccion:
         send_recurring_reminders(TODAY)
 
         assert sent_pushes["calls"] == []
+
+    def test_no_avisa_si_el_usuario_desactivo_los_recordatorios(
+        self, user, device, make_recurring, sent_pushes
+    ):
+        user.recurring_reminders_enabled = False
+        user.save()
+        make_recurring()
+
+        assert send_recurring_reminders(TODAY) == 0
+        assert sent_pushes["calls"] == []
+        assert not RecurringReminderLog.objects.exists()
+
+
+@pytest.mark.django_db
+class TestRecurringRemindersHistorial:
+    def test_guarda_el_aviso_enviado_sin_leer(self, user, device, make_recurring, sent_pushes):
+        make_recurring()
+        make_recurring(name="Luz")
+
+        send_recurring_reminders(TODAY)
+
+        notification = Notification.objects.get()
+        assert notification.user == user
+        assert notification.type == "recurring_reminder"
+        assert notification.title == "Gastos fijos por vencer"
+        assert notification.body == sent_pushes["calls"][0]["body"]
+        assert notification.read_at is None
+
+    def test_no_guarda_si_el_push_no_se_entrego(self, device, make_recurring, sent_pushes):
+        sent_pushes["result"] = 0
+        make_recurring()
+
+        send_recurring_reminders(TODAY)
+
+        assert not Notification.objects.exists()
+
+    def test_no_duplica_si_el_cron_corre_dos_veces(self, device, make_recurring, sent_pushes):
+        make_recurring()
+
+        send_recurring_reminders(TODAY)
+        send_recurring_reminders(TODAY)
+
+        assert Notification.objects.count() == 1
 
 
 @pytest.mark.django_db

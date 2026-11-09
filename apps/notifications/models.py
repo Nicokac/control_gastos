@@ -85,3 +85,36 @@ class RecurringReminderLog(TimestampMixin, models.Model):
 
     def __str__(self):
         return f"{self.recurring} - {self.due_date}"
+
+
+class NotificationType(models.TextChoices):
+    RECURRING_REMINDER = "recurring_reminder", "Recordatorio de gastos fijos"
+
+
+class Notification(TimestampMixin, models.Model):
+    """Aviso enviado al usuario, para el historial de la campanita en mobile.
+
+    Se guarda aparte del push porque el del sistema desaparece apenas el usuario lo descarta.
+    """
+
+    user = models.ForeignKey(
+        "users.User",
+        on_delete=models.CASCADE,
+        related_name="notifications",
+        verbose_name="Usuario",
+    )
+    type = models.CharField(max_length=40, choices=NotificationType.choices, verbose_name="Tipo")
+    title = models.CharField(max_length=120, verbose_name="Título")
+    body = models.TextField(verbose_name="Texto")
+    read_at = models.DateTimeField(null=True, blank=True, verbose_name="Leída el")
+
+    class Meta:
+        verbose_name = "Notificación"
+        verbose_name_plural = "Notificaciones"
+        ordering = ["-created_at", "-id"]
+        indexes = [
+            models.Index(fields=["user", "read_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user} - {self.title}"

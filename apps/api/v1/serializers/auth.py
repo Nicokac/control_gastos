@@ -105,5 +105,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "alert_threshold",
             "financial_month_start_day",
             "email_verified",
+            "recurring_reminders_enabled",
         ]
         read_only_fields = ["id", "email", "email_verified"]

@@ -15,7 +15,13 @@ from apps.api.v1.views.dashboard import DashboardView
 from apps.api.v1.views.expenses import ExpenseViewSet
 from apps.api.v1.views.feedback import FeedbackView
 from apps.api.v1.views.income import IncomeViewSet
-from apps.api.v1.views.notifications import DeviceTokenView, RecurringRemindersCronView
+from apps.api.v1.views.notifications import (
+    DeviceTokenView,
+    NotificationListView,
+    NotificationMarkReadView,
+    NotificationUnreadCountView,
+    RecurringRemindersCronView,
+)
 from apps.api.v1.views.recurring import RecurringExpenseViewSet
 from apps.api.v1.views.recurring_income import RecurringIncomeViewSet
 from apps.api.v1.views.savings import RolloverSuggestionViewSet, SavingViewSet
@@ -53,6 +59,17 @@ urlpatterns = [
     # Feedback
     path("feedback/", FeedbackView.as_view(), name="feedback"),
     # Notifications
+    path("notifications/", NotificationListView.as_view(), name="notification-list"),
+    path(
+        "notifications/unread-count/",
+        NotificationUnreadCountView.as_view(),
+        name="notification-unread-count",
+    ),
+    path(
+        "notifications/mark-read/",
+        NotificationMarkReadView.as_view(),
+        name="notification-mark-read",
+    ),
     path("notifications/device-token/", DeviceTokenView.as_view(), name="device-token"),
     path(
         "notifications/cron/recurring-reminders/",

@@ -1,15 +1,16 @@
 import hmac
 
 from django.conf import settings
+from django.utils import timezone
 
 from drf_spectacular.utils import extend_schema
-from rest_framework import status
+from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.api.v1.serializers.notifications import DeviceTokenSerializer
-from apps.notifications.models import DeviceToken
+from apps.api.v1.serializers.notifications import DeviceTokenSerializer, NotificationSerializer
+from apps.notifications.models import DeviceToken, Notification
 from apps.notifications.reminders import send_recurring_reminders
 
 
@@ -57,6 +58,41 @@ class DeviceTokenView(APIView):
             )
 
         DeviceToken.objects.filter(token=token, user=request.user).update(is_active=False)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@extend_schema(tags=["notifications"])
+class NotificationListView(generics.ListAPIView):
+    """Historial de avisos del usuario logueado, más recientes primero."""
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = NotificationSerializer
+
+    def get_queryset(self):
+        return Notification.objects.filter(user=self.request.user)
+
+
+@extend_schema(tags=["notifications"])
+class NotificationUnreadCountView(APIView):
+    """Cantidad de avisos sin leer, para el punto de la campanita del dashboard."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        unread = Notification.objects.filter(user=request.user, read_at__isnull=True).count()
+        return Response({"unread": unread})
+
+
+@extend_schema(tags=["notifications"])
+class NotificationMarkReadView(APIView):
+    """Marca como leídos todos los avisos del usuario (se llama al abrir la pantalla)."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        Notification.objects.filter(user=request.user, read_at__isnull=True).update(
+            read_at=timezone.now()
+        )
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

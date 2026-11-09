@@ -5,7 +5,7 @@ from datetime import date, timedelta
 
 from django.utils import timezone
 
-from apps.notifications.models import RecurringReminderLog
+from apps.notifications.models import Notification, NotificationType, RecurringReminderLog
 from apps.notifications.services import send_push_to_user
 from apps.recurring.models import RecurringExpense
 
@@ -47,9 +47,13 @@ def build_reminder_body(recurrings) -> str:
 
 
 def recurrings_due_on(target: date):
-    """Gastos fijos activos de usuarios con dispositivo activo que vencen en `target` y no están pagos."""
+    """Gastos fijos activos de usuarios con recordatorios y dispositivo activos que vencen en `target` y no están pagos."""
     candidates = (
-        RecurringExpense.objects.filter(is_active=True, user__device_tokens__is_active=True)
+        RecurringExpense.objects.filter(
+            is_active=True,
+            user__recurring_reminders_enabled=True,
+            user__device_tokens__is_active=True,
+        )
         .exclude(reminder_logs__due_date=target)
         .select_related("user")
         .distinct()
@@ -78,11 +82,12 @@ def send_recurring_reminders(today: date | None = None) -> int:
 
     notified = 0
     for user, recurrings in by_user.items():
+        body = build_reminder_body(recurrings)
         sent = send_push_to_user(
             user,
             title=REMINDER_TITLE,
-            body=build_reminder_body(recurrings),
-            data={"type": "recurring_reminder"},
+            body=body,
+            data={"type": NotificationType.RECURRING_REMINDER},
         )
         # Sin entregas (credenciales ausentes o todos los dispositivos inválidos) no se
         # registra: el aviso no llegó y puede reintentarse en otra ejecución del día.
@@ -90,6 +95,9 @@ def send_recurring_reminders(today: date | None = None) -> int:
             RecurringReminderLog.objects.bulk_create(
                 [RecurringReminderLog(recurring=r, due_date=target) for r in recurrings],
                 ignore_conflicts=True,
+            )
+            Notification.objects.create(
+                user=user, type=NotificationType.RECURRING_REMINDER, title=REMINDER_TITLE, body=body
             )
             notified += 1
 

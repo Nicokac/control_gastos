@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.notifications.models import DevicePlatform
+from apps.notifications.models import DevicePlatform, Notification
 
 
 class DeviceTokenSerializer(serializers.Serializer):
@@ -8,3 +8,9 @@ class DeviceTokenSerializer(serializers.Serializer):
     platform = serializers.ChoiceField(
         choices=DevicePlatform.choices, default=DevicePlatform.ANDROID
     )
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ["id", "type", "title", "body", "created_at", "read_at"]
