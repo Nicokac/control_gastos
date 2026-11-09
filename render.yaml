@@ -43,6 +43,8 @@ services:
         sync: false
       - key: FIREBASE_CREDENTIALS_PATH
         sync: false
+      - key: CRON_SECRET
+        sync: false
     healthCheckPath: /healthz/
 
 databases:

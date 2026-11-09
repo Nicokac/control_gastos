@@ -127,3 +127,63 @@ class TestDeviceTokenUnregisterEndpoint:
         headers = auth_header(client, user)
         response = client.delete(self.url, {}, content_type="application/json", **headers)
         assert response.status_code == 400
+
+
+@pytest.mark.django_db
+class TestRecurringRemindersCronEndpoint:
+    url = "/api/v1/notifications/cron/recurring-reminders/"
+    secret = "cron-secret-de-prueba"  # pragma: allowlist secret
+
+    @pytest.fixture
+    def sent_calls(self, monkeypatch):
+        calls = []
+
+        def fake_send():
+            calls.append(True)
+            return 2
+
+        monkeypatch.setattr("apps.api.v1.views.notifications.send_recurring_reminders", fake_send)
+        return calls
+
+    def test_con_secreto_correcto_envia_y_devuelve_cantidad(self, client, settings, sent_calls):
+        settings.CRON_SECRET = self.secret
+        response = client.post(self.url, HTTP_X_CRON_SECRET=self.secret)
+        assert response.status_code == 200
+        assert response.json() == {"sent": 2}
+        assert len(sent_calls) == 1
+
+    def test_secreto_incorrecto_responde_403_sin_enviar(self, client, settings, sent_calls):
+        settings.CRON_SECRET = self.secret
+        response = client.post(self.url, HTTP_X_CRON_SECRET="otro")
+        assert response.status_code == 403
+        assert sent_calls == []
+
+    def test_sin_header_responde_403(self, client, settings, sent_calls):
+        settings.CRON_SECRET = self.secret
+        response = client.post(self.url)
+        assert response.status_code == 403
+        assert sent_calls == []
+
+    def test_sin_secreto_configurado_queda_desactivado(self, client, settings, sent_calls):
+        settings.CRON_SECRET = ""
+        response = client.post(self.url, HTTP_X_CRON_SECRET="")
+        assert response.status_code == 403
+        assert sent_calls == []
+
+    def test_un_jwt_de_usuario_no_alcanza(self, client, settings, user, sent_calls):
+        settings.CRON_SECRET = self.secret
+        response = client.post(self.url, **auth_header(client, user))
+        assert response.status_code == 403
+        assert sent_calls == []
+
+    def test_get_no_permitido(self, client, settings, sent_calls):
+        settings.CRON_SECRET = self.secret
+        response = client.get(self.url, HTTP_X_CRON_SECRET=self.secret)
+        assert response.status_code == 405
+        assert sent_calls == []
+
+    def test_integracion_sin_dispositivos_no_envia_nada(self, client, settings):
+        settings.CRON_SECRET = self.secret
+        response = client.post(self.url, HTTP_X_CRON_SECRET=self.secret)
+        assert response.status_code == 200
+        assert response.json() == {"sent": 0}

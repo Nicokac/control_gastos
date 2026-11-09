@@ -15,7 +15,7 @@ from apps.api.v1.views.dashboard import DashboardView
 from apps.api.v1.views.expenses import ExpenseViewSet
 from apps.api.v1.views.feedback import FeedbackView
 from apps.api.v1.views.income import IncomeViewSet
-from apps.api.v1.views.notifications import DeviceTokenView
+from apps.api.v1.views.notifications import DeviceTokenView, RecurringRemindersCronView
 from apps.api.v1.views.recurring import RecurringExpenseViewSet
 from apps.api.v1.views.recurring_income import RecurringIncomeViewSet
 from apps.api.v1.views.savings import RolloverSuggestionViewSet, SavingViewSet
@@ -54,6 +54,11 @@ urlpatterns = [
     path("feedback/", FeedbackView.as_view(), name="feedback"),
     # Notifications
     path("notifications/device-token/", DeviceTokenView.as_view(), name="device-token"),
+    path(
+        "notifications/cron/recurring-reminders/",
+        RecurringRemindersCronView.as_view(),
+        name="cron-recurring-reminders",
+    ),
     # Docs
     path("schema/", SpectacularAPIView.as_view(), name="schema"),
     path("docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),

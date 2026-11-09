@@ -1,3 +1,7 @@
+import hmac
+
+from django.conf import settings
+
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -6,6 +10,7 @@ from rest_framework.views import APIView
 
 from apps.api.v1.serializers.notifications import DeviceTokenSerializer
 from apps.notifications.models import DeviceToken
+from apps.notifications.reminders import send_recurring_reminders
 
 
 @extend_schema(tags=["notifications"])
@@ -53,3 +58,18 @@ class DeviceTokenView(APIView):
 
         DeviceToken.objects.filter(token=token, user=request.user).update(is_active=False)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@extend_schema(exclude=True)
+class RecurringRemindersCronView(APIView):
+    """Disparado una vez por día por GitHub Actions: Render free no tiene cron ni shell (D-019 Fase D)."""
+
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        secret = request.headers.get("X-Cron-Secret", "")
+        if not settings.CRON_SECRET or not hmac.compare_digest(secret, settings.CRON_SECRET):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        return Response({"sent": send_recurring_reminders()})

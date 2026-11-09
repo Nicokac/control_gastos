@@ -1,0 +1,36 @@
+# =============================================================================
+# Recordatorios push de gastos fijos (D-019 Fase D)
+# Corre todos los días a las 12:00 UTC (09:00 AR). Render free no tiene cron ni
+# shell, así que se dispara el envío por un endpoint protegido con CRON_SECRET.
+# El envío es idempotente (RecurringReminderLog): reintentar no duplica pushes.
+# Requiere los secrets PRODUCTION_URL y CRON_SECRET.
+# =============================================================================
+
+name: Recordatorios push
+
+on:
+  schedule:
+    - cron: "0 12 * * *"
+  workflow_dispatch:
+
+jobs:
+  reminders:
+    name: Enviar recordatorios de gastos fijos
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Disparar envío en producción
+        env:
+          BASE_URL: ${{ secrets.PRODUCTION_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$BASE_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "Faltan los secrets PRODUCTION_URL o CRON_SECRET"
+            exit 1
+          fi
+          # Render free duerme el servicio: el primer request puede tardar ~1 min en despertarlo.
+          curl --fail --show-error --silent \
+            --max-time 120 --retry 3 --retry-delay 30 --retry-all-errors \
+            --request POST \
+            --header "X-Cron-Secret: $CRON_SECRET" \
+            "${BASE_URL%/}/api/v1/notifications/cron/recurring-reminders/"

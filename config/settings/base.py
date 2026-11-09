@@ -429,3 +429,7 @@ CORS_ALLOW_CREDENTIALS = True
 # Ruta al JSON de la cuenta de servicio. Vacía = envío de push desactivado.
 # En Render se monta como Secret File en /etc/secrets/.
 FIREBASE_CREDENTIALS_PATH = config("FIREBASE_CREDENTIALS_PATH", default="")
+
+# Secreto compartido con el workflow de GitHub Actions que dispara los recordatorios diarios.
+# Vacío = endpoint de cron desactivado (responde 403).
+CRON_SECRET = config("CRON_SECRET", default="")

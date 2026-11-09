@@ -1760,7 +1760,7 @@ El miembro no puede cargar gastos por su cuenta ni ver el historial. Si el dueñ
 ## D-019 — Notificaciones push: diseño y Fase A (registro de token)
 
 **Fecha:** 2026-10-30
-**Estado:** 🚧 En progreso (Fases A y B completas; pendientes C y D)
+**Estado:** 🚧 En progreso (Fases A, B, C y D completas; pendiente el deploy a producción)
 
 ### Contexto
 El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, ni recordatorios programados) — todo lo relacionado a "alertas" (`monthly_alert_threshold`, `alert_threshold`) es puramente pasivo: se calcula y muestra solo cuando el usuario abre el dashboard. Se decidió construir la primera notificación proactiva real: recordatorio push de gastos fijos próximos a vencer.
@@ -1776,10 +1776,10 @@ El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, 
 - **Fase B (✅ completa)**: integración real de Firebase, dividida en dos entregas:
   - **B1 (✅ completa)**: envío desde Django vía `firebase-admin`.
   - **B2 (✅ completa)**: SDK en Flutter (`firebase_core`, `firebase_messaging`), `google-services.json`, permiso de notificaciones y registro/desregistro del dispositivo contra el endpoint de la Fase A.
-- **Fase C (en curso)**: recordatorios reales, divididos en dos entregas:
+- **Fase C (✅ completa)**: recordatorios reales, divididos en dos entregas:
   - **C1 (✅ completa)**: management command que recorre `RecurringExpense` activos, calcula vencimientos a 3 días, dispara el push y evita reenvíos duplicados.
   - **C2 (✅ completa)**: cómo se ve el aviso en mobile (ícono, canal propio, app en primer plano, navegación al tocarlo).
-- **Fase D (pendiente)**: workflow de GitHub Actions con el cron diario contra producción.
+- **Fase D (✅ completa)**: workflow de GitHub Actions con el cron diario contra producción.
 
 ### Fase A — Resolución técnica
 - `apps/notifications/models.py`: `DeviceToken` (`user` FK, `token` único, `platform` choices ANDROID/IOS default ANDROID, `is_active`, `last_used_at` auto_now). `unique=True` en `token` en vez de `unique_together` con `user`, porque el mismo token físico de Firebase puede pertenecer a usuarios distintos a lo largo del tiempo (reinstalación en otro dispositivo/cuenta) — nunca a dos usuarios a la vez.
@@ -1819,6 +1819,14 @@ El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, 
 - **Al tocar la notificación** (`onMessageOpenedApp` en segundo plano, `getInitialMessage` con la app cerrada): `routeForPushData` traduce el `type` del payload a una ruta (`recurring_reminder` → `/recurring`). Se espera a que resuelva la sesión antes de navegar; en arranque en frío se arma `/dashboard` debajo para que "atrás" vuelva al dashboard en vez de cerrar la app.
 - **Verificado end-to-end en emulador** en los tres estados: app abierta (aviso con "Ver"), minimizada (ícono y canal correctos, abre Gastos fijos) y cerrada desde recientes (arranca y abre Gastos fijos con el dashboard detrás).
 - Sin dependencias nuevas. 3 tests nuevos de `routeForPushData`; el resto (canal nativo, `SnackBar`, navegación) se cubrió con la verificación manual.
+
+### Fase D — Resolución técnica (ejecución diaria en producción)
+- **Endpoint protegido en vez de correr el comando desde GitHub Actions**: Render free no tiene cron jobs ni shell. Correr `send_recurring_reminders` desde un runner contra la DB de producción (como `backup.yml`) obligaba a copiar también la clave de Firebase a GitHub y a instalar todo el proyecto en cada ejecución. En cambio, `.github/workflows/reminders.yml` hace un `POST /api/v1/notifications/cron/recurring-reminders/` y el envío corre dentro de Render, que ya tiene la clave como Secret File.
+- **Autenticación**: header `X-Cron-Secret` comparado con `CRON_SECRET` con `hmac.compare_digest`. Sin JWT ni sesión (`authentication_classes = []`): un usuario logueado no puede dispararlo. `CRON_SECRET` vacío = endpoint desactivado (403), igual que `FIREBASE_CREDENTIALS_PATH` vacío desactiva el envío. Excluido del schema de la API.
+- **Horario**: 12:00 UTC (09:00 de Argentina), para que el aviso llegue de mañana. GitHub puede demorar los cron unos minutos; no importa porque el cálculo usa `timezone.localdate()`.
+- **Render dormido**: el plan free apaga el servicio sin tráfico y el primer request puede tardar ~1 min. El `curl` usa `--max-time 120` y `--retry 3`; reintentar es seguro porque `RecurringReminderLog` evita duplicados.
+- Requiere `CRON_SECRET` en Render (variable de entorno) y en GitHub (secret), con el mismo valor; `PRODUCTION_URL` ya existía para `smoke.yml`.
+- 7 tests nuevos (`apps/api/tests/test_notifications.py`): secreto correcto, incorrecto, ausente, sin configurar, JWT de usuario no alcanza, GET no permitido e integración sin dispositivos.
 
 ---
 
