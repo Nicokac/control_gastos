@@ -1,21 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:control_gastos_app/core/theme/app_semantic_colors.dart';
 import 'package:control_gastos_app/features/dashboard/widgets/pending_recurring_card.dart';
 
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
   Widget buildCard({
     required List<dynamic> pending,
     required int totalRecurring,
     VoidCallback? onViewAll,
   }) {
-    return MaterialApp(
-      theme: ThemeData(extensions: const [AppSemanticColors.light]),
-      home: Scaffold(
-        body: PendingRecurringCard(
-          pending: pending,
-          totalRecurring: totalRecurring,
-          onViewAll: onViewAll,
+    return ProviderScope(
+      child: MaterialApp(
+        theme: ThemeData(extensions: const [AppSemanticColors.light]),
+        home: Scaffold(
+          body: PendingRecurringCard(
+            pending: pending,
+            totalRecurring: totalRecurring,
+            onViewAll: onViewAll,
+          ),
         ),
       ),
     );

@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
@@ -60,7 +61,13 @@ void main() {
     test('login fallido con 401 retorna mensaje de error', () async {
       when(mockRepo.isLoggedIn()).thenAnswer((_) async => false);
       when(mockRepo.login(email: anyNamed('email'), password: anyNamed('password')))
-          .thenThrow(Exception('401 Unauthorized'));
+          .thenThrow(DioException(
+            requestOptions: RequestOptions(path: '/auth/token/'),
+            response: Response(
+              requestOptions: RequestOptions(path: '/auth/token/'),
+              statusCode: 401,
+            ),
+          ));
 
       await container.read(authProvider.future);
       final notifier = container.read(authProvider.notifier);
@@ -73,7 +80,10 @@ void main() {
     test('login fallido por conexión retorna mensaje de red', () async {
       when(mockRepo.isLoggedIn()).thenAnswer((_) async => false);
       when(mockRepo.login(email: anyNamed('email'), password: anyNamed('password')))
-          .thenThrow(Exception('SocketException: connection refused'));
+          .thenThrow(DioException(
+            requestOptions: RequestOptions(path: '/auth/token/'),
+            type: DioExceptionType.connectionError,
+          ));
 
       await container.read(authProvider.future);
       final notifier = container.read(authProvider.notifier);
