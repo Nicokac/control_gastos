@@ -7,6 +7,12 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ## [Unreleased]
 
+---
+
+## [Mobile 1.26.0+34] — 2026-11-09
+
+Primer sistema de notificaciones push (D-019). El backend de esta versión tiene que estar desplegado en producción (merge de `develop` a `main`) antes de publicar el build: la app usa los endpoints nuevos de `/api/v1/notifications/`. Sin cambios visibles en la web (sigue en 1.29.3).
+
 ### Added
 
 - **Notificaciones push — Fase A: registro de token de dispositivo (D-019)**: nueva app `apps/notifications` con el modelo `DeviceToken` y el endpoint `POST/DELETE /api/v1/notifications/device-token/` para que la app mobile registre/desregistre su token FCM. Primer paso de la construcción por fases de recordatorios push de gastos fijos próximos a vencer — todavía no se envía ningún push. Sin impacto visible.

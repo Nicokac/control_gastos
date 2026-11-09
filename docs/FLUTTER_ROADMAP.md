@@ -7,9 +7,11 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 
 ## Estado Actual
 
-- ✅ Backend Django completo (web app funcional en producción — v1.22.0)
+- ✅ Backend Django completo (web app funcional en producción — v1.29.3)
 - ✅ API REST completa (DRF + JWT, todos los endpoints)
-- ✅ App Flutter publicada en Google Play Console — Prueba interna (Mobile 1.16.0+10)
+- ✅ App Flutter en Google Play Console — prueba interna (Mobile 1.25.3+33 publicada; 1.26.0+34 lista para subir)
+- ✅ Prueba cerrada con testers completada (requisito de Google Play para pedir acceso a producción)
+- ⏳ Pendiente: solicitar a Google Play Console el acceso a producción para publicar la app oficialmente (ver Fase 8)
 
 ---
 
@@ -214,7 +216,7 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 - [x] `flutter build appbundle --release` — app-release.aab generado (54 MB)
 - [x] Application ID: `app.controlgastos`, nombre: "Control de Gastos", versión: 1.12.0+1
 - [x] Keystore de firma configurado
-- [x] Android: Google Play Console — cuenta verificada, app publicada (versión actual: 1.15.1+5)
+- [x] Android: Google Play Console — cuenta verificada, app publicada en prueba interna (ver "Estado Actual" para la versión vigente)
 
 ---
 
@@ -247,6 +249,26 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 - [x] DT-049 — deshacer "marcar pagado" en gastos fijos
 - [x] DT-054 (mobile) — proyección de cierre de período en dashboard
 - [x] Fix — selector de ícono al crear categoría + caché de categorías no invalidada al crear gasto
+
+---
+
+## FASE 8 — Notificaciones y lanzamiento oficial
+**Estado:** 🚧 En curso
+
+### 8.1 Notificaciones push (D-019)
+- [x] Registro del dispositivo, envío desde el backend y recordatorios de gastos fijos (Fases A-C2)
+- [x] Envío diario en producción vía GitHub Actions (Fase D)
+- [x] Campanita con historial y preferencia (Fase C3)
+- [x] Bump a 1.26.0+34
+- [ ] Merge `develop` → `main`, ejecución manual del workflow "Recordatorios push" y verificación en producción
+- [ ] AAB 1.26.0+34 subido a Play Console (después del deploy del backend)
+- [ ] Fase E: próximas notificaciones — E1 vencido sin pagar y E2 umbral de gastos en 1.27.0; E3-E5 después (detalle en D-019)
+
+### 8.2 Publicación oficial en Google Play
+- [x] Prueba cerrada con testers por el período que exige Google Play
+- [ ] Solicitar acceso a producción en Play Console (cuestionario sobre la prueba cerrada)
+- [ ] Revisar la ficha de la tienda antes de publicar (descripción, capturas, sitio de contacto; ver D-020 por el dominio propio)
+- [ ] Publicar en producción
 
 ---
 
@@ -360,3 +382,4 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-11-09 | Fase 4 | Notificaciones push, Fase B2 (D-019): `firebase_core` + `firebase_messaging`, permiso de notificaciones, registro del dispositivo por FID al iniciar sesión y desregistro en el logout. Verificado en emulador. |
 | 2026-11-09 | Fase 4 | Notificaciones push, Fase C2 (D-019): ícono y canal propios, aviso dentro de la app en primer plano y navegación a Gastos fijos al tocar la notificación. Verificado en emulador con la app abierta, minimizada y cerrada. |
 | 2026-11-09 | Fase 4 | Notificaciones push, Fase C3b (D-019): campanita en el dashboard con punto de no leídos, pantalla Notificaciones con historial y el interruptor de recordatorios de gastos fijos. Verificado en emulador. |
+| 2026-11-09 | Fase 5 | Bump versión mobile a 1.26.0+34 (notificaciones push). Se documentan el lanzamiento pendiente, la solicitud de acceso a producción en Google Play y las próximas notificaciones (Fase E de D-019). |

@@ -1760,7 +1760,7 @@ El miembro no puede cargar gastos por su cuenta ni ver el historial. Si el dueñ
 ## D-019 — Notificaciones push: diseño y Fase A (registro de token)
 
 **Fecha:** 2026-10-30
-**Estado:** 🚧 En progreso (todas las fases completas en `develop`; pendiente el deploy a producción y el build mobile 1.26.0)
+**Estado:** 🚧 En progreso (Fases A-D completas en `develop`, Mobile 1.26.0+34; pendientes el lanzamiento y la Fase E)
 
 ### Contexto
 El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, ni recordatorios programados) — todo lo relacionado a "alertas" (`monthly_alert_threshold`, `alert_threshold`) es puramente pasivo: se calcula y muestra solo cuando el usuario abre el dashboard. Se decidió construir la primera notificación proactiva real: recordatorio push de gastos fijos próximos a vencer.
@@ -1844,6 +1844,25 @@ El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, 
 - **Tocar un aviso** reutiliza `routeForPushData`, así el historial navega igual que la notificación del sistema.
 - 14 tests nuevos: `test/unit/notifications_provider_test.dart` (contador con y sin sesión, marcado al abrir, recálculo del punto, sin marcado si ya estaban leídos, falla de red, formato de fecha) y `test/widget/notifications_screen_test.dart` (vacío, historial, interruptor reflejando y guardando la preferencia, error al guardar).
 - Verificado en emulador: punto en la campanita, aviso nuevo resaltado, punto que desaparece al volver, interruptor persistido en el backend y navegación a Gastos fijos.
+
+
+### Lanzamiento de la Mobile 1.26.0+34 (pendiente)
+1. Merge de `develop` a `main`: despliega las migraciones (`notifications` 0002-0003, `users` 0005), los endpoints nuevos y el workflow `reminders.yml`. `FIREBASE_CREDENTIALS_PATH` y `CRON_SECRET` ya están cargados en Render y en GitHub.
+2. Disparar a mano el workflow "Recordatorios push" desde Actions y comprobar que responde `{"sent": N}`.
+3. Recién después, compilar el AAB 1.26.0+34 y subirlo a Play Console. Si se publica antes del deploy, la app pide endpoints que todavía no existen en producción.
+
+### Fase E — Próximas notificaciones (pendiente)
+Relevadas al cerrar la Mobile 1.26.0, ordenadas por valor y costo. Cada tipo nuevo necesita su propio interruptor en la pantalla Notificaciones (un `BooleanField` por tipo en `User`, como `recurring_reminders_enabled`), su propio `NotificationType`, su ruta en `routeForPushData` y, si conviene silenciarlo por separado, su canal de Android. Por eso se agrupan en un mismo build mobile.
+
+| Id | Aviso | Disparador | Por defecto | Estado |
+|---|---|---|---|---|
+| E1 | **Gasto fijo vencido sin pagar**: al día siguiente del vencimiento, si no se registró el pago | Cron diario existente (`reminders.py`, mismo log por vencimiento con otro tipo) | Activado | ⏳ Próximo (Mobile 1.27.0) |
+| E2 | **Umbral de gastos superado**: cuando los gastos del mes cruzan `alert_threshold` (80% por defecto) de los ingresos, una sola vez por mes | Al crear o editar un gasto (evento, no cron) | Activado | ⏳ Próximo (Mobile 1.27.0) |
+| E3 | **Recordatorio de carga** a las 22:00, solo si no se cargó ningún gasto ese día (o en 2 días) | Cron diario nuevo (01:00 UTC) | **Desactivado** (opt-in): es el que más rápido cansa | ⏳ Después de evaluar el uso de E1/E2 |
+| E4 | **Inicio del mes financiero**: el día `financial_month_start_day`, con el sobrante del mes anterior y la sugerencia de usarlo | Cron diario | A definir | ⏳ Pendiente |
+| E5 | **Ingreso recurrente esperado**: "¿ya cobraste? registralo" | Cron diario | A definir | ⏳ Pendiente |
+
+Descartado: avisos de gastos compartidos. Los miembros del hogar no tienen cuenta (D-018), así que no hay a quién enviarles el push.
 
 ---
 
