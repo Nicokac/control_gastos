@@ -1851,18 +1851,28 @@ El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, 
 2. Disparar a mano el workflow "Recordatorios push" desde Actions y comprobar que responde `{"sent": N}`.
 3. Recién después, compilar el AAB 1.26.0+34 y subirlo a Play Console. Si se publica antes del deploy, la app pide endpoints que todavía no existen en producción.
 
-### Fase E — Próximas notificaciones (pendiente)
+### Fase E — Próximas notificaciones (en curso)
 Relevadas al cerrar la Mobile 1.26.0, ordenadas por valor y costo. Cada tipo nuevo necesita su propio interruptor en la pantalla Notificaciones (un `BooleanField` por tipo en `User`, como `recurring_reminders_enabled`), su propio `NotificationType`, su ruta en `routeForPushData` y, si conviene silenciarlo por separado, su canal de Android. Por eso se agrupan en un mismo build mobile.
 
 | Id | Aviso | Disparador | Por defecto | Estado |
 |---|---|---|---|---|
-| E1 | **Gasto fijo vencido sin pagar**: al día siguiente del vencimiento, si no se registró el pago | Cron diario existente (`reminders.py`, mismo log por vencimiento con otro tipo) | Activado | ⏳ Próximo (Mobile 1.27.0) |
-| E2 | **Umbral de gastos superado**: cuando los gastos del mes cruzan `alert_threshold` (80% por defecto) de los ingresos, una sola vez por mes | Al crear o editar un gasto (evento, no cron) | Activado | ⏳ Próximo (Mobile 1.27.0) |
+| E1 | **Gasto fijo vencido sin pagar**: al día siguiente del vencimiento, si no se registró el pago | Cron diario existente (`reminders.py`, mismo log por vencimiento con otro tipo) | Activado (mismo interruptor que los recordatorios) | 🟡 Backend listo; falta mobile (1.27.0) |
+| E2 | **Umbral de gastos superado**, dos variantes (decisión del usuario: ambas): gastos del período que cruzan `alert_threshold` (80% por defecto) de los ingresos, y una subcategoría que supera su `monthly_alert_threshold` en pesos. Cada aviso una sola vez por período | Al crear o editar un gasto (evento, no cron) | Activado | ⏳ Próximo (Mobile 1.27.0) |
 | E3 | **Recordatorio de carga** a las 22:00, solo si no se cargó ningún gasto ese día (o en 2 días) | Cron diario nuevo (01:00 UTC) | **Desactivado** (opt-in): es el que más rápido cansa | ⏳ Después de evaluar el uso de E1/E2 |
 | E4 | **Inicio del mes financiero**: el día `financial_month_start_day`, con el sobrante del mes anterior y la sugerencia de usarlo | Cron diario | A definir | ⏳ Pendiente |
 | E5 | **Ingreso recurrente esperado**: "¿ya cobraste? registralo" | Cron diario | A definir | ⏳ Pendiente |
 
 Descartado: avisos de gastos compartidos. Los miembros del hogar no tienen cuenta (D-018), así que no hay a quién enviarles el push.
+
+**Orden de despliegue de la Fase E**: el backend de E1/E2 no se pasa a `main` hasta tener lista la Mobile 1.27.0. La 1.26.0 mostraría estos avisos, pero tocarlos no navegaría a ningún lado (`routeForPushData` no conoce los tipos nuevos).
+
+### Fase E1 — Resolución técnica (gasto fijo vencido sin pagar)
+- **Mismo cron y mismo interruptor**: `send_recurring_reminders` envía en una sola ejecución los "por vencer" (vencen en 3 días) y los "vencidos" (vencieron ayer sin pago). Para el usuario los dos son recordatorios de gastos fijos, así que `recurring_reminders_enabled` controla ambos en vez de sumar otro interruptor.
+- **Débitos automáticos excluidos**: igual que `RecurringExpense.status_for`, un débito automático nunca queda "vencido" porque se paga solo.
+- **Avisos separados**: si el mismo día hay gastos por vencer y vencidos, llegan dos pushes (tipos `recurring_reminder` y `recurring_overdue`), porque el tono y la urgencia son distintos.
+- **Log por tipo**: `RecurringReminderLog` suma el campo `kind` (`due_soon`/`overdue`) y la unicidad pasa a ser (gasto fijo, vencimiento, tipo). Sin esto, el aviso de "vence en 3 días" bloqueaba el de "venció ayer" del mismo vencimiento. Los registros existentes quedan como `due_soon`.
+- **Exclusión con subconsulta**: `exclude(reminder_logs__due_date=..., reminder_logs__kind=...)` sobre una relación de muchos no exige que ambas condiciones se cumplan en el mismo registro, y excluía gastos por logs de otra fecha y otro tipo. Se reemplazó por `exclude(pk__in=<logs de esa fecha y ese tipo>)`.
+- 10 tests nuevos en `test_reminders.py`: aviso, pagado, débito automático, preferencia apagada, doble ejecución, independencia entre tipos, logs cruzados, avisos separados, cambio de mes y mensaje en plural.
 
 ---
 

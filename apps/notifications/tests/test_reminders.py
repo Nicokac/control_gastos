@@ -6,8 +6,12 @@ from django.core.management import CommandError, call_command
 import pytest
 
 from apps.notifications import reminders
-from apps.notifications.models import DeviceToken, Notification, RecurringReminderLog
-from apps.notifications.reminders import build_reminder_body, send_recurring_reminders
+from apps.notifications.models import DeviceToken, Notification, RecurringReminderLog, ReminderKind
+from apps.notifications.reminders import (
+    build_overdue_body,
+    build_reminder_body,
+    send_recurring_reminders,
+)
 from apps.recurring.models import RecurringExpense
 
 # Hoy simulado: 7/11/2026 -> los recordatorios apuntan al 10/11/2026.
@@ -159,6 +163,114 @@ class TestRecurringRemindersHistorial:
         assert Notification.objects.count() == 1
 
 
+# Ayer simulado: 6/11/2026.
+YESTERDAY_DUE_DAY = 6
+
+
+@pytest.mark.django_db
+class TestRecurringOverdueReminders:
+    def test_avisa_gasto_que_vencio_ayer_sin_pagar(self, user, device, make_recurring, sent_pushes):
+        rec = make_recurring(due_day=YESTERDAY_DUE_DAY)
+
+        assert send_recurring_reminders(TODAY) == 1
+
+        call = sent_pushes["calls"][0]
+        assert call["title"] == "Gastos fijos vencidos"
+        assert call["body"] == "Ayer venció Alquiler y todavía no registraste el pago."
+        assert call["data"] == {"type": "recurring_overdue"}
+        assert RecurringReminderLog.objects.filter(
+            recurring=rec, due_date=date(2026, 11, 6), kind=ReminderKind.OVERDUE
+        ).exists()
+        assert Notification.objects.get().type == "recurring_overdue"
+
+    def test_no_avisa_si_se_pago(
+        self, user, device, make_recurring, expense_category, expense_factory, sent_pushes
+    ):
+        rec = make_recurring(due_day=YESTERDAY_DUE_DAY)
+        expense_factory(user, expense_category, recurring=rec, date=date(2026, 11, 6))
+
+        send_recurring_reminders(TODAY)
+
+        assert sent_pushes["calls"] == []
+
+    def test_no_avisa_debito_automatico(self, device, make_recurring, sent_pushes):
+        make_recurring(due_day=YESTERDAY_DUE_DAY, is_auto_debit=True)
+
+        send_recurring_reminders(TODAY)
+
+        assert sent_pushes["calls"] == []
+
+    def test_no_avisa_si_el_usuario_desactivo_los_recordatorios(
+        self, user, device, make_recurring, sent_pushes
+    ):
+        user.recurring_reminders_enabled = False
+        user.save()
+        make_recurring(due_day=YESTERDAY_DUE_DAY)
+
+        send_recurring_reminders(TODAY)
+
+        assert sent_pushes["calls"] == []
+
+    def test_no_reenvia_si_el_cron_corre_dos_veces(self, device, make_recurring, sent_pushes):
+        make_recurring(due_day=YESTERDAY_DUE_DAY)
+
+        send_recurring_reminders(TODAY)
+        send_recurring_reminders(TODAY)
+
+        assert len(sent_pushes["calls"]) == 1
+
+    def test_el_aviso_por_vencer_no_impide_el_de_vencido(self, device, make_recurring, sent_pushes):
+        rec = make_recurring(due_day=YESTERDAY_DUE_DAY)
+        RecurringReminderLog.objects.create(
+            recurring=rec, due_date=date(2026, 11, 6), kind=ReminderKind.DUE_SOON
+        )
+
+        send_recurring_reminders(TODAY)
+
+        assert sent_pushes["calls"][0]["data"] == {"type": "recurring_overdue"}
+
+    def test_logs_de_otra_fecha_y_otro_tipo_no_lo_excluyen(
+        self, device, make_recurring, sent_pushes
+    ):
+        rec = make_recurring()
+        RecurringReminderLog.objects.create(
+            recurring=rec, due_date=date(2026, 11, 10), kind=ReminderKind.OVERDUE
+        )
+        RecurringReminderLog.objects.create(
+            recurring=rec, due_date=date(2026, 10, 10), kind=ReminderKind.DUE_SOON
+        )
+
+        send_recurring_reminders(TODAY)
+
+        assert sent_pushes["calls"][0]["data"] == {"type": "recurring_reminder"}
+
+    def test_por_vencer_y_vencidos_llegan_en_avisos_separados(
+        self, device, make_recurring, sent_pushes
+    ):
+        make_recurring(name="Alquiler")
+        make_recurring(name="Luz", due_day=YESTERDAY_DUE_DAY)
+
+        assert send_recurring_reminders(TODAY) == 2
+
+        assert [c["data"]["type"] for c in sent_pushes["calls"]] == [
+            "recurring_reminder",
+            "recurring_overdue",
+        ]
+
+    def test_cambio_de_mes_dia_31_vencido_el_30(self, device, make_recurring, sent_pushes):
+        make_recurring(due_day=31)
+
+        send_recurring_reminders(date(2026, 12, 1))
+
+        assert [c["data"]["type"] for c in sent_pushes["calls"]] == ["recurring_overdue"]
+
+    def test_mensaje_en_plural(self, make_recurring, device):
+        recs = [make_recurring(name="Alquiler"), make_recurring(name="Luz")]
+        assert build_overdue_body(recs) == (
+            "Ayer vencieron Alquiler y Luz y todavía no registraste los pagos."
+        )
+
+
 @pytest.mark.django_db
 class TestRecurringRemindersFechas:
     def test_dia_31_vence_el_ultimo_dia_de_un_mes_de_30(self, device, make_recurring, sent_pushes):
@@ -294,4 +406,4 @@ class TestSendRecurringRemindersCommand:
 
         call_command("send_recurring_reminders", "--date", "2026-11-07", stdout=out)
 
-        assert "Usuarios notificados: 1" in out.getvalue()
+        assert "Avisos enviados: 1" in out.getvalue()

@@ -7,6 +7,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **Notificaciones push — Fase E1: gasto fijo vencido sin pagar (D-019)**: el cron diario también avisa, al día siguiente del vencimiento, los gastos fijos que no se pagaron (los de débito automático no, porque se pagan solos). Lo controla el mismo interruptor de recordatorios de gastos fijos. `RecurringReminderLog` suma el tipo de aviso para no mezclar los "por vencer" con los "vencidos". Se publica junto con la Mobile 1.27.0.
+
 ### Changed
 
 - **Política de Privacidad actualizada: notificaciones push**: con la Mobile 1.26.0 la app guarda el identificador de instalación de Firebase del dispositivo y envía avisos a través de Firebase Cloud Messaging (Google). Se agregan el dato recopilado, su uso (con cómo desactivarlo) y el proveedor, para que la política coincida con el formulario de seguridad de los datos de Google Play antes de pedir el acceso a producción.

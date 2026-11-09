@@ -6,7 +6,7 @@ from apps.notifications.reminders import send_recurring_reminders
 
 
 class Command(BaseCommand):
-    help = "Envía el recordatorio push de gastos fijos que vencen en 3 días (pensado para un cron diario)."
+    help = "Envía los avisos push de gastos fijos por vencer (en 3 días) y vencidos ayer sin pagar (cron diario)."
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -23,4 +23,4 @@ class Command(BaseCommand):
                 raise CommandError("--date debe tener formato AAAA-MM-DD.") from exc
 
         notified = send_recurring_reminders(today)
-        self.stdout.write(f"Usuarios notificados: {notified}")
+        self.stdout.write(f"Avisos enviados: {notified}")

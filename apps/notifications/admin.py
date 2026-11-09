@@ -18,11 +18,11 @@ class DeviceTokenAdmin(admin.ModelAdmin):
 
 @admin.register(RecurringReminderLog)
 class RecurringReminderLogAdmin(admin.ModelAdmin):
-    list_display = ("recurring", "due_date", "created_at")
-    list_filter = ("due_date",)
+    list_display = ("recurring", "due_date", "kind", "created_at")
+    list_filter = ("kind", "due_date")
     search_fields = ("recurring__name", "recurring__user__username")
     list_select_related = ("recurring", "recurring__user")
-    readonly_fields = ("recurring", "due_date", "created_at", "updated_at")
+    readonly_fields = ("recurring", "due_date", "kind", "created_at", "updated_at")
 
 
 @admin.register(Notification)

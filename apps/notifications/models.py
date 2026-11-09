@@ -57,11 +57,15 @@ class DeviceToken(TimestampMixin, models.Model):
         return f"{self.user} - {self.platform} ({self.token[:12]}...)"
 
 
-class RecurringReminderLog(TimestampMixin, models.Model):
-    """Recordatorio ya enviado para un gasto fijo y una fecha de vencimiento concreta.
+class ReminderKind(models.TextChoices):
+    DUE_SOON = "due_soon", "Por vencer"
+    OVERDUE = "overdue", "Vencido sin pagar"
 
-    La unicidad (gasto fijo, vencimiento) evita reenviar el mismo aviso si el
-    cron diario se ejecuta más de una vez.
+
+class RecurringReminderLog(TimestampMixin, models.Model):
+    """Recordatorio ya enviado para un gasto fijo, una fecha de vencimiento y un tipo de aviso.
+
+    La unicidad evita reenviar el mismo aviso si el cron diario se ejecuta más de una vez.
     """
 
     recurring = models.ForeignKey(
@@ -71,6 +75,12 @@ class RecurringReminderLog(TimestampMixin, models.Model):
         verbose_name="Gasto fijo",
     )
     due_date = models.DateField(verbose_name="Fecha de vencimiento")
+    kind = models.CharField(
+        max_length=20,
+        choices=ReminderKind.choices,
+        default=ReminderKind.DUE_SOON,
+        verbose_name="Tipo de aviso",
+    )
 
     class Meta:
         verbose_name = "Recordatorio enviado"
@@ -78,17 +88,18 @@ class RecurringReminderLog(TimestampMixin, models.Model):
         ordering = ["-due_date"]
         constraints = [
             models.UniqueConstraint(
-                fields=["recurring", "due_date"],
-                name="unique_reminder_per_recurring_due_date",
+                fields=["recurring", "due_date", "kind"],
+                name="unique_reminder_per_recurring_due_date_kind",
             ),
         ]
 
     def __str__(self):
-        return f"{self.recurring} - {self.due_date}"
+        return f"{self.recurring} - {self.due_date} ({self.get_kind_display()})"
 
 
 class NotificationType(models.TextChoices):
     RECURRING_REMINDER = "recurring_reminder", "Recordatorio de gastos fijos"
+    RECURRING_OVERDUE = "recurring_overdue", "Gastos fijos vencidos sin pagar"
 
 
 class Notification(TimestampMixin, models.Model):
