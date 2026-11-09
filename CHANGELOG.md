@@ -7,6 +7,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- **Política de Privacidad actualizada: notificaciones push**: con la Mobile 1.26.0 la app guarda el identificador de instalación de Firebase del dispositivo y envía avisos a través de Firebase Cloud Messaging (Google). Se agregan el dato recopilado, su uso (con cómo desactivarlo) y el proveedor, para que la política coincida con el formulario de seguridad de los datos de Google Play antes de pedir el acceso a producción.
+
 ---
 
 ## [Mobile 1.26.0+34] — 2026-11-09

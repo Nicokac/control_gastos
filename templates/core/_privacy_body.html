@@ -16,7 +16,7 @@
 
 <div class="container py-5" style="max-width: 760px;">
     <h1 class="h3 fw-bold mb-1">Política de Privacidad</h1>
-    <p class="text-muted small mb-5">Última actualización: octubre 2026</p>
+    <p class="text-muted small mb-5">Última actualización: noviembre 2026</p>
 
     <h2 class="h5 fw-semibold mt-4 mb-2">1. Qué datos recopilamos</h2>
     <p>Recopilamos únicamente los datos que vos ingresás:</p>
@@ -24,6 +24,7 @@
         <li><strong>Cuenta:</strong> nombre de usuario y dirección de email.</li>
         <li><strong>Datos financieros:</strong> gastos, ingresos, categorías, metas de ahorro y gastos fijos que registrás voluntariamente.</li>
         <li><strong>Datos técnicos:</strong> dirección IP y user agent, utilizados para detectar accesos no autorizados (protección contra fuerza bruta).</li>
+        <li><strong>Identificador del dispositivo (app móvil):</strong> si aceptás recibir notificaciones, guardamos el identificador de instalación que asigna Firebase a la app en tu celular. Sirve solo para enviarte los avisos y se desactiva cuando cerrás sesión.</li>
     </ul>
 
     <h2 class="h5 fw-semibold mt-4 mb-2">2. Cómo usamos tus datos</h2>
@@ -31,13 +32,14 @@
     <ul>
         <li>Mostrarte tus propios registros financieros dentro de la app.</li>
         <li>Enviarte emails transaccionales (recuperación de contraseña).</li>
+        <li>Enviarte notificaciones en la app móvil, como el recordatorio de un gasto fijo por vencer. Podés desactivarlas desde la campanita de la app o desde los ajustes de notificaciones de Android.</li>
         <li>Detectar y prevenir accesos no autorizados a tu cuenta.</li>
         <li>Diagnosticar errores técnicos para mantener la app funcionando correctamente.</li>
     </ul>
-    <p>No vendemos, compartimos ni cedemos tus datos a terceros con fines comerciales ni publicitarios. La única excepción son los registros técnicos de errores (ver punto 3), que no incluyen información personal ni financiera.</p>
+    <p>No vendemos, compartimos ni cedemos tus datos a terceros con fines comerciales ni publicitarios. Solo intervienen los proveedores que hacen funcionar el servicio (ver punto 3), y únicamente con los datos necesarios para su tarea.</p>
 
     <h2 class="h5 fw-semibold mt-4 mb-2">3. Dónde se almacenan tus datos</h2>
-    <p>Tus datos se almacenan en servidores de <strong>Render</strong> (render.com), proveedor de infraestructura en la nube ubicado en Estados Unidos. Los backups diarios de la base de datos se almacenan en <strong>Cloudflare R2</strong>. El servicio de email transaccional es provisto por <strong>Brevo</strong> (brevo.com). Cuando ocurre un error técnico, un registro de diagnóstico (sin tu nombre, email, IP ni datos financieros) se envía a <strong>Sentry</strong> (sentry.io), usado para detectar y corregir errores de la app.</p>
+    <p>Tus datos se almacenan en servidores de <strong>Render</strong> (render.com), proveedor de infraestructura en la nube ubicado en Estados Unidos. Los backups diarios de la base de datos se almacenan en <strong>Cloudflare R2</strong>. El servicio de email transaccional es provisto por <strong>Brevo</strong> (brevo.com). Cuando ocurre un error técnico, un registro de diagnóstico (sin tu nombre, email, IP ni datos financieros) se envía a <strong>Sentry</strong> (sentry.io), usado para detectar y corregir errores de la app. Las notificaciones de la app móvil se envían a través de <strong>Firebase Cloud Messaging</strong> (Google), que recibe el identificador del dispositivo y el texto del aviso (por ejemplo, el nombre de los gastos fijos por vencer) solo para entregarlo en tu celular.</p>
 
     <h2 class="h5 fw-semibold mt-4 mb-2">4. Cookies</h2>
     <p>Usamos únicamente cookies estrictamente necesarias para el funcionamiento de la app:</p>

@@ -260,12 +260,14 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 - [x] Envío diario en producción vía GitHub Actions (Fase D)
 - [x] Campanita con historial y preferencia (Fase C3)
 - [x] Bump a 1.26.0+34
-- [ ] Merge `develop` → `main`, ejecución manual del workflow "Recordatorios push" y verificación en producción
+- [x] Merge `develop` → `main`, ejecución manual del workflow "Recordatorios push" y verificación en producción (`{"sent": 0}`: sin dispositivos registrados hasta publicar la 1.26.0)
 - [ ] AAB 1.26.0+34 subido a Play Console (después del deploy del backend)
 - [ ] Fase E: próximas notificaciones — E1 vencido sin pagar y E2 umbral de gastos en 1.27.0; E3-E5 después (detalle en D-019)
 
 ### 8.2 Publicación oficial en Google Play
 - [x] Prueba cerrada con testers por el período que exige Google Play
+- [x] Política de Privacidad actualizada con Firebase Cloud Messaging (identificador del dispositivo y texto del aviso)
+- [ ] Formulario de seguridad de los datos en Play Console: agregar "Dispositivo u otros IDs" (funcionalidad de la app, no compartido, se puede borrar)
 - [ ] Solicitar acceso a producción en Play Console (cuestionario sobre la prueba cerrada)
 - [ ] Revisar la ficha de la tienda antes de publicar (descripción, capturas, sitio de contacto; ver D-020 por el dominio propio)
 - [ ] Publicar en producción
