@@ -55,3 +55,33 @@ class DeviceToken(TimestampMixin, models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.platform} ({self.token[:12]}...)"
+
+
+class RecurringReminderLog(TimestampMixin, models.Model):
+    """Recordatorio ya enviado para un gasto fijo y una fecha de vencimiento concreta.
+
+    La unicidad (gasto fijo, vencimiento) evita reenviar el mismo aviso si el
+    cron diario se ejecuta más de una vez.
+    """
+
+    recurring = models.ForeignKey(
+        "recurring.RecurringExpense",
+        on_delete=models.CASCADE,
+        related_name="reminder_logs",
+        verbose_name="Gasto fijo",
+    )
+    due_date = models.DateField(verbose_name="Fecha de vencimiento")
+
+    class Meta:
+        verbose_name = "Recordatorio enviado"
+        verbose_name_plural = "Recordatorios enviados"
+        ordering = ["-due_date"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["recurring", "due_date"],
+                name="unique_reminder_per_recurring_due_date",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.recurring} - {self.due_date}"

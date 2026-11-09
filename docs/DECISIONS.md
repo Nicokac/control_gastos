@@ -1776,7 +1776,9 @@ El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, 
 - **Fase B (✅ completa)**: integración real de Firebase, dividida en dos entregas:
   - **B1 (✅ completa)**: envío desde Django vía `firebase-admin`.
   - **B2 (✅ completa)**: SDK en Flutter (`firebase_core`, `firebase_messaging`), `google-services.json`, permiso de notificaciones y registro/desregistro del dispositivo contra el endpoint de la Fase A.
-- **Fase C (pendiente)**: management command que recorre `RecurringExpense` activos, calcula vencimientos a 3 días, dispara el push diferenciado, y evita reenvíos duplicados para el mismo gasto fijo en el mismo período.
+- **Fase C (en curso)**: recordatorios reales, divididos en dos entregas:
+  - **C1 (✅ completa)**: management command que recorre `RecurringExpense` activos, calcula vencimientos a 3 días, dispara el push y evita reenvíos duplicados.
+  - **C2 (pendiente)**: cómo se ve el aviso en mobile (ícono, canal propio, app en primer plano, navegación al tocarlo).
 - **Fase D (pendiente)**: workflow de GitHub Actions con el cron diario contra producción.
 
 ### Fase A — Resolución técnica
@@ -1801,7 +1803,16 @@ El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, 
 - **Verificación end-to-end en emulador** (Pixel 8, API 34 con Google Play, backend local): registro del FID, push de `send_test_push` recibido con la app en segundo plano, y logout que desactiva el dispositivo (un segundo envío llega a 0 dispositivos).
 - 11 tests nuevos en mobile: `test/unit/push_notification_service_test.dart` (permiso denegado, registro, envío y persistencia del FID, reenvío del FID guardado, falla de red, desregistro) y 3 en `auth_provider_test.dart` (registro tras login, login exitoso aunque falle el push, desregistro antes del JWT y logout aunque falle el push).
 
-**Pendiente para la Fase C** (todo sobre cómo se ve el recordatorio, por eso no se resolvió acá):
+### Fase C1 — Resolución técnica (recordatorios desde backend)
+- **Un push agrupado por usuario y por día** (decisión de producto): si vencen varios gastos fijos el mismo día, llega una sola notificación con todos (ej. "En 3 días vencen Alquiler y Luz; se debita automáticamente Internet."), en vez de una por gasto. Los débitos automáticos se incluyen con tono informativo, como se acordó en el diseño (DT-089).
+- **Qué gastos se avisan** (`apps/notifications/reminders.py::recurrings_due_on`): activos, de usuarios con al menos un dispositivo activo, con vencimiento exactamente dentro de 3 días (`timezone.localdate()`, hora de Argentina), sin pago registrado en el mes de ese vencimiento y cuyo `start_date` no sea posterior a ese mes.
+- **Día de vencimiento inexistente**: un gasto con `due_day` 29-31 vence el último día del mes en los meses más cortos (ej. día 31 → 30/11 o 28/2). Sin esto, esos gastos nunca recibirían aviso en esos meses.
+- **Sin duplicados**: modelo `RecurringReminderLog` con `UniqueConstraint(recurring, due_date)`. El cron puede ejecutarse más de una vez el mismo día (reintento manual o de GitHub Actions) sin reenviar. Se registra solo si el push llegó a al menos un dispositivo: si no llegó (credenciales ausentes, dispositivos inválidos), puede reintentarse en otra ejecución.
+- **Payload** `{"type": "recurring_reminder"}` para que mobile sepa a qué pantalla navegar al tocar el aviso (C2).
+- Comando `send_recurring_reminders [--date AAAA-MM-DD]`: `--date` permite simular otro "hoy" para probar sin esperar a un vencimiento real.
+- 21 tests nuevos (`apps/notifications/tests/test_reminders.py`): selección (vence/no vence, inactivo, pagado, pago del mes anterior, inicio posterior, sin dispositivo), fechas (día 31 en mes de 30, días 29-31 en febrero, cambio de mes y de año), envío (agrupación con débito automático mezclado, aislamiento entre usuarios, doble ejecución, reintento si no se entregó, hora local por defecto) y el comando.
+
+**Pendiente para la Fase C2** (todo sobre cómo se ve el recordatorio en mobile):
 - Ícono monocromo propio para la notificación (`com.google.firebase.messaging.default_notification_icon`); hoy Android muestra un círculo vacío.
 - Canal de notificación propio (ej. "Recordatorios de gastos fijos") en vez del canal genérico `fcm_fallback_notification_channel`, para que el usuario pueda silenciarlo por separado.
 - Mostrar el push cuando la app está en primer plano: FCM no muestra la notificación del sistema en ese caso (requiere `onMessage` + aviso en la UI o notificación local).
