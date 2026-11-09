@@ -11,7 +11,9 @@ const _kRegisteredFidKey = 'push_registered_fid';
 /// Pantalla a abrir según el `type` que manda el backend en el push.
 String? routeForPushData(Map<String, dynamic> data) {
   return switch (data['type']) {
-    'recurring_reminder' => '/recurring',
+    'recurring_reminder' || 'recurring_overdue' => '/recurring',
+    'spending_threshold' => '/expenses',
+    'category_threshold' => '/categories',
     _ => null,
   };
 }

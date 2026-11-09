@@ -95,6 +95,18 @@ void main() {
       expect(routeForPushData({'type': 'recurring_reminder'}), '/recurring');
     });
 
+    test('el gasto fijo vencido abre Gastos fijos', () {
+      expect(routeForPushData({'type': 'recurring_overdue'}), '/recurring');
+    });
+
+    test('la alerta de umbral del período abre Gastos', () {
+      expect(routeForPushData({'type': 'spending_threshold'}), '/expenses');
+    });
+
+    test('la alerta de límite de subcategoría abre Categorías', () {
+      expect(routeForPushData({'type': 'category_threshold'}), '/categories');
+    });
+
     test('un tipo desconocido no navega', () {
       expect(routeForPushData({'type': 'otro'}), isNull);
     });

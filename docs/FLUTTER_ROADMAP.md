@@ -9,7 +9,7 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 
 - ✅ Backend Django completo (web app funcional en producción — v1.29.3)
 - ✅ API REST completa (DRF + JWT, todos los endpoints)
-- ✅ App Flutter en Google Play Console — prueba interna (Mobile 1.25.3+33 publicada; 1.26.0+34 lista para subir)
+- ✅ App Flutter en Google Play Console — prueba interna (Mobile 1.26.0+34; 1.27.0+35 lista para subir tras el deploy del backend)
 - ✅ Prueba cerrada con testers completada (requisito de Google Play para pedir acceso a producción)
 - ⏳ Pendiente: solicitar a Google Play Console el acceso a producción para publicar la app oficialmente (ver Fase 8)
 
@@ -262,7 +262,9 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 - [x] Bump a 1.26.0+34
 - [x] Merge `develop` → `main`, ejecución manual del workflow "Recordatorios push" y verificación en producción (`{"sent": 0}`: sin dispositivos registrados hasta publicar la 1.26.0)
 - [ ] AAB 1.26.0+34 subido a Play Console (después del deploy del backend)
-- [ ] Fase E: próximas notificaciones — E1 vencido sin pagar y E2 umbral de gastos en 1.27.0; E3-E5 después (detalle en D-019)
+- [x] Fase E1 (gasto fijo vencido sin pagar) y E2 (alertas de gastos) — Mobile 1.27.0+35
+- [ ] Merge a `main` del backend de E1/E2 y AAB 1.27.0+35 subido a Play Console (en ese orden)
+- [ ] Fase E3-E5: recordatorio de carga, inicio del mes financiero, ingreso recurrente esperado (detalle en D-019)
 
 ### 8.2 Publicación oficial en Google Play
 - [x] Prueba cerrada con testers por el período que exige Google Play
@@ -385,3 +387,4 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-11-09 | Fase 4 | Notificaciones push, Fase C2 (D-019): ícono y canal propios, aviso dentro de la app en primer plano y navegación a Gastos fijos al tocar la notificación. Verificado en emulador con la app abierta, minimizada y cerrada. |
 | 2026-11-09 | Fase 4 | Notificaciones push, Fase C3b (D-019): campanita en el dashboard con punto de no leídos, pantalla Notificaciones con historial y el interruptor de recordatorios de gastos fijos. Verificado en emulador. |
 | 2026-11-09 | Fase 5 | Bump versión mobile a 1.26.0+34 (notificaciones push). Se documentan el lanzamiento pendiente, la solicitud de acceso a producción en Google Play y las próximas notificaciones (Fase E de D-019). |
+| 2026-11-09 | Fase 4 | Notificaciones push, Fase E (D-019): avisos de gastos fijos vencidos y alertas de gastos (umbral del período y límite de subcategoría), canal propio "Alertas de gastos", interruptor nuevo y navegación por tipo. Bump a 1.27.0+35. Verificado en emulador. |

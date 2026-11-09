@@ -26,11 +26,23 @@ class _FakeAuth extends AuthNotifier {
   }
 }
 
+final _reminders = find.widgetWithText(SwitchListTile, 'Recordatorios de gastos fijos');
+final _spending = find.widgetWithText(SwitchListTile, 'Alertas de gastos');
+
 void main() {
   late MockNotificationRepository repo;
 
-  Future<_FakeAuth> pumpScreen(WidgetTester tester, {bool enabled = true, bool saveOk = true}) async {
-    final auth = _FakeAuth({'id': 7, 'recurring_reminders_enabled': enabled}, saveOk: saveOk);
+  Future<_FakeAuth> pumpScreen(
+    WidgetTester tester, {
+    bool enabled = true,
+    bool spendingEnabled = true,
+    bool saveOk = true,
+  }) async {
+    final auth = _FakeAuth({
+      'id': 7,
+      'recurring_reminders_enabled': enabled,
+      'spending_alerts_enabled': spendingEnabled,
+    }, saveOk: saveOk);
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -81,29 +93,48 @@ void main() {
   testWidgets('el interruptor refleja la preferencia del perfil', (tester) async {
     await pumpScreen(tester, enabled: false);
 
-    final toggle = tester.widget<SwitchListTile>(find.byType(SwitchListTile));
+    final toggle = tester.widget<SwitchListTile>(_reminders);
     expect(toggle.value, isFalse);
   });
 
   testWidgets('apagar el interruptor guarda la preferencia', (tester) async {
     final auth = await pumpScreen(tester);
 
-    await tester.tap(find.byType(SwitchListTile));
+    await tester.tap(_reminders);
     await tester.pumpAndSettle();
 
     expect(auth.saved, [
       {'recurring_reminders_enabled': false},
     ]);
-    expect(tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value, isFalse);
+    expect(tester.widget<SwitchListTile>(_reminders).value, isFalse);
   });
 
   testWidgets('si no se puede guardar avisa y deja el interruptor como estaba', (tester) async {
     await pumpScreen(tester, saveOk: false);
 
-    await tester.tap(find.byType(SwitchListTile));
+    await tester.tap(_reminders);
     await tester.pumpAndSettle();
 
     expect(find.text('No se pudo guardar la preferencia'), findsOneWidget);
-    expect(tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value, isTrue);
+    expect(tester.widget<SwitchListTile>(_reminders).value, isTrue);
+  });
+
+  testWidgets('el interruptor de alertas refleja su propia preferencia', (tester) async {
+    await pumpScreen(tester, spendingEnabled: false);
+
+    expect(tester.widget<SwitchListTile>(_spending).value, isFalse);
+    expect(tester.widget<SwitchListTile>(_reminders).value, isTrue);
+  });
+
+  testWidgets('apagar las alertas de gastos guarda solo esa preferencia', (tester) async {
+    final auth = await pumpScreen(tester);
+
+    await tester.tap(_spending);
+    await tester.pumpAndSettle();
+
+    expect(auth.saved, [
+      {'spending_alerts_enabled': false},
+    ]);
+    expect(tester.widget<SwitchListTile>(_reminders).value, isTrue);
   });
 }

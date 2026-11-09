@@ -9,19 +9,29 @@ import io.flutter.embedding.android.FlutterActivity
 class MainActivity : FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        createRecurringRemindersChannel()
+        createChannel(
+            R.string.recurring_reminders_channel_id,
+            R.string.recurring_reminders_channel_name,
+            R.string.recurring_reminders_channel_description,
+        )
+        createChannel(
+            R.string.spending_alerts_channel_id,
+            R.string.spending_alerts_channel_name,
+            R.string.spending_alerts_channel_description,
+        )
     }
 
-    // FCM usa este canal por defecto (ver AndroidManifest). Crearlo es idempotente:
-    // si ya existe, Android conserva lo que el usuario haya configurado.
-    private fun createRecurringRemindersChannel() {
+    // Recordatorios es el canal por defecto de FCM (ver AndroidManifest); las alertas de
+    // gastos llegan con su canal desde el backend. Crearlos es idempotente: si ya existen,
+    // Android conserva lo que el usuario haya configurado y solo actualiza nombre y descripción.
+    private fun createChannel(idRes: Int, nameRes: Int, descriptionRes: Int) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val channel = NotificationChannel(
-            getString(R.string.recurring_reminders_channel_id),
-            getString(R.string.recurring_reminders_channel_name),
+            getString(idRes),
+            getString(nameRes),
             NotificationManager.IMPORTANCE_DEFAULT,
         ).apply {
-            description = getString(R.string.recurring_reminders_channel_description)
+            description = getString(descriptionRes)
         }
         getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
     }

@@ -1851,13 +1851,13 @@ El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, 
 2. Disparar a mano el workflow "Recordatorios push" desde Actions y comprobar que responde `{"sent": N}`.
 3. Recién después, compilar el AAB 1.26.0+34 y subirlo a Play Console. Si se publica antes del deploy, la app pide endpoints que todavía no existen en producción.
 
-### Fase E — Próximas notificaciones (en curso)
+### Fase E — Próximas notificaciones (E1 y E2 completas; E3-E5 pendientes)
 Relevadas al cerrar la Mobile 1.26.0, ordenadas por valor y costo. Cada tipo nuevo necesita su propio interruptor en la pantalla Notificaciones (un `BooleanField` por tipo en `User`, como `recurring_reminders_enabled`), su propio `NotificationType`, su ruta en `routeForPushData` y, si conviene silenciarlo por separado, su canal de Android. Por eso se agrupan en un mismo build mobile.
 
 | Id | Aviso | Disparador | Por defecto | Estado |
 |---|---|---|---|---|
-| E1 | **Gasto fijo vencido sin pagar**: al día siguiente del vencimiento, si no se registró el pago | Cron diario existente (`reminders.py`, mismo log por vencimiento con otro tipo) | Activado (mismo interruptor que los recordatorios) | 🟡 Backend listo; falta mobile (1.27.0) |
-| E2 | **Umbral de gastos superado**, dos variantes (decisión del usuario: ambas): gastos del período que cruzan `alert_threshold` (80% por defecto) de los ingresos, y una subcategoría que supera su `monthly_alert_threshold` en pesos. Cada aviso una sola vez por período | Al crear o editar un gasto (evento, no cron) | Activado (interruptor propio "Alertas de gastos") | 🟡 Backend listo; falta mobile (1.27.0) |
+| E1 | **Gasto fijo vencido sin pagar**: al día siguiente del vencimiento, si no se registró el pago | Cron diario existente (`reminders.py`, mismo log por vencimiento con otro tipo) | Activado (mismo interruptor que los recordatorios) | ✅ Mobile 1.27.0+35 |
+| E2 | **Umbral de gastos superado**, dos variantes (decisión del usuario: ambas): gastos del período que cruzan `alert_threshold` (80% por defecto) de los ingresos, y una subcategoría que supera su `monthly_alert_threshold` en pesos. Cada aviso una sola vez por período | Al crear o editar un gasto (evento, no cron) | Activado (interruptor propio "Alertas de gastos") | ✅ Mobile 1.27.0+35 |
 | E3 | **Recordatorio de carga** a las 22:00, solo si no se cargó ningún gasto ese día (o en 2 días) | Cron diario nuevo (01:00 UTC) | **Desactivado** (opt-in): es el que más rápido cansa | ⏳ Después de evaluar el uso de E1/E2 |
 | E4 | **Inicio del mes financiero**: el día `financial_month_start_day`, con el sobrante del mes anterior y la sugerencia de usarlo | Cron diario | A definir | ⏳ Pendiente |
 | E5 | **Ingreso recurrente esperado**: "¿ya cobraste? registralo" | Cron diario | A definir | ⏳ Pendiente |
@@ -1884,6 +1884,13 @@ Descartado: avisos de gastos compartidos. Los miembros del hogar no tienen cuent
 - **Textos sin montos**: la notificación se ve en la pantalla bloqueada y la app permite ocultar montos, así que el texto dice el porcentaje configurado o el nombre de la subcategoría, nunca cifras.
 - **Canal propio** `spending_alerts`: `send_push_to_user` acepta `channel_id` y lo manda en `AndroidConfig`. Sin canal, se usa el del manifest (recordatorios). La Mobile 1.27.0 crea el canal "Alertas de gastos"; si un push llega con un canal que la app todavía no creó, Android usa el canal por defecto.
 - **Preferencia propia** `User.spending_alerts_enabled` (activada por defecto), editable por `PUT /auth/me/`.
+### Fase E — Resolución técnica en mobile (1.27.0+35)
+- **Canal "Alertas de gastos"** (`spending_alerts`) creado en `MainActivity` junto al de recordatorios, con un helper común. La descripción del canal de recordatorios se actualizó para incluir los vencidos: Android actualiza nombre y descripción de un canal existente, pero nunca la configuración que eligió el usuario.
+- **Rutas por tipo** en `routeForPushData`: `recurring_overdue` → `/recurring`, `spending_threshold` → `/expenses`, `category_threshold` → `/categories`. Las usan tanto el toque en la notificación del sistema como el historial.
+- **Pantalla Notificaciones**: el interruptor se generalizó (`_PreferenceToggle`, un campo booleano del perfil) para sumar "Alertas de gastos" sin duplicar código. Ícono y color por tipo en el historial (`iconForNotificationType`).
+- 7 tests nuevos: 3 de rutas, 2 de íconos y 2 del interruptor de alertas (refleja y guarda solo su propia preferencia).
+- Verificado en emulador con el backend local: los dos canales creados; vencido por `recurring_reminders` y las dos alertas por `spending_alerts` (disparadas por la señal real al guardar un gasto); tocar cada aviso abre su pantalla; el interruptor de alertas persiste en el backend sin tocar el de recordatorios.
+
 - 25 tests nuevos: 23 en `test_spending_alerts.py` (umbral global y por subcategoría, límites exactos, umbral del usuario, sin ingresos, una vez por período, reintento sin entrega, gastos de otro período, aislamiento entre usuarios, ambas alertas en un gasto, preferencia, sin dispositivo, señal al crear y al editar, error que no rompe el guardado, cálculo del período financiero), 1 del canal en `test_services.py` y 1 de la preferencia en la API.
 
 ---

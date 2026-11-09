@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
@@ -130,6 +131,20 @@ void main() {
 
     test('antes de ayer muestra la fecha', () {
       expect(formatNotificationDate(DateTime(2026, 11, 7, 9), now), '07/11/2026');
+    });
+  });
+
+  group('iconForNotificationType', () {
+    test('cada tipo de aviso tiene su ícono', () {
+      expect(iconForNotificationType('recurring_reminder'), Icons.event_repeat);
+      expect(iconForNotificationType('recurring_overdue'), Icons.event_busy);
+      expect(iconForNotificationType('spending_threshold'), Icons.trending_up);
+      expect(iconForNotificationType('category_threshold'), Icons.trending_up);
+    });
+
+    test('un tipo desconocido usa el ícono de recordatorio', () {
+      expect(iconForNotificationType('otro'), Icons.event_repeat);
+      expect(iconForNotificationType(null), Icons.event_repeat);
     });
   });
 }

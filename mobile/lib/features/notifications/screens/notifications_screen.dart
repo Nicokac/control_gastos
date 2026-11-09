@@ -35,12 +35,23 @@ class NotificationsScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Notificaciones')),
       body: Column(
         children: [
-          const _RemindersToggle(),
+          const _PreferenceToggle(
+            field: 'recurring_reminders_enabled',
+            title: 'Recordatorios de gastos fijos',
+            subtitle: 'Antes de cada vencimiento y si quedó sin pagar',
+          ),
+          const _PreferenceToggle(
+            field: 'spending_alerts_enabled',
+            title: 'Alertas de gastos',
+            subtitle:
+                'Al superar el umbral del período o el límite de una subcategoría',
+          ),
           const Divider(height: 1),
           Expanded(
             child: notificationsAsync.when(
               loading: () => const ListSkeleton(),
-              error: (e, _) => ErrorStateView(error: e, onRetry: notifier.reload),
+              error: (e, _) =>
+                  ErrorStateView(error: e, onRetry: notifier.reload),
               data: (items) => RefreshIndicator(
                 onRefresh: notifier.reload,
                 child: items.isEmpty
@@ -51,15 +62,16 @@ class NotificationsScreen extends ConsumerWidget {
                             icon: Icons.notifications_none,
                             title: 'Sin notificaciones',
                             subtitle:
-                                'Te avisamos acá 3 días antes de que venza un gasto fijo',
+                                'Acá vas a ver los recordatorios de gastos fijos y las alertas de gastos',
                           ),
                         ],
                       )
                     : ListView.separated(
                         itemCount: items.length,
                         separatorBuilder: (_, _) => const Divider(height: 1),
-                        itemBuilder: (_, i) =>
-                            _NotificationTile(notification: items[i] as Map<String, dynamic>),
+                        itemBuilder: (_, i) => _NotificationTile(
+                          notification: items[i] as Map<String, dynamic>,
+                        ),
                       ),
               ),
             ),
@@ -70,21 +82,39 @@ class NotificationsScreen extends ConsumerWidget {
   }
 }
 
-class _RemindersToggle extends ConsumerStatefulWidget {
-  const _RemindersToggle();
-
-  @override
-  ConsumerState<_RemindersToggle> createState() => _RemindersToggleState();
+/// Ícono del historial según el tipo de aviso (D-019).
+IconData iconForNotificationType(String? type) {
+  return switch (type) {
+    'recurring_overdue' => Icons.event_busy,
+    'spending_threshold' || 'category_threshold' => Icons.trending_up,
+    _ => Icons.event_repeat,
+  };
 }
 
-class _RemindersToggleState extends ConsumerState<_RemindersToggle> {
+/// Interruptor de una preferencia booleana del perfil (`/auth/me/`).
+class _PreferenceToggle extends ConsumerStatefulWidget {
+  const _PreferenceToggle({
+    required this.field,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final String field;
+  final String title;
+  final String subtitle;
+
+  @override
+  ConsumerState<_PreferenceToggle> createState() => _PreferenceToggleState();
+}
+
+class _PreferenceToggleState extends ConsumerState<_PreferenceToggle> {
   bool _saving = false;
 
   Future<void> _toggle(bool enabled) async {
     setState(() => _saving = true);
-    final ok = await ref
-        .read(authProvider.notifier)
-        .updateProfile({'recurring_reminders_enabled': enabled});
+    final ok = await ref.read(authProvider.notifier).updateProfile({
+      widget.field: enabled,
+    });
     if (!mounted) return;
     setState(() => _saving = false);
     if (!ok) {
@@ -100,11 +130,11 @@ class _RemindersToggleState extends ConsumerState<_RemindersToggle> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(authProvider).valueOrNull;
-    final enabled = user?['recurring_reminders_enabled'] as bool? ?? true;
+    final enabled = user?[widget.field] as bool? ?? true;
 
     return SwitchListTile(
-      title: const Text('Recordatorios de gastos fijos'),
-      subtitle: const Text('Aviso 3 días antes de cada vencimiento'),
+      title: Text(widget.title),
+      subtitle: Text(widget.subtitle),
       value: enabled,
       onChanged: _saving ? null : _toggle,
     );
@@ -122,16 +152,25 @@ class _NotificationTile extends StatelessWidget {
     final route = routeForPushData({'type': notification['type']});
     final created = DateTime.parse(notification['created_at'] as String);
     final colorScheme = Theme.of(context).colorScheme;
+    final colors = context.semanticColors;
+    final type = notification['type'] as String?;
+    final iconColor = switch (type) {
+      'recurring_overdue' => colors.overdue,
+      'spending_threshold' || 'category_threshold' => colors.expense,
+      _ => colors.recurring,
+    };
 
     return ListTile(
       leading: Badge(
         isLabelVisible: unread,
         backgroundColor: colorScheme.primary,
-        child: Icon(Icons.event_repeat, color: context.semanticColors.recurring),
+        child: Icon(iconForNotificationType(type), color: iconColor),
       ),
       title: Text(
         notification['title'] as String? ?? '',
-        style: TextStyle(fontWeight: unread ? FontWeight.bold : FontWeight.normal),
+        style: TextStyle(
+          fontWeight: unread ? FontWeight.bold : FontWeight.normal,
+        ),
       ),
       subtitle: Text(notification['body'] as String? ?? ''),
       trailing: Text(
