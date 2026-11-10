@@ -1271,6 +1271,25 @@ Hallazgo incidental mientras se investigaba el mecanismo de `BrevoPasswordResetV
 
 ---
 
+### DT-108 — Producción sin emails desde mayo de 2026: API key de Brevo desactivada
+
+**Estado:** ✅ Resuelto (2026-11-10)
+
+Al verificar en producción el arreglo de DT-082, Sentry mostró `401 Unauthorized` de `https://api.brevo.com/v3/smtp/email`. En Brevo, la key `control-gastos-render` figuraba **Desactivada**, con último uso el 17/5/2026. No había bloqueo de IPs activo y la key nunca se commiteó (el historial del repo solo tiene placeholders `xkeysib-xxxx`). La causa más probable es la regla de Brevo que desactiva las claves API tras 90 días sin uso: con poco tráfico, no hubo emails entre mayo y agosto.
+
+**Impacto (mayo a noviembre de 2026):** ningún email de producción salió. No llegaron el reset de password (web y mobile), la verificación de email ni la bienvenida al registrarse, y el feedback de usuarios se perdió (el fallback Resend → SMTP tampoco está configurado en Render y el feedback no se guarda en la base). No bloqueó el acceso: `email_verified` no es requisito para loguearse.
+
+**Why:** los emails fallaban en silencio. `send_brevo_email` devuelve `False` y registra el error, pero el log no incluía el motivo de Brevo y nadie revisaba esos eventos; la pantalla de reset decía igual "te enviamos un correo".
+
+**Resolución:**
+- Key nueva `render-produccion` en Brevo, con acceso restringido (Emails transaccionales: Todos; Cuenta: Leer; el resto Ninguno) y vencimiento el 10/11/2027. Cargada como `BREVO_API_KEY` en Render. Verificado: el email de reset llegó.
+- `send_brevo_email` agrega al log el código y el motivo que devuelve Brevo (por ejemplo `401: Key not found`), para que Sentry muestre la causa exacta.
+- `check_brevo_account()` (en `apps/core/utils.py`) consulta `GET /v3/account` y registra un error si falla. Lo llama el cron diario (`RecurringRemindersCronView`, workflow "Recordatorios push"): mantiene la key en uso y, si deja de funcionar, Sentry avisa en menos de un día. La respuesta del cron incluye `brevo_ok`.
+
+**Riesgo aceptado:** no está confirmado que una consulta de lectura cuente como actividad para la regla de 90 días. Si no cuenta, el chequeo igual detecta la desactivación al día siguiente. La key vence el 10/11/2027 y hay que renovarla antes. El remitente sigue siendo `kachuknm@gmail.com`, que Brevo reescribe como `kachuknm@11205565.brevosend.com`; se resuelve con el dominio propio (D-020).
+
+---
+
 ### DT-083 — Mobile: sin recupero de contraseña
 
 **Estado:** ✅ Resuelto

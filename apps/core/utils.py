@@ -33,8 +33,34 @@ def send_brevo_email(to_email: str, subject: str, body: str) -> bool:
             timeout=10,
         ).raise_for_status()
         return True
-    except Exception:
-        logger.exception("Error al enviar email via Brevo a %s", to_email)
+    except Exception as exc:
+        logger.exception("Error al enviar email via Brevo a %s%s", to_email, _brevo_detail(exc))
+        return False
+
+
+def _brevo_detail(exc: Exception) -> str:
+    """Código y motivo que devuelve Brevo (p. ej. "401: Key not found"), si hubo respuesta."""
+    response = getattr(exc, "response", None)
+    if response is None:
+        return ""
+    return f" ({response.status_code}: {response.text[:200]})"
+
+
+def check_brevo_account() -> bool:
+    """Consulta la cuenta de Brevo para detectar una API key inválida o desactivada (DT-108)."""
+    brevo_api_key = getattr(settings, "BREVO_API_KEY", "")
+    if not brevo_api_key:
+        logger.error("BREVO_API_KEY no configurada: no se pueden enviar emails")
+        return False
+    try:
+        requests.get(
+            "https://api.brevo.com/v3/account",
+            headers={"api-key": brevo_api_key},
+            timeout=10,
+        ).raise_for_status()
+        return True
+    except Exception as exc:
+        logger.error("La API key de Brevo no funciona%s", _brevo_detail(exc))
         return False
 
 

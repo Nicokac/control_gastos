@@ -3,6 +3,8 @@
 # Corre todos los días a las 12:00 UTC (09:00 AR). Render free no tiene cron ni
 # shell, así que se dispara el envío por un endpoint protegido con CRON_SECRET.
 # El envío es idempotente (RecurringReminderLog): reintentar no duplica pushes.
+# También verifica la API key de Brevo (DT-108): la mantiene activa y deja un
+# error en Sentry si deja de funcionar. La respuesta incluye "brevo_ok".
 # Requiere los secrets PRODUCTION_URL y CRON_SECRET.
 # =============================================================================
 

@@ -8,6 +8,7 @@ from django.utils import timezone
 
 from apps.core.utils import (
     calculate_percentage,
+    check_brevo_account,
     format_currency,
     get_current_month_year,
     get_financial_period,
@@ -324,3 +325,63 @@ class TestSendBrevoEmail:
         call_kwargs = mock_post.call_args
         payload = call_kwargs.kwargs.get("json") or call_kwargs[1].get("json")
         assert payload["to"][0]["email"] == "destino@test.com"
+
+    def test_el_log_incluye_el_motivo_que_devuelve_brevo(self, settings, caplog):
+        from unittest.mock import patch
+
+        import requests as req
+
+        settings.BREVO_API_KEY = "fake-key"  # pragma: allowlist secret
+        response = req.Response()
+        response.status_code = 401
+        response._content = b'{"message":"Key not found","code":"unauthorized"}'
+
+        with patch(
+            "apps.core.utils.requests.post",
+            side_effect=req.HTTPError("401 Client Error", response=response),
+        ):
+            assert send_brevo_email("dest@example.com", "Asunto", "Cuerpo") is False
+
+        assert "401" in caplog.text
+        assert "Key not found" in caplog.text
+
+
+class TestCheckBrevoAccount:
+    def test_key_valida_devuelve_true(self, settings):
+        from unittest.mock import MagicMock, patch
+
+        settings.BREVO_API_KEY = "fake-key"  # pragma: allowlist secret
+        with patch(
+            "apps.core.utils.requests.get", return_value=MagicMock(status_code=200)
+        ) as mock_get:
+            assert check_brevo_account() is True
+
+        assert mock_get.call_args.args[0] == "https://api.brevo.com/v3/account"
+        assert mock_get.call_args.kwargs["headers"] == {"api-key": "fake-key"}
+
+    def test_key_desactivada_devuelve_false_y_registra_error(self, settings, caplog):
+        from unittest.mock import patch
+
+        import requests as req
+
+        settings.BREVO_API_KEY = "fake-key"  # pragma: allowlist secret
+        response = req.Response()
+        response.status_code = 401
+        response._content = b'{"message":"Key not found"}'
+
+        with patch("apps.core.utils.requests.get", return_value=response):
+            assert check_brevo_account() is False
+
+        assert any(r.levelname == "ERROR" for r in caplog.records)
+        assert "401: " in caplog.text
+        assert "Key not found" in caplog.text
+
+    def test_sin_key_devuelve_false_sin_llamar_a_brevo(self, settings, caplog):
+        from unittest.mock import patch
+
+        settings.BREVO_API_KEY = ""
+        with patch("apps.core.utils.requests.get") as mock_get:
+            assert check_brevo_account() is False
+
+        mock_get.assert_not_called()
+        assert "BREVO_API_KEY no configurada" in caplog.text

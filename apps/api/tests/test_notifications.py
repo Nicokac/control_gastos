@@ -147,14 +147,22 @@ class TestRecurringRemindersCronEndpoint:
             return 2
 
         monkeypatch.setattr("apps.api.v1.views.notifications.send_recurring_reminders", fake_send)
+        monkeypatch.setattr("apps.api.v1.views.notifications.check_brevo_account", lambda: True)
         return calls
 
     def test_con_secreto_correcto_envia_y_devuelve_cantidad(self, client, settings, sent_calls):
         settings.CRON_SECRET = self.secret
         response = client.post(self.url, HTTP_X_CRON_SECRET=self.secret)
         assert response.status_code == 200
-        assert response.json() == {"sent": 2}
+        assert response.json() == {"sent": 2, "brevo_ok": True}
         assert len(sent_calls) == 1
+
+    def test_informa_si_la_key_de_brevo_falla(self, client, settings, sent_calls, monkeypatch):
+        settings.CRON_SECRET = self.secret
+        monkeypatch.setattr("apps.api.v1.views.notifications.check_brevo_account", lambda: False)
+        response = client.post(self.url, HTTP_X_CRON_SECRET=self.secret)
+        assert response.status_code == 200
+        assert response.json() == {"sent": 2, "brevo_ok": False}
 
     def test_secreto_incorrecto_responde_403_sin_enviar(self, client, settings, sent_calls):
         settings.CRON_SECRET = self.secret
@@ -188,9 +196,10 @@ class TestRecurringRemindersCronEndpoint:
 
     def test_integracion_sin_dispositivos_no_envia_nada(self, client, settings):
         settings.CRON_SECRET = self.secret
+        settings.BREVO_API_KEY = ""
         response = client.post(self.url, HTTP_X_CRON_SECRET=self.secret)
         assert response.status_code == 200
-        assert response.json() == {"sent": 0}
+        assert response.json() == {"sent": 0, "brevo_ok": False}
 
 
 @pytest.fixture
