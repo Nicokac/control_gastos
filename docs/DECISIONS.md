@@ -2128,7 +2128,7 @@ Mencionado por Shenouda ("monthly reports chart loaded a bit faster when switchi
 - **Producción en caliente:** `/healthz/`, la landing y `/api/v1/` responden en 0,23 a 0,52 s, casi todo latencia de red hasta Render.
 - **API del dashboard mobile (local):** 15 consultas fijas y ~10 ms, igual con 5 que con 200 gastos.
 - **Producción en frío:** no se pudo medir. El intento a los 21 minutos respondió en 0,31 s porque hubo tráfico en el medio y el servicio seguía despierto. Para medirlo, repetir después de una noche sin uso: `curl -s -o /dev/null -w "%{time_total}s\n" https://controldegastos.ar/healthz/`.
-- **Planes en Render:** el servicio web está en **Free** (0,1 CPU, 512 MB), que se apaga tras 15 minutos sin tráfico. La base `control-gastos-db` está en **Basic** (US$ 6/mes, 0,1 CPU, 256 MB), que no se apaga ni vence. `render.yaml` todavía dice `plan: free` para la base: está desactualizado respecto del panel.
+- **Planes en Render:** el servicio web está en **Free** (0,1 CPU, 512 MB), que se apaga tras 15 minutos sin tráfico. La base `control-gastos-db` está en **Basic** (US$ 6/mes, 0,1 CPU, 256 MB), que no se apaga ni vence. `render.yaml` decía `plan: free` para la base; se corrigió a `basic-256mb` para que coincida con el panel.
 
 **Opciones evaluadas:**
 

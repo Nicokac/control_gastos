@@ -51,4 +51,4 @@ databases:
   - name: control-gastos-db
     databaseName: control_gastos_prod
     user: control_gastos_user
-    plan: free
+    plan: basic-256mb
