@@ -2125,6 +2125,18 @@ Mencionado por Shenouda ("monthly reports chart loaded a bit faster when switchi
 
 ---
 
+### DT-109 — Web: el selector de fecha muestra el formato en inglés (MM/DD/YYYY)
+
+**Estado:** ⏳ Pendiente
+
+Al cargar un gasto desde la web, el campo Fecha se ve como `11/10/2026` (mes/día/año) y el calendario tiene los días en inglés (Su, Mo, Tu...) y los botones "Clear" y "Today". Los campos usan `<input type="date">` nativo (`forms.DateInput(attrs={"type": "date"})` en gastos, ingresos, gastos fijos, ahorro y gastos compartidos). El navegador dibuja ese control con el idioma de su propia configuración, no con el `lang="es"` de la página, así que con Chrome o Windows en inglés se ve en formato estadounidense. El valor que viaja al servidor siempre es `YYYY-MM-DD`, por lo que los datos guardados son correctos: es un problema de presentación.
+
+**Why:** en Argentina `11/10/2026` se lee como 11 de octubre. Es fácil cargar un gasto en el mes equivocado sin darse cuenta, y afecta todos los reportes mensuales.
+
+**Camino de resolución:** el formato del control nativo no se puede cambiar desde la página. Opciones: (a) un datepicker JS liviano con idioma español (por ejemplo flatpickr desde CDN con versión fija, mostrando `d/m/Y` y enviando `Y-m-d`), aplicado a todos los `type="date"` desde un único script en `base.html`; (b) un campo de texto con máscara `DD/MM/AAAA` y parseo en el form de Django. La (a) mantiene el calendario y no toca el backend. En mobile no aplica: la app usa el selector de Flutter en español.
+
+---
+
 ### No reproducido: selector de ícono en "Apariencia" de Ahorro no responde al tap
 
 Reportado por Geri Rampersad: en la pantalla de crear meta de ahorro, los color dots del picker de color funcionan, pero los íconos de categoría (auto, casa, avión) arriba de ellos no responden al tocarlos.
