@@ -2115,13 +2115,30 @@ Es el pedido más repetido de la prueba cerrada: 8 de 14 testers (Tijani, Rhoda,
 
 ### DT-106 — Carga lenta de "reportes" o del gráfico (por confirmar)
 
-**Estado:** ⏳ Pendiente de reproducir
+**Estado:** ⏳ Pendiente (causa confirmada: arranque en frío de Render free; se deja así por ahora)
 
 Mencionado por Shenouda ("monthly reports chart loaded a bit faster when switching between categories") y Oderhohwo ("occasional slow loading on reports"). La app mobile no tiene una pantalla de reportes: lo más parecido es el gráfico "Gastos por categoría" del dashboard. Su alternancia entre porcentaje y monto es estado local (`expense_chart_view_provider.dart`) y no vuelve a pedir datos, así que no puede ser lenta por red. Lo que sí pide datos es cambiar de mes en el dashboard.
 
 **Why:** la causa más probable no está en la app sino en el hosting. El plan free de Render apaga el servicio sin tráfico y el primer pedido tarda ~1 minuto en despertarlo. Para un usuario real eso se ve como "la app tarda en cargar".
 
 **Camino de resolución:** medir en producción el tiempo de `GET /dashboard/` en caliente y en frío. Si el problema es el arranque en frío, las opciones son pasar a un plan pago de Render o mantener el servicio despierto con un ping periódico (por ejemplo, el mismo patrón de GitHub Actions de `reminders.yml`), teniendo en cuenta las horas mensuales del plan free. Si en caliente también es lento, revisar las consultas de `DashboardView` con `django_assert_max_num_queries`.
+
+**Análisis (2026-11-10):** el código no es la causa.
+
+- **Producción en caliente:** `/healthz/`, la landing y `/api/v1/` responden en 0,23 a 0,52 s, casi todo latencia de red hasta Render.
+- **API del dashboard mobile (local):** 15 consultas fijas y ~10 ms, igual con 5 que con 200 gastos.
+- **Producción en frío:** no se pudo medir. El intento a los 21 minutos respondió en 0,31 s porque hubo tráfico en el medio y el servicio seguía despierto. Para medirlo, repetir después de una noche sin uso: `curl -s -o /dev/null -w "%{time_total}s\n" https://controldegastos.ar/healthz/`.
+- **Planes en Render:** el servicio web está en **Free** (0,1 CPU, 512 MB), que se apaga tras 15 minutos sin tráfico. La base `control-gastos-db` está en **Basic** (US$ 6/mes, 0,1 CPU, 256 MB), que no se apaga ni vence. `render.yaml` todavía dice `plan: free` para la base: está desactualizado respecto del panel.
+
+**Opciones evaluadas:**
+
+| Opción | Costo | A favor | En contra |
+|---|---|---|---|
+| A. Monitor externo (UptimeRobot o similar) que visite `/healthz/` cada 5 minutos | $0, sin código | Mantiene el servicio despierto y avisa si la web se cae | Usa casi todas las horas gratis del mes (~744 de 750); no alcanza si se agrega otro servicio free |
+| B. Cron de GitHub Actions cada 10 minutos | $0, un workflow | Queda versionado en el repo | GitHub atrasa o saltea los cron programados: quedarían huecos de más de 15 minutos |
+| C. Render Starter para el servicio web | US$ 7/mes | Elimina el arranque en frío y suma recursos | Gasto fijo |
+
+**Decisión:** por ahora se deja como está, con pocos usuarios y en prueba cerrada. La opción A es la primera a aplicar si la lentitud molesta; la C, cuando la app tenga usuarios reales en producción. La B se descarta por los huecos.
 
 ---
 
