@@ -1,0 +1,303 @@
+// Control de Gastos: modelo de datos (PostgreSQL en producción, SQLite en desarrollo).
+// Para verlo como diagrama: pegar este archivo en https://dbdiagram.io/d
+// Generado a partir de los modelos de Django el 2026-11-10. Mantener en sync al cambiar modelos.
+// Todas las tablas salvo users_user heredan created_at / updated_at de TimeStampedModel.
+
+Project control_gastos {
+  database_type: 'PostgreSQL'
+  Note: 'Montos en ARS y USD. amount_ars se calcula en Python al guardar (D-001).'
+}
+
+// ---------------------------------------------------------------------------
+// Usuarios
+// ---------------------------------------------------------------------------
+
+Table users_user [headercolor: #0d6efd] {
+  id bigint [pk, increment]
+  username varchar(150) [unique, not null]
+  email varchar(254) [unique, not null, note: 'Login con email o usuario']
+  password varchar(128) [not null]
+  first_name varchar(150)
+  last_name varchar(150)
+  default_currency varchar(3) [note: 'ARS | USD']
+  alert_threshold int [note: 'Umbral global de alerta de gastos (%)']
+  financial_month_start_day smallint [note: 'Día en que arranca el mes financiero']
+  email_verified boolean
+  has_seen_tour boolean
+  recurring_reminders_enabled boolean [note: 'Push de gastos fijos (D-019)']
+  spending_alerts_enabled boolean [note: 'Push de alertas de gasto (D-019)']
+  is_active boolean
+  is_staff boolean
+  is_superuser boolean
+  last_login timestamp
+  date_joined timestamp
+}
+
+// ---------------------------------------------------------------------------
+// Categorías
+// ---------------------------------------------------------------------------
+
+Table categories_category [headercolor: #6610f2] {
+  id bigint [pk, increment]
+  name varchar(100) [not null]
+  type varchar(10) [not null, note: 'EXPENSE | INCOME']
+  is_system boolean [note: 'Las de sistema no tienen user']
+  user_id bigint [null, ref: > users_user.id]
+  parent_id bigint [null, ref: > categories_category.id, note: 'Grupo → subcategoría (D-011)']
+  order int
+  icon varchar(50)
+  color varchar(7)
+  monthly_alert_threshold decimal(12,2) [null, note: 'Límite mensual de la subcategoría']
+  created_at timestamp
+  updated_at timestamp
+
+  Indexes {
+    (name, user_id, type) [unique, name: 'unique_group_name_per_user_and_type']
+    (name, user_id, type, parent_id) [unique, name: 'unique_subcategory_name_per_user_type_and_parent']
+  }
+}
+
+Table categories_categoryoverride [headercolor: #6610f2] {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users_user.id]
+  category_id bigint [not null, ref: > categories_category.id]
+  is_hidden boolean [note: 'Permite ocultar una categoría de sistema']
+  created_at timestamp
+  updated_at timestamp
+
+  Indexes {
+    (user_id, category_id) [unique]
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Movimientos
+// ---------------------------------------------------------------------------
+
+Table expenses_expense [headercolor: #dc3545] {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users_user.id]
+  category_id bigint [not null, ref: > categories_category.id]
+  date date [not null]
+  description varchar(255)
+  amount decimal(12,2) [not null, note: '> 0']
+  currency varchar(3) [note: 'ARS | USD']
+  exchange_rate decimal(10,4)
+  amount_ars decimal(14,2) [note: 'amount * exchange_rate']
+  payment_method varchar(10) [note: 'CASH | DEBIT | CREDIT | TRANSFER']
+  saving_id bigint [null, ref: > savings_saving.id, note: 'Gasto vinculado a una meta']
+  recurring_id bigint [null, ref: > recurring_recurringexpense.id, note: 'Pago de un gasto fijo']
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table income_income [headercolor: #28a745] {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users_user.id]
+  category_id bigint [not null, ref: > categories_category.id]
+  date date [not null]
+  description varchar(255)
+  amount decimal(12,2) [not null, note: '> 0']
+  currency varchar(3)
+  exchange_rate decimal(10,4)
+  amount_ars decimal(14,2)
+  recurring_id bigint [null, ref: > recurring_income_recurringincome.id]
+  created_at timestamp
+  updated_at timestamp
+}
+
+// ---------------------------------------------------------------------------
+// Gastos e ingresos fijos
+// ---------------------------------------------------------------------------
+
+Table recurring_recurringexpense [headercolor: #fd7e14] {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users_user.id]
+  category_id bigint [not null, ref: > categories_category.id]
+  name varchar(100) [not null]
+  due_day smallint [not null, note: 'Día de vencimiento (1-31)']
+  is_active boolean
+  is_auto_debit boolean [note: 'Débito automático']
+  notes varchar(255)
+  total_installments smallint [null, note: 'Solo si es en cuotas']
+  starting_installment smallint [null]
+  start_date date [null, note: 'Fecha de la primera cuota']
+  estimated_amount decimal(12,2) [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table recurring_income_recurringincome [headercolor: #fd7e14] {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users_user.id]
+  category_id bigint [not null, ref: > categories_category.id]
+  name varchar(100) [not null]
+  expected_day smallint [not null]
+  is_active boolean
+  notes varchar(255)
+  created_at timestamp
+  updated_at timestamp
+}
+
+// ---------------------------------------------------------------------------
+// Ahorro
+// ---------------------------------------------------------------------------
+
+Table savings_saving [headercolor: #20c997] {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users_user.id]
+  name varchar(100) [not null]
+  description text
+  target_amount decimal(12,2) [note: '> 0']
+  current_amount decimal(12,2) [note: '>= 0']
+  currency varchar(3)
+  target_date date [null]
+  status varchar(10) [note: 'ACTIVE | COMPLETED | CANCELLED']
+  icon varchar(50)
+  color varchar(7)
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table savings_savingmovement [headercolor: #20c997] {
+  id bigint [pk, increment]
+  saving_id bigint [not null, ref: > savings_saving.id]
+  type varchar(10) [note: 'DEPOSIT | WITHDRAWAL']
+  amount decimal(12,2) [note: '> 0']
+  description varchar(255)
+  date date
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table savings_rolloversuggestion [headercolor: #20c997] {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users_user.id]
+  period_start date
+  period_end date [note: '> period_start']
+  amount decimal(12,2) [note: 'Sobrante del período, > 0']
+  status varchar(10) [note: 'PENDING | DEPOSITED | DISMISSED']
+  saving_id bigint [null, ref: > savings_saving.id]
+  resolved_at timestamp [null]
+  created_at timestamp
+  updated_at timestamp
+
+  Indexes {
+    (user_id, period_start, period_end) [unique]
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Gastos compartidos (D-018)
+// ---------------------------------------------------------------------------
+
+Table shared_expenses_householdmember [headercolor: #d63384] {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users_user.id, note: 'Dueño del hogar; el miembro no tiene cuenta']
+  name varchar(100)
+  created_at timestamp
+  updated_at timestamp
+
+  Indexes {
+    (user_id, name) [unique]
+  }
+}
+
+Table shared_expenses_sharedexpense [headercolor: #d63384] {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users_user.id]
+  category_id bigint [not null, ref: > categories_category.id]
+  paid_by_id bigint [null, ref: > shared_expenses_householdmember.id]
+  date date
+  description varchar(255)
+  amount decimal(12,2) [note: '> 0']
+  currency varchar(3)
+  exchange_rate decimal(10,4)
+  amount_ars decimal(14,2)
+  created_at timestamp
+  updated_at timestamp
+}
+
+// ---------------------------------------------------------------------------
+// Notificaciones push (D-019)
+// ---------------------------------------------------------------------------
+
+Table notifications_devicetoken [headercolor: #0dcaf0] {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users_user.id]
+  token varchar(255) [unique, note: 'Firebase Installation ID (FID)']
+  platform varchar(10) [note: 'ANDROID | IOS']
+  is_active boolean [note: 'false al cerrar sesión']
+  last_used_at timestamp
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table notifications_notification [headercolor: #0dcaf0] {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users_user.id]
+  type varchar(40) [note: 'recurring_reminder | recurring_overdue | spending_threshold | category_threshold']
+  title varchar(120)
+  body text
+  read_at timestamp [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table notifications_recurringreminderlog [headercolor: #0dcaf0, note: 'Evita avisar dos veces el mismo vencimiento'] {
+  id bigint [pk, increment]
+  recurring_id bigint [not null, ref: > recurring_recurringexpense.id]
+  due_date date
+  kind varchar(20) [note: 'due_soon | overdue']
+  created_at timestamp
+  updated_at timestamp
+
+  Indexes {
+    (recurring_id, due_date, kind) [unique]
+  }
+}
+
+Table notifications_spendingalertlog [headercolor: #0dcaf0, note: 'Una alerta por período (global) o por período y categoría'] {
+  id bigint [pk, increment]
+  user_id bigint [not null, ref: > users_user.id]
+  kind varchar(20) [note: 'global | category']
+  category_id bigint [null, ref: > categories_category.id]
+  period_start date
+  created_at timestamp
+  updated_at timestamp
+}
+
+// ---------------------------------------------------------------------------
+// Agrupación visual en dbdiagram.io
+// ---------------------------------------------------------------------------
+
+TableGroup usuarios_y_categorias [color: #0d6efd] {
+  users_user
+  categories_category
+  categories_categoryoverride
+}
+
+TableGroup movimientos [color: #dc3545] {
+  expenses_expense
+  income_income
+  recurring_recurringexpense
+  recurring_income_recurringincome
+}
+
+TableGroup ahorro [color: #20c997] {
+  savings_saving
+  savings_savingmovement
+  savings_rolloversuggestion
+}
+
+TableGroup compartidos [color: #d63384] {
+  shared_expenses_householdmember
+  shared_expenses_sharedexpense
+}
+
+TableGroup notificaciones [color: #0dcaf0] {
+  notifications_devicetoken
+  notifications_notification
+  notifications_recurringreminderlog
+  notifications_spendingalertlog
+}
