@@ -9,7 +9,7 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 
 - ✅ Backend Django completo (web app funcional en producción — v1.29.5, en https://controldegastos.ar)
 - ✅ API REST completa (DRF + JWT, todos los endpoints)
-- ✅ App Flutter en Google Play Console — Mobile 1.27.2+37 lista para subir (sin BETA, links al dominio propio); 1.27.1+36 en prueba cerrada
+- ✅ App Flutter en Google Play Console — Mobile 1.27.2+37 en prueba cerrada (en revisión); acceso a producción solicitado
 - ✅ Prueba cerrada con testers completada (requisito de Google Play para pedir acceso a producción)
 - ⏳ Pendiente: solicitar a Google Play Console el acceso a producción para publicar la app oficialmente (ver Fase 8)
 
@@ -273,7 +273,8 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 - [x] Formulario de seguridad de los datos en Play Console: agregar "Dispositivo u otros IDs" (funcionalidad de la app, no compartido, se puede borrar)
 - [x] Solicitar acceso a producción en Play Console (cuestionario sobre la prueba cerrada) — enviada el 2026-11-10, en revisión
 - [x] Mobile 1.27.1+36 promovida de prueba interna a prueba cerrada (en revisión)
-- [ ] Mobile 1.27.2+37 (sin BETA, links a controldegastos.ar): subir a prueba interna, promover a cerrada y publicar esta en producción
+- [x] Mobile 1.27.2+37 (sin BETA, links a controldegastos.ar) subida a prueba interna y promovida a prueba cerrada (en revisión)
+- [ ] Publicar la 1.27.2+37 en producción cuando Google apruebe el acceso (solicitud enviada el 2026-11-10; Google estima 7 días o menos)
 - [ ] Revisar la ficha de la tienda antes de publicar (descripción, capturas, sitio de contacto; ver D-020 por el dominio propio)
 - [ ] Publicar en producción
 
@@ -395,3 +396,4 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-11-10 | Fase 5 | Bump versión mobile a 1.27.1+36 con los arreglos DT-103, DT-104 y DT-107, para subir antes de pedir el acceso a producción. |
 | 2026-11-10 | Fase 5 | Solicitud de acceso a producción enviada en Play Console. La 1.27.1+36 se promovió de prueba interna a prueba cerrada para que la versión revisada incluya los arreglos del feedback. |
 | 2026-11-10 | Fase 5 | Bump a 1.27.2+37 para el lanzamiento: se quita el cartel BETA del login y salen los links al dominio propio (D-020). Reemplaza a la 1.27.1+36 como versión a publicar en producción. |
+| 2026-11-10 | Fase 5 | 1.27.2+37 subida a prueba interna y promovida a prueba cerrada, con notas de versión de lanzamiento. Esperando la aprobación del acceso a producción. |
