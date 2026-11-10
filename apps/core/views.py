@@ -182,9 +182,17 @@ def exchange_rate_today(request):
         return JsonResponse({"error": "No se pudo obtener la cotización"}, status=503)
 
 
-APP_VERSION = "1.29.3"
+APP_VERSION = "1.29.4"
 
 WHATS_NEW = [
+    {
+        "version": "1.29.4",
+        "date": "Noviembre 2026",
+        "title": "Recuperar contraseña desde la web",
+        "items": [
+            "Corregido: el correo para restablecer la contraseña desde la web no llegaba. Ahora se envía igual que desde la app",
+        ],
+    },
     {
         "version": "1.29.2",
         "date": "Octubre 2026",

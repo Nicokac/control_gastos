@@ -7,7 +7,7 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 
 ## Estado Actual
 
-- ✅ Backend Django completo (web app funcional en producción — v1.29.3)
+- ✅ Backend Django completo (web app funcional en producción — v1.29.4)
 - ✅ API REST completa (DRF + JWT, todos los endpoints)
 - ✅ App Flutter en Google Play Console — prueba interna (Mobile 1.27.0+35)
 - ✅ Prueba cerrada con testers completada (requisito de Google Play para pedir acceso a producción)

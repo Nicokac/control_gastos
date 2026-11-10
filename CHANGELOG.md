@@ -7,16 +7,23 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ## [Unreleased]
 
-### Changed
-
-- **Política de Privacidad actualizada: notificaciones push**: con la Mobile 1.26.0 la app guarda el identificador de instalación de Firebase del dispositivo y envía avisos a través de Firebase Cloud Messaging (Google). Se agregan el dato recopilado, su uso (con cómo desactivarlo) y el proveedor, para que la política coincida con el formulario de seguridad de los datos de Google Play antes de pedir el acceso a producción.
-
-
 ### Fixed
 
 - **Mobile — Dashboard: "Compartidos" se partía en dos líneas en pantallas angostas (DT-103)**: reportado por un tester de la prueba cerrada. A 360 dp de ancho el texto no entraba en su botón. Los tres accesos directos (Compartidos, Ahorros, Categorías) pasan a tener el ícono arriba y el texto abajo, con la misma altura, y el texto se achica en vez de partirse si la fuente del sistema está muy agrandada.
 - **Mobile — Gastos fijos: el desplegable del día de vencimiento tapaba todo el formulario (DT-104)**: el "selector de fecha que se traba" que reportó un tester no se reproduce (DTD-004), pero el menú de 28 días ocupaba casi toda la pantalla. Ahora muestra unos 8 días y deja ver el formulario.
 - **Mobile — Dashboard: el banner "Proyección al cierre" se desbordaba con la fuente agrandada (DT-107)**: a 360 dp con la fuente del sistema al 130%, los textos fijos del banner ocupaban todo el ancho y el monto de gastos proyectados desaparecía. Ahora es un solo texto que pasa a dos líneas cuando no entra, y la cifra nunca se separa del "$".
+---
+
+## [1.29.4] — 2026-11-09
+
+### Changed
+
+- **Política de Privacidad actualizada: notificaciones push**: con la Mobile 1.26.0 la app guarda el identificador de instalación de Firebase del dispositivo y envía avisos a través de Firebase Cloud Messaging (Google). Se agregan el dato recopilado, su uso (con cómo desactivarlo) y el proveedor, para que la política coincida con el formulario de seguridad de los datos de Google Play antes de pedir el acceso a producción.
+
+### Fixed
+
+- **Web — El email para restablecer la contraseña nunca se enviaba (DT-082)**: `BrevoPasswordResetView` sobrescribía `send_mail` en la vista, pero Django envía el email desde el formulario (`PasswordResetForm.send_mail`), así que Brevo nunca se usaba. El envío caía al backend de email de Django, que en producción no tiene SMTP configurado: fallaba en silencio y la persona veía igual "te enviamos un correo". Ahora `BrevoPasswordResetForm` envía por Brevo (con fallback al backend de Django) y la vista lo usa como `form_class`. Los tests anteriores llamaban al método de la vista directamente y no detectaban el problema; ahora prueban el POST real al formulario. El recupero desde mobile no estaba afectado.
+
 ---
 
 ## [Mobile 1.27.0+35] — 2026-11-09

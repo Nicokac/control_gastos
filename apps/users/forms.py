@@ -2,10 +2,12 @@
 
 from django import forms
 from django.contrib.auth import authenticate
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm, UserCreationForm
 from django.db.models import Q
+from django.template.loader import render_to_string
 
 from apps.core.forms import HoneypotMixin
+from apps.core.utils import send_brevo_email
 
 from .models import User
 
@@ -185,3 +187,28 @@ class ProfileForm(forms.ModelForm):
         if User.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).exists():
             raise forms.ValidationError("Este mail ya está en uso por otra cuenta.")
         return email
+
+
+class BrevoPasswordResetForm(PasswordResetForm):
+    """Envía el email de reset por Brevo; si falla, por el backend de email de Django."""
+
+    def send_mail(
+        self,
+        subject_template_name,
+        email_template_name,
+        context,
+        from_email,
+        to_email,
+        html_email_template_name=None,
+    ):
+        subject = "".join(render_to_string(subject_template_name, context).splitlines())
+        body = render_to_string(email_template_name, context)
+        if not send_brevo_email(to_email, subject, body):
+            super().send_mail(
+                subject_template_name,
+                email_template_name,
+                context,
+                from_email,
+                to_email,
+                html_email_template_name,
+            )

@@ -1255,17 +1255,19 @@ La pantalla de login usaba un ícono genérico de Material (`Icons.account_balan
 
 ---
 
-### DT-082 — Web: reset de password probablemente nunca usa Brevo (bug no confirmado)
+### DT-082 — Web: el reset de password nunca usaba Brevo
 
-**Estado:** ⏳ Pendiente (a confirmar)
+**Estado:** ✅ Resuelto (v1.29.4)
 
-Hallazgo incidental mientras se investigaba el mecanismo de `BrevoPasswordResetView` para construir el recupero de contraseña de mobile (ver DT-083). `BrevoPasswordResetView.send_mail` (en `apps/users/views.py`) sobrescribe el método `send_mail` con la firma de `PasswordResetView` (la vista), pero Django internamente invoca `form.save(**opts)` — y es `PasswordResetForm.save()` quien llama a `self.send_mail(...)`, el `send_mail` **del form**, no el de la vista. No hay ningún mecanismo visible de Django que conecte el `send_mail` sobrescrito en la vista con el que el form termina ejecutando.
+Hallazgo incidental mientras se investigaba el mecanismo de `BrevoPasswordResetView` para construir el recupero de contraseña de mobile (ver DT-083). `BrevoPasswordResetView.send_mail` sobrescribía un método que la vista de Django no tiene ni usa: `PasswordResetView.form_valid` llama a `form.save()`, y es `PasswordResetForm.save()` quien llama a `self.send_mail(...)`, el del form. Los tests existentes llamaban a `view.send_mail(...)` directamente (y el del fallback parcheaba `PasswordResetView.send_mail` con `create=True`, creando el método que no existe), así que pasaban sin probar el flujo real.
 
-**Por qué no se confirma directamente:** los tests existentes (`test_password_reset_send_mail_uses_brevo_when_succeeds`, `test_password_reset_send_mail_falls_back_to_smtp_when_brevo_fails` en `apps/users/tests/test_views_coverage.py`) instancian `BrevoPasswordResetView` y llaman `view.send_mail(...)` **directamente** como unidad aislada — pasan en verde, pero no verifican que ese método se ejecute como parte del flujo real de `POST /users/password/reset/`. Es decir, el coverage es real pero puede no probar la integración real.
+**Confirmación (2026-11-09):** un test con `POST` real a `users:password_reset` mostró que `send_brevo_email` se llamaba 0 veces. En producción (Render) no hay `EMAIL_HOST` ni `EMAIL_BACKEND`, así que el backend por defecto de Django intentaba un SMTP en `localhost:25`, fallaba y `PasswordResetForm.send_mail` solo lo registraba en el log ("Failed to send password reset email"): la persona veía "te enviamos un correo" y nunca le llegaba nada. El reset desde mobile (DT-083) no estaba afectado porque llama a `send_brevo_email` directamente.
 
-**Why:** si el bug es real, el reset de contraseña de la web (producción) siempre envía el email por SMTP de Django en vez de Brevo — puede seguir funcionando (SMTP configurado como fallback real, no solo de emergencia) o puede estar fallando silenciosamente según cómo esté configurado `EMAIL_BACKEND` en producción. No se tocó nada hoy para no mezclar con la tarea de recupero en mobile (DT-083).
+**Why:** quien olvidaba la contraseña en la web no tenía forma de recuperarla, y sin ningún error visible.
 
-**Camino de resolución:** escribir un test de integración real que haga `POST` al form de reset (`client.post(reverse("users:password_reset"), {"email": ...})`) con `send_brevo_email` mockeado, y verificar si el mock se llama. Si no se llama, confirma el bug — la solución sería sobrescribir `form_class` con una subclase de `PasswordResetForm` que tenga su propio `send_mail` usando Brevo, en vez de sobrescribirlo en la vista.
+**Resolución:** `BrevoPasswordResetForm` (en `apps/users/forms.py`) sobrescribe `send_mail` del form: envía por Brevo y, si falla, usa el `send_mail` original (backend de Django). La vista lo usa como `form_class` y se borró el `send_mail` muerto de la vista. Los tests (`TestPasswordResetEmail` en `apps/users/tests/test_views_coverage.py`) ahora hacen el `POST` real: envío por Brevo, fallback al backend de Django y email inexistente sin envío.
+
+**Pendiente relacionado:** el remitente de Brevo sigue siendo `kachuknm@gmail.com` (fijo en `apps/core/utils.py`). Pasarlo a `noreply@controldegastos.ar` con SPF/DKIM es parte de D-020.
 
 ---
 

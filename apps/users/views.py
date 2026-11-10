@@ -24,7 +24,7 @@ from apps.core.logging import (
 )
 from apps.core.utils import send_brevo_email
 
-from .forms import LoginForm, ProfileForm, RegisterForm
+from .forms import BrevoPasswordResetForm, LoginForm, ProfileForm, RegisterForm
 from .models import User
 from .tokens import email_verification_token
 
@@ -187,34 +187,14 @@ class DeleteAccountView(LoginRequiredMixin, DeleteView):
 
 
 class BrevoPasswordResetView(PasswordResetView):
-    """PasswordResetView que envía el email via Brevo API en lugar de SMTP."""
+    """PasswordResetView que envía el email via Brevo API (con fallback al backend de Django)."""
 
     template_name = "users/password_reset.html"
     email_template_name = "users/emails/password_reset.txt"
     subject_template_name = "users/emails/password_reset_subject.txt"
     success_url = reverse_lazy("users:password_reset_done")
-
-    def send_mail(
-        self,
-        subject_template_name,
-        email_template_name,
-        context,
-        from_email,
-        to_email,
-        html_email_template_name=None,
-    ):
-        subject = render_to_string(subject_template_name, context).strip()
-        body = render_to_string(email_template_name, context)
-
-        if not send_brevo_email(to_email, subject, body):
-            super().send_mail(
-                subject_template_name,
-                email_template_name,
-                context,
-                from_email,
-                to_email,
-                html_email_template_name,
-            )
+    # El email lo envía el form, no la vista: Django llama a form.send_mail (DT-082).
+    form_class = BrevoPasswordResetForm
 
 
 class VerifyEmailView(View):

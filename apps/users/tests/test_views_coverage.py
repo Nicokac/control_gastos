@@ -188,51 +188,37 @@ class TestResendVerificationView:
 
 
 @pytest.mark.django_db
-class TestBrevoPasswordResetView:
-    """Líneas 191-202: send_mail via Brevo con fallback a SMTP."""
+class TestPasswordResetEmail:
+    """DT-082: el reset de la web envía por Brevo, con fallback al backend de Django."""
 
     def test_password_reset_page_renders(self, client):
         url = reverse("users:password_reset")
         response = client.get(url)
         assert response.status_code == 200
 
-    def test_password_reset_send_mail_uses_brevo_when_succeeds(self):
-        from apps.users.views import BrevoPasswordResetView
+    def test_el_pedido_de_reset_envia_el_email_por_brevo(self, client, user, mailoutbox):
+        with patch("apps.users.forms.send_brevo_email", return_value=True) as mock_send:
+            response = client.post(reverse("users:password_reset"), {"email": user.email})
 
-        view = BrevoPasswordResetView()
-        context = {}
-        with (
-            patch("apps.users.views.render_to_string", return_value="body"),
-            patch("apps.users.views.send_brevo_email", return_value=True) as mock_send,
-        ):
-            view.send_mail(
-                "users/emails/password_reset_subject.txt",
-                "users/emails/password_reset.txt",
-                context,
-                from_email=None,
-                to_email="dest@test.com",
-            )
+        assert response.status_code == 302
         mock_send.assert_called_once()
+        to_email, subject, body = mock_send.call_args.args
+        assert to_email == user.email
+        assert "\n" not in subject
+        assert "/users/password/reset/" in body
+        assert mailoutbox == []
 
-    def test_password_reset_send_mail_falls_back_to_smtp_when_brevo_fails(self):
-        from apps.users.views import BrevoPasswordResetView
+    def test_si_brevo_falla_usa_el_backend_de_email_de_django(self, client, user, mailoutbox):
+        with patch("apps.users.forms.send_brevo_email", return_value=False):
+            client.post(reverse("users:password_reset"), {"email": user.email})
 
-        view = BrevoPasswordResetView()
-        context = {}
-        with (
-            patch("apps.users.views.render_to_string", return_value="body"),
-            patch("apps.users.views.send_brevo_email", return_value=False),
-            patch(
-                "django.contrib.auth.views.PasswordResetView.send_mail",
-                create=True,
-                return_value=None,
-            ) as mock_smtp,
-        ):
-            view.send_mail(
-                "users/emails/password_reset_subject.txt",
-                "users/emails/password_reset.txt",
-                context,
-                from_email=None,
-                to_email="dest@test.com",
-            )
-        mock_smtp.assert_called_once()
+        assert len(mailoutbox) == 1
+        assert mailoutbox[0].to == [user.email]
+
+    def test_email_inexistente_no_envia_nada(self, client, db, mailoutbox):
+        with patch("apps.users.forms.send_brevo_email") as mock_send:
+            response = client.post(reverse("users:password_reset"), {"email": "nadie@test.com"})
+
+        assert response.status_code == 302
+        mock_send.assert_not_called()
+        assert mailoutbox == []
