@@ -6,7 +6,7 @@ class ApiConstants {
 
   // Resumen de novedades de la versión actual (DT-068) — actualizar junto con el bump de pubspec.yaml.
   static const String latestReleaseSummary =
-      'Mejoras para pantallas chicas y letra grande: los accesos del inicio y la proyección del mes ya no se cortan, y elegir el día de vencimiento de un gasto fijo es más cómodo.';
+      'La app deja de estar en beta. El sitio web, los términos, la privacidad y el contacto ahora están en controldegastos.ar.';
   static const String websiteUrl = 'https://controldegastos.ar';
   static const String termsUrl =
       'https://controldegastos.ar/terms/';

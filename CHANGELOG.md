@@ -5,11 +5,12 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
-## [Unreleased]
+## [Mobile 1.27.2+37] — 2026-11-10
 
 ### Changed
 
-- **Mobile — Links al dominio propio (D-020)**: el sitio web, los términos, la privacidad y el email de contacto de la app pasan a `controldegastos.ar` y `contacto@controldegastos.ar`. Salen con la próxima versión de mobile. La API sigue en la URL de Render.
+- **Links al dominio propio (D-020)**: el sitio web, los términos, la privacidad y el email de contacto de la app pasan a `controldegastos.ar` y `contacto@controldegastos.ar`. La API sigue en la URL de Render.
+- **Sin el cartel BETA en el login**: es la versión que se publica en producción en Google Play.
 
 ---
 
