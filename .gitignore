@@ -62,6 +62,9 @@ docs/GOOGLE_PLAY_CONSOLE.md
 # Backlog de ideas de producto sin decidir (uso personal, no versionar)
 docs/IDEAS.md
 
+# Configuración manual de dominio, DNS y email (NIC, Cloudflare, Render, Brevo)
+docs/INFRAESTRUCTURA_DOMINIO_EMAIL.md
+
 # Resúmenes bancarios de prueba (datos financieros reales)
 resumen_*.pdf
 
