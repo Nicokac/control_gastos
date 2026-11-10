@@ -271,7 +271,8 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 - [x] Prueba cerrada con testers por el período que exige Google Play
 - [x] Política de Privacidad actualizada con Firebase Cloud Messaging (identificador del dispositivo y texto del aviso)
 - [x] Formulario de seguridad de los datos en Play Console: agregar "Dispositivo u otros IDs" (funcionalidad de la app, no compartido, se puede borrar)
-- [ ] Solicitar acceso a producción en Play Console (cuestionario sobre la prueba cerrada)
+- [x] Solicitar acceso a producción en Play Console (cuestionario sobre la prueba cerrada) — enviada el 2026-11-10, en revisión
+- [x] Mobile 1.27.1+36 promovida de prueba interna a prueba cerrada (en revisión)
 - [ ] Revisar la ficha de la tienda antes de publicar (descripción, capturas, sitio de contacto; ver D-020 por el dominio propio)
 - [ ] Publicar en producción
 
@@ -391,3 +392,4 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-11-09 | Fase 4 | Notificaciones push, Fase E (D-019): avisos de gastos fijos vencidos y alertas de gastos (umbral del período y límite de subcategoría), canal propio "Alertas de gastos", interruptor nuevo y navegación por tipo. Bump a 1.27.0+35. Verificado en emulador. |
 | 2026-11-09 | Fix | Feedback de testers (D-021): accesos directos del dashboard sin cortes en pantallas angostas (DT-103), desplegable del día de vencimiento con altura limitada (DT-104, el bug reportado se descartó en DTD-004) y banner de proyección sin desborde con la fuente agrandada (DT-107). Verificado en emulador a 360 dp. Sin bump: salen en la 1.27.1+36. |
 | 2026-11-10 | Fase 5 | Bump versión mobile a 1.27.1+36 con los arreglos DT-103, DT-104 y DT-107, para subir antes de pedir el acceso a producción. |
+| 2026-11-10 | Fase 5 | Solicitud de acceso a producción enviada en Play Console. La 1.27.1+36 se promovió de prueba interna a prueba cerrada para que la versión revisada incluya los arreglos del feedback. |
