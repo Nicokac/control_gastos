@@ -1,3 +1,6 @@
+from urllib.parse import urlparse
+
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.template.loader import render_to_string
@@ -62,7 +65,7 @@ class PasswordResetRequestView(APIView):
                 "uid": uid,
                 "token": token,
                 "protocol": "https",
-                "domain": "control-gastos-fr8z.onrender.com",
+                "domain": urlparse(settings.SITE_URL).netloc,
             }
             subject = render_to_string("users/emails/password_reset_subject.txt", context).strip()
             body = render_to_string("users/emails/password_reset.txt", context)

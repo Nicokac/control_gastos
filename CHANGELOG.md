@@ -7,6 +7,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- **Mobile — Links al dominio propio (D-020)**: el sitio web, los términos, la privacidad y el email de contacto de la app pasan a `controldegastos.ar` y `contacto@controldegastos.ar`. Salen con la próxima versión de mobile. La API sigue en la URL de Render.
+
+---
+
+## [1.29.5] — 2026-11-10
+
+### Changed
+
+- **Dominio propio `controldegastos.ar` (D-020)**: la web se sirve en `https://controldegastos.ar` (DNS en Cloudflare; la URL de Render sigue andando en paralelo). Los mails salen desde `noreply@controldegastos.ar`, con el dominio autenticado en Brevo (DKIM y DMARC), en lugar de `kachuknm@gmail.com`, que Brevo reescribía a `@brevosend.com` y aumentaba el riesgo de spam. Las respuestas van a `contacto@controldegastos.ar`. El link del reset desde mobile, robots.txt, el sitemap, la URL canónica de la landing y los datos de contacto del perfil pasan al dominio propio. Nuevos settings `SITE_URL`, `BREVO_SENDER_EMAIL` y `CONTACT_EMAIL`.
+
 ### Fixed
 
 - **Producción: no salía ningún email desde mayo de 2026 (DT-108)**: Brevo había desactivado la API key (probablemente por 90 días sin uso), así que fallaban el reset de password, la verificación de email, la bienvenida y el feedback. Se cargó una key nueva con acceso restringido. Para que no vuelva a pasar en silencio, el log de Brevo ahora incluye el motivo del error y el cron diario verifica la key (`check_brevo_account`), lo que además la mantiene en uso.

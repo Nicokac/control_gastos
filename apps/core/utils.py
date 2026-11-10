@@ -25,7 +25,8 @@ def send_brevo_email(to_email: str, subject: str, body: str) -> bool:
             "https://api.brevo.com/v3/smtp/email",
             headers={"api-key": brevo_api_key, "Content-Type": "application/json"},
             json={
-                "sender": {"name": "Control Gastos", "email": "kachuknm@gmail.com"},
+                "sender": {"name": "Control de Gastos", "email": settings.BREVO_SENDER_EMAIL},
+                "replyTo": {"email": settings.CONTACT_EMAIL},
                 "to": [{"email": to_email}],
                 "subject": subject,
                 "textContent": body,

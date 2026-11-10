@@ -433,3 +433,8 @@ FIREBASE_CREDENTIALS_PATH = config("FIREBASE_CREDENTIALS_PATH", default="")
 # Secreto compartido con el workflow de GitHub Actions que dispara los recordatorios diarios.
 # Vacío = endpoint de cron desactivado (responde 403).
 CRON_SECRET = config("CRON_SECRET", default="")
+
+# Dominio propio y direcciones de email (D-020). La URL de Render sigue sirviendo en paralelo.
+SITE_URL = config("SITE_URL", default="https://controldegastos.ar")
+BREVO_SENDER_EMAIL = config("BREVO_SENDER_EMAIL", default="noreply@controldegastos.ar")
+CONTACT_EMAIL = config("CONTACT_EMAIL", default="contacto@controldegastos.ar")

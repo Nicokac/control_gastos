@@ -326,6 +326,22 @@ class TestSendBrevoEmail:
         payload = call_kwargs.kwargs.get("json") or call_kwargs[1].get("json")
         assert payload["to"][0]["email"] == "destino@test.com"
 
+    def test_envia_desde_el_dominio_propio_con_reply_to_a_contacto(self, settings):
+        from unittest.mock import MagicMock, patch
+
+        settings.BREVO_API_KEY = "fake-key"  # pragma: allowlist secret
+        settings.BREVO_SENDER_EMAIL = "noreply@controldegastos.ar"
+        settings.CONTACT_EMAIL = "contacto@controldegastos.ar"
+        with patch("apps.core.utils.requests.post", return_value=MagicMock()) as mock_post:
+            send_brevo_email("destino@test.com", "Asunto", "Cuerpo")
+
+        payload = mock_post.call_args.kwargs["json"]
+        assert payload["sender"] == {
+            "name": "Control de Gastos",
+            "email": "noreply@controldegastos.ar",
+        }
+        assert payload["replyTo"] == {"email": "contacto@controldegastos.ar"}
+
     def test_el_log_incluye_el_motivo_que_devuelve_brevo(self, settings, caplog):
         from unittest.mock import patch
 

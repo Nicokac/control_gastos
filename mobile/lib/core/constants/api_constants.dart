@@ -7,13 +7,13 @@ class ApiConstants {
   // Resumen de novedades de la versión actual (DT-068) — actualizar junto con el bump de pubspec.yaml.
   static const String latestReleaseSummary =
       'Mejoras para pantallas chicas y letra grande: los accesos del inicio y la proyección del mes ya no se cortan, y elegir el día de vencimiento de un gasto fijo es más cómodo.';
-  static const String websiteUrl = 'https://control-gastos-fr8z.onrender.com';
+  static const String websiteUrl = 'https://controldegastos.ar';
   static const String termsUrl =
-      'https://control-gastos-fr8z.onrender.com/terms/';
+      'https://controldegastos.ar/terms/';
   static const String privacyUrl =
-      'https://control-gastos-fr8z.onrender.com/privacy/';
+      'https://controldegastos.ar/privacy/';
   static const String developerName = 'Nicolás Kachuk';
-  static const String developerEmail = 'kachuknm@gmail.com';
+  static const String developerEmail = 'contacto@controldegastos.ar';
   static const String cafesitoUrl = 'https://cafecito.app/niicok';
 
   static const String tokenObtain = '/auth/token/';

@@ -110,6 +110,14 @@ class TestPasswordResetRequestEndpoint:
         mock_send.assert_called_once()
         assert mock_send.call_args[0][0] == user.email
 
+    def test_el_link_del_email_usa_el_dominio_propio(self, client, user, settings):
+        settings.SITE_URL = "https://controldegastos.ar"
+        with patch("apps.api.v1.views.auth.send_brevo_email", return_value=True) as mock_send:
+            client.post(self.url, {"email": user.email}, content_type="application/json")
+        body = mock_send.call_args[0][2]
+        assert "https://controldegastos.ar/users/password/reset/" in body
+        assert "onrender.com" not in body
+
     def test_email_inexistente_no_revela_la_cuenta(self, client):
         """Mismo 200 que con un email existente — evita enumeración de cuentas."""
         with patch("apps.api.v1.views.auth.send_brevo_email") as mock_send:

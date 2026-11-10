@@ -1926,8 +1926,8 @@ Descartado: avisos de gastos compartidos. Los miembros del hogar no tienen cuent
 
 ## D-020 — Dominio propio (controldegastos.ar) y cuentas de terceros del proyecto
 
-**Fecha:** 2026-11-01 / Actualizado 2026-11-01
-**Estado:** 🚧 En progreso (plan de conexión definido)
+**Fecha:** 2026-11-01 / Actualizado 2026-11-10
+**Estado:** ✅ Conectado (v1.29.5): web en `https://controldegastos.ar`, mails desde `noreply@controldegastos.ar` y `contacto@controldegastos.ar` activo
 
 ### Contexto
 El proyecto hoy se sirve desde la URL por defecto de Render (`control-gastos-fr8z.onrender.com`). Se registró un dominio propio, `controldegastos.ar`, vía Trámites a Distancia (ARCA) / NIC Argentina. Vencimiento: 29/9/2027. La delegación de DNS todavía no se configuró — el dominio no está conectado a ningún servicio.
@@ -1949,7 +1949,7 @@ El proyecto hoy se sirve desde la URL por defecto de Render (`control-gastos-fr8
 - **URL de Render**: se mantiene activa en paralelo (`control-gastos-fr8z.onrender.com` sigue funcionando como fallback). Ambos hosts quedan en `ALLOWED_HOSTS`/`CSRF_TRUSTED_ORIGINS`.
 - **Proveedor DNS intermedio**: Cloudflare, reusando la cuenta ya existente del proyecto (la misma usada para Cloudflare R2 — ver DT-abajo). NIC Argentina no permite crear registros A/CNAME propios, solo delega a nameservers externos; Render tampoco ofrece nameservers propios — por eso hace falta un DNS intermedio. Cloudflare resuelve además el problema de apex domain (dominio raíz) sin depender de que NIC Argentina soporte ALIAS/ANAME.
 
-### Plan de conexión (pendiente de ejecución manual del usuario)
+### Plan de conexión (ejecutado el 2026-11-10)
 1. Cloudflare: agregar `controldegastos.ar` a la cuenta existente (plan Free), obtener los 2 nameservers asignados.
 2. NIC Argentina: delegar el dominio a esos nameservers de Cloudflare (vía Trámites a Distancia/ARCA).
 3. Render: Web Service → Settings → Custom Domains → agregar `controldegastos.ar`. Render indica el registro DNS exacto a crear (normalmente `A` → `216.24.57.1` para dominio raíz).
@@ -1957,8 +1957,16 @@ El proyecto hoy se sirve desde la URL por defecto de Render (`control-gastos-fr8
 5. Una vez verificado en Render: agregar `controldegastos.ar` a la variable de entorno `ALLOWED_HOSTS` en Render (sin quitar el host de Render existente). No requiere cambios de código — `config/settings/prod.py:62-75` ya construye `ALLOWED_HOSTS` y `CSRF_TRUSTED_ORIGINS` dinámicamente desde esa env var.
 6. (Opcional, aparte) verificar el dominio en Brevo para remitente propio (`noreply@controldegastos.ar`).
 
+### Resultado (2026-11-10)
+- **DNS:** delegado en NIC Argentina a `amy.ns.cloudflare.com` y `brad.ns.cloudflare.com`. La raíz y `www` son CNAME a `control-gastos-fr8z.onrender.com` en **DNS only** (Cloudflare aplana el CNAME de la raíz, así no depende de la IP de Render). `www` redirige a la raíz desde Render. `ALLOWED_HOSTS` en Render suma `controldegastos.ar,www.controldegastos.ar`.
+- **Email saliente:** dominio autenticado en Brevo (código de verificación, DKIM `brevo1`/`brevo2` y DMARC `p=none`). `send_brevo_email` envía desde `BREVO_SENDER_EMAIL` (`noreply@controldegastos.ar`) con Reply-To a `CONTACT_EMAIL`. Antes salía como `kachuknm@gmail.com`, que Brevo reescribía a `@brevosend.com` porque no puede autenticar un remitente de Gmail.
+- **Email entrante:** Email Routing de Cloudflare reenvía `contacto@controldegastos.ar` a `controldegastos.dev@gmail.com`. No hay casilla propia ni hosting de mail. El catch-all está desactivado.
+- **Código:** settings `SITE_URL`, `BREVO_SENDER_EMAIL` y `CONTACT_EMAIL` (con defaults del dominio, configurables por variable de entorno). El link del reset desde mobile, robots.txt, el sitemap, la URL canónica y Open Graph de la landing, y el sitio y contacto del perfil pasan al dominio propio. El reset de la web ya usaba el host del pedido.
+- **Mobile:** los links al sitio, términos, privacidad y el email de contacto pasan al dominio propio (salen en la próxima versión). **La API sigue en `control-gastos-fr8z.onrender.com`**, a propósito: la app no depende del DNS ni de la renovación del dominio para funcionar.
+- El detalle operativo (paneles, opciones elegidas, vencimientos) está en `docs/INFRAESTRUCTURA_DOMINIO_EMAIL.md`, local y fuera del repo.
+
 ### Riesgo aceptado
-Mientras no se complete la delegación, no hay riesgo — es solo un dominio registrado sin uso. Si no se delega antes del vencimiento (29/9/2027), se pierde el registro.
+Si el dominio no se renueva antes del vencimiento (29/9/2027), deja de funcionar la web en el dominio propio y los mails pierden su remitente autenticado. La app mobile no se cae porque su API sigue en la URL de Render, que también sigue sirviendo la web como respaldo.
 
 ---
 

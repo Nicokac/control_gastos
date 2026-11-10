@@ -22,7 +22,7 @@ from django.core.cache import cache
 from django.http import HttpResponse
 from django.urls import include, path
 
-SITE_URL = "https://control-gastos-fr8z.onrender.com"
+SITE_URL = settings.SITE_URL
 
 
 def robots_txt(request):
