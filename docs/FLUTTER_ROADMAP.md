@@ -9,7 +9,7 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 
 - ✅ Backend Django completo (web app funcional en producción — v1.29.3)
 - ✅ API REST completa (DRF + JWT, todos los endpoints)
-- ✅ App Flutter en Google Play Console — prueba interna (Mobile 1.26.0+34; 1.27.0+35 lista para subir tras el deploy del backend)
+- ✅ App Flutter en Google Play Console — prueba interna (Mobile 1.27.0+35)
 - ✅ Prueba cerrada con testers completada (requisito de Google Play para pedir acceso a producción)
 - ⏳ Pendiente: solicitar a Google Play Console el acceso a producción para publicar la app oficialmente (ver Fase 8)
 
@@ -261,15 +261,16 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 - [x] Campanita con historial y preferencia (Fase C3)
 - [x] Bump a 1.26.0+34
 - [x] Merge `develop` → `main`, ejecución manual del workflow "Recordatorios push" y verificación en producción (`{"sent": 0}`: sin dispositivos registrados hasta publicar la 1.26.0)
-- [ ] AAB 1.26.0+34 subido a Play Console (después del deploy del backend)
+- [x] AAB 1.26.0+34 subido a Play Console (después del deploy del backend)
 - [x] Fase E1 (gasto fijo vencido sin pagar) y E2 (alertas de gastos) — Mobile 1.27.0+35
-- [ ] Merge a `main` del backend de E1/E2 y AAB 1.27.0+35 subido a Play Console (en ese orden)
+- [x] Merge a `main` del backend de E1/E2 y AAB 1.27.0+35 subido a Play Console (en ese orden)
+- [ ] Mobile 1.27.1+36 con los arreglos del feedback de testers (DT-103, DT-104, DT-107), antes de publicar en producción
 - [ ] Fase E3-E5: recordatorio de carga, inicio del mes financiero, ingreso recurrente esperado (detalle en D-019)
 
 ### 8.2 Publicación oficial en Google Play
 - [x] Prueba cerrada con testers por el período que exige Google Play
 - [x] Política de Privacidad actualizada con Firebase Cloud Messaging (identificador del dispositivo y texto del aviso)
-- [ ] Formulario de seguridad de los datos en Play Console: agregar "Dispositivo u otros IDs" (funcionalidad de la app, no compartido, se puede borrar)
+- [x] Formulario de seguridad de los datos en Play Console: agregar "Dispositivo u otros IDs" (funcionalidad de la app, no compartido, se puede borrar)
 - [ ] Solicitar acceso a producción en Play Console (cuestionario sobre la prueba cerrada)
 - [ ] Revisar la ficha de la tienda antes de publicar (descripción, capturas, sitio de contacto; ver D-020 por el dominio propio)
 - [ ] Publicar en producción
@@ -388,3 +389,4 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-11-09 | Fase 4 | Notificaciones push, Fase C3b (D-019): campanita en el dashboard con punto de no leídos, pantalla Notificaciones con historial y el interruptor de recordatorios de gastos fijos. Verificado en emulador. |
 | 2026-11-09 | Fase 5 | Bump versión mobile a 1.26.0+34 (notificaciones push). Se documentan el lanzamiento pendiente, la solicitud de acceso a producción en Google Play y las próximas notificaciones (Fase E de D-019). |
 | 2026-11-09 | Fase 4 | Notificaciones push, Fase E (D-019): avisos de gastos fijos vencidos y alertas de gastos (umbral del período y límite de subcategoría), canal propio "Alertas de gastos", interruptor nuevo y navegación por tipo. Bump a 1.27.0+35. Verificado en emulador. |
+| 2026-11-09 | Fix | Feedback de testers (D-021): accesos directos del dashboard sin cortes en pantallas angostas (DT-103), desplegable del día de vencimiento con altura limitada (DT-104, el bug reportado se descartó en DTD-004) y banner de proyección sin desborde con la fuente agrandada (DT-107). Verificado en emulador a 360 dp. Sin bump: salen en la 1.27.1+36. |
