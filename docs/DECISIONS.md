@@ -2127,13 +2127,17 @@ Mencionado por Shenouda ("monthly reports chart loaded a bit faster when switchi
 
 ### DT-109 — Web: el selector de fecha muestra el formato en inglés (MM/DD/YYYY)
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.29.6)
 
 Al cargar un gasto desde la web, el campo Fecha se ve como `11/10/2026` (mes/día/año) y el calendario tiene los días en inglés (Su, Mo, Tu...) y los botones "Clear" y "Today". Los campos usan `<input type="date">` nativo (`forms.DateInput(attrs={"type": "date"})` en gastos, ingresos, gastos fijos, ahorro y gastos compartidos). El navegador dibuja ese control con el idioma de su propia configuración, no con el `lang="es"` de la página, así que con Chrome o Windows en inglés se ve en formato estadounidense. El valor que viaja al servidor siempre es `YYYY-MM-DD`, por lo que los datos guardados son correctos: es un problema de presentación.
 
 **Why:** en Argentina `11/10/2026` se lee como 11 de octubre. Es fácil cargar un gasto en el mes equivocado sin darse cuenta, y afecta todos los reportes mensuales.
 
 **Camino de resolución:** el formato del control nativo no se puede cambiar desde la página. Opciones: (a) un datepicker JS liviano con idioma español (por ejemplo flatpickr desde CDN con versión fija, mostrando `d/m/Y` y enviando `Y-m-d`), aplicado a todos los `type="date"` desde un único script en `base.html`; (b) un campo de texto con máscara `DD/MM/AAAA` y parseo en el form de Django. La (a) mantiene el calendario y no toca el backend. En mobile no aplica: la app usa el selector de Flutter en español.
+
+**Resolución:** se eligió la (a). `templates/base.html` carga flatpickr 4.6.13 y su idioma español desde jsDelivr (versión fija y SRI; la CSP ya permitía ese CDN), y `static/js/date_picker.js` convierte todos los `input[type="date"]`: muestra `d/m/Y` en un campo visible y deja el original oculto con `Y-m-d`, que es lo que llega al servidor. Conserva las clases y el `required` del campo. Se usa el calendario de flatpickr también en celulares (`disableMobile`), para que el formato no dependa del idioma del teléfono; escribir la fecha a mano solo se habilita con mouse, para que en el celular no se abra el teclado. Al revisar los campos apareció otro problema: `start_date` de gastos fijos se renderizaba con el formato local (`01/04/2026`), que un campo de fecha no entiende, así que al editar un gasto en cuotas la fecha aparecía vacía y el form pedía cargarla de nuevo. Se le agregó `format="%Y-%m-%d"`, como ya tenía gastos compartidos. Tests en `apps/core/tests/test_date_picker.py`.
+
+**Riesgo aceptado:** el calendario depende de jsDelivr, igual que Bootstrap. Si el CDN no carga, el script no hace nada y queda el campo nativo, que sigue funcionando con el formato del navegador.
 
 ---
 

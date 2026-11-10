@@ -13,6 +13,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.29.6] — 2026-11-10
+
+### Fixed
+
+- **Selector de fecha en formato estadounidense (DT-109)**: los campos de fecha usaban el `<input type="date">` nativo, que el navegador dibuja con su propio idioma: con Chrome o Windows en inglés se veía `11/10/2026` (mes/día/año) y era fácil cargar un gasto en el mes equivocado. Ahora flatpickr 4.6.13 (jsDelivr, con SRI) muestra día/mes/año y el calendario en español en gastos, ingresos, gastos fijos, metas de ahorro y gastos compartidos, y sigue enviando `AAAA-MM-DD`, así que el backend no cambia. Se aplica a todos los campos de fecha desde `static/js/date_picker.js`, cargado en `base.html`.
+- **Gastos fijos: la fecha de la primera cuota aparecía vacía al editar**: el widget renderizaba la fecha con el formato local (`01/04/2026`), que el campo de fecha no entiende, y al guardar pedía de nuevo "Indicá el mes de inicio". Ahora se renderiza como `2026-04-01`, igual que en gastos compartidos.
+
+---
+
 ## [1.29.5] — 2026-11-10
 
 ### Changed

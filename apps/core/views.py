@@ -182,9 +182,18 @@ def exchange_rate_today(request):
         return JsonResponse({"error": "No se pudo obtener la cotización"}, status=503)
 
 
-APP_VERSION = "1.29.5"
+APP_VERSION = "1.29.6"
 
 WHATS_NEW = [
+    {
+        "version": "1.29.6",
+        "date": "Noviembre 2026",
+        "title": "Fechas en formato día/mes/año",
+        "items": [
+            "Al cargar un gasto, ingreso, gasto fijo, meta de ahorro o gasto compartido, la fecha ahora se muestra como día/mes/año y el calendario está en español, sin importar el idioma de tu navegador",
+            "Corregido: al editar un gasto fijo en cuotas, la fecha de la primera cuota aparecía vacía",
+        ],
+    },
     {
         "version": "1.29.4",
         "date": "Noviembre 2026",

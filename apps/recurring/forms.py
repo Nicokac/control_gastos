@@ -35,7 +35,9 @@ class RecurringExpenseForm(forms.ModelForm):
             "starting_installment": forms.NumberInput(
                 attrs={"class": "form-control", "min": 1, "placeholder": "Ej: 4"}
             ),
-            "start_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+            "start_date": forms.DateInput(
+                attrs={"class": "form-control", "type": "date"}, format="%Y-%m-%d"
+            ),
             "estimated_amount": forms.NumberInput(
                 attrs={"class": "form-control", "min": 0, "step": "0.01", "placeholder": "Opcional"}
             ),
