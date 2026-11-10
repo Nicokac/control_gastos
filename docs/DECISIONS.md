@@ -2053,7 +2053,7 @@ Al aprobar los pagos en TestFi se volvieron a cruzar los 14 reportes con lo rele
 
 ### DT-103 — Dashboard: el texto "Compartidos" no entra en su botón en pantallas angostas
 
-**Estado:** ✅ Resuelto (2026-11-09, sale con la próxima versión mobile)
+**Estado:** ✅ Resuelto (Mobile 1.27.1+36)
 
 Reportado por Achbavlo ("homepage - compartidos text does not fit"), junto con DT-096 y DT-097; se pasó por alto en la primera revisión. Confirmado en código: en `dashboard_screen.dart` los tres accesos directos (Compartidos, Ahorros, Categorías) son `OutlinedButton.icon` dentro de `Expanded` con `padding` solo vertical. En un Pixel 8 (411 dp) el texto entra justo; en un ancho de 360 dp (gama baja, el más común) cada botón tiene ~104 dp y "Compartidos" con su ícono necesita ~110 dp, así que el texto se corta o pasa a dos líneas. Con tamaño de fuente del sistema agrandado empeora.
 
@@ -2081,7 +2081,7 @@ Reportado por Tukur Bukar: "when adding recurring expense, date picker sometimes
 
 ### DT-107 — Dashboard: el banner "Proyección al cierre" se desborda con la fuente agrandada
 
-**Estado:** ✅ Resuelto (2026-11-09, sale en la próxima versión de mobile)
+**Estado:** ✅ Resuelto (Mobile 1.27.1+36)
 
 Encontrado al verificar DT-103 en el emulador: a 360 dp con la fuente del sistema al 130%, el banner del dashboard se desbordaba 17 px (franja amarilla y negra de overflow de Flutter) y el monto de gastos proyectados desaparecía ("Proyección al cierre: en gastos"). Con la fuente normal se veía bien. Ya pasaba antes de DT-103.
 

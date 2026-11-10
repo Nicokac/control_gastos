@@ -6,7 +6,7 @@ class ApiConstants {
 
   // Resumen de novedades de la versión actual (DT-068) — actualizar junto con el bump de pubspec.yaml.
   static const String latestReleaseSummary =
-      'Nuevos avisos: te recordamos los gastos fijos que vencieron sin pagar y te alertamos al superar el umbral de gastos o el límite de una subcategoría. Podés activarlos o desactivarlos desde la campanita.';
+      'Mejoras para pantallas chicas y letra grande: los accesos del inicio y la proyección del mes ya no se cortan, y elegir el día de vencimiento de un gasto fijo es más cómodo.';
   static const String websiteUrl = 'https://control-gastos-fr8z.onrender.com';
   static const String termsUrl =
       'https://control-gastos-fr8z.onrender.com/terms/';

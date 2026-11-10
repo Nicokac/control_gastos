@@ -9,10 +9,20 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ### Fixed
 
+- **Producción: no salía ningún email desde mayo de 2026 (DT-108)**: Brevo había desactivado la API key (probablemente por 90 días sin uso), así que fallaban el reset de password, la verificación de email, la bienvenida y el feedback. Se cargó una key nueva con acceso restringido. Para que no vuelva a pasar en silencio, el log de Brevo ahora incluye el motivo del error y el cron diario verifica la key (`check_brevo_account`), lo que además la mantiene en uso.
+
+---
+
+## [Mobile 1.27.1+36] — 2026-11-10
+
+Arreglos del feedback de la prueba cerrada (D-021), para pantallas angostas y fuente agrandada. Sin cambios en el backend.
+
+### Fixed
+
 - **Mobile — Dashboard: "Compartidos" se partía en dos líneas en pantallas angostas (DT-103)**: reportado por un tester de la prueba cerrada. A 360 dp de ancho el texto no entraba en su botón. Los tres accesos directos (Compartidos, Ahorros, Categorías) pasan a tener el ícono arriba y el texto abajo, con la misma altura, y el texto se achica en vez de partirse si la fuente del sistema está muy agrandada.
 - **Mobile — Gastos fijos: el desplegable del día de vencimiento tapaba todo el formulario (DT-104)**: el "selector de fecha que se traba" que reportó un tester no se reproduce (DTD-004), pero el menú de 28 días ocupaba casi toda la pantalla. Ahora muestra unos 8 días y deja ver el formulario.
 - **Mobile — Dashboard: el banner "Proyección al cierre" se desbordaba con la fuente agrandada (DT-107)**: a 360 dp con la fuente del sistema al 130%, los textos fijos del banner ocupaban todo el ancho y el monto de gastos proyectados desaparecía. Ahora es un solo texto que pasa a dos líneas cuando no entra, y la cifra nunca se separa del "$".
-- **Producción: no salía ningún email desde mayo de 2026 (DT-108)**: Brevo había desactivado la API key (probablemente por 90 días sin uso), así que fallaban el reset de password, la verificación de email, la bienvenida y el feedback. Se cargó una key nueva con acceso restringido. Para que no vuelva a pasar en silencio, el log de Brevo ahora incluye el motivo del error y el cron diario verifica la key (`check_brevo_account`), lo que además la mantiene en uso.
+
 ---
 
 ## [1.29.4] — 2026-11-09
