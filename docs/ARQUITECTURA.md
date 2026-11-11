@@ -170,7 +170,8 @@ flowchart TB
 | `reports` | Dashboard web, evolución mensual, proyección al cierre |
 | `notifications` | Tokens de dispositivo, envío push, recordatorios de vencimiento, alertas por umbral, historial |
 | `api` | API REST v1 para la app mobile |
-| `budgets` | Sin modelos: el módulo se eliminó (D-007) |
+
+El módulo de presupuestos (`budgets`) se eliminó por completo, incluida su tabla (D-007).
 
 ### Convenciones que conviene conocer
 

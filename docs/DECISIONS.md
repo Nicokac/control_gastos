@@ -6,6 +6,40 @@ como issues pendientes.
 
 ---
 
+## Índice
+
+| Entrada | Tema | Nota |
+|---|---|---|
+| [D-001](#d-001--amount_ars-calculado-en-python-no-generatedfield) | amount_ars calculado en Python (no GeneratedField) |  |
+| [D-002](#d-002--expense_type-y-payment_method-visibles-en-formulario-de-gastos) | expense_type y payment_method visibles en formulario de gastos | `expense_type` se eliminó después (migración `expenses/0013`) |
+| [D-003](#d-003--alert_threshold-global-definido-en-user-no-en-budget) | alert_threshold global definido en User, no en Budget |  |
+| [D-004](#d-004--healthz-con-rate-limiting-en-memoria) | healthz con rate limiting en memoria |  |
+| [D-005](#d-005--healthz-devuelve-503-cuando-la-db-no-está-disponible) | healthz devuelve 503 cuando la DB no está disponible |  |
+| [D-006](#d-006--categorylistview-no-extiende-userownedlistview) | CategoryListView no extiende UserOwnedListView |  |
+| [D-008](#d-008--evolución-mensual-enero--mes-actual-no-12-meses-fijos) | Evolución mensual: enero → mes actual (no 12 meses fijos) |  |
+| [D-007](#d-007---eliminacion-completa-del-modulo-de-presupuestos) | Eliminacion completa del modulo de Presupuestos | Completada |
+| [D-009](#d-009--csp-permite-unsafe-inline-en-style-src) | CSP permite unsafe-inline en style-src |  |
+| [D-010](#d-010--feedback-via-gmail-smtp-sin-app-ni-modelo-propio) | Feedback via Gmail SMTP, sin app ni modelo propio | Reemplazada por D-013 y luego por Brevo (DT-108) |
+| [D-011](#d-011--jerarquía-de-categorías-grupo--subcategoría-fk-self) | Jerarquía de categorías: grupo → subcategoría (FK self) |  |
+| [D-012](#d-012--timezonelocaldate-en-lugar-de-timezonenowdate) | timezone.localdate() en lugar de timezone.now().date() |  |
+| [D-013](#d-013--feedback-api-http-de-resend-en-lugar-de-smtp) | Feedback: API HTTP de Resend en lugar de SMTP | Reemplazada: el email hoy sale por Brevo (DT-108, D-020) |
+| [D-014](#d-014--deudas-técnicas) | Deudas técnicas | DT-001 a DT-020 |
+| [D-016](#d-016--enhancements-relevados-por-qa--dashboard) | Enhancements relevados por QA — Dashboard | DT-021 a DT-028 |
+| [D-017](#d-017--enhancements-relevados-por-qa--gastos) | Enhancements relevados por QA — Gastos | DT-029 a DT-095 y DT-108 |
+| [D-015](#d-015--deudas-técnicas-descartadas) | Deudas técnicas descartadas | Sub-serie DTD-XXX |
+| [D-017](#d-017--arquitectura-de-infraestructura-en-producción) | Arquitectura de infraestructura en producción |  |
+| [D-016](#d-016--roadmap-de-lanzamiento-público) | Roadmap de lanzamiento público |  |
+| [D-018](#d-018--gastos-compartidos-modelo-sin-cuenta-para-el-miembro) | Gastos Compartidos: modelo sin cuenta para el miembro |  |
+| [D-019](#d-019--notificaciones-push-diseño-y-fase-a-registro-de-token) | Notificaciones push: diseño y Fase A (registro de token) |  |
+| [D-020](#d-020--dominio-propio-controldegastosar-y-cuentas-de-terceros-del-proyecto) | Dominio propio (controldegastos.ar) y cuentas de terceros del proyecto |  |
+| [D-021](#d-021--feedback-de-testers-de-la-prueba-cerrada-de-google-play-14-días-14-reportes) | Feedback de testers de la prueba cerrada de Google Play (14 días, 14 reportes) | DT-096 a DT-109 |
+
+La deuda técnica (`DT-XXX`) está repartida en las secciones marcadas en la columna Nota, en orden de número. Para encontrar una entrada, buscar `### DT-NNN` (o `### DTD-NNN` para las descartadas).
+
+Hay dos entradas con el número D-016 y dos con D-017: se numeraron por separado en su momento. No se renumeran porque otras entradas y commits las citan así.
+
+---
+
 ## D-001 — amount_ars calculado en Python (no GeneratedField)
 
 **Issue relacionada:** H-004  
@@ -182,7 +216,7 @@ Queda como mejora futura en una sección de Reportes dedicada.
 
 **Issue relacionada:** PRD-REMOVE-BUDGETS  
 **Fecha:** 2026-03-29  
-**Estado:** En ejecucion
+**Estado:** ✅ Completado
 
 ### Contexto
 El producto incluia un modulo completo de presupuestos mensuales por categoria
@@ -206,15 +240,14 @@ Eliminar el bloque de Presupuestos de manera total, incluyendo:
 ### Ejecucion
 El plan operativo detallado, con orden de trabajo y archivos alcanzados, queda documentado en:
 
-`docs/REMOVE_BUDGETS_PLAN.md`
+`docs/archivo/REMOVE_BUDGETS_PLAN.md` (archivado: el plan ya se completó)
 
 ### Estado actual
 - la UI ya no expone Presupuestos
-- `apps.budgets` ya no forma parte del runtime principal
+- `apps.budgets` ya no existe en el repositorio ni en `INSTALLED_APPS`
 - fixtures y tests acoplados al modulo fueron retirados o reescritos
-- ya existe una migracion transicional para eliminar `budgets_budget`
-- la limpieza documental esta en curso
-- la remocion de persistencia en base de datos queda como frente pendiente
+- la tabla `budgets_budget` se elimina con la migracion `expenses/0011_drop_budget_table`
+- la documentacion ya no menciona el modulo, salvo esta entrada y el plan archivado
 
 ---
 

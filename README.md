@@ -23,7 +23,7 @@
 | [`mobile/README.md`](mobile/README.md) | Correr, testear y publicar la app Android |
 | [`docs/DECISIONS.md`](docs/DECISIONS.md) | Decisiones de diseño (`D-XXX`) y deuda técnica (`DT-XXX`) con su porqué |
 | [`docs/FLUTTER_ROADMAP.md`](docs/FLUTTER_ROADMAP.md) | Estado y registro de avance de la app mobile |
-| [`docs/testing.md`](docs/testing.md) | Comandos de pytest |
+| [`docs/testing.md`](docs/testing.md) | Cómo correr y escribir tests (pytest y Flutter) |
 | [`docs/AUDITORIA_SEGURIDAD.md`](docs/AUDITORIA_SEGURIDAD.md) | Auditoría de seguridad |
 | [`CHANGELOG.md`](CHANGELOG.md) | Historial de versiones web y mobile |
 | `/api/v1/docs/` | Documentación interactiva de la API (Swagger), generada del código |
@@ -118,8 +118,7 @@ control_gastos/
 │   ├── savings/            # Metas de ahorro
 │   ├── shared_expenses/    # Gastos compartidos
 │   ├── reports/            # Dashboard web
-│   ├── notifications/      # Push, recordatorios y alertas de gasto
-│   └── budgets/            # Sin modelos (módulo eliminado, D-007)
+│   └── notifications/      # Push, recordatorios y alertas de gasto
 ├── config/settings/        # base.py, dev.py, prod.py
 ├── templates/, static/     # Web
 ├── mobile/                 # App Flutter
