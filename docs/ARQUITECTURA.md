@@ -399,7 +399,7 @@ flowchart LR
 | `reminders.yml` | diario 12:00 UTC | Recordatorios push + chequeo de la key de Brevo |
 | `backup.yml` | diario 03:00 UTC | `pg_dump` de producción a Cloudflare R2 |
 
-Flujo de ramas: se trabaja en `develop` y se pasa a `main` con fast-forward. El build de la app mobile se hace a mano y se sube a Play Console.
+Flujo de ramas: se trabaja en `develop` y se pasa a `main` con fast-forward. El build de la app mobile se hace a mano y se sube a Play Console. Deploy, rollback y diagnóstico: [`OPERACION.md`](OPERACION.md).
 
 ---
 

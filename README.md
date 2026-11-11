@@ -1,917 +1,151 @@
 # Control de Gastos
 
 ![CI](https://github.com/Nicokac/control_gastos/actions/workflows/ci.yml/badge.svg)
-![Coverage](https://img.shields.io/badge/coverage-88%25-green)
+![Coverage](https://img.shields.io/badge/coverage-86%25-green)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![Django](https://img.shields.io/badge/django-5.2-green)
+![Flutter](https://img.shields.io/badge/flutter-3.44-blue)
 ![License](https://img.shields.io/badge/license-private-lightgrey)
 
-> Aplicación web y móvil para el control y seguimiento de finanzas personales. Backend Django + API REST. App Flutter para Android.
+> Finanzas personales para Argentina: gastos e ingresos en pesos y dólares, gastos fijos y cuotas, metas de ahorro y avisos. Web en Django y app Android en Flutter, sobre la misma API.
+
+**Web:** [controldegastos.ar](https://controldegastos.ar) · **Android:** Google Play (`app.controlgastos`)
 
 ---
 
-## 📋 Tabla de Contenidos
+## Documentación
 
-- [Estado del Proyecto](#estado-del-proyecto)
-- [Descripción](#descripción)
-- [Características Principales](#características-principales)
-- [Stack Tecnológico](#stack-tecnológico)
-- [Arquitectura](#arquitectura)
-- [Instalación](#instalación)
-- [Variables de Entorno](#variables-de-entorno)
-- [Testing](#testing)
-- [Estado de Calidad y Métricas Verificadas](#-estado-de-calidad-y-métricas-verificadas)
-- [Deploy a Producción](#deploy-a-producción)
-- [Estructura del Proyecto](#estructura-del-proyecto)
-- [Comandos Útiles](#comandos-útiles)
-- [Pipeline de Calidad](#pipeline-de-calidad)
-- [Known Issues](#known-issues)
-- [Roadmap](#roadmap)
-- [Changelog](#changelog)
-- [Autor](#autor)
+| Documento | Qué tiene |
+|---|---|
+| [`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md) | Componentes, diagramas, flujos (login, push, email) y modelo de datos |
+| [`docs/database.dbml`](docs/database.dbml) | Esquema de la base para [dbdiagram.io](https://dbdiagram.io/d) |
+| [`docs/OPERACION.md`](docs/OPERACION.md) | Deploy, rollback, variables de entorno, backups y problemas comunes |
+| [`mobile/README.md`](mobile/README.md) | Correr, testear y publicar la app Android |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Decisiones de diseño (`D-XXX`) y deuda técnica (`DT-XXX`) con su porqué |
+| [`docs/FLUTTER_ROADMAP.md`](docs/FLUTTER_ROADMAP.md) | Estado y registro de avance de la app mobile |
+| [`docs/testing.md`](docs/testing.md) | Comandos de pytest |
+| [`docs/AUDITORIA_SEGURIDAD.md`](docs/AUDITORIA_SEGURIDAD.md) | Auditoría de seguridad |
+| [`CHANGELOG.md`](CHANGELOG.md) | Historial de versiones web y mobile |
+| `/api/v1/docs/` | Documentación interactiva de la API (Swagger), generada del código |
 
 ---
 
-## Estado del Proyecto
+## Funcionalidades
 
-| Métrica | Valor |
-|---------|-------|
-| Tests | 924 |
-| Coverage | 88.53% (mín. 80% enforced) |
-| Python | 3.12+ |
-| Django | 5.2 |
-| CI Jobs | 6 (+ smoke tests) |
-| Estado | 🟢 **Listo para Producción** |
-
----
-
-## Descripción
-
-**Control de Gastos** permite a los usuarios:
-
-- Registrar gastos e ingresos con soporte multimoneda (ARS/USD)
-- Conversión automática a ARS usando tipo de cambio configurable
-- Categorizar transacciones con categorías predefinidas y personalizadas
-- Crear metas de ahorro con seguimiento de depósitos y retiros
-- Visualizar dashboard con resumen financiero y gráficos de distribución
-- Comparar gastos e ingresos con el mes anterior
+- **Gastos e ingresos** en ARS o USD, con la cotización oficial del día (dolarapi.com) y conversión a pesos.
+- **Categorías** de sistema y propias, agrupadas en grupo → subcategoría, con límite mensual opcional por subcategoría.
+- **Gastos fijos** con día de vencimiento, cuotas y débito automático; **ingresos fijos** con día esperado.
+- **Metas de ahorro** con depósitos y retiros, gastos vinculados a una meta y sugerencia de pasar el sobrante del mes.
+- **Gastos compartidos** del hogar, con miembros que no necesitan cuenta.
+- **Dashboard** con balance, proyección al cierre, distribución por categoría y evolución mensual. El mes financiero puede empezar el día que elija el usuario.
+- **Importación de resúmenes de tarjeta** (beta, Banco Macro).
+- **Avisos push** en la app: gastos fijos por vencer o vencidos y alertas por umbral de gasto.
+- **Cuenta:** registro con verificación de email, login con email o usuario, recuperación de contraseña.
 
 ---
 
-## Características Principales
+## Stack
 
-### 💰 Gestión de Gastos e Ingresos
-- Registro con fecha, descripción, monto y categoría
-- Soporte multimoneda (ARS/USD) con conversión automática
-- Filtros por mes, año, grupo y subcategoría
-- Paginación en listados
-
-### 📊 Dashboard Interactivo
-- Balance mensual como card hero con barra de progreso
-- Comparación porcentual con mes anterior
-- Gráfico donut de distribución de gastos por grupo (top 5 + Otros)
-- Ranking de categorías con drill-down por subcategoría
-- Gráfico de evolución mensual (Ingresos / Gastos / Ahorro / Balance)
-- Últimas 5 transacciones
-
-### 🐷 Metas de Ahorro
-- Crear metas con objetivo y fecha límite
-- Registrar depósitos y retiros
-- Seguimiento de progreso porcentual
-- Auto-completado cuando se alcanza el objetivo
-
-### 💸 Vinculación Gasto → Ahorro
-- Al registrar un gasto, podés seleccionar una meta de ahorro como destino
-- El monto se deposita automáticamente en la meta al guardar el gasto
-- El mensaje de confirmación informa el depósito realizado
-- El historial de movimientos muestra el origen del depósito
-
-### 🔍 Filtros Avanzados de Gastos
-- Filtrar por método de pago (efectivo, débito, crédito, transferencia)
-- Filtrar por tipo de gasto (fijo / variable)
-- Resumen colapsable con subtotales por tipo y método de pago
-
-
-### 🏷️ Categorías
-- Categorías de sistema predefinidas
-- Categorías personalizadas por usuario
-- Tipos: Gasto e Ingreso
-- Iconos y colores personalizables
-- Jerarquía grupo → subcategoría: los gastos se asignan a subcategorías y el dashboard agrupa por grupo
-- Selector visual agrupado en formularios de gastos/ingresos
-- Filtro de lista de gastos por grupo
-- Mover subcategorías entre grupos desde la edición
-
-### 🔒 Seguridad
-- Rate limiting con django-axes (5 intentos, bloqueo 2 horas)
-- Headers de seguridad (HSTS, CSP, X-Frame-Options)
-- Logging de eventos de seguridad
-- Validación obligatoria de SECRET_KEY
+| | Tecnología |
+|---|---|
+| Backend | Python 3.12, Django 5.2, Django REST Framework, SimpleJWT |
+| Web | Templates de Django, Bootstrap 5.3, Bootstrap Icons, Chart.js, flatpickr |
+| Mobile | Flutter 3.44, Riverpod, Dio, GoRouter, Firebase Cloud Messaging |
+| Base de datos | PostgreSQL (producción), SQLite (desarrollo y tests) |
+| Infraestructura | Render, Cloudflare (DNS y R2), Brevo (email), Sentry |
+| Calidad | pytest, Ruff, pre-commit, GitHub Actions |
 
 ---
 
-## Stack Tecnológico
+## Puesta en marcha (backend y web)
 
-| Componente | Tecnología |
-|------------|------------|
-| **Backend** | Python 3.12+ / Django 5.2 |
-| **API REST** | Django REST Framework + JWT (SimpleJWT) |
-| **Frontend web** | Django Templates + Bootstrap 5 |
-| **App móvil** | Flutter 3.44 (Android) |
-| **State management** | Riverpod |
-| **Navegación mobile** | GoRouter |
-| **Base de datos** | SQLite (dev) / PostgreSQL (prod) |
-| **Gráficos** | Chart.js (web) / CustomPainter (mobile) |
-| **Iconos** | Bootstrap Icons (web) / Material Icons (mobile) |
-| **Tour interactivo** | Shepherd.js |
-| **CI/CD** | GitHub Actions |
-| **Linting** | Ruff (Python) / flutter analyze (Dart) |
-| **Testing** | pytest + pytest-cov |
-| **Pre-commit** | pre-commit hooks |
-| **Rate Limiting** | django-axes |
-| **Error Tracking** | Sentry |
-| **Debug** | django-debug-toolbar (dev) |
+Requisitos: Python 3.12 y Git. En Windows, los comandos son para PowerShell.
 
----
-
-### Arquitectura
-
-| Componente | Implementación |
-|------------|----------------|
-| **CRUD Views** | Mixins unificados en `core/views.py` |
-| **Form Validation** | `CurrencyFormMixin` + `BaseFilterForm` |
-| **DB Constraints** | `CheckConstraint` para integridad |
-| **Query Optimization** | Conditional aggregation, `select_related` |
-| **Error Handling** | Sentry + logging estructurado |
-
----
-
-## Instalación
-
-### Requisitos Previos
-
-- Python 3.12 o superior
-- pip
-- Git
-
-### 1. Clonar el repositorio
-
-```bash
+```powershell
 git clone https://github.com/Nicokac/control_gastos.git
 cd control_gastos
-```
 
-### 2. Crear y activar entorno virtual
-
-**Windows (PowerShell):**
-```powershell
-python -m venv venv
-.\venv\Scripts\Activate.ps1
-```
-
-**Linux/Mac:**
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-### 3. Instalar dependencias
-
-```bash
-# Desarrollo
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1          # Linux/Mac: source .venv/bin/activate
 pip install -r requirements/dev.txt
 
-# Producción
-pip install -r requirements/prod.txt
-```
-
-### 4. Configurar variables de entorno
-
-```bash
-# Copiar ejemplo
 cp .env.example .env
+python manage.py generate_secret_key  # pegar el valor en SECRET_KEY del .env
 
-# Generar SECRET_KEY
-python manage.py generate_secret_key
-
-# Editar .env con tus valores
-```
-
-### 5. Aplicar migraciones
-
-```bash
-python manage.py migrate
-```
-
-### 6. Crear superusuario
-
-```bash
+python manage.py migrate              # crea las tablas y las categorías de sistema
 python manage.py createsuperuser
-```
-
-### 7. Ejecutar servidor de desarrollo
-
-```bash
 python manage.py runserver
 ```
 
-Acceder a http://127.0.0.1:8000
+Abrir <http://127.0.0.1:8000>. Sin más configuración se usa SQLite, los emails se imprimen en la consola y los push no se envían. Las variables opcionales (Brevo, Firebase, cron) están explicadas en [`.env.example`](.env.example); las de producción, en [`docs/OPERACION.md`](docs/OPERACION.md#variables-de-entorno).
+
+Para usar la app mobile contra este backend: `python manage.py runserver 0.0.0.0:8001` y seguir [`mobile/README.md`](mobile/README.md).
 
 ---
 
-## Variables de Entorno
-
-### Desarrollo (`.env`)
-
-```env
-# Django
-SECRET_KEY=tu-clave-secreta-de-50-caracteres-minimo
-DJANGO_SETTINGS_MODULE=config.settings.dev
-DEBUG=True
-
-# Base de datos (opcional en dev, usa SQLite por defecto)
-# DATABASE_URL=postgres://user:password@localhost:5432/control_gastos
-```
-
-### Producción
-
-```env
-# Django (REQUERIDO)
-SECRET_KEY=clave-secreta-segura-generada-con-generate_secret_key
-DJANGO_SETTINGS_MODULE=config.settings.prod
-DEBUG=False
-
-# Hosts permitidos (REQUERIDO)
-ALLOWED_HOSTS=tudominio.com,www.tudominio.com
-
-# Base de datos PostgreSQL (REQUERIDO)
-DB_NAME=control_gastos_prod
-DB_USER=postgres
-DB_PASSWORD=password-seguro
-DB_HOST=localhost
-DB_PORT=5432
-
-# Email transaccional via Brevo API (no requiere SMTP)
-BREVO_API_KEY=xkeysib-xxxxxxxxxxxxxxxxxxxx
-FEEDBACK_EMAIL=tu-email@tudominio.com
-
-# Admin para notificaciones de error del sistema
-ADMIN_EMAIL=admin@tudominio.com
-```
-
-### Referencia de Variables
-
-| Variable | Requerida | Default | Descripción |
-|----------|-----------|---------|-------------|
-| `SECRET_KEY` | ✅ Sí | - | Clave secreta Django (mín. 50 caracteres) |
-| `DEBUG` | No | `False` | Modo debug |
-| `ALLOWED_HOSTS` | ✅ Prod | `localhost` | Hosts permitidos |
-| `DB_NAME` | ✅ Prod | `db.sqlite3` | Nombre de la base de datos |
-| `DB_USER` | ✅ Prod | - | Usuario PostgreSQL |
-| `DB_PASSWORD` | ✅ Prod | - | Contraseña PostgreSQL |
-| `DB_HOST` | ✅ Prod | `localhost` | Host de la base de datos |
-| `DB_PORT` | No | `5432` | Puerto PostgreSQL |
-| `BREVO_API_KEY` | ✅ Prod | - | API key de Brevo para emails transaccionales (feedback, reset, verificación) |
-| `FEEDBACK_EMAIL` | No | `ADMIN_EMAIL` | Destinatario del formulario de feedback |
-| `ADMIN_EMAIL` | No | - | Destinatario de alertas de error del sistema |
-
----
-
-## Testing
-
-### Ejecutar tests
+## Tests y calidad
 
 ```bash
-# Todos los tests
-pytest
-
-# Con coverage
-pytest --cov=apps --cov-report=term-missing
-
-# Con reporte HTML
-pytest --cov=apps --cov-report=html
-start htmlcov/index.html  # Windows
-open htmlcov/index.html   # Mac
-
-# Tests específicos
-pytest apps/expenses/
-pytest apps/expenses/tests/test_views.py
-pytest -k "test_create_expense"
+pytest -q                        # suite completa, con coverage mínimo de 80 %
+pytest apps/expenses/ -q         # una app
+ruff check . && ruff format .    # lint y formato
+pre-commit run --all-files       # los mismos hooks que corren en cada commit
 ```
 
-### Verificar coverage mínimo (80%)
+| Métrica (2026-11-10) | Valor |
+|---|---|
+| Tests backend | 1272 (2 omitidos) |
+| Coverage backend | 86,4 % (mínimo exigido: 80 %) |
+| Tests mobile | 98 (`cd mobile && flutter test`) |
 
-```bash
-pytest --cov=apps --cov-fail-under=80
-```
-
-## 📊 Estado de Calidad y Métricas Verificadas
-
-> Esta sección documenta **métricas reales de calidad**, ejecutadas manualmente o por CI,  
-> y sirve como **fuente de verdad** para revisiones humanas y agentes de IA.
-
-### 🔍 Última Ejecución Verificada
-
-| Ítem | Valor |
-|-----|------|
-| Fecha | **2026-06-05** |
-| Entorno | Local (Windows) |
-| Python | 3.12.0 |
-| Django | 5.2 |
-| Settings | `config.settings.dev` |
-| Commit | develop (post Fase 1 API) |
-
-Resultado:
-
-| Ítem | Valor |
-|-----|------|
-| ✅ | 924 tests recolectados |
-| ⏭️ | 2 skipped |
-| ❌ | 0 fallos |
-| ⏱️ | Duración total: ~6m 30s |
-
-📈 Coverage
-
-```bash
-pytest --cov=apps --cov-report=term-missing
-```
-
-Resultado verificado:
-
-| Métrica | Valor |
-|-----|------|
-| Coverage mínimo requerido | 80% |
-| Estado | ✅ Cumple (enforced en CI) |
-
-```bash
-python manage.py check --deploy --settings=config.settings.prod
-System check identified no issues (0 silenced).
-```
+CI (`.github/workflows/ci.yml`) corre en cada push a `develop` y `main`: lint, tests, auditoría de dependencias (pip-audit y safety), `check --deploy` con migraciones al día, y build.
 
 ---
 
-## Deploy a Producción
+## Estructura
 
-### Plataforma Actual
-
-| Item | Valor |
-|------|-------|
-| **Hosting** | Render (Free tier) |
-| **URL** | `https://control-gastos-XXXX.onrender.com` |
-| **Base de datos** | PostgreSQL (Render) |
-| **CI/CD** | GitHub Actions → Render Deploy Hook |
-
----
-
-### Variables de Entorno (Render)
-
-Configurar en **Render Dashboard → Environment**:
-
-| Variable | Requerida | Ejemplo | Notas |
-|----------|-----------|---------|-------|
-| `SECRET_KEY` | ✅ | `django-insecure-...` (50+ chars) | Generar con `python manage.py generate_secret_key` |
-| `DJANGO_SETTINGS_MODULE` | ✅ | `config.settings.prod` | |
-| `ALLOWED_HOSTS` | ✅ | `control-gastos-XXXX.onrender.com` | Sin `https://` |
-| `DB_NAME` | ✅ | `control_gastos_db` | Desde Render PostgreSQL |
-| `DB_USER` | ✅ | `control_gastos_user` | Desde Render PostgreSQL |
-| `DB_PASSWORD` | ✅ | `***` | Desde Render PostgreSQL |
-| `DB_HOST` | ✅ | `dpg-XXXX.render.com` | Desde Render PostgreSQL |
-| `DB_PORT` | No | `5432` | Default |
-| `ADMIN_EMAIL` | No | `admin@example.com` | Para alertas de errores |
-| `BREVO_API_KEY` | ✅ | `xkeysib-xxxx...` | API key de Brevo para emails transaccionales |
-| `FEEDBACK_EMAIL` | No | `ADMIN_EMAIL` | Destinatario del formulario de feedback |
-| `SENTRY_DSN` | No | `https://...@sentry.io/...` | Error tracking en producción |
-
----
-
-### Checklist Pre-Deploy
-```bash
-# 1. Tests pasan
-pytest --cov=apps --cov-fail-under=80
-
-# 2. Lint limpio
-ruff check apps/
-
-# 3. Security checks
-python manage.py check --deploy --settings=config.settings.prod
-
-# 4. Migraciones al día
-python manage.py makemigrations --check --dry-run
-```
-
----
-
-### Proceso de Deploy
-
-#### Deploy Automático (Recomendado)
-
-1. Push a `main` triggerea deploy automático via GitHub Actions
-2. El workflow ejecuta tests → si pasan → deploy hook a Render
-```bash
-git checkout main
-git merge develop
-git push origin main
-# Deploy automático en ~5 minutos
-```
-
-#### Deploy Manual (Emergencia)
-
-1. Ir a **Render Dashboard → Manual Deploy**
-2. Seleccionar commit
-3. Click "Deploy"
-
----
-
-### Verificación Post-Deploy
-```bash
-# 1. Healthcheck
-curl https://control-gastos-XXXX.onrender.com/healthz/
-# Respuesta esperada: "ok"
-
-# 2. Verificar app carga
-curl -I https://control-gastos-XXXX.onrender.com/
-# Respuesta esperada: HTTP 200 o 302 (redirect a login)
-
-# 3. Revisar logs en Render Dashboard
-# Render → Service → Logs
-```
-
----
-
-### Rollback
-
-#### Opción 1: Render Dashboard (Más rápido)
-
-1. Ir a **Render → Service → Events**
-2. Encontrar deploy anterior exitoso
-3. Click "Rollback to this deploy"
-
-#### Opción 2: Git Revert
-```bash
-# Identificar commit problemático
-git log --oneline -5
-
-# Revertir
-git revert
-git push origin main
-# Deploy automático del revert
-```
-
-#### Opción 3: Redeploy commit específico
-
-1. Render Dashboard → Manual Deploy
-2. Seleccionar commit anterior estable
-3. Deploy
-
----
-
-### Troubleshooting
-
-#### ❌ Error: "Application failed to respond"
-
-**Causa probable:** Cold start de Render Free tier (spin down después de 15 min inactividad)
-
-**Solución:**
-- Esperar 30-60 segundos y reintentar
-- Configurar UptimeRobot para ping cada 5 min a `/healthz/`
-
----
-
-#### ❌ Error: "DisallowedHost"
-
-**Causa:** `ALLOWED_HOSTS` no incluye el dominio
-
-**Solución:**
-```bash
-# En Render Environment, verificar:
-ALLOWED_HOSTS=control-gastos-XXXX.onrender.com
-# Sin https://, sin trailing slash
-```
-
----
-
-#### ❌ Error: "OperationalError: could not connect to server"
-
-**Causa:** Credenciales de DB incorrectas o DB no accesible
-
-**Solución:**
-1. Verificar variables `DB_*` en Render
-2. Verificar que PostgreSQL esté running en Render
-3. Verificar que el host sea el **Internal Database URL** (no external)
-
----
-
-#### ❌ Error: "Invalid HTTP_HOST header"
-
-**Causa:** Request desde dominio no permitido
-
-**Solución:**
-```bash
-# Agregar dominio a ALLOWED_HOSTS (separado por coma)
-ALLOWED_HOSTS=control-gastos-XXXX.onrender.com,www.tudominio.com
-```
-
----
-
-#### ❌ Error: "CSRF verification failed"
-
-**Causa:** `CSRF_TRUSTED_ORIGINS` no configurado
-
-**Solución:**
-- Verificar que `ALLOWED_HOSTS` esté correcto
-- El código auto-genera `CSRF_TRUSTED_ORIGINS` desde `ALLOWED_HOSTS`
-
----
-
-#### ❌ Migraciones pendientes
-
-**Síntoma:** Errores de tabla/columna no existe
-
-**Solución:**
-```bash
-# En Render Shell (o local con DB de prod)
-python manage.py migrate
-```
-
----
-
-### Monitoreo
-
-| Servicio | URL | Propósito |
-|----------|-----|-----------|
-| **Healthcheck** | `/healthz/` | Verificar app running |
-| **Sentry** | sentry.io | Error tracking y alertas |
-| **UptimeRobot** | uptimerobot.com | Evitar cold starts |
-| **Render Logs** | Dashboard → Logs | Ver errores en tiempo real |
-| **GitHub Actions** | Actions tab | Estado de CI/CD |
-
----
-
-### SLA — Qué esperar del plan free de Render
-
-| Métrica | Valor esperado |
-|---------|---------------|
-| Cold start (primer request tras inactividad) | 30–60 segundos |
-| Inactividad que dispara spin-down | 15 minutos sin tráfico |
-| Uptime una vez caliente | >99% (depende de Render) |
-| Tiempo de deploy | ~3–5 minutos |
-| Rollback (deploy anterior desde dashboard) | ~2 minutos |
-
-**Cold starts:** Render Free hace spin-down del servicio tras 15 minutos sin tráfico. El primer request tarda 30–60 segundos mientras el contenedor arranca. Los usuarios verán la pantalla de carga del browser durante ese tiempo.
-
-**Mitigación recomendada:** Configurar [UptimeRobot](https://uptimerobot.com) con ping cada 5 minutos a `/healthz/` para mantener el servicio caliente. Es gratuito.
-
-**Base de datos:** Render Free PostgreSQL tiene 1 GB de almacenamiento y se elimina después de 90 días de inactividad. Hacer backup manual antes de ese plazo si no hay actividad.
-
----
-
-### Backups
-
-#### Backup automático a Cloudflare R2
-
-Un GitHub Action corre diariamente a las 03:00 UTC. Hace `pg_dump` de PostgreSQL y sube el archivo comprimido a Cloudflare R2 (10 GB free tier, retención indefinida).
-
-Archivo: `.github/workflows/backup.yml`
-
-Secrets requeridos en el repositorio:
-
-| Secret | Descripción |
-|--------|-------------|
-| `DATABASE_URL` | URL completa de la DB de producción |
-| `R2_ACCESS_KEY_ID` | Access key de Cloudflare R2 |
-| `R2_SECRET_ACCESS_KEY` | Secret key de Cloudflare R2 |
-| `CF_ACCOUNT_ID` | Account ID de Cloudflare |
-
----
-
-### Comandos Útiles en Producción
-```bash
-# Render Shell (desde Dashboard → Shell)
-
-# Ver estado de migraciones
-python manage.py showmigrations
-
-# Aplicar migraciones
-python manage.py migrate
-
-# Crear superusuario
-python manage.py createsuperuser
-
-# Ver estado de rate limiting
-python manage.py axes_status
-
-# Limpiar intentos de login fallidos
-python manage.py axes_reset
-```
-
-### Configuración de Seguridad en Producción
-
-El proyecto incluye las siguientes configuraciones de seguridad en `prod.py`:
-
-| Configuración | Valor | Descripción |
-|---------------|-------|-------------|
-| `SECURE_HSTS_SECONDS` | 31536000 | HSTS por 1 año |
-| `SECURE_SSL_REDIRECT` | True | Redirige HTTP a HTTPS |
-| `SESSION_COOKIE_SECURE` | True | Cookies solo por HTTPS |
-| `CSRF_COOKIE_SECURE` | True | CSRF solo por HTTPS |
-| `X_FRAME_OPTIONS` | DENY | Previene clickjacking |
-| `AXES_FAILURE_LIMIT` | 5 | Intentos de login |
-| `AXES_COOLOFF_TIME` | 1 hora | Tiempo de bloqueo |
-
-### Índices de Base de Datos
-
-El proyecto incluye índices compuestos optimizados para queries frecuentes:
-
-| Modelo | Índices |
-|--------|---------|
-| `Expense` | `(user, date)`, `(user, category)` |
-| `Income` | `(user, date)`, `(user, category)` |
-| `Saving` | `(user, status)` |
-| `SavingMovement` | `(saving, -date, -created_at)` |
-| `Category` | `(user, type)`, `(is_system, type)` |
-
-### Constraints de Base de Datos
-
-| Modelo | Constraint | Descripción |
-|--------|------------|-------------|
-| `Category` | `system_category_no_user` | Categorías sistema sin usuario |
-| `Category` | `user_category_requires_user` | Categorías usuario requieren usuario |
-
-
----
-
-## Estructura del Proyecto
-
-```
+```text
 control_gastos/
-├── .github/
-│   └── workflows/
-│       └── ci.yml              # GitHub Actions CI
-├── apps/                       # Aplicaciones Django
-│   ├── api/                   # API REST v1 (DRF + JWT)
-│   │   └── v1/
-│   │       ├── views/         # ViewSets y APIViews
-│   │       ├── serializers/   # Serializers DRF
-│   │       └── urls.py
-│   ├── categories/            # Gestión de categorías
-│   ├── core/                  # Mixins, constantes, utilidades
-│   │   ├── management/commands/
-│   │   │   ├── generate_secret_key.py
-│   │   │   ├── axes_status.py
-│   │   │   └── view_logs.py
-│   │   └── logging.py         # Utilidades de logging
-│   ├── expenses/              # Registro de gastos
-│   ├── income/                # Registro de ingresos
-│   ├── recurring/             # Gastos fijos recurrentes
-│   ├── recurring_income/      # Ingresos fijos recurrentes
-│   ├── reports/               # Dashboard y reportes
-│   ├── savings/               # Metas de ahorro
-│   ├── shared_expenses/       # Gastos compartidos del hogar
-│   └── users/                 # Autenticación y perfiles
-├── mobile/                    # App Flutter (Android)
-│   └── lib/
-│       ├── core/              # Utilidades, constantes, formatters
-│       ├── data/              # Repositories, API service
-│       ├── features/          # Screens, providers, widgets por feature
-│       └── routing/           # GoRouter
-├── config/                    # Configuración del proyecto
-│   └── settings/
-│       ├── base.py            # Configuración común
-│       ├── dev.py             # Desarrollo
-│       └── prod.py            # Producción
-│       └── email_backend.py   # Configuración de email centralizada
-├── docs/
-│   ├── testing.md             # Guía de testing
-│   └── DECISIONS.md           # Decisiones de diseño y arquitectura documentadas
-├── logs/                      # Archivos de log
-├── scripts/
-│   └── check_security.py      # Verificación de seguridad
-├── static/                    # Archivos estáticos
-├── templates/                 # Templates HTML
-├── requirements/
-│   ├── base.txt              # Dependencias comunes
-│   ├── dev.txt               # Desarrollo
-│   └── prod.txt              # Producción
-├── .env.example              # Ejemplo de variables de entorno
-├── .pre-commit-config.yaml   # Configuración pre-commit
-├── pyproject.toml            # Configuración de herramientas
-└── manage.py
+├── apps/
+│   ├── api/                # API REST v1 para la app mobile (DRF + JWT)
+│   ├── core/               # Mixins, utilidades, email (Brevo), versión y novedades
+│   ├── users/              # Usuario propio, registro, login, verificación, reset
+│   ├── categories/         # Categorías y jerarquía grupo → subcategoría
+│   ├── expenses/           # Gastos e importación de resúmenes
+│   ├── income/             # Ingresos
+│   ├── recurring/          # Gastos fijos y cuotas
+│   ├── recurring_income/   # Ingresos fijos
+│   ├── savings/            # Metas de ahorro
+│   ├── shared_expenses/    # Gastos compartidos
+│   ├── reports/            # Dashboard web
+│   ├── notifications/      # Push, recordatorios y alertas de gasto
+│   └── budgets/            # Sin modelos (módulo eliminado, D-007)
+├── config/settings/        # base.py, dev.py, prod.py
+├── templates/, static/     # Web
+├── mobile/                 # App Flutter
+├── docs/                   # Documentación técnica
+├── scripts/                # Backup/restore de la base y chequeos
+├── .github/workflows/      # CI, deploy, smoke tests, recordatorios y backup
+├── requirements/           # base, dev, prod
+└── render.yaml             # Definición de servicios en Render
 ```
 
 ---
 
-## Comandos Útiles
+## Flujo de trabajo
 
-### Django
-
-```bash
-# Servidor de desarrollo
-python manage.py runserver
-
-# Migraciones
-python manage.py makemigrations
-python manage.py migrate
-
-# Superusuario
-python manage.py createsuperuser
-
-# Shell
-python manage.py shell
-
-# Verificar proyecto
-python manage.py check
-python manage.py check --deploy --settings=config.settings.prod
-
-# Cargar categorías del sistema (necesario tras flush)
-python manage.py seed_categories
-
-# Reset completo de DB de desarrollo
-python manage.py flush --no-input
-python manage.py seed_categories
-python manage.py createsuperuser
-
-```
-
-### Seguridad
-
-```bash
-# Generar SECRET_KEY
-python manage.py generate_secret_key
-python manage.py generate_secret_key --env-format
-
-# Ver estado de rate limiting
-python manage.py axes_status
-python manage.py axes_status --clear
-
-# Ver logs de seguridad
-python manage.py view_logs --type security
-python manage.py view_logs --type error --lines 50
-
-# Verificar configuración de seguridad
-python scripts/check_security.py
-```
-
-### Testing y Calidad
-
-```bash
-# Tests
-pytest
-pytest --cov=apps --cov-report=html
-
-# Linting
-ruff check apps/
-ruff check apps/ --fix
-
-# Formateo
-ruff format apps/
-
-# Pre-commit
-pre-commit run --all-files
-```
-
----
-
-## Pipeline de Calidad
-
-### Pre-commit Hooks (Local)
-
-Antes de cada commit se ejecutan automáticamente:
-
-- ✅ Ruff (lint + autofix)
-- ✅ Ruff-format
-- ✅ detect-secrets
-- ✅ Validaciones de whitespace, conflictos, tamaños
-
-### Decisiones de Diseño
-
-Las decisiones técnicas y de producto tomadas conscientemente están documentadas en [`docs/DECISIONS.md`](docs/DECISIONS.md). El objetivo es evitar que futuras auditorías las marquen como issues pendientes.
-
-### GitHub Actions (CI)
-
-En cada push/PR se ejecutan:
-
-| Job | Descripción | Duración |
-|-----|-------------|----------|
-| `lint` | Ruff check + format | ~30s |
-| `test` | pytest + coverage ≥80% | ~4min |
-| `security` | pip-audit + safety | ~1min |
-| `django-checks` | System checks + migrations | ~1min |
-| `build` | Collectstatic + verify | ~1min |
-| `deploy` | Deploy automático a Render | ~2min |
-
-
----
-
-## Flujo de Git
-
-| Rama | Propósito |
-|------|-----------|
-| `main` | Código estable, listo para producción |
-| `develop` | Integración de features |
-| `feature/*` | Desarrollo de nuevas funcionalidades |
-| `fix/*` | Corrección de bugs |
-
-### Formato de Commits
-
-Seguimos [Conventional Commits](https://www.conventionalcommits.org/):
-
-```
-feat(expenses): add expense creation form
-refactor(reports): simplify dashboard summary
-perf(reports): optimize dashboard queries
-docs(readme): update installation instructions
-test(savings): add movement validation tests
-ci: add GitHub Actions pipeline
-```
-
----
-
-## Roadmap
-
-### MVP ✅ Completado
-
-- [x] Sistema de autenticación
-- [x] CRUD de categorías
-- [x] CRUD de gastos (multimoneda)
-- [x] CRUD de ingresos (multimoneda)
-- [x] Metas de ahorro con movimientos
-- [x] Dashboard con gráficos
-- [x] Rate limiting y seguridad
-- [x] CI/CD con GitHub Actions
-- [x] Coverage ≥80%
-
-### Próximas Features
-
-- [x] Error tracking con Sentry
-- [x] Filtros avanzados por método de pago y tipo de gasto
-- [x] Vinculación directa gasto → meta de ahorro
-- [x] Picker visual de íconos en formularios
-- [x] Rate limiting con página de bloqueo (account_locked)
-- [x] Middleware de performance (RequestTimingMiddleware)
-- [x] Gráfico de evolución mensual (Ingresos / Gastos / Ahorro / Balance)
-- [x] Dashboard rediseñado: balance hero, donut + ranking, formato ARS en formularios
-- [x] Formulario de feedback (bugs/mejoras) con envío por email al administrador
-- [x] Jerarquía de categorías: grupos → subcategorías con selector visual y filtro por grupo
-- [x] API REST v1 con autenticación JWT (DRF + SimpleJWT)
-- [x] App móvil Flutter — MVP funcional (Android)
-- [ ] App móvil — Savings y Recurring (v2)
-- [ ] Ícono representativo de la app (DT-048)
-- [ ] PWA (Progressive Web App)
-- [ ] Notificaciones por email
-- [ ] Caching con Redis
-- [ ] 2FA (Autenticación de dos factores)
-
----
-
-## Apps y Modelos
-
-### Apps
-
-| App | Descripción | Estado |
-|-----|-------------|--------|
-| `core` | Mixins, constantes, utilidades, logging | ✅ |
-| `users` | Registro, login, logout, perfil | ✅ |
-| `categories` | CRUD categorías (sistema + custom) | ✅ |
-| `expenses` | CRUD gastos, multimoneda | ✅ |
-| `income` | CRUD ingresos, multimoneda | ✅ |
-| `savings` | Metas de ahorro, movimientos | ✅ |
-| `reports` | Dashboard, gráficos | ✅ |
-| `recurring` | Gastos fijos recurrentes | ✅ |
-| `recurring_income` | Ingresos fijos recurrentes | ✅ |
-| `shared_expenses` | Gastos compartidos del hogar | ✅ |
-| `api` | API REST v1 (DRF + JWT) | ✅ |
-
-### Modelos Principales
-
-- **Expense/Income**: Transacciones con soporte multimoneda
-- **Saving**: Metas de ahorro con progreso
-- **SavingMovement**: Depósitos y retiros
-- **Category**: Categorías de sistema y personalizadas
+- Se trabaja en `develop` y se pasa a `main` con fast-forward; cada push a `main` despliega (ver [`docs/OPERACION.md`](docs/OPERACION.md)).
+- Commits con el formato `tipo(scope): descripción en español` (`feat`, `fix`, `docs`, `test`, `refactor`, `style`, `chore`), explicando el porqué.
+- **Versión web:** `APP_VERSION` en `apps/core/views.py`, con entrada en `WHATS_NEW` si el cambio es visible y en `CHANGELOG.md`.
+- **Versión mobile:** `version` en `mobile/pubspec.yaml`.
+- **Decisiones no obvias y deuda técnica:** en `docs/DECISIONS.md`.
 
 ---
 
 ## Licencia
 
-Este proyecto es de uso privado.
-
----
-
-## Known Issues
-
-Sin issues conocidos actualmente.
-
-Ver detalle en [docs/DECISIONS.md — D-013](docs/DECISIONS.md).
-
----
-
-## Changelog
-
-Ver [CHANGELOG.md](CHANGELOG.md) para el historial completo de versiones.
-
----
+Proyecto de uso privado.
 
 ## Autor
 
-**Nicolás Kachuk**
-
-[![GitHub](https://img.shields.io/badge/GitHub-Nicokac-blue?logo=github)](https://github.com/Nicokac)
+**Nicolás Kachuk** · [![GitHub](https://img.shields.io/badge/GitHub-Nicokac-blue?logo=github)](https://github.com/Nicokac)
