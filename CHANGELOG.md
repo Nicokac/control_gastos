@@ -5,6 +5,22 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.32.0] — 2026-11-13
+
+### Added
+
+- **Carga rápida de gastos** (roadmap de producto, tanda 1): una barra en el dashboard (período actual) y en Gastos interpreta una línea como `15000 super débito` y muestra una vista previa antes de guardar.
+  - Entiende montos en formato argentino (`15.000`, `15.000,50`, `15k`), USD con la cotización oficial del día (`20 usd`, `u$s20`), fechas (`hoy`, `ayer`, `anteayer`, `12/11`) y forma de pago (`débito`, `crédito`/`tarjeta`, `efectivo`, `transf`). Si hay varios números, el monto es el marcado con `$` o el mayor, y el resto queda en la descripción.
+  - Sugiere la categoría con los gastos del último año del usuario que tengan esas palabras; si no hay, por el nombre de la categoría. Si no puede, obliga a elegirla.
+  - Guarda pasando por `ExpenseForm`, con las mismas validaciones del formulario. "Formulario completo" abre el formulario con los datos cargados.
+  - La lógica está en `apps/expenses/quick_entry.py`, que usan la web (`expenses:quick_parse` y `expenses:quick_create`) y la API (`POST /api/v1/expenses/quick-parse/`), esta última para la app mobile.
+
+### Changed
+
+- **Cotización del dólar compartida**: la consulta a dolarapi.com (con caché de 15 minutos) pasa de la vista `exchange_rate_today` a `fetch_official_usd_quote()` y `get_official_usd_rate()` en `apps/core/utils.py`, para que la use también la carga rápida.
+
+---
+
 ## [1.31.0] — 2026-11-13
 
 ### Added

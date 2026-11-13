@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load currency_filters %}
+{% load quick_expense %}
 
 {% block title %}Dashboard - Control de Gastos{% endblock %}
 
@@ -43,6 +44,8 @@
         </div>
     </div>
 </div>
+
+{% if is_current_period %}{% quick_expense_bar %}{% endif %}
 
 {% if rollover_suggestion %}
 <!-- Sugerencia de traslado de sobrante del período anterior (DT-067) -->

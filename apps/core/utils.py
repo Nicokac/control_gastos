@@ -2,11 +2,14 @@
 Funciones de utilidad para todo el proyecto
 """
 
+import json
 import logging
+import urllib.request
 from datetime import date
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from django.conf import settings
+from django.core.cache import cache
 from django.core.mail import send_mail
 from django.utils import timezone
 
@@ -227,6 +230,38 @@ def get_financial_period(month: int, year: int, start_day: int = 1):
     end_date = date(next_year, next_month, actual_end_day)
 
     return start_date, end_date
+
+
+DOLAR_API_URL = "https://dolarapi.com/v1/dolares/oficial"
+DOLAR_CACHE_KEY = "dolar_oficial_venta"
+DOLAR_CACHE_TTL = 900  # 15 minutos
+
+
+def fetch_official_usd_quote() -> dict | None:
+    """Cotización oficial de venta (dolarapi.com), cacheada 15 minutos; None si no responde."""
+    cached = cache.get(DOLAR_CACHE_KEY)
+    if cached:
+        return cached
+    try:
+        req = urllib.request.Request(DOLAR_API_URL, headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read().decode())
+        payload = {"venta": str(data["venta"]), "updated_at": data.get("fechaActualizacion", "")}
+    except Exception:
+        logger.warning("No se pudo obtener la cotización del dólar", exc_info=True)
+        return None
+    cache.set(DOLAR_CACHE_KEY, payload, timeout=DOLAR_CACHE_TTL)
+    return payload
+
+
+def get_official_usd_rate() -> Decimal | None:
+    quote = fetch_official_usd_quote()
+    if not quote:
+        return None
+    try:
+        return Decimal(quote["venta"])
+    except (InvalidOperation, KeyError):
+        return None
 
 
 ONE_OFF_EXPENSE_SHARE = Decimal("0.2")

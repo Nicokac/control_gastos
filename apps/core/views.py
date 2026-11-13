@@ -1,12 +1,9 @@
 # Create your views here.
-import json
 import logging
-import urllib.request
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.cache import cache
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse_lazy
 from django.views.generic import (
@@ -19,7 +16,7 @@ from django.views.generic import (
     UpdateView,
 )
 
-from apps.core.utils import send_feedback_email
+from apps.core.utils import fetch_official_usd_quote, send_feedback_email
 
 from .forms import FeedbackForm
 
@@ -157,34 +154,28 @@ class FeedbackView(FormView):
         return super().form_valid(form)
 
 
-_DOLAR_API_URL = "https://dolarapi.com/v1/dolares/oficial"
-_DOLAR_CACHE_KEY = "dolar_oficial_venta"
-_DOLAR_CACHE_TTL = 900  # 15 minutos
-
-
 @login_required
 def exchange_rate_today(request):
-    cached = cache.get(_DOLAR_CACHE_KEY)
-    if cached:
-        return JsonResponse(cached)
-
-    try:
-        req = urllib.request.Request(_DOLAR_API_URL, headers={"User-Agent": "Mozilla/5.0"})
-        with urllib.request.urlopen(req, timeout=5) as resp:
-            data = json.loads(resp.read().decode())
-        payload = {
-            "venta": str(data["venta"]),
-            "updated_at": data.get("fechaActualizacion", ""),
-        }
-        cache.set(_DOLAR_CACHE_KEY, payload, timeout=_DOLAR_CACHE_TTL)
-        return JsonResponse(payload)
-    except Exception:
+    quote = fetch_official_usd_quote()
+    if quote is None:
         return JsonResponse({"error": "No se pudo obtener la cotización"}, status=503)
+    return JsonResponse(quote)
 
 
-APP_VERSION = "1.31.0"
+APP_VERSION = "1.32.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.32.0",
+        "date": "Noviembre 2026",
+        "title": "Carga rápida de gastos",
+        "items": [
+            "Escribí el gasto en una línea, como 15000 super débito, y lo cargamos por vos: monto, categoría, forma de pago y fecha",
+            "La categoría se sugiere según tus gastos anteriores, y antes de guardar ves una vista previa para corregir lo que haga falta",
+            "Entiende montos como 15.000 o 15k, gastos en dólares (20 usd netflix) y fechas como ayer o 12/11",
+            "Está arriba del Dashboard y de Gastos",
+        ],
+    },
     {
         "version": "1.31.0",
         "date": "Noviembre 2026",

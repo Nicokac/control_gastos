@@ -30,7 +30,7 @@ class TestExchangeRateToday:
         response = client.get(self.URL)
         assert response.status_code == 302
 
-    @patch("apps.core.views.urllib.request.urlopen")
+    @patch("apps.core.utils.urllib.request.urlopen")
     def test_devuelve_venta_y_updated_at(self, mock_urlopen, client, django_user_model):
         self._login(client, django_user_model, "u1")
         mock_urlopen.return_value = self._make_api_response()
@@ -42,7 +42,7 @@ class TestExchangeRateToday:
         assert data["venta"] == "1450"
         assert data["updated_at"] == "2026-06-13T14:30:00.000Z"
 
-    @patch("apps.core.views.urllib.request.urlopen")
+    @patch("apps.core.utils.urllib.request.urlopen")
     def test_envia_user_agent(self, mock_urlopen, client, django_user_model):
         self._login(client, django_user_model, "u2")
         mock_urlopen.return_value = self._make_api_response()
@@ -53,7 +53,7 @@ class TestExchangeRateToday:
         req = args[0]
         assert req.get_header("User-agent") == "Mozilla/5.0"
 
-    @patch("apps.core.views.urllib.request.urlopen")
+    @patch("apps.core.utils.urllib.request.urlopen")
     def test_usa_cache_en_segundo_request(self, mock_urlopen, client, django_user_model):
         self._login(client, django_user_model, "u3")
         mock_urlopen.return_value = self._make_api_response()
@@ -63,7 +63,7 @@ class TestExchangeRateToday:
 
         assert mock_urlopen.call_count == 1
 
-    @patch("apps.core.views.urllib.request.urlopen")
+    @patch("apps.core.utils.urllib.request.urlopen")
     def test_devuelve_503_si_api_falla(self, mock_urlopen, client, django_user_model):
         self._login(client, django_user_model, "u4")
         mock_urlopen.side_effect = Exception("timeout")
@@ -73,7 +73,7 @@ class TestExchangeRateToday:
         assert response.status_code == 503
         assert "error" in response.json()
 
-    @patch("apps.core.views.urllib.request.urlopen")
+    @patch("apps.core.utils.urllib.request.urlopen")
     def test_cache_no_llama_api_segunda_vez(self, mock_urlopen, client, django_user_model):
         self._login(client, django_user_model, "u5")
         mock_urlopen.return_value = self._make_api_response(venta=1450)

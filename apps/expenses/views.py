@@ -1,18 +1,21 @@
+import contextlib
 import hashlib
 import io
 import json
 import logging
 import tempfile
+from datetime import date
 from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.db.models import Q, Sum
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views import View
 
 from apps.categories.models import Category
@@ -32,6 +35,7 @@ from apps.core.views import (
 
 from .forms import ExpenseFilterForm, ExpenseForm
 from .models import Expense
+from .quick_entry import QuickEntryError, parse_quick_expense, quick_expense_to_dict
 
 logger = logging.getLogger(__name__)
 
@@ -524,6 +528,24 @@ class ExpenseCreateView(UserOwnedCreateView):
                 initial["payment_method"] = source.payment_method
             except (Expense.DoesNotExist, ValueError):
                 pass
+
+        # Carga rápida: "Abrir formulario completo" llega con los datos interpretados
+        if self.request.GET.get("from_quick"):
+            for field in ("amount", "description", "payment_method", "currency", "exchange_rate"):
+                if self.request.GET.get(field):
+                    initial[field] = self.request.GET[field]
+            # The template formats the date with |date, which needs a date object, not a string.
+            with contextlib.suppress(ValueError):
+                initial["date"] = date.fromisoformat(self.request.GET.get("date", ""))
+            category_pk = self.request.GET.get("category")
+            if category_pk and category_pk.isdigit():
+                category = (
+                    Category.get_expense_categories(self.request.user)
+                    .filter(pk=category_pk)
+                    .first()
+                )
+                if category:
+                    initial["category"] = category
 
         # Precargar última cotización USD usada por el usuario
         if not initial.get("exchange_rate"):
@@ -1030,3 +1052,44 @@ class ExpenseImportConfirmView(LoginRequiredMixin, View):
             )
 
         return redirect("expenses:list")
+
+
+class QuickExpenseParseView(LoginRequiredMixin, View):
+    """Interpreta el texto de la carga rápida y devuelve la vista previa, sin guardar."""
+
+    http_method_names = ["post"]
+
+    def post(self, request):
+        try:
+            text = json.loads(request.body or b"{}").get("text", "")
+        except (ValueError, AttributeError):
+            text = ""
+        try:
+            parsed = parse_quick_expense(request.user, text)
+        except QuickEntryError as error:
+            return JsonResponse({"ok": False, "error": str(error)}, status=400)
+        return JsonResponse({"ok": True, **quick_expense_to_dict(parsed)})
+
+
+class QuickExpenseCreateView(LoginRequiredMixin, View):
+    """Guarda el gasto confirmado en la vista previa, con las mismas validaciones del formulario."""
+
+    http_method_names = ["post"]
+
+    def post(self, request):
+        next_url = request.POST.get("next", "")
+        if not url_has_allowed_host_and_scheme(
+            next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+        ):
+            next_url = reverse_lazy("expenses:list")
+
+        form = ExpenseForm(request.POST, user=request.user)
+        if form.is_valid():
+            form.instance.user = request.user
+            expense = form.save()
+            label = expense.description or expense.category.name
+            messages.success(request, f"Gasto registrado: {label} - {expense.formatted_amount}")
+        else:
+            errors = "; ".join(e for field_errors in form.errors.values() for e in field_errors)
+            messages.error(request, f"No pudimos guardar el gasto: {errors}")
+        return redirect(next_url)

@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load currency_filters %}
+{% load quick_expense %}
 
 {% block title %}Gastos - Control de Gastos{% endblock %}
 
@@ -24,6 +25,8 @@
         </a>
     </div>
 </div>
+
+{% quick_expense_bar %}
 
 <!-- Filtros -->
 <div class="card mb-4">
