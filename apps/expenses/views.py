@@ -293,13 +293,18 @@ class ExpenseListView(UserOwnedListView):
                         .order_by("date")
                     }
                     num_days = calendar.monthrange(year_int, month_int)[1]
+                    today = timezone.localdate()
+                    is_current_month = (month_int, year_int) == (today.month, today.year)
                     acum = 0
                     daily_bar_data = []
                     for d in range(1, num_days + 1):
                         day_amount = daily_rows.get(d, 0)
                         acum += day_amount
                         daily_labels.append(d)
-                        daily_data.append(round(acum, 2))
+                        # Days that haven't happened yet have no cumulative value; the line stops today.
+                        daily_data.append(
+                            None if is_current_month and d > today.day else round(acum, 2)
+                        )
                         daily_bar_data.append(round(day_amount, 2))
                     context["show_daily_chart"] = True
                     context["daily_bar_data"] = daily_bar_data

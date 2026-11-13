@@ -196,6 +196,7 @@ function initEvolutionChart() {
             plugins: {
                 legend: { position: 'top' },
                 tooltip: {
+                    filter: function (item) { return item.raw !== null; },
                     callbacks: {
                         label: function (context) {
                             return ` ${context.dataset.label}: ${formatARS(context.raw)}`;

@@ -288,3 +288,36 @@ class TestExpenseUpdateFormInvalid:
         assert response.status_code == 200
         msgs = [m.message for m in response.context["messages"]]
         assert any("No pudimos guardar" in m for m in msgs)
+
+
+@pytest.mark.django_db
+class TestDailyCumulativeStopsToday:
+    def test_current_month_has_no_cumulative_after_today(
+        self, authenticated_client, user, expense_category, expense_factory, monkeypatch
+    ):
+        monkeypatch.setattr(timezone, "localdate", lambda: date(2026, 5, 10))
+        expense_factory(user, expense_category, amount=Decimal("100.00"), date=date(2026, 5, 3))
+
+        response = authenticated_client.get(
+            reverse("expenses:list"), {"month": "5", "year": "2026"}
+        )
+        daily_data = response.context["daily_data"]
+
+        assert len(daily_data) == 31
+        assert daily_data[9] == 100.0
+        assert all(v is None for v in daily_data[10:])
+        assert response.context["daily_bar_data"][20] == 0
+
+    def test_past_month_has_cumulative_until_last_day(
+        self, authenticated_client, user, expense_category, expense_factory, monkeypatch
+    ):
+        monkeypatch.setattr(timezone, "localdate", lambda: date(2026, 5, 10))
+        expense_factory(user, expense_category, amount=Decimal("100.00"), date=date(2026, 4, 3))
+
+        response = authenticated_client.get(
+            reverse("expenses:list"), {"month": "4", "year": "2026"}
+        )
+        daily_data = response.context["daily_data"]
+
+        assert len(daily_data) == 30
+        assert daily_data[-1] == 100.0

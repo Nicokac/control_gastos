@@ -711,11 +711,15 @@ class TestMonthlyEvolution:
         assert labels[0] == "Enero"
 
     def test_evolution_empty_when_no_transactions(self, authenticated_client, url_helper):
-        """Con 0 transacciones todos los valores son 0."""
+        """Sin transacciones, todos los meses quedan sin dato (None), no en cero."""
         response = authenticated_client.get(url_helper("dashboard"))
-        assert all(v == 0 for v in response.context["evolution_income"])
-        assert all(v == 0 for v in response.context["evolution_expenses"])
-        assert all(v == 0 for v in response.context["evolution_savings"])
+        for key in (
+            "evolution_income",
+            "evolution_expenses",
+            "evolution_savings",
+            "evolution_balance",
+        ):
+            assert all(v is None for v in response.context[key])
 
     def test_evolution_reflects_current_month_income(
         self, authenticated_client, url_helper, user, income_factory, income_category
@@ -748,7 +752,7 @@ class TestMonthlyEvolution:
         other_cat = income_category_factory(other_user, name="OtherIncome")
         income_factory(other_user, other_cat, amount=Decimal("9999.00"), date=today)
         response = authenticated_client.get(url_helper("dashboard"))
-        assert all(v == 0 for v in response.context["evolution_income"])
+        assert all(v is None for v in response.context["evolution_income"])
 
     def test_evolution_aggregates_multiple_transactions_same_month(
         self, authenticated_client, url_helper, user, expense_factory, expense_category
@@ -867,3 +871,33 @@ class TestNextMonthCommitment:
             reverse("reports:dashboard") + f"?month={prev_month}&year={prev_year}"
         )
         assert response.context["next_month_commitment_available"] is False
+
+
+@pytest.mark.django_db
+class TestEvolutionGapsForMonthsWithoutData:
+    def test_month_without_movements_is_none_and_income_only_month_keeps_zero_expenses(
+        self, authenticated_client, user, income_factory, income_category
+    ):
+        from datetime import date
+
+        last_year = timezone.localdate().year - 1
+        income_factory(
+            user, income_category, amount=Decimal("5000.00"), date=date(last_year, 3, 10)
+        )
+
+        response = authenticated_client.get(
+            reverse("reports:dashboard"), {"month": 12, "year": last_year}
+        )
+        ctx = response.context
+
+        assert ctx["evolution_income"][2] == 5000.0
+        assert ctx["evolution_expenses"][2] == 0
+        assert ctx["evolution_balance"][2] == 5000.0
+        for key in (
+            "evolution_income",
+            "evolution_expenses",
+            "evolution_savings",
+            "evolution_balance",
+        ):
+            assert ctx[key][1] is None
+            assert ctx[key][11] is None

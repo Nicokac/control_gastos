@@ -5,6 +5,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.30.1] — 2026-11-13
+
+### Fixed
+
+- **Evolución mensual: meses sin datos como cero (DT-112, fase 2)**: un mes sin ingresos, gastos ni depósitos de ahorro llegaba como `0` y las líneas caían a cero. Ahora va como `null` en las 4 series y Chart.js deja el hueco; un mes con datos en alguna serie sigue mostrando `0` en las otras. El tooltip ignora los valores `null`.
+- **Acumulado del mes hasta el futuro (DT-113, fase 2)**: en el mes actual, los días posteriores a hoy ya no repiten el acumulado de hoy, van como `null` y la línea se corta. El eje Y arranca en cero (`beginAtZero`) en lugar de en el mínimo del mes, que exageraba las subidas.
+
+---
+
 ## [1.30.0] — 2026-11-13
 
 ### Changed

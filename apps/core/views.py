@@ -182,9 +182,18 @@ def exchange_rate_today(request):
         return JsonResponse({"error": "No se pudo obtener la cotización"}, status=503)
 
 
-APP_VERSION = "1.30.0"
+APP_VERSION = "1.30.1"
 
 WHATS_NEW = [
+    {
+        "version": "1.30.1",
+        "date": "Noviembre 2026",
+        "title": "Gráficos más fieles a tus datos",
+        "items": [
+            "Corregido: la evolución mensual del dashboard ya no dibuja como cero los meses en los que no cargaste nada, deja un hueco",
+            "Corregido: el acumulado del mes en Gastos llega hasta hoy, en lugar de seguir plano hasta fin de mes, y el eje arranca en cero",
+        ],
+    },
     {
         "version": "1.30.0",
         "date": "Noviembre 2026",

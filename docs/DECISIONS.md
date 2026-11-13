@@ -32,7 +32,7 @@ como issues pendientes.
 | [D-018](#d-018--gastos-compartidos-modelo-sin-cuenta-para-el-miembro) | Gastos Compartidos: modelo sin cuenta para el miembro |  |
 | [D-019](#d-019--notificaciones-push-diseño-y-fase-a-registro-de-token) | Notificaciones push: diseño y Fase A (registro de token) |  |
 | [D-020](#d-020--dominio-propio-controldegastosar-y-cuentas-de-terceros-del-proyecto) | Dominio propio (controldegastos.ar) y cuentas de terceros del proyecto |  |
-| [D-021](#d-021--feedback-de-testers-de-la-prueba-cerrada-de-google-play-14-días-14-reportes) | Feedback de testers de la prueba cerrada de Google Play (14 días, 14 reportes) | DT-096 a DT-114 |
+| [D-021](#d-021--feedback-de-testers-de-la-prueba-cerrada-de-google-play-14-días-14-reportes) | Feedback de testers de la prueba cerrada de Google Play (14 días, 14 reportes) | DT-096 a DT-117 |
 
 La deuda técnica (`DT-XXX`) está repartida en las secciones marcadas en la columna Nota, en orden de número. Para encontrar una entrada, buscar `### DT-NNN` (o `### DTD-NNN` para las descartadas).
 
@@ -2258,7 +2258,7 @@ proyección = gastado en el período
 
 ### DT-112 — Dashboard: "Evolución mensual" dibuja como cero los meses sin datos y no se lee
 
-**Estado:** ⏳ Pendiente (fases 2 y 3 de la revisión de gráficos)
+**Estado:** 🟡 En progreso (fase 2 resuelta en v1.30.1; fase 3 pendiente)
 
 Gráfico de líneas de `static/js/dashboard.js` (`evolutionChart`):
 
@@ -2269,13 +2269,20 @@ Gráfico de líneas de `static/js/dashboard.js` (`evolutionChart`):
 
 **Why:** es el único gráfico que muestra la tendencia del año, y hoy sugiere una tendencia que no existe.
 
-**Camino de resolución:** fase 2: enviar `null` para los meses sin movimientos (Chart.js deja el hueco) y documentar el criterio. Fase 3: ingresos y gastos como barras agrupadas por mes, balance como línea recta (`tension: 0`), ocultar "Ahorro" si es cero todo el período, y más altura (≥ 260 px en desktop).
+**Fase 2 (v1.30.1):** `_get_monthly_evolution()` envía `None` en las 4 series para un mes sin ingresos, gastos ni depósitos de ahorro. Si el mes tiene datos en alguna serie, las demás siguen en `0`, porque es un valor real. El tooltip de `dashboard.js` filtra los `null`.
+
+**Camino de resolución (fase 3):** Ingresos y gastos como barras agrupadas por mes, balance como línea recta (`tension: 0`), ocultar "Ahorro" si es cero todo el período, y más altura (≥ 260 px en desktop).
+
+**Segunda revisión (2026-11-13, v1.30.0):**
+
+- **Celular:** a 390 px de ancho el gráfico es ilegible. La leyenda en dos líneas y los meses rotados a 45° ocupan casi todos los 150 px, y las 4 series quedan como una línea plana. Fase 3: más altura en mobile, leyenda abajo o compacta, meses abreviados (Ene, Feb...) sin rotar.
+- **Dónde va:** el gráfico anual completo pasa al reporte anual, que hoy es solo una tabla y tiene lugar para leerlo. En el dashboard queda una versión corta de los últimos 6 meses.
 
 ---
 
 ### DT-113 — Gastos: "Acumulado del mes" se extiende al futuro y "Gastos por día" esconde el gasto variable
 
-**Estado:** ⏳ Pendiente (fases 2 y 3 de la revisión de gráficos)
+**Estado:** 🟡 En progreso (fase 2 resuelta en v1.30.1; fase 3 pendiente)
 
 En el resumen del listado de gastos (`static/js/expense_list.js`, `expenseDailyChart` y `expenseDailyBarChart`):
 
@@ -2284,7 +2291,9 @@ En el resumen del listado de gastos (`static/js/expense_list.js`, `expenseDailyC
 
 **Why:** son los gráficos para seguir el ritmo de gasto dentro del mes, y hoy muestran sobre todo cuándo se pagaron los fijos.
 
-**Camino de resolución:** fase 2: en el período actual, cortar el acumulado en el día de hoy (`null` en los días futuros) y `beginAtZero: true`. Fase 3: barras apiladas por día con dos series, fijos (gastos con `recurring`) y variables, con colores distintos; acumulado con `tension: 0` o escalonado.
+**Fase 2 (v1.30.1):** en el mes actual, el acumulado envía `None` para los días posteriores a hoy y la línea se corta. Las barras de "Gastos por día" no cambian. El eje Y del acumulado tiene `beginAtZero: true`.
+
+**Camino de resolución (fase 3):** Barras apiladas por día con dos series, fijos (gastos con `recurring`) y variables, con colores distintos; acumulado con `tension: 0` o escalonado.
 
 ---
 
@@ -2297,6 +2306,50 @@ Con los mismos datos de noviembre, el donut del dashboard muestra los 5 grupos p
 **Why:** dos gráficos de lo mismo que no coinciden generan desconfianza en los números, aunque los totales estén bien.
 
 **Camino de resolución:** un único criterio compartido (por ejemplo, agrupar en "Otros" lo que esté por debajo del 3 % con un máximo de 7 segmentos) en una función usada por ambas vistas, con test de que dan el mismo resultado para los mismos datos.
+
+---
+
+### DT-115 — Proyección: los pagos únicos grandes que no son gastos fijos se extrapolan como gasto diario
+
+**Estado:** ⏳ Pendiente (falta decidir el enfoque)
+
+Encontrado en la segunda revisión de gráficos (2026-11-13, v1.30.0). Con DT-111 la proyección bajó de $ 6,98 M a $ 4,90 M, pero sigue cerrando en −$ 535.446. El cálculo hace lo que se definió: el problema es que trata como gasto variable a pagos únicos que no están cargados como gasto fijo. "Tarjetas de Crédito" ($ 454.263) e "Inversiones" ($ 464.740) suman cerca de dos tercios del gasto variable del mes, y se multiplican por los 17 días que faltan.
+
+**Why:** el usuario no tiene por qué cargar el pago de la tarjeta como gasto fijo para que la proyección sea razonable, y un cierre negativo que no va a ocurrir hace que se deje de mirar el número.
+
+**Opciones:**
+
+- **A (recomendada):** calcular el ritmo diario sin los gastos individuales excepcionalmente grandes del período, y sumarlos una sola vez, como los fijos. Hay que definir el umbral (por ejemplo, un gasto que supere un porcentaje del gasto variable del período o un múltiplo de la mediana) y explicarlo en el tooltip. Se aplica en `get_expense_projection()`, así que llega también a la app mobile.
+- **B:** no tocar el cálculo y cargar la tarjeta como gasto fijo. Depende de que cada usuario lo haga.
+
+**Nota de datos:** "Inversiones" es tema de carga, no de código: si es ahorro, corresponde registrarlo como movimiento de una meta (hoy deja "Ahorro acumulado" en $ 0).
+
+---
+
+### DT-116 — Gráficos: ajustes menores de la segunda revisión
+
+**Estado:** ⏳ Pendiente (fase 3 de la revisión de gráficos)
+
+- **Botón flotante sobre el eje:** en desktop, el botón rojo flotante (FAB) tapa la etiqueta "Noviembre" del eje X de "Evolución mensual". Basta con un margen inferior en el contenedor o el gráfico.
+- **Lista "Por grupo" con scroll interno:** en el resumen de gastos muestra 5 de 8 grupos y el resto queda escondido detrás de una barra de scroll, aunque hay espacio para mostrarlos.
+- **Donut "Por método de pago":** 3 valores en un donut de 120 px no agregan nada que la lista con porcentajes no diga. Quitar el donut y dejar solo la lista.
+
+**Why:** son detalles que hacen que los gráficos se vean descuidados o escondan información sin necesidad.
+
+**Camino de resolución:** CSS y templates del dashboard y del listado de gastos; quitar `expenseMethodDonut` de `static/js/expense_list.js` y su canvas.
+
+---
+
+### DT-117 — Gráficos nuevos: ritmo contra el mes anterior y gráfico en el reporte anual
+
+**Estado:** ⏳ Pendiente (después de la fase 3 de la revisión de gráficos)
+
+- **Ritmo del mes contra el mes anterior:** en "Acumulado del mes", sumar en gris la línea completa del mes anterior. Responde de un vistazo si se va gastando más o menos que el mes pasado al mismo día, que es la pregunta que el acumulado solo no contesta.
+- **Gráfico en el reporte anual:** barras de ingresos y gastos por mes con el balance como línea, sobre la tabla existente. Es el gráfico rehecho de DT-112, movido a donde hay lugar para leerlo.
+
+**Why:** son las dos preguntas que hoy ningún gráfico responde bien: "¿voy bien este mes?" y "¿cómo vengo en el año?".
+
+**Camino de resolución:** el mes anterior sale de la misma query del acumulado con otro rango de fechas (cuidado con meses de distinta cantidad de días y con el período financiero). El gráfico anual reutiliza los datos que ya arma `_build_annual_data()`. No agregar más gráficos que estos: el dashboard ya tiene mucha información antes de llegar a los gráficos.
 
 ---
 

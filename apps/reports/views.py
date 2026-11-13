@@ -491,10 +491,15 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         savings_by_month = {row["date__month"]: float(row["total"]) for row in savings_qs}
 
         for m in months:
+            labels.append(get_month_name(m))
+            # A month without any movement is missing data, not a zero: None leaves a gap in the chart.
+            if m not in expense_by_month and m not in income_by_month and m not in savings_by_month:
+                for series in (income_data, expense_data, savings_data, balance_data):
+                    series.append(None)
+                continue
             inc = income_by_month.get(m, 0)
             exp = expense_by_month.get(m, 0)
             sav = savings_by_month.get(m, 0)
-            labels.append(get_month_name(m))
             income_data.append(inc)
             expense_data.append(exp)
             savings_data.append(sav)

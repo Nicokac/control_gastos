@@ -207,6 +207,7 @@ function initExpenseDailyChart() {
                     ticks: { font: { size: 11 }, maxTicksLimit: 10 }
                 },
                 y: {
+                    beginAtZero: true,
                     grid: { color: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)' },
                     ticks: {
                         font: { size: 11 },
