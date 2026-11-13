@@ -32,7 +32,7 @@ como issues pendientes.
 | [D-018](#d-018--gastos-compartidos-modelo-sin-cuenta-para-el-miembro) | Gastos Compartidos: modelo sin cuenta para el miembro |  |
 | [D-019](#d-019--notificaciones-push-diseño-y-fase-a-registro-de-token) | Notificaciones push: diseño y Fase A (registro de token) |  |
 | [D-020](#d-020--dominio-propio-controldegastosar-y-cuentas-de-terceros-del-proyecto) | Dominio propio (controldegastos.ar) y cuentas de terceros del proyecto |  |
-| [D-021](#d-021--feedback-de-testers-de-la-prueba-cerrada-de-google-play-14-días-14-reportes) | Feedback de testers de la prueba cerrada de Google Play (14 días, 14 reportes) | DT-096 a DT-109 |
+| [D-021](#d-021--feedback-de-testers-de-la-prueba-cerrada-de-google-play-14-días-14-reportes) | Feedback de testers de la prueba cerrada de Google Play (14 días, 14 reportes) | DT-096 a DT-114 |
 
 La deuda técnica (`DT-XXX`) está repartida en las secciones marcadas en la columna Nota, en orden de número. Para encontrar una entrada, buscar `### DT-NNN` (o `### DTD-NNN` para las descartadas).
 
@@ -2190,6 +2190,80 @@ Al cargar un gasto desde la web, el campo Fecha se ve como `11/10/2026` (mes/dí
 **Resolución:** se eligió la (a). `templates/base.html` carga flatpickr 4.6.13 y su idioma español desde jsDelivr (versión fija y SRI; la CSP ya permitía ese CDN), y `static/js/date_picker.js` convierte todos los `input[type="date"]`: muestra `d/m/Y` en un campo visible y deja el original oculto con `Y-m-d`, que es lo que llega al servidor. Conserva las clases y el `required` del campo. Se usa el calendario de flatpickr también en celulares (`disableMobile`), para que el formato no dependa del idioma del teléfono; escribir la fecha a mano solo se habilita con mouse, para que en el celular no se abra el teclado. Al revisar los campos apareció otro problema: `start_date` de gastos fijos se renderizaba con el formato local (`01/04/2026`), que un campo de fecha no entiende, así que al editar un gasto en cuotas la fecha aparecía vacía y el form pedía cargarla de nuevo. Se le agregó `format="%Y-%m-%d"`, como ya tenía gastos compartidos. Tests en `apps/core/tests/test_date_picker.py`.
 
 **Riesgo aceptado:** el calendario depende de jsDelivr, igual que Bootstrap. Si el CDN no carga, el script no hace nada y queda el campo nativo, que sigue funcionando con el formato del navegador.
+
+---
+
+### DT-110 — Web: handlers inline bloqueados por la CSP (selector de año y confirmación de borrado)
+
+**Estado:** ⏳ Pendiente (fase 1 de la revisión de gráficos)
+
+Encontrado al revisar los gráficos con Playwright en producción (2026-11-13). La consola muestra `Executing inline event handler violates the following Content Security Policy directive 'script-src ...'`. La CSP de producción no permite `unsafe-inline` en scripts (D-009), así que los atributos `on...=""` escritos en los templates no se ejecutan:
+
+- `templates/reports/annual_report.html:16` — `onchange="this.form.submit()"` del selector de año: elegir otro año no hace nada.
+- `templates/reports/dashboard.html:582` — mismo caso en el selector de año de "Evolución mensual".
+- `templates/shared_expenses/members.html:28` — `onclick="return confirm('¿Eliminar a ...?')"`: el confirm no corre y el formulario se envía igual, así que el miembro se borra **sin pedir confirmación**.
+
+**Why:** son fallas silenciosas que solo pasan en producción: en desarrollo la CSP es distinta y los tests de Django no ejecutan JS. El borrado sin confirmación es el más delicado.
+
+**Camino de resolución:** mover los tres comportamientos a JS externo (por ejemplo, `data-autosubmit` en el select y `data-confirm="..."` en el botón, con un listener en `main.js`), sin agregar `unsafe-inline` ni `unsafe-hashes`. Buscar otros `on...=` en `templates/` antes de cerrar. Test: que los templates no contengan atributos `on[a-z]+=` (regresión barata).
+
+---
+
+### DT-111 — Dashboard: la proyección al cierre extrapola los gastos fijos
+
+**Estado:** ⏳ Pendiente (fase 2 de la revisión de gráficos)
+
+La proyección es una regla de tres sobre el total gastado: `gastado / día_del_período × días_del_período` (`apps/reports/views.py`, bloque "Proyección de cierre de mes", y lo mismo en `apps/api/v1/views/dashboard.py`). Los gastos fijos (alquiler, expensas, cuotas) se pagan en los primeros días, así que el cálculo los multiplica como si se repitieran todo el mes. Caso real del 13/11/2026: $ 3.024.537 gastados el día 13 proyectaban **$ 6.979.700** de gasto y un cierre de **−$ 2.619.992**, cuando ningún mes del año superó $ 4,93 M.
+
+**Why:** es la cifra que más alarma del dashboard y está sistemáticamente inflada en la primera mitad del mes, justo cuando más se mira.
+
+**Camino de resolución:** proyección = gastos ya registrados + (gastos variables hasta hoy / días transcurridos × días restantes) + gastos fijos activos que todavía no se pagaron en el período (con `estimated_amount`, o el último pago si no tiene). Un gasto es fijo si tiene `recurring` asignado. Aplicar el mismo cálculo en web y API (extraerlo a un servicio compartido) y mantener el mínimo de 3 días. Tests con casos borde: período que no empieza el 1, fijos ya pagados, fijos sin monto estimado, sin gastos variables.
+
+**Nota de datos (no es código):** en la cuenta revisada, "Inversiones" ($ 464.740 en noviembre) está cargado como gasto, lo que también infla el total y la proyección y deja "Ahorro acumulado" en $ 0. Si es ahorro, corresponde registrarlo como movimiento de una meta.
+
+---
+
+### DT-112 — Dashboard: "Evolución mensual" dibuja como cero los meses sin datos y no se lee
+
+**Estado:** ⏳ Pendiente (fases 2 y 3 de la revisión de gráficos)
+
+Gráfico de líneas de `static/js/dashboard.js` (`evolutionChart`):
+
+- Los meses sin movimientos llegan como `0` (febrero, marzo y agosto de 2026 en la cuenta revisada; el reporte anual los muestra como "—"), y las líneas caen a cero como si ese mes no se hubiera gastado nada.
+- Mide 150 px de alto para 11 meses y 4 series, así que se ve aplastado.
+- `tension: 0.4` curva las líneas, que inventan valores entre meses y pasan por debajo de cero aunque ningún mes fue negativo salvo abril.
+- La serie "Ahorro" está en cero todo el año cuando no hay metas, y solo agrega ruido.
+
+**Why:** es el único gráfico que muestra la tendencia del año, y hoy sugiere una tendencia que no existe.
+
+**Camino de resolución:** fase 2: enviar `null` para los meses sin movimientos (Chart.js deja el hueco) y documentar el criterio. Fase 3: ingresos y gastos como barras agrupadas por mes, balance como línea recta (`tension: 0`), ocultar "Ahorro" si es cero todo el período, y más altura (≥ 260 px en desktop).
+
+---
+
+### DT-113 — Gastos: "Acumulado del mes" se extiende al futuro y "Gastos por día" esconde el gasto variable
+
+**Estado:** ⏳ Pendiente (fases 2 y 3 de la revisión de gráficos)
+
+En el resumen del listado de gastos (`static/js/expense_list.js`, `expenseDailyChart` y `expenseDailyBarChart`):
+
+- **Acumulado del mes:** la línea sigue hasta el último día del mes con el valor de hoy (el 13/11 quedaba plana en $ 3.024.537 del 14 al 30), como si ya se supiera que no habrá más gastos. El eje Y arranca en $ 500.000 y no en cero, lo que exagera las subidas, y la curva (`tension: 0.3`) suaviza saltos que en realidad son pagos puntuales.
+- **Gastos por día:** dos o tres pagos grandes (≈ $ 1 M los días 3 y 10, alquiler y cuotas) aplastan la escala y los gastos chicos del día a día no se ven, que son los que uno quiere controlar.
+
+**Why:** son los gráficos para seguir el ritmo de gasto dentro del mes, y hoy muestran sobre todo cuándo se pagaron los fijos.
+
+**Camino de resolución:** fase 2: en el período actual, cortar el acumulado en el día de hoy (`null` en los días futuros) y `beginAtZero: true`. Fase 3: barras apiladas por día con dos series, fijos (gastos con `recurring`) y variables, con colores distintos; acumulado con `tension: 0` o escalonado.
+
+---
+
+### DT-114 — Distribución de gastos: los dos donuts agrupan "Otros" con criterios distintos
+
+**Estado:** ⏳ Pendiente (fase 3 de la revisión de gráficos)
+
+Con los mismos datos de noviembre, el donut del dashboard muestra los 5 grupos principales más "Otros" ($ 631.895, `apps/reports/views.py`, "top 5 grupos + Otros"), y el del listado de gastos muestra 7 grupos más "Otros" ($ 199.266, `apps/expenses/views.py`, agrupa los segmentos menores al 3 %). En el dashboard, "Otros" termina siendo la segunda porción más grande.
+
+**Why:** dos gráficos de lo mismo que no coinciden generan desconfianza en los números, aunque los totales estén bien.
+
+**Camino de resolución:** un único criterio compartido (por ejemplo, agrupar en "Otros" lo que esté por debajo del 3 % con un máximo de 7 segmentos) en una función usada por ambas vistas, con test de que dan el mismo resultado para los mismos datos.
 
 ---
 
