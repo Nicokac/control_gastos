@@ -1,10 +1,8 @@
 import re
-from datetime import date
 from pathlib import Path
 
 from django.conf import settings
 from django.urls import reverse
-from django.utils import timezone
 
 import pytest
 
@@ -38,14 +36,3 @@ class TestCspSafeBehaviors:
         response = authenticated_client.get(reverse("reports:annual"))
         assert 'name="year"' in response.content.decode()
         assert "data-autosubmit" in response.content.decode()
-
-    def test_dashboard_year_select_autosubmits(
-        self, authenticated_client, user, expense_category, expense_factory
-    ):
-        last_year = timezone.localdate().year - 1
-        expense_factory(user, expense_category, date=date(last_year, 6, 1))
-        expense_factory(user, expense_category)
-        response = authenticated_client.get(reverse("reports:dashboard"))
-        content = response.content.decode()
-        assert 'id="yearSelect"' in content
-        assert "data-autosubmit" in content

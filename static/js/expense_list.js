@@ -19,11 +19,9 @@ document.addEventListener('DOMContentLoaded', function () {
             if (chartsInitialized) return;
             chartsInitialized = true;
             initExpenseDonut();
-            initLegendFade();
             initExpenseDailyChart();
             initExpenseDailyBarChart();
             initExpenseMonthlyChart();
-            initSmallDonut('expenseMethodDonut', 'expense-method-labels', 'expense-method-data', 'expense-method-colors');
         }
 
         // Restaurar estado desde localStorage
@@ -172,22 +170,39 @@ function initExpenseDailyChart() {
     const labels = JSON.parse(labelsEl.textContent);
     const data = JSON.parse(dataEl.textContent);
     if (!data.length) return;
+    const prevEl = document.getElementById('expense-prev-daily-data');
+    const prevData = prevEl ? JSON.parse(prevEl.textContent) : [];
 
     const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+    const datasets = [{
+        label: 'Este mes',
+        data: data,
+        borderColor: '#dc3545',
+        backgroundColor: 'rgba(220,53,69,0.08)',
+        borderWidth: 2,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        fill: true,
+        tension: 0,
+    }];
+    if (prevData.length) {
+        datasets.push({
+            label: 'Mes anterior',
+            data: prevData,
+            borderColor: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(108,117,125,0.6)',
+            borderWidth: 1.5,
+            borderDash: [4, 3],
+            pointRadius: 0,
+            pointHoverRadius: 3,
+            fill: false,
+            tension: 0,
+        });
+    }
     new Chart(canvas, {
         type: 'line',
         data: {
             labels: labels,
-            datasets: [{
-                data: data,
-                borderColor: '#dc3545',
-                backgroundColor: 'rgba(220,53,69,0.08)',
-                borderWidth: 2,
-                pointRadius: 0,
-                pointHoverRadius: 4,
-                fill: true,
-                tension: 0.3,
-            }]
+            datasets: datasets
         },
         options: {
             responsive: true,
@@ -195,9 +210,12 @@ function initExpenseDailyChart() {
             plugins: {
                 legend: { display: false },
                 tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    filter: function (item) { return item.raw !== null; },
                     callbacks: {
                         title: function (ctx) { return 'Día ' + ctx[0].label; },
-                        label: function (ctx) { return ' ' + formatARS(ctx.parsed.y); }
+                        label: function (ctx) { return ' ' + ctx.dataset.label + ': ' + formatARS(ctx.parsed.y); }
                     }
                 }
             },
@@ -224,12 +242,14 @@ function initExpenseDailyBarChart() {
     if (!canvas) return;
 
     const labelsEl = document.getElementById('expense-daily-labels');
-    const dataEl = document.getElementById('expense-daily-bar-data');
-    if (!labelsEl || !dataEl) return;
+    const fixedEl = document.getElementById('expense-daily-fixed-data');
+    const variableEl = document.getElementById('expense-daily-variable-data');
+    if (!labelsEl || !fixedEl || !variableEl) return;
 
     const labels = JSON.parse(labelsEl.textContent);
-    const data = JSON.parse(dataEl.textContent);
-    if (!data.length) return;
+    const fixedData = JSON.parse(fixedEl.textContent);
+    const variableData = JSON.parse(variableEl.textContent);
+    if (!variableData.length) return;
 
     const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
     const metaEl = document.getElementById('expense-daily-meta');
@@ -243,24 +263,39 @@ function initExpenseDailyBarChart() {
         type: 'bar',
         data: {
             labels: labels,
-            datasets: [{
-                data: data,
-                backgroundColor: 'rgba(220,53,69,0.7)',
-                borderWidth: 0,
-                borderRadius: 2,
-            }]
+            datasets: [
+                {
+                    label: 'Variables',
+                    data: variableData,
+                    backgroundColor: 'rgba(220,53,69,0.75)',
+                    borderWidth: 0,
+                    borderRadius: 2,
+                },
+                {
+                    label: 'Fijos',
+                    data: fixedData,
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(108,117,125,0.45)',
+                    borderWidth: 0,
+                    borderRadius: 2,
+                },
+            ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { display: false },
+                legend: {
+                    position: 'bottom',
+                    labels: { boxWidth: 10, boxHeight: 10, font: { size: 11 } },
+                },
                 tooltip: {
+                    mode: 'index',
+                    intersect: false,
                     callbacks: {
                         title: function (ctx) { return 'Día ' + ctx[0].label; },
                         label: function (ctx) {
                             if (!ctx.parsed.y) return null;
-                            return ' ' + formatARS(ctx.parsed.y);
+                            return ' ' + ctx.dataset.label + ': ' + formatARS(ctx.parsed.y);
                         }
                     }
                 }
@@ -280,10 +315,12 @@ function initExpenseDailyBarChart() {
             },
             scales: {
                 x: {
+                    stacked: true,
                     grid: { display: false },
                     ticks: { font: { size: 11 }, maxTicksLimit: 10 }
                 },
                 y: {
+                    stacked: true,
                     grid: { color: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)' },
                     ticks: {
                         font: { size: 11 },
@@ -360,64 +397,6 @@ function initExpenseMonthlyChart() {
             }
         }
     });
-}
-
-function initSmallDonut(canvasId, labelsId, dataId, colorsId) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas) return;
-    const labelsEl = document.getElementById(labelsId);
-    const dataEl = document.getElementById(dataId);
-    const colorsEl = document.getElementById(colorsId);
-    if (!labelsEl || !dataEl || !colorsEl) return;
-
-    const labels = JSON.parse(labelsEl.textContent);
-    const data = JSON.parse(dataEl.textContent);
-    const colors = JSON.parse(colorsEl.textContent);
-    if (!data.length) return;
-
-    const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-    new Chart(canvas, {
-        type: 'doughnut',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: data,
-                backgroundColor: colors,
-                borderWidth: 2,
-                borderColor: isDark ? '#2c3136' : '#fff',
-                hoverOffset: 4,
-            }]
-        },
-        options: {
-            cutout: '65%',
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    callbacks: {
-                        label: function (ctx) {
-                            const total = ctx.dataset.data.reduce(function (a, b) { return a + b; }, 0);
-                            const pct = total ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
-                            return ' ' + formatARS(ctx.parsed) + ' (' + pct + '%)';
-                        }
-                    }
-                }
-            }
-        }
-    });
-}
-
-function initLegendFade() {
-    const legend = document.getElementById('expenseGroupLegend');
-    const fade = document.getElementById('expenseLegendFade');
-    if (!legend || !fade) return;
-
-    function updateFade() {
-        const atBottom = legend.scrollHeight - legend.scrollTop <= legend.clientHeight + 2;
-        fade.style.display = atBottom ? 'none' : 'block';
-    }
-
-    updateFade();
-    legend.addEventListener('scroll', updateFade);
 }
 
 function formatARS(value) {

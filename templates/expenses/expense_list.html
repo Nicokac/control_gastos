@@ -117,9 +117,9 @@
                         </div>
                     </div>
                 </div>
-                <!-- Leyenda por grupo — card scrolleable con fade inferior -->
-                <div class="flex-grow-1 position-relative">
-                    <div class="overflow-y-auto" id="expenseGroupLegend" style="max-height:220px">
+                <!-- Leyenda por grupo: muestra todos los grupos, sin scroll interno (DT-116) -->
+                <div class="flex-grow-1">
+                    <div id="expenseGroupLegend">
                         <p class="small text-muted mb-2">Por grupo</p>
                         {% for g in group_summary %}
                         <a href="?{% for key, value in request.GET.items %}{% if key != 'category' and key != 'subcategory' %}{{ key }}={{ value }}&{% endif %}{% endfor %}category={{ g.pk }}"
@@ -136,7 +136,6 @@
                         </a>
                         {% endfor %}
                     </div>
-                    <div id="expenseLegendFade" style="position:absolute;bottom:0;left:0;right:0;height:36px;background:linear-gradient(to bottom,transparent,var(--bs-body-bg));pointer-events:none"></div>
                 </div>
             </div>
             <hr class="my-3">
@@ -144,18 +143,20 @@
             {% if show_daily_chart %}
             {{ daily_labels|json_script:"expense-daily-labels" }}
             {{ daily_data|json_script:"expense-daily-data" }}
-            {{ daily_bar_data|json_script:"expense-daily-bar-data" }}
+            {{ daily_fixed_data|json_script:"expense-daily-fixed-data" }}
+            {{ daily_variable_data|json_script:"expense-daily-variable-data" }}
+            {{ prev_daily_data|json_script:"expense-prev-daily-data" }}
             <script id="expense-daily-meta" type="application/json">{"month": {{ filter_form.month.value|default:0 }}, "year": {{ filter_form.year.value|default:0 }}}</script>
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
-                    <p class="small text-muted mb-2">Acumulado del mes</p>
-                    <div style="height:140px">
+                    <p class="small text-muted mb-2">Acumulado del mes{% if prev_daily_data %} <span class="text-body-tertiary">· en gris, el mes anterior</span>{% endif %}</p>
+                    <div style="height:160px">
                         <canvas id="expenseDailyChart"></canvas>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <p class="small text-muted mb-2">Gastos por día</p>
-                    <div style="height:140px">
+                    <div style="height:160px">
                         <canvas id="expenseDailyBarChart"></canvas>
                     </div>
                 </div>
@@ -172,26 +173,17 @@
             <hr class="my-3">
             {% endif %}
             {% if payment_method_summary %}
-            {{ method_donut_labels|json_script:"expense-method-labels" }}
-            {{ method_donut_data|json_script:"expense-method-data" }}
-            {{ method_donut_colors|json_script:"expense-method-colors" }}
             <div class="row g-4">
                 <div class="col-md-6">
                     <p class="small text-muted mb-2">Por método de pago</p>
-                    <div class="d-flex gap-3 align-items-center">
-                        <div style="position:relative;width:120px;height:120px;flex-shrink:0">
-                            <canvas id="expenseMethodDonut"></canvas>
-                        </div>
-                        <div class="flex-grow-1">
-                            {% for item in payment_method_summary %}
-                            <div class="d-flex align-items-center small mb-1">
-                                <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background-color:{{ item.color }};flex-shrink:0;margin-right:6px"></span>
-                                <span class="text-truncate flex-grow-1 me-2">{{ item.label }}</span>
-                                <span class="text-muted flex-shrink-0">{{ item.pct }}%</span>
-                            </div>
-                            {% endfor %}
-                        </div>
+                    {% for item in payment_method_summary %}
+                    <div class="d-flex align-items-center small mb-1">
+                        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background-color:{{ item.color }};flex-shrink:0;margin-right:6px"></span>
+                        <span class="text-truncate flex-grow-1 me-2">{{ item.label }}</span>
+                        <span class="text-muted me-2 flex-shrink-0">{{ item.pct }}%</span>
+                        <span class="fw-semibold flex-shrink-0">{{ item.subtotal|currency }}</span>
                     </div>
+                    {% endfor %}
                 </div>
             </div>
             {% endif %}

@@ -8,15 +8,18 @@ from decimal import Decimal
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count, Q, Sum
 from django.http import HttpResponse
+from django.urls import reverse
 from django.utils import timezone
 from django.views.generic import TemplateView
 
 from apps.core.utils import (
+    DONUT_OTHERS_COLOR,
     get_expense_projection,
     get_financial_period,
     get_month_date_range_exclusive,
     get_month_name,
     get_next_month_commitment,
+    split_donut_segments,
 )
 from apps.expenses.models import Expense
 from apps.income.models import Income
@@ -65,13 +68,6 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         else:
             next_month, next_nav_year = selected_month + 1, selected_year
 
-        # Años disponibles para el gráfico de evolución
-        first_year = self._get_first_data_year(user, today.year)
-        year_choices = list(range(first_year, today.year + 1))
-
-        # Para el gráfico de evolución: usar el año seleccionado
-        evolution_month = selected_month if selected_year == today.year else 12
-
         context["current_month"] = selected_month
         context["current_year"] = selected_year
         context["month_name"] = get_month_name(selected_month)
@@ -82,7 +78,6 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context["next_month"] = next_month
         context["next_nav_year"] = next_nav_year
         context["selected_year"] = selected_year
-        context["year_choices"] = year_choices
         context["alert_threshold"] = user.alert_threshold
 
         # Período financiero del usuario
@@ -132,27 +127,10 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             context.update(get_next_month_commitment(user, next_month, next_year))
         context.update(self._get_recent_transactions(user))
         context.update(self._get_expense_distribution(user, selected_month, selected_year))
-        context.update(self._get_monthly_evolution(user, evolution_month, selected_year))
+        context.update(self._get_monthly_evolution(user, selected_month, selected_year))
         context.update(get_expense_projection(user, selected_month, selected_year))
 
         return context
-
-    def _get_first_data_year(self, user, current_year):
-        """Retorna el año más antiguo con datos del usuario (mínimo 2020)."""
-        expense_year = (
-            Expense.objects.filter(user=user)
-            .order_by("date")
-            .values_list("date__year", flat=True)
-            .first()
-        )
-        income_year = (
-            Income.objects.filter(user=user)
-            .order_by("date")
-            .values_list("date__year", flat=True)
-            .first()
-        )
-        candidates = [y for y in [expense_year, income_year] if y]
-        return min(candidates) if candidates else current_year
 
     def _get_balance_data(self, user, month, year, cur_start=None, cur_end=None):
         """
@@ -449,72 +427,55 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             "recent_transactions": transactions[:5],
         }
 
-    def _get_monthly_evolution(self, user, month, year):
-        """
-        Retorna ingresos, gastos y ahorro acumulados por mes,
-        desde enero del año actual hasta el mes actual inclusive.
-        """
-        months = range(1, month + 1)
-        labels = []
-        income_data = []
-        expense_data = []
-        savings_data = []
-        balance_data = []
+    def _get_monthly_evolution(self, user, month, year, months_back=6):
+        """Ingresos, gastos, ahorro y balance de los últimos meses hasta el seleccionado (DT-112)."""
+        periods = []
+        m, y = month, year
+        for _ in range(months_back):
+            periods.append((y, m))
+            m, y = (12, y - 1) if m == 1 else (m - 1, y)
+        periods.reverse()
 
-        # Rango completo: enero → fin del mes actual (1 query por modelo)
-        year_start, _ = get_month_date_range_exclusive(1, year)
-        _, period_end = get_month_date_range_exclusive(month, year)
+        range_start, _ = get_month_date_range_exclusive(periods[0][1], periods[0][0])
+        _, range_end = get_month_date_range_exclusive(month, year)
 
-        expenses_qs = (
-            Expense.objects.filter(user=user, date__gte=year_start, date__lt=period_end)
-            .values("date__month")
-            .annotate(total=Sum("amount_ars"))
+        def by_month(qs, amount_field):
+            return {
+                (row["date__year"], row["date__month"]): float(row["total"])
+                for row in qs.values("date__year", "date__month").annotate(total=Sum(amount_field))
+            }
+
+        expense_by_month = by_month(
+            Expense.objects.filter(user=user, date__gte=range_start, date__lt=range_end),
+            "amount_ars",
         )
-        incomes_qs = (
-            Income.objects.filter(user=user, date__gte=year_start, date__lt=period_end)
-            .values("date__month")
-            .annotate(total=Sum("amount_ars"))
+        income_by_month = by_month(
+            Income.objects.filter(user=user, date__gte=range_start, date__lt=range_end),
+            "amount_ars",
         )
-        savings_qs = (
+        savings_by_month = by_month(
             SavingMovement.objects.filter(
                 saving__user=user,
                 type=MovementType.DEPOSIT,
-                date__gte=year_start,
-                date__lt=period_end,
-            )
-            .values("date__month")
-            .annotate(total=Sum("amount"))
+                date__gte=range_start,
+                date__lt=range_end,
+            ),
+            "amount",
         )
 
-        expense_by_month = {row["date__month"]: float(row["total"]) for row in expenses_qs}
-        income_by_month = {row["date__month"]: float(row["total"]) for row in incomes_qs}
-        savings_by_month = {row["date__month"]: float(row["total"]) for row in savings_qs}
-
-        for m in months:
-            labels.append(get_month_name(m))
-            # A month without any movement is missing data, not a zero: None leaves a gap in the chart.
-            if m not in expense_by_month and m not in income_by_month and m not in savings_by_month:
-                for series in (income_data, expense_data, savings_data, balance_data):
-                    series.append(None)
-                continue
-            inc = income_by_month.get(m, 0)
-            exp = expense_by_month.get(m, 0)
-            sav = savings_by_month.get(m, 0)
-            income_data.append(inc)
-            expense_data.append(exp)
-            savings_data.append(sav)
-            balance_data.append(round(inc - exp - sav, 2))
-
-        month_urls = [f"?month={m}&year={year}" for m in months]
-
-        return {
-            "evolution_labels": labels,
-            "evolution_income": income_data,
-            "evolution_expenses": expense_data,
-            "evolution_savings": savings_data,
-            "evolution_balance": balance_data,
-            "evolution_month_urls": month_urls,
-        }
+        crosses_year = periods[0][0] != periods[-1][0]
+        return _evolution_context(
+            [
+                {
+                    "label": _short_month_label(m, y if crosses_year else None),
+                    "url": f"?month={m}&year={y}",
+                    "income": income_by_month.get((y, m)),
+                    "expense": expense_by_month.get((y, m)),
+                    "savings": savings_by_month.get((y, m)),
+                }
+                for y, m in periods
+            ]
+        )
 
     def _get_expense_distribution(self, user, month, year):
         """
@@ -522,7 +483,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         Retorna:
         - ranking_distribution: grupos ordenados por total (para el ranking con scroll)
-        - chart_*: top 5 grupos + "Otros" agrupado (para el donut)
+        - chart_*: grupos del donut + "Otros" (criterio compartido con el listado de gastos)
         """
         start_date, end_date = get_month_date_range_exclusive(month, year)
 
@@ -578,10 +539,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 round((float(item["total"]) / grand_total) * 100, 1) if grand_total > 0 else 0
             )
 
-        # Donut: top 5 grupos + "Otros"
-        TOP_N = 5
-        top = ranking[:TOP_N]
-        others = ranking[TOP_N:]
+        top, others = split_donut_segments(ranking, lambda g: g["total"])
 
         chart_labels = [r["name"] for r in top]
         chart_data = [float(r["total"]) for r in top]
@@ -591,7 +549,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             others_total = sum(float(r["total"]) for r in others)
             chart_labels.append("Otros")
             chart_data.append(others_total)
-            chart_colors.append("#6c757d")
+            chart_colors.append(DONUT_OTHERS_COLOR)
 
         top_category = ranking[0] if ranking else None
 
@@ -786,6 +744,37 @@ class DashboardExportView(DashboardView):
         return response
 
 
+def _short_month_label(month, year=None):
+    label = get_month_name(month)[:3]
+    return f"{label} {str(year)[2:]}" if year else label
+
+
+def _evolution_context(months):
+    """Series del gráfico de evolución; un mes sin ningún movimiento queda en None (hueco)."""
+    context = {
+        "evolution_labels": [],
+        "evolution_income": [],
+        "evolution_expenses": [],
+        "evolution_savings": [],
+        "evolution_balance": [],
+        "evolution_month_urls": [],
+    }
+    for item in months:
+        context["evolution_labels"].append(item["label"])
+        context["evolution_month_urls"].append(item["url"])
+        values = (item["income"], item["expense"], item["savings"])
+        if all(v is None for v in values):
+            for key in ("income", "expenses", "savings", "balance"):
+                context[f"evolution_{key}"].append(None)
+            continue
+        inc, exp, sav = (float(v or 0) for v in values)
+        context["evolution_income"].append(inc)
+        context["evolution_expenses"].append(exp)
+        context["evolution_savings"].append(sav)
+        context["evolution_balance"].append(round(inc - exp - sav, 2))
+    return context
+
+
 def _build_annual_data(user, year):
     """
     Construye los datos del reporte anual para un año dado.
@@ -880,6 +869,21 @@ class AnnualReportView(LoginRequiredMixin, TemplateView):
         year_choices = list(range(min(first_year, today.year), today.year + 1))
 
         rows, totals = _build_annual_data(user, year)
+        dashboard_url = reverse("reports:dashboard")
+        context.update(
+            _evolution_context(
+                [
+                    {
+                        "label": _short_month_label(r["month"]),
+                        "url": f"{dashboard_url}?month={r['month']}&year={year}",
+                        "income": r["income"] if r["has_data"] else None,
+                        "expense": r["expense"] if r["has_data"] else None,
+                        "savings": r["savings"] if r["has_data"] else None,
+                    }
+                    for r in rows
+                ]
+            )
+        )
 
         context["year"] = year
         context["year_choices"] = year_choices

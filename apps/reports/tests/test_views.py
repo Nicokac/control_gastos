@@ -160,12 +160,6 @@ class TestDashboardView:
         response = client.get(reverse("reports:dashboard"), {"year": "abc"})
         assert response.context["selected_year"] == current_year
 
-    def test_dashboard_year_choices_includes_current_year(self, client, user):
-        """Verifica que la lista de años incluye el año actual."""
-        client.force_login(user)
-        response = client.get(reverse("reports:dashboard"))
-        assert timezone.localdate().year in response.context["year_choices"]
-
 
 @pytest.mark.django_db
 class TestDashboardRolloverSuggestion:
@@ -702,13 +696,14 @@ class TestMonthlyEvolution:
         assert "evolution_expenses" in response.context
         assert "evolution_savings" in response.context
 
-    def test_evolution_labels_cover_jan_to_current_month(self, authenticated_client, url_helper):
-        """Los labels van de Enero hasta el mes actual inclusive."""
+    def test_evolution_labels_cover_last_six_months(self, authenticated_client, url_helper):
+        """Los labels son los últimos 6 meses, terminando en el mes actual."""
+        from apps.core.utils import get_month_name
+
         response = authenticated_client.get(url_helper("dashboard"))
         labels = response.context["evolution_labels"]
-        today = timezone.now().date()
-        assert len(labels) == today.month
-        assert labels[0] == "Enero"
+        assert len(labels) == 6
+        assert labels[-1].startswith(get_month_name(timezone.localdate().month)[:3])
 
     def test_evolution_empty_when_no_transactions(self, authenticated_client, url_helper):
         """Sin transacciones, todos los meses quedan sin dato (None), no en cero."""
@@ -875,7 +870,38 @@ class TestNextMonthCommitment:
 
 @pytest.mark.django_db
 class TestEvolutionGapsForMonthsWithoutData:
-    def test_month_without_movements_is_none_and_income_only_month_keeps_zero_expenses(
+    def test_dashboard_shows_six_months_across_years_with_gaps(
+        self, authenticated_client, user, income_factory, income_category
+    ):
+        from datetime import date
+
+        last_year = timezone.localdate().year - 1
+        income_factory(
+            user, income_category, amount=Decimal("5000.00"), date=date(last_year, 12, 10)
+        )
+
+        response = authenticated_client.get(
+            reverse("reports:dashboard"), {"month": 2, "year": last_year + 1}
+        )
+        ctx = response.context
+        short = str(last_year)[2:]
+
+        assert ctx["evolution_labels"][0] == f"Sep {short}"
+        assert ctx["evolution_labels"][3] == f"Dic {short}"
+        assert ctx["evolution_month_urls"][3] == f"?month=12&year={last_year}"
+        assert ctx["evolution_income"][3] == 5000.0
+        assert ctx["evolution_expenses"][3] == 0
+        assert ctx["evolution_balance"][3] == 5000.0
+        for key in (
+            "evolution_income",
+            "evolution_expenses",
+            "evolution_savings",
+            "evolution_balance",
+        ):
+            assert ctx[key][2] is None
+            assert ctx[key][5] is None
+
+    def test_annual_report_has_full_year_chart_data(
         self, authenticated_client, user, income_factory, income_category
     ):
         from datetime import date
@@ -885,19 +911,29 @@ class TestEvolutionGapsForMonthsWithoutData:
             user, income_category, amount=Decimal("5000.00"), date=date(last_year, 3, 10)
         )
 
-        response = authenticated_client.get(
-            reverse("reports:dashboard"), {"month": 12, "year": last_year}
-        )
+        response = authenticated_client.get(reverse("reports:annual"), {"year": last_year})
         ctx = response.context
 
+        assert ctx["evolution_labels"] == [
+            "Ene",
+            "Feb",
+            "Mar",
+            "Abr",
+            "May",
+            "Jun",
+            "Jul",
+            "Ago",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dic",
+        ]
         assert ctx["evolution_income"][2] == 5000.0
         assert ctx["evolution_expenses"][2] == 0
-        assert ctx["evolution_balance"][2] == 5000.0
-        for key in (
-            "evolution_income",
-            "evolution_expenses",
-            "evolution_savings",
-            "evolution_balance",
-        ):
-            assert ctx[key][1] is None
-            assert ctx[key][11] is None
+        assert ctx["evolution_income"][1] is None
+        assert ctx["evolution_month_urls"][2].endswith(f"?month=3&year={last_year}")
+        assert 'id="evolutionChart"' in response.content.decode()
+
+    def test_annual_report_without_data_has_no_chart(self, authenticated_client):
+        response = authenticated_client.get(reverse("reports:annual"))
+        assert 'id="evolutionChart"' not in response.content.decode()

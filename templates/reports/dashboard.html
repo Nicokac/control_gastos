@@ -186,7 +186,7 @@
                                 <i class="bi bi-question-circle" role="button" tabindex="0"
                                    aria-label="Cómo se calcula la proyección"
                                    data-bs-toggle="tooltip"
-                                   data-bs-title="Lo que ya gastaste, más tu gasto variable promedio por día multiplicado por los días que faltan, más los gastos fijos que todavía no pagaste este período. Los fijos sin monto cargado no se suman."></i>:
+                                   data-bs-title="Lo que ya gastaste, más tu gasto variable promedio por día multiplicado por los días que faltan, más los gastos fijos que todavía no pagaste este período. Para el promedio diario no se cuentan los pagos puntuales grandes (más del 20 % de tu gasto variable, como el resumen de la tarjeta): se suman una sola vez. Los fijos sin monto cargado no se suman."></i>:
                             </span>
                             <span class="fw-semibold {% if projected_balance >= 0 %}text-success{% else %}text-danger{% endif %}">
                                 {{ projected_balance|sensitive_currency }}
@@ -578,22 +578,16 @@
 <div class="row g-4 mb-4">
     <div class="col-12">
         <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-graph-up me-2"></i>Evolución Mensual</span>
-                {% if year_choices|length > 1 %}
-                <form method="get" class="d-flex align-items-center gap-2 mb-0">
-                    <input type="hidden" name="month" value="{{ current_month }}">
-                    <label for="yearSelect" class="text-muted small mb-0">Año:</label>
-                    <select id="yearSelect" name="year" class="form-select form-select-sm" style="width:auto;" data-autosubmit>
-                        {% for y in year_choices %}
-                        <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
-                        {% endfor %}
-                    </select>
-                </form>
-                {% endif %}
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span><i class="bi bi-graph-up me-2"></i>Evolución Mensual <small class="text-muted fw-normal text-nowrap">· últimos 6 meses</small></span>
+                <a href="{% url 'reports:annual' %}?year={{ selected_year }}" class="btn btn-outline-secondary btn-sm py-0 px-2 text-nowrap">
+                    <i class="bi bi-calendar3 me-1"></i>Ver año completo
+                </a>
             </div>
             <div class="card-body">
-                <canvas id="evolutionChart" style="max-height: 420px;"></canvas>
+                <div style="height:260px">
+                    <canvas id="evolutionChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -683,6 +677,7 @@
     {{ evolution_month_urls|json_script:"evolution-month-urls-data" }}
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" integrity="sha384-NrKB+u6Ts6AtkIhwPixiKTzgSKNblyhlk0Sohlgar9UHUBzai/sgnNNWWd291xqt" crossorigin="anonymous"></script> <!-- pragma: allowlist secret -->
     <script src="{% static 'js/dashboard.js' %}?v={{ APP_VERSION }}"></script>
+    <script src="{% static 'js/evolution_chart.js' %}?v={{ APP_VERSION }}"></script>
     {% if not request.user.has_seen_tour %}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@11.2.0/dist/css/shepherd.css">
     <script src="https://cdn.jsdelivr.net/npm/shepherd.js@11.2.0/dist/js/shepherd.min.js"></script>

@@ -182,9 +182,20 @@ def exchange_rate_today(request):
         return JsonResponse({"error": "No se pudo obtener la cotización"}, status=503)
 
 
-APP_VERSION = "1.30.1"
+APP_VERSION = "1.31.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.31.0",
+        "date": "Noviembre 2026",
+        "title": "Gráficos renovados",
+        "items": [
+            "La evolución mensual ahora se lee en barras y también en el celular; en el dashboard muestra los últimos 6 meses y el año completo está en el Reporte Anual",
+            "En Gastos podés comparar el acumulado del mes con el del mes anterior, y ver separados tus gastos fijos y variables por día",
+            "La proyección al cierre ya no promedia los pagos puntuales grandes, como el resumen de la tarjeta",
+            'Los dos gráficos de distribución agrupan "Otros" de la misma forma',
+        ],
+    },
     {
         "version": "1.30.1",
         "date": "Noviembre 2026",

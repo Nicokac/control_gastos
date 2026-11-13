@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load currency_filters %}
+{% load static currency_filters %}
 
 {% block title %}Reporte Anual {{ year }} - Control de Gastos{% endblock %}
 
@@ -28,6 +28,16 @@
         </a>
     </div>
 </div>
+
+{% if totals.income or totals.expense or totals.savings %}
+<div class="card mb-4">
+    <div class="card-body">
+        <div style="height:300px">
+            <canvas id="evolutionChart"></canvas>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <!-- Tabla anual -->
 <div class="card">
@@ -116,4 +126,17 @@
     <span>Hacé click en el mes para ver el detalle en el dashboard</span>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+    {% if totals.income or totals.expense or totals.savings %}
+    {{ evolution_labels|json_script:"evolution-labels-data" }}
+    {{ evolution_income|json_script:"evolution-income-data" }}
+    {{ evolution_expenses|json_script:"evolution-expenses-data" }}
+    {{ evolution_savings|json_script:"evolution-savings-data" }}
+    {{ evolution_balance|json_script:"evolution-balance-data" }}
+    {{ evolution_month_urls|json_script:"evolution-month-urls-data" }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" integrity="sha384-NrKB+u6Ts6AtkIhwPixiKTzgSKNblyhlk0Sohlgar9UHUBzai/sgnNNWWd291xqt" crossorigin="anonymous"></script> <!-- pragma: allowlist secret -->
+    <script src="{% static 'js/evolution_chart.js' %}?v={{ APP_VERSION }}"></script>
+    {% endif %}
 {% endblock %}

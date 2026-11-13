@@ -42,12 +42,25 @@ def spend(user, expense_category, expense_factory):
     return _spend
 
 
+@pytest.fixture
+def daily_spend(spend):
+    """$ 1.000 por día: ningún gasto supera el 20 % del variable, así que todos cuentan para el ritmo."""
+
+    def _daily_spend(days=range(1, 11)):
+        for day in days:
+            spend("1000", day=day)
+
+    return _daily_spend
+
+
 @pytest.mark.django_db
 class TestExpenseProjection:
-    def test_fixed_paid_early_is_not_extrapolated(self, user, frozen_today, make_recurring, spend):
+    def test_fixed_paid_early_is_not_extrapolated(
+        self, user, frozen_today, make_recurring, spend, daily_spend
+    ):
         rent = make_recurring()
         spend("300000", day=5, recurring=rent)
-        spend("10000", day=8)
+        daily_spend()
 
         result = get_expense_projection(user, 5, 2026)
 
@@ -55,39 +68,41 @@ class TestExpenseProjection:
         assert result["projection_available"] is True
         assert result["projected_expense"] == Decimal("331000")
 
-    def test_unpaid_fixed_adds_last_payment(self, user, frozen_today, make_recurring, spend):
+    def test_unpaid_fixed_adds_last_payment(
+        self, user, frozen_today, make_recurring, spend, daily_spend
+    ):
         internet = make_recurring(name="Internet")
         spend("50000", date=datetime.date(2026, 4, 5), recurring=internet)
-        spend("10000", day=8)
+        daily_spend()
 
         result = get_expense_projection(user, 5, 2026)
 
         assert result["projected_expense"] == Decimal("10000") + Decimal("21000") + Decimal("50000")
 
     def test_last_payment_wins_over_estimated_amount(
-        self, user, frozen_today, make_recurring, spend
+        self, user, frozen_today, make_recurring, spend, daily_spend
     ):
         internet = make_recurring(name="Internet", estimated_amount=Decimal("99999"))
         spend("50000", date=datetime.date(2026, 4, 5), recurring=internet)
-        spend("10000", day=8)
+        daily_spend()
 
         result = get_expense_projection(user, 5, 2026)
 
         assert result["projected_expense"] == Decimal("81000")
 
     def test_never_paid_fixed_uses_estimated_amount(
-        self, user, frozen_today, make_recurring, spend
+        self, user, frozen_today, make_recurring, spend, daily_spend
     ):
         make_recurring(name="Gimnasio", estimated_amount=Decimal("20000"))
         make_recurring(name="Sin monto")
-        spend("10000", day=8)
+        daily_spend()
 
         result = get_expense_projection(user, 5, 2026)
 
         assert result["projected_expense"] == Decimal("10000") + Decimal("21000") + Decimal("20000")
 
     def test_inactive_and_not_started_fixed_are_ignored(
-        self, user, frozen_today, make_recurring, spend
+        self, user, frozen_today, make_recurring, spend, daily_spend
     ):
         make_recurring(name="Viejo", estimated_amount=Decimal("5000"), is_active=False)
         make_recurring(
@@ -96,33 +111,35 @@ class TestExpenseProjection:
             total_installments=6,
             start_date=datetime.date(2026, 6, 1),
         )
-        spend("10000", day=8)
+        daily_spend()
 
         result = get_expense_projection(user, 5, 2026)
 
         assert result["projected_expense"] == Decimal("31000")
 
     def test_projected_balance_uses_period_income(
-        self, user, frozen_today, spend, income_category, income_factory
+        self, user, frozen_today, daily_spend, income_category, income_factory
     ):
         income_factory(user, income_category, amount=Decimal("100000"), date=TODAY)
         income_factory(
             user, income_category, amount=Decimal("999"), date=datetime.date(2026, 4, 30)
         )
-        spend("10000", day=8)
+        daily_spend()
 
         result = get_expense_projection(user, 5, 2026)
 
         assert result["projected_balance"] == Decimal("100000") - Decimal("31000")
 
-    def test_financial_period_with_custom_start_day(self, user, monkeypatch, make_recurring, spend):
+    def test_financial_period_with_custom_start_day(
+        self, user, monkeypatch, make_recurring, spend, daily_spend
+    ):
         user.financial_month_start_day = 10
         user.save(update_fields=["financial_month_start_day"])
         monkeypatch.setattr(timezone, "localdate", lambda: datetime.date(2026, 5, 20))
         rent = make_recurring()
         spend("300000", day=5, recurring=rent)  # previous period: rent still pending in this one
         spend("5000", day=9)  # previous period
-        spend("11000", day=15)
+        daily_spend(days=range(10, 21))
 
         result = get_expense_projection(user, 5, 2026)
 
@@ -130,6 +147,28 @@ class TestExpenseProjection:
         assert result["projected_expense"] == Decimal("11000") + Decimal("20000") + Decimal(
             "300000"
         )
+
+    def test_large_one_off_payment_is_counted_once(self, user, frozen_today, spend, daily_spend):
+        daily_spend()
+        spend("50000", day=7)  # credit card bill: over 20 % of the variable spending
+
+        result = get_expense_projection(user, 5, 2026)
+
+        # 60000 already spent + only the 10000 of daily spending is extrapolated: 1000 * 21 days
+        assert result["projected_expense"] == Decimal("81000")
+
+    def test_expense_below_threshold_is_extrapolated(self, user, frozen_today, spend, daily_spend):
+        daily_spend()
+        spend("2000", day=7)  # 2000 / 12000 = 16.7 %: stays in the daily rate
+
+        result = get_expense_projection(user, 5, 2026)
+
+        assert result["projected_expense"] == Decimal("12000") + Decimal("12000") / 10 * 21
+
+    def test_single_variable_expense_is_not_extrapolated(self, user, frozen_today, spend):
+        spend("10000", day=8)
+
+        assert get_expense_projection(user, 5, 2026)["projected_expense"] == Decimal("10000")
 
     @pytest.mark.parametrize(
         ("today", "month"),

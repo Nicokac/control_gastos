@@ -17,7 +17,11 @@ from django.views import View
 
 from apps.categories.models import Category
 from apps.core.constants import CategoryType, PaymentMethod
-from apps.core.utils import get_month_date_range_exclusive
+from apps.core.utils import (
+    DONUT_OTHERS_COLOR,
+    get_month_date_range_exclusive,
+    split_donut_segments,
+)
 from apps.core.views import (
     UserOwnedCreateView,
     UserOwnedDeleteView,
@@ -128,6 +132,25 @@ class ExpenseListView(UserOwnedListView):
         qs = qs.order_by(f"{prefix}{field}", "-created_at")
         return qs
 
+    def _previous_month_cumulative(self, month, year, num_days):
+        """Acumulado diario del mes anterior, recortado a los días del mes que se está viendo (DT-117)."""
+        prev_month, prev_year = (12, year - 1) if month == 1 else (month - 1, year)
+        start, end = get_month_date_range_exclusive(prev_month, prev_year)
+        rows = {
+            row["date"].day: float(row["subtotal"])
+            for row in Expense.objects.filter(user=self.request.user, date__gte=start, date__lt=end)
+            .values("date")
+            .annotate(subtotal=Sum("amount_ars"))
+        }
+        if not rows:
+            return []
+        acum = 0
+        data = []
+        for d in range(1, min(num_days, (end - start).days) + 1):
+            acum += rows.get(d, 0)
+            data.append(round(acum, 2))
+        return data
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
@@ -199,9 +222,6 @@ class ExpenseListView(UserOwnedListView):
             item["color"] = _method_colors.get(item["label"], "#6c757d")
         payment_method_summary.sort(key=lambda x: x["subtotal"], reverse=True)
         context["payment_method_summary"] = payment_method_summary
-        context["method_donut_labels"] = [i["label"] for i in payment_method_summary]
-        context["method_donut_data"] = [float(i["subtotal"]) for i in payment_method_summary]
-        context["method_donut_colors"] = [i["color"] for i in payment_method_summary]
 
         # Agrupar por grupo (parent), no por subcategoría — fuente única para donut y leyenda
         group_totals = {}
@@ -230,10 +250,8 @@ class ExpenseListView(UserOwnedListView):
         for g in group_summary:
             g["pct"] = round(g["subtotal"] / total_nonzero * 100, 1)
 
-        # Agrupar segmentos < 3% en "Otros" para el donut (la card muestra todos)
-        DONUT_MIN_PCT = 3
-        main_groups = [g for g in group_summary if g["pct"] >= DONUT_MIN_PCT]
-        small_groups = [g for g in group_summary if g["pct"] < DONUT_MIN_PCT]
+        # El donut agrupa en "Otros" con el mismo criterio que el dashboard; la leyenda muestra todos
+        main_groups, small_groups = split_donut_segments(group_summary, lambda g: g["subtotal"])
         donut_groups = main_groups[:]
         if small_groups:
             otros_subtotal = sum(g["subtotal"] for g in small_groups)
@@ -241,7 +259,7 @@ class ExpenseListView(UserOwnedListView):
             donut_groups.append(
                 {
                     "name": "Otros",
-                    "color": "#adb5bd",
+                    "color": DONUT_OTHERS_COLOR,
                     "pk": None,
                     "subtotal": otros_subtotal,
                     "pct": otros_pct,
@@ -287,34 +305,56 @@ class ExpenseListView(UserOwnedListView):
                     import calendar
 
                     daily_rows = {
-                        row["date"].day: float(row["subtotal"])
+                        row["date"].day: (float(row["subtotal"]), float(row["fixed"] or 0))
                         for row in qs.values("date")
-                        .annotate(subtotal=Sum("amount_ars"))
+                        .annotate(
+                            subtotal=Sum("amount_ars"),
+                            fixed=Sum("amount_ars", filter=Q(recurring__isnull=False)),
+                        )
                         .order_by("date")
                     }
                     num_days = calendar.monthrange(year_int, month_int)[1]
                     today = timezone.localdate()
                     is_current_month = (month_int, year_int) == (today.month, today.year)
                     acum = 0
-                    daily_bar_data = []
+                    daily_fixed_data = []
+                    daily_variable_data = []
                     for d in range(1, num_days + 1):
-                        day_amount = daily_rows.get(d, 0)
+                        day_amount, day_fixed = daily_rows.get(d, (0, 0))
                         acum += day_amount
                         daily_labels.append(d)
                         # Days that haven't happened yet have no cumulative value; the line stops today.
                         daily_data.append(
                             None if is_current_month and d > today.day else round(acum, 2)
                         )
-                        daily_bar_data.append(round(day_amount, 2))
+                        daily_fixed_data.append(round(day_fixed, 2))
+                        daily_variable_data.append(round(day_amount - day_fixed, 2))
                     context["show_daily_chart"] = True
-                    context["daily_bar_data"] = daily_bar_data
+                    context["daily_fixed_data"] = daily_fixed_data
+                    context["daily_variable_data"] = daily_variable_data
+                    if not any(
+                        self.request.GET.get(key)
+                        for key in (
+                            "q",
+                            "category",
+                            "subcategory",
+                            "payment_method",
+                            "date_from",
+                            "date_to",
+                        )
+                    ):
+                        context["prev_daily_data"] = self._previous_month_cumulative(
+                            month_int, year_int, num_days
+                        )
             except ValueError:
                 pass
 
         context["daily_labels"] = daily_labels
         context["daily_data"] = daily_data
         context.setdefault("show_daily_chart", False)
-        context.setdefault("daily_bar_data", [])
+        context.setdefault("daily_fixed_data", [])
+        context.setdefault("daily_variable_data", [])
+        context.setdefault("prev_daily_data", [])
 
         # Barras apiladas mensuales — solo cuando hay año sin mes específico
         context["show_monthly_chart"] = False

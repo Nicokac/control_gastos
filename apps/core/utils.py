@@ -229,6 +229,20 @@ def get_financial_period(month: int, year: int, start_day: int = 1):
     return start_date, end_date
 
 
+ONE_OFF_EXPENSE_SHARE = Decimal("0.2")
+DONUT_MIN_PCT = 3
+DONUT_MAX_SEGMENTS = 7
+DONUT_OTHERS_COLOR = "#adb5bd"
+
+
+def split_donut_segments(items: list, amount) -> tuple[list, list]:
+    """Separa los segmentos del donut de los que van a "Otros"; items ordenados de mayor a menor (DT-114)."""
+    total = sum(amount(i) for i in items)
+    main = [i for i in items if total > 0 and amount(i) * 100 / total >= DONUT_MIN_PCT]
+    main = main[:DONUT_MAX_SEGMENTS]
+    return main, items[len(main) :]
+
+
 def get_expense_projection(user, month: int, year: int) -> dict:
     """Proyección de gastos y balance al cierre del período financiero actual (DT-111)."""
     from django.db.models import Exists, OuterRef, Q, Subquery, Sum
@@ -262,10 +276,15 @@ def get_expense_projection(user, month: int, year: int) -> dict:
     if spent <= 0:
         return unavailable
 
-    # Fixed expenses are added once at their known amount instead of being
-    # extrapolated as a daily rate: rent paid on day 5 must not repeat every day.
+    # Fixed expenses and large one-off payments (a credit card bill, an investment) are
+    # counted once instead of being extrapolated as a daily rate (DT-111, DT-115).
     variable = spent - (totals["fixed"] or Decimal("0"))
-    projected_variable = variable / elapsed_days * (total_days - elapsed_days)
+    one_off = Decimal("0")
+    if variable > 0:
+        one_off = period_expenses.filter(
+            recurring__isnull=True, amount_ars__gte=variable * ONE_OFF_EXPENSE_SHARE
+        ).aggregate(total=Sum("amount_ars"))["total"] or Decimal("0")
+    projected_variable = (variable - one_off) / elapsed_days * (total_days - elapsed_days)
 
     last_payment = (
         Expense.objects.filter(recurring=OuterRef("pk")).order_by("-date").values("amount_ars")[:1]

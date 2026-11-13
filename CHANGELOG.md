@@ -5,6 +5,23 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.31.0] — 2026-11-13
+
+### Added
+
+- **Ritmo contra el mes anterior (DT-117)**: "Acumulado del mes" en Gastos suma, en gris punteado, el acumulado del mes anterior recortado a los días del mes actual. Solo cuando no hay filtros además de mes y año.
+- **Gráfico en el reporte anual (DT-117)**: barras de ingresos y gastos por mes con el balance como línea, arriba de la tabla. Los meses sin movimientos quedan como hueco y cada mes lleva a su dashboard.
+
+### Changed
+
+- **Proyección sin pagos puntuales grandes (DT-115)**: un gasto variable que supere el 20 % del gasto variable del período (por ejemplo, el resumen de la tarjeta) se suma una sola vez en lugar de entrar en el ritmo diario. El tooltip lo explica. La app mobile recibe el cálculo por la API.
+- **Evolución mensual rehecha (DT-112)**: barras de ingresos y gastos con el balance como línea recta, leyenda abajo, meses abreviados sin rotar y 260 px de alto, legible también en celular. "Ahorro" solo aparece si tiene valores. El dashboard muestra los últimos 6 meses (aunque crucen de año) y el selector de año se reemplazó por "Ver año completo", que lleva al reporte anual. El código está en `static/js/evolution_chart.js`, compartido con el reporte anual.
+- **Gastos por día separa fijos y variables (DT-113)**: barras apiladas, variables en rojo y fijos en gris. El acumulado pasa a líneas rectas.
+- **Mismo criterio de "Otros" en los dos donuts (DT-114)**: `split_donut_segments()` agrupa lo que está por debajo del 3 % con un máximo de 7 segmentos, en el dashboard y en Gastos. "Otros" usa un gris propio (`#adb5bd`) que no coincide con ninguna categoría.
+- **Resumen de Gastos (DT-116)**: la lista "Por grupo" muestra todos los grupos sin scroll interno, y "Por método de pago" pasa a ser una lista con porcentaje y monto, sin el donut.
+
+---
+
 ## [1.30.1] — 2026-11-13
 
 ### Fixed

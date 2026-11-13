@@ -306,7 +306,7 @@ class TestDailyCumulativeStopsToday:
         assert len(daily_data) == 31
         assert daily_data[9] == 100.0
         assert all(v is None for v in daily_data[10:])
-        assert response.context["daily_bar_data"][20] == 0
+        assert response.context["daily_variable_data"][20] == 0
 
     def test_past_month_has_cumulative_until_last_day(
         self, authenticated_client, user, expense_category, expense_factory, monkeypatch
@@ -321,3 +321,73 @@ class TestDailyCumulativeStopsToday:
 
         assert len(daily_data) == 30
         assert daily_data[-1] == 100.0
+
+
+@pytest.mark.django_db
+class TestDailyChartsSplitAndPreviousMonth:
+    def test_daily_bars_split_fixed_and_variable(
+        self, authenticated_client, user, expense_category, expense_factory
+    ):
+        from apps.recurring.models import RecurringExpense
+
+        rent = RecurringExpense.objects.create(
+            user=user, name="Alquiler", category=expense_category, due_day=5
+        )
+        expense_factory(
+            user, expense_category, amount=Decimal("300.00"), date=date(2026, 3, 5), recurring=rent
+        )
+        expense_factory(user, expense_category, amount=Decimal("40.00"), date=date(2026, 3, 5))
+
+        response = authenticated_client.get(
+            reverse("expenses:list"), {"month": "3", "year": "2026"}
+        )
+
+        assert response.context["daily_fixed_data"][4] == 300.0
+        assert response.context["daily_variable_data"][4] == 40.0
+        assert response.context["daily_data"][4] == 340.0
+
+    def test_previous_month_cumulative_is_trimmed_to_current_month(
+        self, authenticated_client, user, expense_category, expense_factory
+    ):
+        expense_factory(user, expense_category, amount=Decimal("100.00"), date=date(2026, 1, 2))
+        expense_factory(user, expense_category, amount=Decimal("50.00"), date=date(2026, 1, 30))
+
+        response = authenticated_client.get(
+            reverse("expenses:list"), {"month": "2", "year": "2026"}
+        )
+        prev = response.context["prev_daily_data"]
+
+        assert len(prev) == 28
+        assert prev[0] == 0
+        assert prev[1] == 100.0
+        assert prev[-1] == 100.0
+
+    def test_previous_month_crosses_year(
+        self, authenticated_client, user, expense_category, expense_factory
+    ):
+        expense_factory(user, expense_category, amount=Decimal("70.00"), date=date(2025, 12, 31))
+
+        response = authenticated_client.get(
+            reverse("expenses:list"), {"month": "1", "year": "2026"}
+        )
+
+        assert response.context["prev_daily_data"][-1] == 70.0
+
+    def test_previous_month_omitted_with_other_filters(
+        self, authenticated_client, user, expense_category, expense_factory
+    ):
+        expense_factory(user, expense_category, amount=Decimal("100.00"), date=date(2026, 1, 2))
+
+        response = authenticated_client.get(
+            reverse("expenses:list"),
+            {"month": "2", "year": "2026", "category": expense_category.pk},
+        )
+
+        assert response.context["prev_daily_data"] == []
+
+    def test_previous_month_without_expenses_is_empty(self, authenticated_client):
+        response = authenticated_client.get(
+            reverse("expenses:list"), {"month": "2", "year": "2026"}
+        )
+
+        assert response.context["prev_daily_data"] == []

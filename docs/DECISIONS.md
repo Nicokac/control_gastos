@@ -2258,7 +2258,7 @@ proyección = gastado en el período
 
 ### DT-112 — Dashboard: "Evolución mensual" dibuja como cero los meses sin datos y no se lee
 
-**Estado:** 🟡 En progreso (fase 2 resuelta en v1.30.1; fase 3 pendiente)
+**Estado:** ✅ Resuelto (fase 2 en v1.30.1, fase 3 en v1.31.0)
 
 Gráfico de líneas de `static/js/dashboard.js` (`evolutionChart`):
 
@@ -2271,7 +2271,10 @@ Gráfico de líneas de `static/js/dashboard.js` (`evolutionChart`):
 
 **Fase 2 (v1.30.1):** `_get_monthly_evolution()` envía `None` en las 4 series para un mes sin ingresos, gastos ni depósitos de ahorro. Si el mes tiene datos en alguna serie, las demás siguen en `0`, porque es un valor real. El tooltip de `dashboard.js` filtra los `null`.
 
-**Camino de resolución (fase 3):** Ingresos y gastos como barras agrupadas por mes, balance como línea recta (`tension: 0`), ocultar "Ahorro" si es cero todo el período, y más altura (≥ 260 px en desktop).
+**Fase 3 (v1.31.0):** el gráfico vive en `static/js/evolution_chart.js`, compartido por el dashboard y el reporte anual. Ingresos y gastos van como barras agrupadas, el balance como línea recta (`tension: 0`) y "Ahorro" solo aparece si tiene algún valor. La leyenda va abajo y los meses abreviados (Ene, Feb...) sin rotar. Lo arma `_evolution_context()` (`apps/reports/views.py`), que también decide los huecos.
+
+- **Dashboard:** últimos 6 meses hasta el mes seleccionado, aunque crucen de año (en ese caso los meses llevan el año: "Dic 25"). Mide 260 px de alto, también en celular. El selector de año se reemplazó por un link "Ver año completo" al reporte anual: con 6 meses móviles el selector ya no tenía sentido, y de paso se ahorran las 2 queries que buscaban el primer año con datos.
+- **Reporte anual:** el año completo, 300 px de alto, arriba de la tabla. No se muestra si el año no tiene movimientos.
 
 **Segunda revisión (2026-11-13, v1.30.0):**
 
@@ -2282,7 +2285,7 @@ Gráfico de líneas de `static/js/dashboard.js` (`evolutionChart`):
 
 ### DT-113 — Gastos: "Acumulado del mes" se extiende al futuro y "Gastos por día" esconde el gasto variable
 
-**Estado:** 🟡 En progreso (fase 2 resuelta en v1.30.1; fase 3 pendiente)
+**Estado:** ✅ Resuelto (fase 2 en v1.30.1, fase 3 en v1.31.0)
 
 En el resumen del listado de gastos (`static/js/expense_list.js`, `expenseDailyChart` y `expenseDailyBarChart`):
 
@@ -2293,25 +2296,25 @@ En el resumen del listado de gastos (`static/js/expense_list.js`, `expenseDailyC
 
 **Fase 2 (v1.30.1):** en el mes actual, el acumulado envía `None` para los días posteriores a hoy y la línea se corta. Las barras de "Gastos por día" no cambian. El eje Y del acumulado tiene `beginAtZero: true`.
 
-**Camino de resolución (fase 3):** Barras apiladas por día con dos series, fijos (gastos con `recurring`) y variables, con colores distintos; acumulado con `tension: 0` o escalonado.
+**Fase 3 (v1.31.0):** "Gastos por día" son barras apiladas: variables en rojo y fijos (gastos con `recurring`) en gris, con leyenda. El acumulado pasa a `tension: 0`. Los dos gráficos miden 160 px. Los pagos fijos grandes siguen marcando la escala, pero ahora se distinguen de un vistazo del gasto variable.
 
 ---
 
 ### DT-114 — Distribución de gastos: los dos donuts agrupan "Otros" con criterios distintos
 
-**Estado:** ⏳ Pendiente (fase 3 de la revisión de gráficos)
+**Estado:** ✅ Resuelto (v1.31.0)
 
 Con los mismos datos de noviembre, el donut del dashboard muestra los 5 grupos principales más "Otros" ($ 631.895, `apps/reports/views.py`, "top 5 grupos + Otros"), y el del listado de gastos muestra 7 grupos más "Otros" ($ 199.266, `apps/expenses/views.py`, agrupa los segmentos menores al 3 %). En el dashboard, "Otros" termina siendo la segunda porción más grande.
 
 **Why:** dos gráficos de lo mismo que no coinciden generan desconfianza en los números, aunque los totales estén bien.
 
-**Camino de resolución:** un único criterio compartido (por ejemplo, agrupar en "Otros" lo que esté por debajo del 3 % con un máximo de 7 segmentos) en una función usada por ambas vistas, con test de que dan el mismo resultado para los mismos datos.
+**Resolución:** `split_donut_segments()` en `apps/core/utils.py`, usada por los dos donuts: va a "Otros" lo que esté por debajo del 3 % del total (`DONUT_MIN_PCT`), con un máximo de 7 segmentos propios (`DONUT_MAX_SEGMENTS`). "Otros" usa siempre `#adb5bd` (`DONUT_OTHERS_COLOR`). Antes el dashboard usaba `#6c757d`, el mismo gris que una categoría de la paleta. `apps/core/tests/test_donut_segments.py` verifica que el dashboard y el listado den las mismas porciones para los mismos datos.
 
 ---
 
 ### DT-115 — Proyección: los pagos únicos grandes que no son gastos fijos se extrapolan como gasto diario
 
-**Estado:** ⏳ Pendiente (falta decidir el enfoque)
+**Estado:** ✅ Resuelto (v1.31.0, opción A)
 
 Encontrado en la segunda revisión de gráficos (2026-11-13, v1.30.0). Con DT-111 la proyección bajó de $ 6,98 M a $ 4,90 M, pero sigue cerrando en −$ 535.446. El cálculo hace lo que se definió: el problema es que trata como gasto variable a pagos únicos que no están cargados como gasto fijo. "Tarjetas de Crédito" ($ 454.263) e "Inversiones" ($ 464.740) suman cerca de dos tercios del gasto variable del mes, y se multiplican por los 17 días que faltan.
 
@@ -2322,13 +2325,19 @@ Encontrado en la segunda revisión de gráficos (2026-11-13, v1.30.0). Con DT-11
 - **A (recomendada):** calcular el ritmo diario sin los gastos individuales excepcionalmente grandes del período, y sumarlos una sola vez, como los fijos. Hay que definir el umbral (por ejemplo, un gasto que supere un porcentaje del gasto variable del período o un múltiplo de la mediana) y explicarlo en el tooltip. Se aplica en `get_expense_projection()`, así que llega también a la app mobile.
 - **B:** no tocar el cálculo y cargar la tarjeta como gasto fijo. Depende de que cada usuario lo haga.
 
+**Resolución (opción A):** en `get_expense_projection()`, un gasto variable individual que supere el 20 % del gasto variable del período (`ONE_OFF_EXPENSE_SHARE`) se suma una sola vez y no entra en el ritmo diario. Se calcula con una query más, así que el límite de queries del dashboard no cambia: la eliminación del selector de año (DT-112) ahorró 2. El tooltip de la proyección explica la regla y llega a la app mobile por la API.
+
+- **Por qué un porcentaje del variable y no un monto fijo:** escala con el nivel de gasto de cada usuario. En la cuenta revisada, el gasto variable de noviembre ronda $ 1,4 M (lo gastado menos unos $ 1,6 M de fijos pagados), así que el umbral queda cerca de $ 283.000. La tarjeta ($ 454.263) y la inversión ($ 464.740) quedan fuera del promedio si cada una se cargó como un solo gasto; los gastos del día a día siguen dentro. Verificar en producción después del deploy.
+- **Caso borde aceptado:** si en el período hay un solo gasto variable, siempre supera el 20 % y no se extrapola: la proyección es lo gastado más los fijos pendientes. Con un solo dato no hay ritmo que proyectar, así que es preferible a multiplicarlo por los días que faltan.
+- **Tests:** pago puntual contado una sola vez, gasto bajo el umbral que sigue en el ritmo, y un único gasto variable. Los tests de DT-111 pasaron a usar gastos diarios chicos, para seguir probando la extrapolación.
+
 **Nota de datos:** "Inversiones" es tema de carga, no de código: si es ahorro, corresponde registrarlo como movimiento de una meta (hoy deja "Ahorro acumulado" en $ 0).
 
 ---
 
 ### DT-116 — Gráficos: ajustes menores de la segunda revisión
 
-**Estado:** ⏳ Pendiente (fase 3 de la revisión de gráficos)
+**Estado:** ✅ Resuelto (v1.31.0; el punto del botón flotante se descartó)
 
 - **Botón flotante sobre el eje:** en desktop, el botón rojo flotante (FAB) tapa la etiqueta "Noviembre" del eje X de "Evolución mensual". Basta con un margen inferior en el contenedor o el gráfico.
 - **Lista "Por grupo" con scroll interno:** en el resumen de gastos muestra 5 de 8 grupos y el resto queda escondido detrás de una barra de scroll, aunque hay espacio para mostrarlos.
@@ -2336,20 +2345,28 @@ Encontrado en la segunda revisión de gráficos (2026-11-13, v1.30.0). Con DT-11
 
 **Why:** son detalles que hacen que los gráficos se vean descuidados o escondan información sin necesidad.
 
-**Camino de resolución:** CSS y templates del dashboard y del listado de gastos; quitar `expenseMethodDonut` de `static/js/expense_list.js` y su canvas.
+**Resolución:**
+
+- **Botón flotante: descartado.** El FAB es fijo y se muestra a propósito en todas las pantallas (lo usa el tour). Mientras se hace scroll tapa cualquier contenido que pase por la esquina, no solo este gráfico, y al final de la página siempre queda espacio libre. No es un problema del gráfico.
+- **Lista "Por grupo":** sin `max-height` ni scroll interno, muestra todos los grupos. Se quitaron el degradado inferior y su función `initLegendFade()`.
+- **Método de pago:** se quitaron el donut (`expenseMethodDonut`, `initSmallDonut()` y su contexto `method_donut_*`). La lista ahora muestra también el monto de cada método.
 
 ---
 
 ### DT-117 — Gráficos nuevos: ritmo contra el mes anterior y gráfico en el reporte anual
 
-**Estado:** ⏳ Pendiente (después de la fase 3 de la revisión de gráficos)
+**Estado:** ✅ Resuelto (v1.31.0)
 
 - **Ritmo del mes contra el mes anterior:** en "Acumulado del mes", sumar en gris la línea completa del mes anterior. Responde de un vistazo si se va gastando más o menos que el mes pasado al mismo día, que es la pregunta que el acumulado solo no contesta.
 - **Gráfico en el reporte anual:** barras de ingresos y gastos por mes con el balance como línea, sobre la tabla existente. Es el gráfico rehecho de DT-112, movido a donde hay lugar para leerlo.
 
 **Why:** son las dos preguntas que hoy ningún gráfico responde bien: "¿voy bien este mes?" y "¿cómo vengo en el año?".
 
-**Camino de resolución:** el mes anterior sale de la misma query del acumulado con otro rango de fechas (cuidado con meses de distinta cantidad de días y con el período financiero). El gráfico anual reutiliza los datos que ya arma `_build_annual_data()`. No agregar más gráficos que estos: el dashboard ya tiene mucha información antes de llegar a los gráficos.
+**Resolución:**
+
+- **Mes anterior:** `ExpenseListView._previous_month_cumulative()` arma el acumulado diario del mes anterior (cruza de año en enero) y lo recorta a los días del mes que se está viendo. Se dibuja en gris punteado detrás del acumulado, con la aclaración "en gris, el mes anterior" en el título. Solo se calcula si no hay otros filtros además de mes y año: con un filtro de categoría o de método, comparar contra el total del mes anterior sería engañoso. Usa el mes calendario, igual que el listado.
+- **Reporte anual:** ver DT-112, fase 3.
+- No se agregaron más gráficos que estos.
 
 ---
 
