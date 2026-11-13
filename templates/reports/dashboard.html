@@ -579,7 +579,7 @@
                 <form method="get" class="d-flex align-items-center gap-2 mb-0">
                     <input type="hidden" name="month" value="{{ current_month }}">
                     <label for="yearSelect" class="text-muted small mb-0">Año:</label>
-                    <select id="yearSelect" name="year" class="form-select form-select-sm" style="width:auto;" onchange="this.form.submit()">
+                    <select id="yearSelect" name="year" class="form-select form-select-sm" style="width:auto;" data-autosubmit>
                         {% for y in year_choices %}
                         <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
                         {% endfor %}

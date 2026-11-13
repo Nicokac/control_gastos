@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.29.7] — 2026-11-13
+
+### Fixed
+
+- **Handlers inline bloqueados por la CSP (DT-110)**: la CSP no permite `unsafe-inline` en scripts, así que los atributos `onchange`/`onclick` de los templates no se ejecutaban. El selector de año del dashboard ("Evolución mensual") y del reporte anual no hacía nada, y eliminar un miembro del hogar se enviaba sin pedir confirmación. Ahora `main.js` maneja `select[data-autosubmit]` y `form[data-confirm]`. El nombre del miembro va en un atributo HTML escapado por Django en lugar de dentro de un string de JS, así que un nombre con apóstrofo ya no rompe el confirm. Un test falla si algún template vuelve a usar atributos `on...=`.
+
+---
+
 ## [Mobile 1.27.2+37] — 2026-11-10
 
 ### Changed

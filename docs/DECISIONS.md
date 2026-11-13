@@ -2195,7 +2195,7 @@ Al cargar un gasto desde la web, el campo Fecha se ve como `11/10/2026` (mes/dí
 
 ### DT-110 — Web: handlers inline bloqueados por la CSP (selector de año y confirmación de borrado)
 
-**Estado:** ⏳ Pendiente (fase 1 de la revisión de gráficos)
+**Estado:** ✅ Resuelto (v1.29.7)
 
 Encontrado al revisar los gráficos con Playwright en producción (2026-11-13). La consola muestra `Executing inline event handler violates the following Content Security Policy directive 'script-src ...'`. La CSP de producción no permite `unsafe-inline` en scripts (D-009), así que los atributos `on...=""` escritos en los templates no se ejecutan:
 
@@ -2203,9 +2203,16 @@ Encontrado al revisar los gráficos con Playwright en producción (2026-11-13). 
 - `templates/reports/dashboard.html:582` — mismo caso en el selector de año de "Evolución mensual".
 - `templates/shared_expenses/members.html:28` — `onclick="return confirm('¿Eliminar a ...?')"`: el confirm no corre y el formulario se envía igual, así que el miembro se borra **sin pedir confirmación**.
 
-**Why:** son fallas silenciosas que solo pasan en producción: en desarrollo la CSP es distinta y los tests de Django no ejecutan JS. El borrado sin confirmación es el más delicado.
+**Why:** son fallas silenciosas: el navegador solo lo avisa en la consola y los tests de Django no ejecutan JS, así que pasaron desapercibidas (la CSP de desarrollo tampoco permite `unsafe-inline`, así que fallaban también en local). El borrado sin confirmación es el más delicado.
 
-**Camino de resolución:** mover los tres comportamientos a JS externo (por ejemplo, `data-autosubmit` en el select y `data-confirm="..."` en el botón, con un listener en `main.js`), sin agregar `unsafe-inline` ni `unsafe-hashes`. Buscar otros `on...=` en `templates/` antes de cerrar. Test: que los templates no contengan atributos `on[a-z]+=` (regresión barata).
+**Resolución:** los tres comportamientos pasan a `static/js/main.js`, sin agregar `unsafe-inline` ni `unsafe-hashes` a la CSP. `initAutoSubmit()` envía el formulario de cualquier `select[data-autosubmit]`, e `initConfirmForms()` pide `confirm()` en el `submit` de cualquier `form[data-confirm]`.
+
+- Se engancha al `submit` del formulario y no al click del botón, para cubrir también el Enter.
+- Se registra antes de `initLoadingButtons()`, que ya respeta `defaultPrevented`: al cancelar, el botón no queda en "Procesando...".
+- El nombre del miembro va ahora en un atributo HTML escapado por Django, así que un nombre con apóstrofo ya no rompe el JS.
+- `apps/core/tests/test_templates_csp.py` falla si un template de `templates/` o `apps/` vuelve a tener un atributo `on[a-z]+=`. También verifica que los tres templates rendericen los atributos `data-*`.
+
+**Regla:** el comportamiento JS nuevo va en un archivo estático, con `data-*` y un listener, nunca en un atributo `on...=` del template.
 
 ---
 

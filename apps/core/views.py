@@ -182,9 +182,18 @@ def exchange_rate_today(request):
         return JsonResponse({"error": "No se pudo obtener la cotización"}, status=503)
 
 
-APP_VERSION = "1.29.6"
+APP_VERSION = "1.29.7"
 
 WHATS_NEW = [
+    {
+        "version": "1.29.7",
+        "date": "Noviembre 2026",
+        "title": "Selector de año y confirmación de borrado",
+        "items": [
+            "Corregido: el selector de año del dashboard y del reporte anual no cambiaba el año",
+            "Corregido: eliminar un miembro del hogar no pedía confirmación",
+        ],
+    },
     {
         "version": "1.29.6",
         "date": "Noviembre 2026",

@@ -15,8 +15,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize password toggles
     initPasswordToggles();
 
+    // Confirm before submitting forms with data-confirm (must run before loading buttons)
+    initConfirmForms();
+
     // Initialize loading buttons
     initLoadingButtons();
+
+    // Submit the form when a select[data-autosubmit] changes
+    initAutoSubmit();
 
     // Initialize keyboard shortcuts
     initKeyboardShortcuts();
@@ -125,6 +131,23 @@ function initLoadingButtons() {
                     }, 10000);
                 }, 0);
             }
+        });
+    });
+}
+
+// Inline on...= handlers are blocked by the CSP (no 'unsafe-inline'), so behavior lives here.
+function initConfirmForms() {
+    document.querySelectorAll('form[data-confirm]').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            if (!window.confirm(this.dataset.confirm)) e.preventDefault();
+        });
+    });
+}
+
+function initAutoSubmit() {
+    document.querySelectorAll('select[data-autosubmit]').forEach(select => {
+        select.addEventListener('change', function() {
+            this.form.submit();
         });
     });
 }
