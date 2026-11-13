@@ -182,9 +182,20 @@ def exchange_rate_today(request):
         return JsonResponse({"error": "No se pudo obtener la cotización"}, status=503)
 
 
-APP_VERSION = "1.29.7"
+APP_VERSION = "1.30.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.30.0",
+        "date": "Noviembre 2026",
+        "title": "Proyección al cierre más precisa",
+        "items": [
+            "La proyección al cierre del dashboard ya no multiplica tus gastos fijos: el alquiler o las cuotas que pagás a principio de mes se cuentan una sola vez",
+            "Los gastos fijos que todavía no pagaste este mes se suman a la proyección con su último monto",
+            "Pasá el mouse (o tocá) el signo de pregunta junto a la proyección para ver cómo se calcula",
+            "La app móvil muestra la misma proyección que la web",
+        ],
+    },
     {
         "version": "1.29.7",
         "date": "Noviembre 2026",

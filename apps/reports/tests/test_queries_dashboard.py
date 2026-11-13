@@ -68,7 +68,8 @@ class TestDashboardQueries:
         # +2 por _get_next_month_commitment (RecurringExpense/RecurringIncome)
         # +5 por sugerencia de traslado de sobrante (DT-067): balance del período
         # anterior (3 queries) + check de sugerencia existente + check de descartada
-        with django_assert_max_num_queries(24):
+        # +3 por la proyección (DT-111): totales del período, fijos pendientes e ingresos
+        with django_assert_max_num_queries(27):
             resp = client.get(url)
 
         assert resp.status_code == 200

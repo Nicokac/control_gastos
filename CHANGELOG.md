@@ -5,6 +5,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.30.0] — 2026-11-13
+
+### Changed
+
+- **Proyección al cierre sin extrapolar los gastos fijos (DT-111)**: antes era `gastado / días transcurridos × días del período`, que multiplicaba como diario el alquiler o las cuotas pagadas a principio de mes (caso real: $ 6,98 M proyectados con $ 3,02 M gastados al día 13). Ahora es lo gastado, más el gasto variable por día por los días que faltan, más los gastos fijos activos sin pago en el período (último pago o `estimated_amount`). El cálculo vive en `get_expense_projection()` (`apps/core/utils.py`) y lo usan la web y la API, ambas sobre el período financiero: la API antes sumaba los gastos por mes calendario. La app mobile muestra el número corregido sin actualizarse.
+
+### Added
+
+- **Explicación de la proyección**: ícono `?` con tooltip junto a "Proyección al cierre" en el dashboard web. También se abre al tocarlo y con el teclado.
+
+---
+
 ## [1.29.7] — 2026-11-13
 
 ### Fixed

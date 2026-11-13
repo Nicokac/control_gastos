@@ -284,7 +284,7 @@ class TestDashboardProjection:
 
         response = authenticated_client.get(url)
         assert response.status_code == 200
-        assert "Proyección al cierre" in response.content.decode()
+        assert response.context["projection_available"] is True
 
     def test_proyeccion_no_aparece_sin_gastos(self, authenticated_client, user, income_category):
         url = get_dashboard_url()
@@ -304,4 +304,4 @@ class TestDashboardProjection:
 
         response = authenticated_client.get(url)
         assert response.status_code == 200
-        assert "Proyección al cierre" not in response.content.decode()
+        assert response.context["projection_available"] is False

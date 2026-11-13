@@ -182,7 +182,12 @@
                         {% if projection_available %}
                         <div class="mt-2 pt-2 border-top d-flex align-items-center gap-2 flex-wrap" style="font-size:0.82rem">
                             <i class="bi bi-graph-up text-secondary"></i>
-                            <span class="text-muted">Proyección al cierre:</span>
+                            <span class="text-muted">Proyección al cierre
+                                <i class="bi bi-question-circle" role="button" tabindex="0"
+                                   aria-label="Cómo se calcula la proyección"
+                                   data-bs-toggle="tooltip"
+                                   data-bs-title="Lo que ya gastaste, más tu gasto variable promedio por día multiplicado por los días que faltan, más los gastos fijos que todavía no pagaste este período. Los fijos sin monto cargado no se suman."></i>:
+                            </span>
                             <span class="fw-semibold {% if projected_balance >= 0 %}text-success{% else %}text-danger{% endif %}">
                                 {{ projected_balance|sensitive_currency }}
                             </span>

@@ -2218,13 +2218,39 @@ Encontrado al revisar los gráficos con Playwright en producción (2026-11-13). 
 
 ### DT-111 — Dashboard: la proyección al cierre extrapola los gastos fijos
 
-**Estado:** ⏳ Pendiente (fase 2 de la revisión de gráficos)
+**Estado:** ✅ Resuelto (v1.30.0; la app mobile recibe el cálculo nuevo por la API sin actualizarse)
 
-La proyección es una regla de tres sobre el total gastado: `gastado / día_del_período × días_del_período` (`apps/reports/views.py`, bloque "Proyección de cierre de mes", y lo mismo en `apps/api/v1/views/dashboard.py`). Los gastos fijos (alquiler, expensas, cuotas) se pagan en los primeros días, así que el cálculo los multiplica como si se repitieran todo el mes. Caso real del 13/11/2026: $ 3.024.537 gastados el día 13 proyectaban **$ 6.979.700** de gasto y un cierre de **−$ 2.619.992**, cuando ningún mes del año superó $ 4,93 M.
+La proyección era una regla de tres sobre el total gastado: `gastado / día_del_período × días_del_período` (`apps/reports/views.py`, bloque "Proyección de cierre de mes", y lo mismo en `apps/api/v1/views/dashboard.py`). Los gastos fijos (alquiler, expensas, cuotas) se pagan en los primeros días, así que el cálculo los multiplica como si se repitieran todo el mes. Caso real del 13/11/2026: $ 3.024.537 gastados el día 13 proyectaban **$ 6.979.700** de gasto y un cierre de **−$ 2.619.992**, cuando ningún mes del año superó $ 4,93 M.
 
 **Why:** es la cifra que más alarma del dashboard y está sistemáticamente inflada en la primera mitad del mes, justo cuando más se mira.
 
-**Camino de resolución:** proyección = gastos ya registrados + (gastos variables hasta hoy / días transcurridos × días restantes) + gastos fijos activos que todavía no se pagaron en el período (con `estimated_amount`, o el último pago si no tiene). Un gasto es fijo si tiene `recurring` asignado. Aplicar el mismo cálculo en web y API (extraerlo a un servicio compartido) y mantener el mínimo de 3 días. Tests con casos borde: período que no empieza el 1, fijos ya pagados, fijos sin monto estimado, sin gastos variables.
+**Resolución:** `get_expense_projection(user, month, year)` en `apps/core/utils.py`, que usan la web (`apps/reports/views.py`) y la API (`apps/api/v1/views/dashboard.py`):
+
+```text
+proyección = gastado en el período
+           + (gasto variable del período / días transcurridos) × días restantes
+           + gastos fijos activos sin pago en el período
+```
+
+- **Qué es fijo:** un gasto con `recurring`. El monto de un fijo pendiente es su último pago o, si nunca se pagó, `estimated_amount`, con el mismo criterio que `display_amount`. No se suman los fijos sin ningún monto ni las cuotas con `start_date` posterior al período.
+- **Qué cuenta como pagado:** un pago dentro del período financiero, no del mes calendario de `status_for()`. Con un período que empieza el 10, el alquiler pagado el 5 corresponde al período anterior y sigue pendiente en el actual. Con día de inicio 1 da lo mismo.
+- **Queries:** los montos de los fijos se resuelven en una sola query (`Subquery` del último pago y `Exists` del pago en el período); `display_amount` haría una query por cada fijo. La proyección suma 3 queries fijas al dashboard, y el límite de los tests de queries pasó de 24 a 27.
+- **Misma base en web y API:** antes, la API sumaba los gastos por mes calendario y contaba los días por período financiero. Ahora la función calcula los gastos y los ingresos del período financiero para ambas. Los demás totales de la API (balance, categorías) siguen por mes calendario y quedan fuera de este DT.
+- **Lo que no cambió:** solo se muestra en el período actual, desde el día 3 y con algún gasto registrado.
+- **Explicación en la web:** un ícono `?` con tooltip junto a "Proyección al cierre" explica el cálculo sin mostrar montos, para no filtrarlos cuando están ocultos. Tiene `tabindex="0"`, así que también se abre al tocarlo y con el teclado.
+- **Tests:** `apps/core/tests/test_expense_projection.py` cubre:
+  - fijo pagado al inicio;
+  - fijo pendiente con último pago;
+  - último pago antes que el estimado;
+  - fijo sin monto;
+  - fijos inactivos;
+  - cuotas sin empezar;
+  - ingresos fuera del período;
+  - día de inicio 10;
+  - casos sin proyección;
+  - web y API devolviendo lo mismo.
+
+**Pendiente para la próxima versión mobile:** el mismo `?` con la explicación en `projection_banner.dart`.
 
 **Nota de datos (no es código):** en la cuenta revisada, "Inversiones" ($ 464.740 en noviembre) está cargado como gasto, lo que también infla el total y la proyección y deja "Ahorro acumulado" en $ 0. Si es ahorro, corresponde registrarlo como movimiento de una meta.
 

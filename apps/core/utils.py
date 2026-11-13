@@ -229,6 +229,71 @@ def get_financial_period(month: int, year: int, start_day: int = 1):
     return start_date, end_date
 
 
+def get_expense_projection(user, month: int, year: int) -> dict:
+    """Proyección de gastos y balance al cierre del período financiero actual (DT-111)."""
+    from django.db.models import Exists, OuterRef, Q, Subquery, Sum
+
+    from apps.expenses.models import Expense
+    from apps.income.models import Income
+    from apps.recurring.models import RecurringExpense
+
+    unavailable = {
+        "projection_available": False,
+        "projected_expense": None,
+        "projected_balance": None,
+    }
+    today = timezone.localdate()
+    if (month, year) != (today.month, today.year):
+        return unavailable
+
+    start_day = getattr(user, "financial_month_start_day", 1)
+    fin_start, fin_end = get_financial_period(month, year, start_day)
+    total_days = (fin_end - fin_start).days
+    elapsed_days = (today - fin_start).days + 1 if fin_start <= today < fin_end else total_days
+    if elapsed_days < 3:
+        return unavailable
+
+    period_expenses = Expense.objects.filter(user=user, date__gte=fin_start, date__lt=fin_end)
+    totals = period_expenses.aggregate(
+        spent=Sum("amount_ars"),
+        fixed=Sum("amount_ars", filter=Q(recurring__isnull=False)),
+    )
+    spent = totals["spent"] or Decimal("0")
+    if spent <= 0:
+        return unavailable
+
+    # Fixed expenses are added once at their known amount instead of being
+    # extrapolated as a daily rate: rent paid on day 5 must not repeat every day.
+    variable = spent - (totals["fixed"] or Decimal("0"))
+    projected_variable = variable / elapsed_days * (total_days - elapsed_days)
+
+    last_payment = (
+        Expense.objects.filter(recurring=OuterRef("pk")).order_by("-date").values("amount_ars")[:1]
+    )
+    pending_recurrents = (
+        RecurringExpense.objects.filter(user=user, is_active=True)
+        .exclude(start_date__gte=fin_end)
+        .exclude(Exists(period_expenses.filter(recurring=OuterRef("pk"))))
+        .annotate(last_amount=Subquery(last_payment))
+        .values_list("last_amount", "estimated_amount")
+    )
+    pending_fixed = sum(
+        (last if last is not None else estimated or Decimal("0"))
+        for last, estimated in pending_recurrents
+    )
+
+    income = Income.objects.filter(user=user, date__gte=fin_start, date__lt=fin_end).aggregate(
+        total=Sum("amount_ars")
+    )["total"] or Decimal("0")
+
+    projected_expense = spent + projected_variable + pending_fixed
+    return {
+        "projection_available": True,
+        "projected_expense": projected_expense,
+        "projected_balance": income - projected_expense,
+    }
+
+
 def get_next_month_commitment(user, next_month: int, next_year: int) -> dict:
     """
     Estima cuánto del mes siguiente ya está comprometido: gastos fijos

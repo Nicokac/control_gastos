@@ -775,7 +775,7 @@ class TestMonthlyAlertThresholdView:
         expense_factory(user, expense_category, amount=Decimal("1500"))
 
         response = authenticated_client.get(reverse("categories:list"))
-        assert "este mes" in response.content.decode()
+        assert "Umbral:" in response.content.decode()
 
     def test_list_no_badge_when_under_threshold(
         self, authenticated_client, user, expense_category, expense_factory
@@ -785,4 +785,4 @@ class TestMonthlyAlertThresholdView:
         expense_factory(user, expense_category, amount=Decimal("500"))
 
         response = authenticated_client.get(reverse("categories:list"))
-        assert "este mes" not in response.content.decode()
+        assert "Umbral:" not in response.content.decode()
