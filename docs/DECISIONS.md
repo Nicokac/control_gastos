@@ -1637,6 +1637,8 @@ Las siguientes variables están en Render pero no tienen efecto (código migró 
 
 **Fecha:** 2026-05-11
 
+**Estado:** ✅ Lanzada. App Android 1.27.2+37 publicada en Google Play (producción, solo Argentina) el 2026-11-13; web en `controldegastos.ar` desde la 1.29.5.
+
 Hoja de ruta para preparar la app para usuarios reales. Ítems ordenados por prioridad y dependencias.
 
 **Prerequisito bloqueante:** DT-001 resuelto con Brevo API (Render Free bloquea SMTP; se usa HTTP API en su lugar).
@@ -1791,8 +1793,8 @@ Semana 3:      RL-007 Email de bienvenida
 
 - [x] URL de Render funcionando — confirmado en QA (2026-05-13)
 - [x] Variables de entorno en Render correctas — confirmado en QA (2026-05-13)
-- [ ] Brevo: dominio verificado, SPF/DKIM configurado
-- [ ] Probar envío real de email (verificación + reset password) — requiere acceso a bandeja real
+- [x] Brevo: dominio verificado, SPF/DKIM configurado — `controldegastos.ar` con DKIM, SPF y DMARC en pass (D-020, 2026-11-10)
+- [ ] Probar envío real de email (verificación + reset password) — el reset se probó en producción el 2026-11-10 (D-020); falta la verificación de email
 - [ ] Probar registro completo como usuario nuevo (email verificación + bienvenida)
 - [ ] Probar en mobile (tour + navegación general)
 

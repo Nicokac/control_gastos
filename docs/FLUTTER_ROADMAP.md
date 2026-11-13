@@ -9,7 +9,7 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 
 - ✅ Backend Django completo (web app funcional en producción — v1.29.5, en https://controldegastos.ar)
 - ✅ API REST completa (DRF + JWT, todos los endpoints)
-- ✅ App Flutter en Google Play Console — Mobile 1.27.2+37 en prueba cerrada; acceso a producción aprobado (2026-11-12)
+- ✅ App Flutter publicada en Google Play — producción, Mobile 1.27.2+37, solo Argentina (2026-11-13)
 - ✅ Prueba cerrada con testers completada (requisito de Google Play para pedir acceso a producción)
 - ⏳ Pendiente: solicitar a Google Play Console el acceso a producción para publicar la app oficialmente (ver Fase 8)
 
@@ -276,9 +276,9 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 - [x] Mobile 1.27.2+37 (sin BETA, links a controldegastos.ar) subida a prueba interna y promovida a prueba cerrada (en revisión)
 - [x] Acceso a producción aprobado por Google (2026-11-12)
 - [x] 1.27.2+37 promovida de prueba cerrada a producción, solo Argentina, lanzamiento al 100 % (enviada a revisión el 2026-11-13)
-- [ ] Confirmar la aprobación y la publicación en Google Play
-- [ ] Revisar la ficha de la tienda antes de publicar (descripción, capturas, sitio de contacto; ver D-020 por el dominio propio)
-- [ ] Publicar en producción
+- [x] Aprobada y publicada en Google Play (2026-11-13)
+- [x] Revisar la ficha de la tienda antes de publicar: capturas sin BETA, descripción ajustada, contacto y privacidad en `controldegastos.ar` (2026-11-13)
+- [x] Publicar en producción (2026-11-13)
 
 ---
 
@@ -401,3 +401,4 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-11-10 | Fase 5 | 1.27.2+37 subida a prueba interna y promovida a prueba cerrada, con notas de versión de lanzamiento. Esperando la aprobación del acceso a producción. |
 | 2026-11-12 | Fase 5 | Google aprueba el acceso a producción. Siguiente paso: publicar la 1.27.2+37. |
 | 2026-11-13 | Fase 5 | 1.27.2+37 promovida de prueba cerrada a producción (países: Argentina) y enviada a revisión. Se verificó la ficha: capturas sin BETA; se ajustó la descripción para no prometer en la app los reportes y la exportación, que son solo de la web, y se sumaron las alertas de gasto. |
+| 2026-11-13 | Fase 5 | **App publicada en producción en Google Play** (1.27.2+37, Argentina). Los canales de prueba interna y cerrada se mantienen para probar las próximas versiones. |
