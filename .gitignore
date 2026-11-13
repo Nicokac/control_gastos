@@ -80,3 +80,7 @@ mobile/.dart_tool/
 sync-docs-workspace/
 mobile/.flutter-plugins
 mobile/.flutter-plugins-dependencies
+
+# Playwright
+.playwright-mcp/
+.mcp.json
