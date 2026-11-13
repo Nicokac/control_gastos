@@ -32,7 +32,7 @@ como issues pendientes.
 | [D-018](#d-018--gastos-compartidos-modelo-sin-cuenta-para-el-miembro) | Gastos Compartidos: modelo sin cuenta para el miembro |  |
 | [D-019](#d-019--notificaciones-push-diseño-y-fase-a-registro-de-token) | Notificaciones push: diseño y Fase A (registro de token) |  |
 | [D-020](#d-020--dominio-propio-controldegastosar-y-cuentas-de-terceros-del-proyecto) | Dominio propio (controldegastos.ar) y cuentas de terceros del proyecto |  |
-| [D-021](#d-021--feedback-de-testers-de-la-prueba-cerrada-de-google-play-14-días-14-reportes) | Feedback de testers de la prueba cerrada de Google Play (14 días, 14 reportes) | DT-096 a DT-117 |
+| [D-021](#d-021--feedback-de-testers-de-la-prueba-cerrada-de-google-play-14-días-14-reportes) | Feedback de testers de la prueba cerrada de Google Play (14 días, 14 reportes) | DT-096 a DT-118 |
 
 La deuda técnica (`DT-XXX`) está repartida en las secciones marcadas en la columna Nota, en orden de número. Para encontrar una entrada, buscar `### DT-NNN` (o `### DTD-NNN` para las descartadas).
 
@@ -2367,6 +2367,24 @@ Encontrado en la segunda revisión de gráficos (2026-11-13, v1.30.0). Con DT-11
 - **Mes anterior:** `ExpenseListView._previous_month_cumulative()` arma el acumulado diario del mes anterior (cruza de año en enero) y lo recorta a los días del mes que se está viendo. Se dibuja en gris punteado detrás del acumulado, con la aclaración "en gris, el mes anterior" en el título. Solo se calcula si no hay otros filtros además de mes y año: con un filtro de categoría o de método, comparar contra el total del mes anterior sería engañoso. Usa el mes calendario, igual que el listado.
 - **Reporte anual:** ver DT-112, fase 3.
 - No se agregaron más gráficos que estos.
+
+---
+
+### DT-118 — Gráficos: detalles de la revisión en producción de v1.31.0
+
+**Estado:** ⏳ Pendiente
+
+Encontrados al revisar la v1.31.0 en producción con Playwright (2026-11-13), después de cerrar DT-112 a DT-117:
+
+- **Ranking de categorías del dashboard con scroll interno:** el contenedor tiene `height: 320px; overflow-y: auto` (`templates/reports/dashboard.html`), así que muestra 8 de 11 grupos y el resto queda escondido. Es el mismo problema que se corrigió en la lista "Por grupo" de Gastos (DT-116).
+- **Eje Y del reporte anual con mucho espacio negativo:** un solo mes con balance apenas negativo (abril, −$ 25.690) hace que Chart.js extienda el eje hasta −$ 2 M, el siguiente paso de la escala. El gráfico se lee igual, pero un quinto del alto queda vacío.
+
+**Why:** ninguno muestra datos incorrectos, pero el primero esconde información sin necesidad y el segundo desperdicia espacio en el gráfico principal del reporte anual.
+
+**Camino de resolución:**
+
+- **Ranking:** quitar el alto fijo y el scroll, o mostrar los primeros grupos con un "Ver todos" que expanda la lista. Hay que cuidar que la tarjeta no quede mucho más alta que la del donut de al lado.
+- **Eje Y:** en `static/js/evolution_chart.js`, fijar `suggestedMin` en un margen proporcional al mínimo real, por ejemplo el 10 % del máximo, para que un negativo chico no obligue a un paso entero de la escala. Verificar con un mes negativo grande, que debe seguir viéndose completo.
 
 ---
 
