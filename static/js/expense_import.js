@@ -98,6 +98,72 @@ document.addEventListener('DOMContentLoaded', function () {
         tr.querySelector('.row-installment-total').addEventListener('input', updateCounters);
     });
 
+    const readyCountEl = document.getElementById('ready-count');
+    const reviewCountEl = document.getElementById('review-count');
+    const skippedCountEl = document.getElementById('skipped-count');
+    const skippedWrap = document.getElementById('skipped-wrap');
+    const filterNote = document.getElementById('filter-note');
+    const filterButtons = document.querySelectorAll('[data-filter]');
+    let filterMode = 'all';
+    let reviewCount = 0;
+
+    function rowReasons(tr, i, rateValid) {
+        if (!tr.querySelector('.row-check').checked) return [];
+        const reasons = [];
+        if (!tomSelects[i] || tomSelects[i].getValue() === '') reasons.push('no_category');
+        const typeSelect = tr.querySelector('.row-type');
+        if (typeSelect.value !== 'punctual' && typeSelect.dataset.matchesRecurring !== '1') {
+            reasons.push('new_recurring');
+        }
+        if (rows[i].currency === 'USD' && !rateValid) reasons.push('usd');
+        return reasons;
+    }
+
+    function updateReview(rateValid) {
+        let ready = 0;
+        let skipped = 0;
+        reviewCount = 0;
+        table.querySelectorAll('tbody tr').forEach(function (tr, i) {
+            const reasons = rowReasons(tr, i, rateValid);
+            tr.querySelectorAll('.row-reason').forEach(function (badge) {
+                badge.classList.toggle('d-none', !reasons.includes(badge.dataset.reason));
+            });
+            tr.dataset.review = reasons.length ? '1' : '0';
+            if (!tr.querySelector('.row-check').checked) skipped++;
+            else if (reasons.length) reviewCount++;
+            else ready++;
+        });
+        readyCountEl.textContent = ready;
+        reviewCountEl.textContent = reviewCount;
+        skippedCountEl.textContent = skipped;
+        skippedWrap.classList.toggle('d-none', skipped === 0);
+        filterButtons.forEach(function (btn) {
+            if (btn.dataset.filter === 'review') btn.disabled = reviewCount === 0 && filterMode !== 'review';
+        });
+    }
+
+    // Rows stay visible once resolved so the list does not jump while the user works;
+    // the filter is only recomputed when a filter button is clicked.
+    function applyFilter(mode) {
+        filterMode = mode;
+        table.querySelectorAll('tbody tr').forEach(function (tr) {
+            tr.classList.toggle('d-none', mode === 'review' && tr.dataset.review !== '1');
+        });
+        filterButtons.forEach(function (btn) {
+            const active = btn.dataset.filter === mode;
+            btn.classList.toggle('active', active);
+            btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+        filterNote.classList.toggle('d-none', mode !== 'review');
+        updateCounters();
+    }
+
+    filterButtons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            applyFilter(btn.dataset.filter);
+        });
+    });
+
     function updateCounters() {
         const checks = Array.from(table.querySelectorAll('.row-check'));
         const included = checks.filter(function (c) { return c.checked; }).length;
@@ -131,6 +197,7 @@ document.addEventListener('DOMContentLoaded', function () {
             (includedUsd && !rateValid) ||
             invalidInstallment;
 
+        updateReview(rateValid);
         saveProgress();
     }
 
@@ -297,4 +364,5 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     updateCounters();
+    applyFilter(reviewCount > 0 ? 'review' : 'all');
 });

@@ -97,15 +97,24 @@
     <button type="button" class="btn-close ms-auto" aria-label="Cerrar" id="progress-restored-close"></button>
 </div>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <p class="text-muted mb-0">
-        Se encontraron <strong>{{ total_rows }}</strong> transacciones.
-        Revisá cada fila, asigná la categoría y marcá las que querés importar.
-    </p>
-    <div class="d-flex align-items-center gap-3">
-        <span class="small text-muted">
-            <span id="categorized-count">0</span> / <span id="included-count">0</span> categorizadas
-        </span>
+<div class="card mb-3" id="review-summary">
+    <div class="card-body py-3 d-flex flex-wrap align-items-center gap-3">
+        <div class="flex-grow-1">
+            <p class="mb-1">
+                Encontramos <strong>{{ total_rows }}</strong> movimientos:
+                <span class="text-success fw-semibold"><span id="ready-count">{{ summary.ready }}</span> listos</span>,
+                <span class="text-warning-emphasis fw-semibold"><span id="review-count">{{ summary.review }}</span> para revisar</span><span id="skipped-wrap" {% if not summary.skipped %}class="d-none"{% endif %}>
+                y <span id="skipped-count">{{ summary.skipped }}</span> sin marcar, que no se importan</span>.
+            </p>
+            <p class="small text-muted mb-0">
+                <span id="categorized-count">0</span> / <span id="included-count">0</span> categorizadas.
+                <span id="filter-note" class="d-none">Ves solo lo que necesita tu atención; las filas listas se importan igual.</span>
+            </p>
+        </div>
+        <div class="btn-group btn-group-sm" role="group" aria-label="Filtrar filas">
+            <button type="button" class="btn btn-outline-secondary" data-filter="review">Para revisar</button>
+            <button type="button" class="btn btn-outline-secondary" data-filter="all">Todas</button>
+        </div>
     </div>
 </div>
 
@@ -140,8 +149,8 @@
                         <th style="width:120px" class="text-end">Monto</th>
                         <th style="width:65px">Moneda</th>
                         <th style="width:260px">Categoría</th>
-                        <th style="width:170px">Tipo</th>
                         <th style="width:36px"></th>
+                        <th style="width:170px">Tipo</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -160,6 +169,11 @@
                             {% if row.is_duplicate %}
                             <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle">Ya importado</span>
                             {% endif %}
+                            <div class="d-flex flex-wrap gap-1">
+                                <span class="badge bg-danger-subtle text-danger-emphasis border border-danger-subtle row-reason{% if 'no_category' not in row.review_reasons %} d-none{% endif %}" data-reason="no_category">Sin categoría</span>
+                                <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle row-reason{% if 'new_recurring' not in row.review_reasons %} d-none{% endif %}" data-reason="new_recurring" title="Al importarlo se crea un gasto fijo nuevo. Si es un gasto único, cambialo a Puntual.">Fijo o cuota nuevo</span>
+                                <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle row-reason{% if 'usd' not in row.review_reasons %} d-none{% endif %}" data-reason="usd">Falta cotización</span>
+                            </div>
                         </td>
                         <td class="text-end fw-semibold small text-nowrap">
                             {{ row.amount }}

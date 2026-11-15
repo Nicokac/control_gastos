@@ -793,6 +793,17 @@ def _build_import_preview(rows, user, categories):
 
         is_duplicate = not is_tax and (r.date_parsed, desc, r.amount) in existing_keys
 
+        suggested_type = "punctual" if is_tax else r.suggested_type
+        matches_recurring = desc in existing_recurring_names
+        review_reasons = []
+        if not (is_tax or is_duplicate):
+            if not suggested_pk:
+                review_reasons.append("no_category")
+            if suggested_type != "punctual" and not matches_recurring:
+                review_reasons.append("new_recurring")
+            if r.currency == "USD":
+                review_reasons.append("usd")
+
         installment_match = r.installment_match
         preview_rows.append(
             {
@@ -804,14 +815,36 @@ def _build_import_preview(rows, user, categories):
                 "suggested_rule": rule.pattern if rule else "",
                 "is_tax": is_tax,
                 "is_duplicate": is_duplicate,
-                "suggested_type": "punctual" if is_tax else r.suggested_type,
+                "suggested_type": suggested_type,
                 "installment_current": installment_match[0] if installment_match else "",
                 "installment_total": installment_match[1] if installment_match else "",
-                "matches_existing_recurring": desc in existing_recurring_names,
+                "matches_existing_recurring": matches_recurring,
+                "review_reasons": review_reasons,
             }
         )
 
     return preview_rows
+
+
+def _import_preview_context(rows, user):
+    categories = Category.get_expense_categories(user)
+    preview_rows = _build_import_preview(rows, user, categories)
+    skipped = sum(1 for r in preview_rows if r["is_tax"] or r["is_duplicate"])
+    review = sum(1 for r in preview_rows if r["review_reasons"])
+    return {
+        "categories": categories,
+        "expense_groups": Category.get_groups(user, CategoryType.EXPENSE),
+        "preview_rows": preview_rows,
+        "preview_json": json.dumps(preview_rows),
+        "total_rows": len(preview_rows),
+        "has_usd_rows": any(r["currency"] == "USD" for r in preview_rows),
+        "preview_hash": _import_preview_hash(preview_rows),
+        "summary": {
+            "ready": len(preview_rows) - skipped - review,
+            "review": review,
+            "skipped": skipped,
+        },
+    }
 
 
 def _import_preview_hash(preview_rows):
@@ -869,22 +902,7 @@ class ExpenseImportView(LoginRequiredMixin, View):
             messages.warning(request, "No se encontraron transacciones en el archivo.")
             return redirect("expenses:import")
 
-        categories = Category.get_expense_categories(request.user)
-        expense_groups = Category.get_groups(request.user, CategoryType.EXPENSE)
-        preview_rows = _build_import_preview(rows, request.user, categories)
-        return render(
-            request,
-            self.template_name,
-            {
-                "categories": categories,
-                "expense_groups": expense_groups,
-                "preview_rows": preview_rows,
-                "preview_json": json.dumps(preview_rows),
-                "total_rows": len(preview_rows),
-                "has_usd_rows": any(r["currency"] == "USD" for r in preview_rows),
-                "preview_hash": _import_preview_hash(preview_rows),
-            },
-        )
+        return render(request, self.template_name, _import_preview_context(rows, request.user))
 
 
 class ExpenseImportDebugView(LoginRequiredMixin, View):
@@ -918,22 +936,7 @@ class ExpenseImportDebugView(LoginRequiredMixin, View):
             messages.error(request, "No se pudo leer el PDF de debug.")
             return redirect("expenses:import")
 
-        categories = Category.get_expense_categories(request.user)
-        expense_groups = Category.get_groups(request.user, CategoryType.EXPENSE)
-        preview_rows = _build_import_preview(rows, request.user, categories)
-        return render(
-            request,
-            self.template_name,
-            {
-                "categories": categories,
-                "expense_groups": expense_groups,
-                "preview_rows": preview_rows,
-                "preview_json": json.dumps(preview_rows),
-                "total_rows": len(preview_rows),
-                "has_usd_rows": any(r["currency"] == "USD" for r in preview_rows),
-                "preview_hash": _import_preview_hash(preview_rows),
-            },
-        )
+        return render(request, self.template_name, _import_preview_context(rows, request.user))
 
 
 class ExpenseImportConfirmView(LoginRequiredMixin, View):

@@ -162,9 +162,19 @@ def exchange_rate_today(request):
     return JsonResponse(quote)
 
 
-APP_VERSION = "1.33.0"
+APP_VERSION = "1.34.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.34.0",
+        "date": "Noviembre 2026",
+        "title": "Revisión de importaciones",
+        "items": [
+            "Al importar un resumen te mostramos cuántos movimientos están listos y cuántos conviene revisar",
+            "Con el filtro Para revisar ves solo los que no tienen categoría, los que se van a crear como gasto fijo o cuota nuevos y los que están en dólares sin cotización",
+            "Las filas listas se importan igual, aunque no las veas en el filtro",
+        ],
+    },
     {
         "version": "1.33.0",
         "date": "Noviembre 2026",

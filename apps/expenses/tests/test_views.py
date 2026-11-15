@@ -1351,6 +1351,138 @@ class TestBuildImportPreviewRecurringMatch:
 
 
 @pytest.mark.django_db
+class TestImportReviewTray:
+    """Bandeja de revisión: qué filas quedan listas y cuáles hay que mirar."""
+
+    def _imported_row(self, description, **overrides):
+        from apps.expenses.importers import ImportedRow
+
+        defaults = {
+            "raw_date": "05.07.26",
+            "description": description,
+            "amount": Decimal("8500.00"),
+            "currency": "ARS",
+        }
+        defaults.update(overrides)
+        return ImportedRow(**defaults)
+
+    def _history(self, user, category, description, **overrides):
+        values = {
+            "user": user,
+            "category": category,
+            "description": description,
+            "amount": Decimal("100.00"),
+            "currency": "ARS",
+            "exchange_rate": Decimal("1"),
+            "date": date(2026, 6, 1),
+        }
+        values.update(overrides)
+        return Expense.objects.create(**values)
+
+    def _reasons(self, user, row):
+        from apps.expenses.views import _build_import_preview
+
+        return _build_import_preview([row], user, [])[0]["review_reasons"]
+
+    def test_row_with_history_is_ready(self, user, expense_category):
+        self._history(user, expense_category, "COTO")
+
+        assert self._reasons(user, self._imported_row("COTO")) == []
+
+    def test_row_without_suggestion_needs_category(self, user):
+        assert self._reasons(user, self._imported_row("ALMACEN DON JOSE")) == ["no_category"]
+
+    def test_new_fixed_service_is_flagged(self, user, expense_category):
+        self._history(user, expense_category, "NETFLIX.COM")
+
+        assert self._reasons(user, self._imported_row("NETFLIX.COM")) == ["new_recurring"]
+
+    def test_new_installment_is_flagged(self, user, expense_category):
+        self._history(user, expense_category, "FRAVEGA Cuota 02/06")
+
+        reasons = self._reasons(user, self._imported_row("FRAVEGA Cuota 02/06"))
+
+        assert reasons == ["new_recurring"]
+
+    def test_fixed_service_linked_to_existing_recurring_is_ready(self, user, expense_category):
+        from apps.recurring.models import RecurringExpense
+
+        self._history(user, expense_category, "NETFLIX.COM")
+        RecurringExpense.objects.create(
+            user=user, name="NETFLIX.COM", category=expense_category, due_day=5
+        )
+
+        assert self._reasons(user, self._imported_row("NETFLIX.COM")) == []
+
+    def test_usd_row_needs_exchange_rate(self, user, expense_category):
+        self._history(user, expense_category, "AMAZON")
+
+        reasons = self._reasons(user, self._imported_row("AMAZON", currency="USD"))
+
+        assert reasons == ["usd"]
+
+    def test_reasons_accumulate(self, user):
+        reasons = self._reasons(user, self._imported_row("SPOTIFY", currency="USD"))
+
+        assert reasons == ["no_category", "new_recurring", "usd"]
+
+    def test_duplicate_is_not_reviewed(self, user, expense_category):
+        self._history(
+            user,
+            expense_category,
+            "ALMACEN DON JOSE",
+            amount=Decimal("8500.00"),
+            date=date(2026, 7, 5),
+        )
+        from apps.expenses.views import _build_import_preview
+
+        row = _build_import_preview([self._imported_row("ALMACEN DON JOSE")], user, [])[0]
+
+        assert row["is_duplicate"] is True
+        assert row["review_reasons"] == []
+
+    def test_grouped_taxes_are_not_reviewed(self, user):
+        from apps.expenses.views import _build_import_preview
+
+        row = _build_import_preview(
+            [self._imported_row("IMP DE SELLOS", suggested_category_name="Impuestos")],
+            user,
+            [],
+        )[0]
+
+        assert row["is_tax"] is True
+        assert row["review_reasons"] == []
+
+    def test_view_shows_summary(self, authenticated_client, user, expense_category, monkeypatch):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        self._history(user, expense_category, "COTO")
+        self._history(
+            user,
+            expense_category,
+            "FARMACITY",
+            amount=Decimal("8500.00"),
+            date=date(2026, 7, 5),
+        )
+        rows = [
+            self._imported_row("COTO"),
+            self._imported_row("ALMACEN DON JOSE"),
+            self._imported_row("FARMACITY"),
+            self._imported_row("IMP DE SELLOS", suggested_category_name="Impuestos"),
+        ]
+        monkeypatch.setattr("apps.expenses.importers.parse_macro_visa", lambda path: rows)
+
+        pdf = SimpleUploadedFile("resumen.pdf", b"%PDF-1.4 falso")
+        response = authenticated_client.post(reverse("expenses:import"), {"pdf_file": pdf})
+
+        assert response.status_code == 200
+        assert response.context["summary"] == {"ready": 1, "review": 1, "skipped": 2}
+        content = response.content.decode()
+        assert 'id="review-count">1<' in content
+        assert 'data-filter="review"' in content
+
+
+@pytest.mark.django_db
 class TestExpenseImportViewFileValidation:
     """DT-093: valida la firma real del archivo (magic bytes), no solo el
     nombre — un .pdf falso se rechaza antes de llegar al parser."""

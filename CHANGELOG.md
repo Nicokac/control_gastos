@@ -5,6 +5,21 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.34.0] — 2026-11-15
+
+### Added
+
+- **Bandeja de revisión de importaciones** (roadmap de producto, tanda 1, entrega 3): la vista previa del importador resume cuántos movimientos están listos, cuántos hay que revisar y cuántos no se importan (repetidos e impuestos agrupados, que vienen sin marcar).
+  - `_build_import_preview` agrega a cada fila sus motivos de revisión: sin categoría sugerida, fijo o cuota que crearía un gasto recurrente nuevo (los que coinciden con uno activo solo se vinculan y no cuentan) y monto en USD.
+  - Filtro "Para revisar / Todas", que arranca en "Para revisar" si hay algo pendiente. Los conteos y los badges se actualizan en vivo; las filas resueltas siguen visibles hasta volver a filtrar, para que la tabla no salte.
+  - El contexto de la vista previa se arma en `_import_preview_context`, compartido por el importador y la vista de debug.
+
+### Fixed
+
+- **Columna Tipo del importador**: los encabezados de las dos últimas columnas estaban cruzados, así que el selector Puntual / Fijo / Cuota quedaba en una columna de 36 px y no se leía.
+
+---
+
 ## [1.33.0] — 2026-11-14
 
 ### Added
