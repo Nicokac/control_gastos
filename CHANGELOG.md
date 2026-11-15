@@ -5,6 +5,17 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.33.0] — 2026-11-14
+
+### Added
+
+- **Reglas de categorización** (roadmap de producto, tanda 1, entrega 2; ver D-022): modelo `CategoryRule` (texto normalizado + categoría, único por usuario) y lógica en `apps/categories/rules.py`. Las reglas coinciden por palabras completas, sin mayúsculas ni acentos, y gana la más específica.
+  - La carga rápida y el importador de resúmenes consultan las reglas antes que el historial y el nombre de la categoría. La vista previa indica qué regla hizo la sugerencia.
+  - Se aprenden solas: en la carga rápida, al guardar una categoría distinta de la sugerida; en el importador, al corregir una categoría que venía sugerida, usando la descripción original del resumen.
+  - Pantalla Categorías › Reglas para listar, crear, editar y borrar. Las reglas de categorías ocultas se ignoran y las de categorías borradas se borran con ellas.
+
+---
+
 ## [1.32.0] — 2026-11-13
 
 ### Added

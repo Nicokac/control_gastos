@@ -17,8 +17,8 @@ from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from apps.core.constants import CATEGORY_COLOR_CHOICES, CategoryType
 from apps.core.views import UserFormKwargsMixin
 
-from .forms import CategoryForm
-from .models import Category, CategoryOverride
+from .forms import CategoryForm, CategoryRuleForm
+from .models import Category, CategoryOverride, CategoryRule
 
 
 class CategoryListView(LoginRequiredMixin, ListView):
@@ -369,3 +369,46 @@ class CategoryReorderView(LoginRequiredMixin, View):
 
         Category.objects.bulk_update(to_update, ["order"])
         return JsonResponse({"ok": True})
+
+
+class CategoryRuleQuerysetMixin(LoginRequiredMixin):
+    model = CategoryRule
+    success_url = reverse_lazy("categories:rules")
+
+    def get_queryset(self):
+        return CategoryRule.objects.filter(user=self.request.user).select_related(
+            "category__parent"
+        )
+
+
+class CategoryRuleListView(CategoryRuleQuerysetMixin, ListView):
+    template_name = "categories/rule_list.html"
+    context_object_name = "rules"
+
+
+class CategoryRuleFormMixin(CategoryRuleQuerysetMixin):
+    form_class = CategoryRuleForm
+    template_name = "categories/rule_form.html"
+
+    def get_form_kwargs(self):
+        return {**super().get_form_kwargs(), "user": self.request.user}
+
+
+class CategoryRuleCreateView(CategoryRuleFormMixin, CreateView):
+    def form_valid(self, form):
+        messages.success(self.request, "Regla creada.")
+        return super().form_valid(form)
+
+
+class CategoryRuleUpdateView(CategoryRuleFormMixin, UpdateView):
+    def form_valid(self, form):
+        messages.success(self.request, "Regla actualizada.")
+        return super().form_valid(form)
+
+
+class CategoryRuleDeleteView(CategoryRuleQuerysetMixin, DeleteView):
+    http_method_names = ["post"]
+
+    def form_valid(self, form):
+        messages.success(self.request, f"Regla “{self.object.pattern}” eliminada.")
+        return super().form_valid(form)

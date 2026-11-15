@@ -318,3 +318,34 @@ class CategoryOverride(TimestampMixin, models.Model):
             raise ValidationError(
                 {"category": "Solo se puede personalizar una categoría del sistema."}
             )
+
+
+class CategoryRule(TimestampMixin, models.Model):
+    """Si la descripción de un gasto contiene `pattern` (palabras completas), se sugiere `category`."""
+
+    user = models.ForeignKey(
+        "users.User",
+        on_delete=models.CASCADE,
+        related_name="category_rules",
+        verbose_name="Usuario",
+    )
+    pattern = models.CharField(max_length=100, verbose_name="Si la descripción contiene")
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.CASCADE,
+        related_name="rules",
+        verbose_name="Categoría",
+    )
+
+    class Meta:
+        verbose_name = "Regla de categoría"
+        verbose_name_plural = "Reglas de categoría"
+        ordering = ["pattern"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "pattern"], name="unique_rule_pattern_per_user"
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.pattern} → {self.category.name}"

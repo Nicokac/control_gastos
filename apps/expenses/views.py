@@ -19,6 +19,7 @@ from django.utils.http import url_has_allowed_host_and_scheme
 from django.views import View
 
 from apps.categories.models import Category
+from apps.categories.rules import get_active_rules, learn_rule, match_rule
 from apps.core.constants import CategoryType, PaymentMethod
 from apps.core.utils import (
     DONUT_OTHERS_COLOR,
@@ -706,8 +707,8 @@ def _build_import_preview(rows, user, categories):
     """
     Convierte lista de ImportedRow en lista de dicts para el template de preview.
     - Agrupa impuestos ARS en una sola fila.
-    - Sugiere categoría por historial del usuario (descripción exacta) con prioridad
-      sobre la sugerencia por nombre de la fila.
+    - Sugiere categoría por regla del usuario; si no hay, por historial (descripción
+      exacta) y por último por el nombre sugerido por el parser.
     - La fila de impuestos agrupada se marca como is_tax=True para que el template
       la deje deschekeada por defecto.
     """
@@ -777,14 +778,17 @@ def _build_import_preview(rows, user, categories):
             ).values_list("name", flat=True)
         )
 
+    rules = get_active_rules(user)
     preview_rows = []
     for r in non_tax_rows:
         desc = r.description.strip().replace("\n", " ").replace("\r", "")
         is_tax = r.suggested_category_name == "Impuestos"
 
-        # Prioridad: historial > sugerencia por nombre
-        suggested_pk = history_map.get(desc) or cat_by_name.get(
-            r.suggested_category_name.lower(), ""
+        rule = match_rule(rules, desc)
+        suggested_pk = (
+            rule.category_id
+            if rule
+            else history_map.get(desc) or cat_by_name.get(r.suggested_category_name.lower(), "")
         )
 
         is_duplicate = not is_tax and (r.date_parsed, desc, r.amount) in existing_keys
@@ -797,6 +801,7 @@ def _build_import_preview(rows, user, categories):
                 "amount": str(r.amount),
                 "currency": r.currency,
                 "suggested_category_pk": suggested_pk,
+                "suggested_rule": rule.pattern if rule else "",
                 "is_tax": is_tax,
                 "is_duplicate": is_duplicate,
                 "suggested_type": "punctual" if is_tax else r.suggested_type,
@@ -950,6 +955,7 @@ class ExpenseImportConfirmView(LoginRequiredMixin, View):
         }
 
         created = 0
+        learned = 0
         error_details: list[str] = []
 
         with transaction.atomic():
@@ -1036,10 +1042,25 @@ class ExpenseImportConfirmView(LoginRequiredMixin, View):
                     recurring.auto_deactivate_if_complete()
                 created += 1
 
+                # Only corrections of an existing suggestion teach a rule: rows that
+                # had none are usually one-off merchants already covered by history.
+                suggested_pk = str(row.get("suggested_category_pk") or "")
+                if suggested_pk and suggested_pk != cat_pk:
+                    source = row.get("source_description") or description
+                    if learn_rule(user, source, category):
+                        learned += 1
+
         if created:
             messages.success(
                 request,
                 f"Se importaron {created} gasto{'s' if created != 1 else ''} correctamente.",
+            )
+        if learned:
+            messages.info(
+                request,
+                f"Guardamos {learned} regla{'s' if learned != 1 else ''} con tus correcciones: "
+                "la próxima vez esas compras se sugieren en la categoría que elegiste. "
+                "Podés revisarlas en Categorías › Reglas.",
             )
         if error_details:
             n = len(error_details)
@@ -1089,6 +1110,14 @@ class QuickExpenseCreateView(LoginRequiredMixin, View):
             expense = form.save()
             label = expense.description or expense.category.name
             messages.success(request, f"Gasto registrado: {label} - {expense.formatted_amount}")
+            if str(expense.category_id) != request.POST.get("suggested_category", ""):
+                rule = learn_rule(request.user, expense.description, expense.category)
+                if rule:
+                    messages.info(
+                        request,
+                        f"Desde ahora, “{rule.pattern}” se sugiere en {expense.category.name}. "
+                        "Podés cambiarlo en Categorías › Reglas.",
+                    )
         else:
             errors = "; ".join(e for field_errors in form.errors.values() for e in field_errors)
             messages.error(request, f"No pudimos guardar el gasto: {errors}")

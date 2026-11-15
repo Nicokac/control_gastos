@@ -48,13 +48,20 @@ document.addEventListener('DOMContentLoaded', function () {
         const hint = part('category-hint');
         const hasOption = data.category_id && categorySelect.querySelector('option[value="' + data.category_id + '"]');
         categorySelect.value = hasOption ? String(data.category_id) : '';
+        preview.elements.suggested_category.value = categorySelect.value;
         categorySelect.classList.toggle('is-invalid', !hasOption);
         if (hasOption) {
-            hint.textContent = data.category_source === 'historial'
-                ? 'Sugerida por tus gastos anteriores.'
-                : 'Sugerida por el nombre de la categoría.';
+            if (data.category_source === 'regla') {
+                hint.textContent = 'Sugerida por tu regla “' + data.category_rule + '”.';
+            } else if (data.category_source === 'historial') {
+                hint.textContent = 'Sugerida por tus gastos anteriores.';
+            } else {
+                hint.textContent = 'Sugerida por el nombre de la categoría.';
+            }
+            if (data.description) hint.textContent += ' Si elegís otra, la recordamos para la próxima.';
         } else {
             hint.textContent = 'No pude adivinar la categoría: elegila para guardar.';
+            if (data.description) hint.textContent += ' La recordamos para la próxima.';
         }
         hint.classList.remove('d-none');
 

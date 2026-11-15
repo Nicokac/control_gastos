@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Reglas de categorías - Control de Gastos{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div class="d-flex align-items-center gap-2">
+        <a href="{% url 'categories:list' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left" aria-hidden="true"></i> Categorías
+        </a>
+        <h1 class="h3 mb-0">Reglas</h1>
+    </div>
+    <a href="{% url 'categories:rule_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg" aria-hidden="true"></i> Nueva regla
+    </a>
+</div>
+
+<p class="text-muted">
+    Si la descripción de un gasto contiene estas palabras, te sugerimos la categoría elegida en la carga rápida
+    y al importar resúmenes. Se crean solas cuando corregís una categoría sugerida, y las podés ajustar acá.
+</p>
+
+<div class="card">
+    {% if rules %}
+    <ul class="list-group list-group-flush">
+        {% for rule in rules %}
+        <li class="list-group-item d-flex justify-content-between align-items-center gap-2">
+            <div class="text-break">
+                <span class="fw-semibold">“{{ rule.pattern }}”</span>
+                <i class="bi bi-arrow-right text-muted mx-1" aria-hidden="true"></i>
+                <span class="text-muted">{{ rule.category.parent.name }} ›</span> {{ rule.category.name }}
+            </div>
+            <div class="d-flex gap-1 flex-shrink-0">
+                <a href="{% url 'categories:rule_update' rule.pk %}" class="btn btn-sm btn-outline-secondary" title="Editar" aria-label="Editar regla {{ rule.pattern }}">
+                    <i class="bi bi-pencil" aria-hidden="true"></i>
+                </a>
+                <form method="post" action="{% url 'categories:rule_delete' rule.pk %}"
+                      data-confirm="¿Eliminar la regla “{{ rule.pattern }}”?">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar" aria-label="Eliminar regla {{ rule.pattern }}">
+                        <i class="bi bi-trash" aria-hidden="true"></i>
+                    </button>
+                </form>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <div class="card-body text-center text-muted py-5">
+        <i class="bi bi-magic fs-1 d-block mb-2" aria-hidden="true"></i>
+        Todavía no tenés reglas. Se crean solas cuando cambiás la categoría sugerida
+        en la carga rápida o al importar un resumen.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

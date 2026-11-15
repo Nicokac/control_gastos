@@ -11,7 +11,8 @@ from apps.core.constants import (
     DEFAULT_CATEGORY_COLOR,
 )
 
-from .models import Category
+from .models import Category, CategoryRule
+from .rules import normalize_text
 
 
 class CategoryTypeSelect(forms.Select):
@@ -141,3 +142,40 @@ class CategoryForm(forms.ModelForm):
             instance.save()
 
         return instance
+
+
+class CategoryRuleForm(forms.ModelForm):
+    class Meta:
+        model = CategoryRule
+        fields = ["pattern", "category"]
+        widgets = {
+            "pattern": forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "Ej.: super, netflix, farmacia"}
+            ),
+            "category": forms.Select(attrs={"class": "form-select"}),
+        }
+        help_texts = {
+            "pattern": "Palabras completas, sin importar mayúsculas ni acentos.",
+        }
+
+    def __init__(self, *args, user, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+        self.fields["category"].queryset = Category.get_expense_categories(user)
+        self.fields["category"].empty_label = "-- Elegí la categoría --"
+        self.fields["category"].label_from_instance = lambda c: f"{c.parent.name} › {c.name}"
+
+    def clean_pattern(self):
+        pattern = normalize_text(self.cleaned_data["pattern"])
+        if not pattern:
+            raise forms.ValidationError("Escribí al menos una palabra.")
+        duplicates = CategoryRule.objects.filter(user=self.user, pattern=pattern)
+        if self.instance.pk:
+            duplicates = duplicates.exclude(pk=self.instance.pk)
+        if duplicates.exists():
+            raise forms.ValidationError("Ya tenés una regla con ese texto.")
+        return pattern
+
+    def save(self, commit=True):
+        self.instance.user = self.user
+        return super().save(commit)

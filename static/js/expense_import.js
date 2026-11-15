@@ -168,6 +168,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 amount: rows[i].amount,
                 currency: rows[i].currency,
                 category_pk: categoryPk,
+                suggested_category_pk: rows[i].suggested_category_pk,
+                source_description: rows[i].description,
                 exchange_rate: rows[i].currency === 'USD' ? usdRate : '',
                 type: type,
                 installment_current: type === 'installment' ? tr.querySelector('.row-installment-current').value : '',

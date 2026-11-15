@@ -11,6 +11,7 @@ from django.db.models import Count, Q
 from django.utils import timezone
 
 from apps.categories.models import Category
+from apps.categories.rules import find_rule
 from apps.core.constants import Currency, PaymentMethod
 from apps.core.utils import get_official_usd_rate
 from apps.expenses.models import Expense
@@ -73,6 +74,7 @@ class QuickExpense:
     description: str
     category: Category | None
     category_source: str | None
+    category_rule: str = ""
 
 
 def _normalize(text: str) -> str:
@@ -205,7 +207,11 @@ def parse_quick_expense(user, text: str) -> QuickExpense:
             )
 
     description = " ".join(description_words)
-    category, source = suggest_category(user, [_normalize(w) for w in description_words])
+    rule = find_rule(user, description)
+    if rule:
+        category, source = rule.category, "regla"
+    else:
+        category, source = suggest_category(user, [_normalize(w) for w in description_words])
     return QuickExpense(
         amount=amount,
         currency=currency,
@@ -215,6 +221,7 @@ def parse_quick_expense(user, text: str) -> QuickExpense:
         description=description,
         category=category,
         category_source=source,
+        category_rule=rule.pattern if rule else "",
     )
 
 
@@ -240,4 +247,5 @@ def quick_expense_to_dict(parsed: QuickExpense) -> dict:
         "category_id": parsed.category.pk if parsed.category else None,
         "category_name": parsed.category.name if parsed.category else None,
         "category_source": parsed.category_source,
+        "category_rule": parsed.category_rule,
     }

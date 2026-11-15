@@ -2409,3 +2409,29 @@ Reportado por Geri Rampersad: en la pantalla de crear meta de ahorro, los color 
 
 ### Riesgo aceptado
 Los comentarios genéricos sin detalle accionable ("dashboard muy simple", "editar gastos podría ser más fácil", "metas de ahorro poco claras") no se registran como deuda: no hay forma de saber qué cambiar. Si se repiten con usuarios reales después del lanzamiento, se vuelven a evaluar con más contexto.
+
+---
+
+## D-022 — Reglas de categorización
+
+**Fecha:** 2026-11-14
+**Estado:** ✅ Implementado (v1.33.0 web; administración desde mobile pendiente)
+
+### Contexto
+La carga rápida (v1.32.0) y el importador de resúmenes sugieren una categoría, pero no recordaban las correcciones: si el usuario cambiaba la sugerencia, la próxima vez se volvía a sugerir la misma. Es la entrega 2 de la tanda 1 del roadmap de producto.
+
+### Decisión
+- **Modelo `CategoryRule`** (`apps/categories`): usuario, texto y categoría, con el texto único por usuario. El texto se guarda normalizado (minúsculas, sin acentos, solo letras y números) y coincide por **palabras completas y consecutivas**: `super` aplica a "Super Coto" pero no a "superpancho". Si coinciden varias, gana la de más palabras. La lógica vive en `apps/categories/rules.py`.
+- **Prioridad**: regla > historial > nombre de la categoría, tanto en la carga rápida como en el importador.
+- **Aprendizaje automático, con criterios distintos según el origen**:
+  - Carga rápida: se aprende cuando la categoría guardada difiere de la sugerida, también cuando no había sugerencia. La regla usa la descripción completa.
+  - Importador: solo cuando el usuario cambia una categoría que venía sugerida, y con la descripción original del resumen (no la editada). Las filas sin sugerencia no crean reglas porque suelen ser comercios de una sola vez ("MERPAGO*KIOSCO 4821") que llenarían la lista de ruido; el historial por descripción exacta ya las cubre.
+- **Administración** en Categorías › Reglas: listar, crear, editar (para acortar una regla aprendida a la palabra clave) y borrar.
+- Las reglas cuya categoría está oculta se ignoran; si se borra la categoría, se borran sus reglas (`CASCADE`).
+
+### Alternativas descartadas
+- **Solo reglas explícitas**: casi nadie las crearía a mano; el valor está en que se aprendan solas.
+- **Coincidencia por subcadena**: reglas cortas como `super` capturarían palabras que no tienen nada que ver.
+
+### Riesgo aceptado
+Las reglas aprendidas usan la descripción completa, así que pueden ser más largas de lo ideal ("super coto palermo"). Se acepta porque se pueden editar en la pantalla de reglas. La app mobile ya recibe la sugerencia por regla a través de `quick-parse`, pero no aprende ni administra reglas hasta la próxima versión mobile.

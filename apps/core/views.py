@@ -162,9 +162,19 @@ def exchange_rate_today(request):
     return JsonResponse(quote)
 
 
-APP_VERSION = "1.32.0"
+APP_VERSION = "1.33.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.33.0",
+        "date": "Noviembre 2026",
+        "title": "Reglas de categorías",
+        "items": [
+            "Cuando cambiás la categoría que te sugerimos en la carga rápida, la recordamos: la próxima vez que escribas lo mismo, va directo a la categoría que elegiste",
+            "Al importar un resumen pasa lo mismo: si corregís una categoría sugerida, la próxima importación ya la trae bien",
+            "Podés ver, editar y borrar tus reglas en Categorías › Reglas. Por ejemplo, acortar una regla a una sola palabra como coto o netflix",
+        ],
+    },
     {
         "version": "1.32.0",
         "date": "Noviembre 2026",
