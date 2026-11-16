@@ -162,9 +162,19 @@ def exchange_rate_today(request):
     return JsonResponse(quote)
 
 
-APP_VERSION = "1.34.0"
+APP_VERSION = "1.35.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.35.0",
+        "date": "Noviembre 2026",
+        "title": "Resumen semanal",
+        "items": [
+            "Los lunes te llega un resumen de la semana anterior: cuánto gastaste, qué categoría pesó más y cómo venís frente a la semana anterior",
+            "Llega como notificación en la app y por email, si tenés el email verificado",
+            "Si no lo querés, lo desactivás en Mi cuenta o desde el link al pie del email",
+        ],
+    },
     {
         "version": "1.34.0",
         "date": "Noviembre 2026",

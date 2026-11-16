@@ -18,6 +18,11 @@ urlpatterns = [
     path("verify/resend/", views.ResendVerificationView.as_view(), name="resend_verification"),
     path("tour/done/", views.TourDoneView.as_view(), name="tour_done"),
     path("tour/reset/", views.TourResetView.as_view(), name="tour_reset"),
+    path(
+        "summaries/unsubscribe/<str:token>/",
+        views.SummariesUnsubscribeView.as_view(),
+        name="summaries_unsubscribe",
+    ),
     # Password reset
     path(
         "password/reset/",

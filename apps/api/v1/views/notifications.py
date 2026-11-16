@@ -13,6 +13,7 @@ from apps.api.v1.serializers.notifications import DeviceTokenSerializer, Notific
 from apps.core.utils import check_brevo_account
 from apps.notifications.models import DeviceToken, Notification
 from apps.notifications.reminders import send_recurring_reminders
+from apps.notifications.summaries import send_weekly_summaries
 
 
 @extend_schema(tags=["notifications"])
@@ -118,3 +119,17 @@ class RecurringRemindersCronView(APIView):
         # Brevo desactiva la API key tras 90 días sin uso y los emails fallan en silencio (DT-108):
         # la consulta diaria la mantiene activa y, si falla, deja un error en Sentry.
         return Response({"sent": send_recurring_reminders(), "brevo_ok": check_brevo_account()})
+
+
+@extend_schema(exclude=True)
+class SummariesCronView(APIView):
+    """Envía una tanda de resúmenes semanales; GitHub Actions lo llama en bucle hasta que no queden."""
+
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        secret = request.headers.get("X-Cron-Secret", "")
+        if not settings.CRON_SECRET or not hmac.compare_digest(secret, settings.CRON_SECRET):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        return Response(send_weekly_summaries())

@@ -111,6 +111,7 @@ Se cargan en Render → servicio → **Environment**. Ejemplos y defaults en [`.
 | Workflow | Horario | Qué hace | Cómo verificar |
 |---|---|---|---|
 | Recordatorios push (`reminders.yml`) | 12:00 UTC (09:00 AR) | Avisos de gastos fijos que vencen en 3 días o vencieron ayer, y chequeo de la key de Brevo | El log del job muestra `{"sent": N, "brevo_ok": true}` |
+| Resumen semanal (mismo workflow, paso 2) | Lunes a miércoles, después de los recordatorios | Resumen de la semana anterior por push y email, en tandas de 25 usuarios, con un tope de 200 emails por día (D-023) | Una línea `{"sent": N, "remaining": M}` por tanda; termina con `remaining: 0` o con una tanda en `sent: 0` |
 | Backup DB (`backup.yml`) | 03:00 UTC (00:00 AR) | `pg_dump` de producción a Cloudflare R2 | Job en verde y archivo nuevo en el bucket |
 
 Los dos se pueden correr a mano: Actions → workflow → *Run workflow*.

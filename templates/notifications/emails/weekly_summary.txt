@@ -1,0 +1,16 @@
+{% autoescape off %}Hola {{ username }},
+
+Así fue tu semana {{ week }}:
+
+- Gastaste {{ total }} en {{ count }} gasto{{ count|pluralize }}{% if comparison %}, {{ comparison }}{% endif %}.
+{% if top_category %}- Lo que más pesó: {{ top_category }}.
+{% endif %}- {{ period }}
+
+Mirá el detalle en tu tablero:
+{{ dashboard_url }}
+
+Control de Gastos
+
+---
+Te llega este resumen porque lo tenés activado en Mi cuenta.
+Para no recibirlo más: {{ unsubscribe_url }}{% endautoescape %}

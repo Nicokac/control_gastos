@@ -102,6 +102,7 @@ class NotificationType(models.TextChoices):
     RECURRING_OVERDUE = "recurring_overdue", "Gastos fijos vencidos sin pagar"
     SPENDING_THRESHOLD = "spending_threshold", "Umbral de gastos del período superado"
     CATEGORY_THRESHOLD = "category_threshold", "Límite de subcategoría superado"
+    WEEKLY_SUMMARY = "weekly_summary", "Resumen semanal"
 
 
 class Notification(TimestampMixin, models.Model):
@@ -174,6 +175,38 @@ class SpendingAlertLog(TimestampMixin, models.Model):
                 fields=["user", "category", "period_start"],
                 condition=models.Q(kind="category"),
                 name="unique_category_spending_alert_per_period",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.user} - {self.get_kind_display()} ({self.period_start})"
+
+
+class SummaryKind(models.TextChoices):
+    WEEKLY = "weekly", "Semanal"
+
+
+class SummaryLog(TimestampMixin, models.Model):
+    """Resumen ya entregado, para no repetirlo y para contar los emails del día contra el tope de Brevo."""
+
+    user = models.ForeignKey(
+        "users.User",
+        on_delete=models.CASCADE,
+        related_name="summary_logs",
+        verbose_name="Usuario",
+    )
+    kind = models.CharField(max_length=20, choices=SummaryKind.choices, verbose_name="Tipo")
+    period_start = models.DateField(verbose_name="Inicio del período")
+    pushed = models.BooleanField(default=False, verbose_name="Push enviado")
+    emailed = models.BooleanField(default=False, verbose_name="Email enviado")
+
+    class Meta:
+        verbose_name = "Resumen enviado"
+        verbose_name_plural = "Resúmenes enviados"
+        ordering = ["-period_start"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "kind", "period_start"], name="unique_summary_per_period"
             ),
         ]
 

@@ -5,6 +5,7 @@
 # El envío es idempotente (RecurringReminderLog): reintentar no duplica pushes.
 # También verifica la API key de Brevo (DT-108): la mantiene activa y deja un
 # error en Sentry si deja de funcionar. La respuesta incluye "brevo_ok".
+# Después envía el resumen semanal por tandas (D-023).
 # Requiere los secrets PRODUCTION_URL y CRON_SECRET.
 # =============================================================================
 
@@ -36,3 +37,26 @@ jobs:
             --request POST \
             --header "X-Cron-Secret: $CRON_SECRET" \
             "${BASE_URL%/}/api/v1/notifications/cron/recurring-reminders/"
+
+      # Resumen semanal (D-023): de lunes a miércoles el endpoint entrega tandas de 25 usuarios
+      # (cada request de Render tiene 60 s de límite). Se llama hasta que no quede nadie o
+      # hasta que una tanda no entregue nada (tope diario de emails o proveedor caído);
+      # los pendientes salen en la ejecución del día siguiente.
+      - name: Enviar resúmenes semanales
+        env:
+          BASE_URL: ${{ secrets.PRODUCTION_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          for i in $(seq 1 20); do
+            response=$(curl --fail --show-error --silent \
+              --max-time 120 --retry 3 --retry-delay 30 --retry-all-errors \
+              --request POST \
+              --header "X-Cron-Secret: $CRON_SECRET" \
+              "${BASE_URL%/}/api/v1/notifications/cron/summaries/")
+            echo "$response"
+            sent=$(echo "$response" | jq -r '.sent')
+            remaining=$(echo "$response" | jq -r '.remaining')
+            if [ "$remaining" = "0" ] || [ "$sent" = "0" ]; then
+              break
+            fi
+          done

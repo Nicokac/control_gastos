@@ -2435,3 +2435,30 @@ La carga rápida (v1.32.0) y el importador de resúmenes sugieren una categoría
 
 ### Riesgo aceptado
 Las reglas aprendidas usan la descripción completa, así que pueden ser más largas de lo ideal ("super coto palermo"). Se acepta porque se pueden editar en la pantalla de reglas. La app mobile ya recibe la sugerencia por regla a través de `quick-parse`, pero no aprende ni administra reglas hasta la próxima versión mobile.
+
+---
+
+## D-023 — Resumen semanal por push y email
+
+**Fecha:** 2026-11-16
+**Estado:** ✅ Implementado (v1.35.0 web; el switch en mobile llega con la próxima versión mobile). El cierre de período queda para la fase 4b.
+
+### Contexto
+Hasta ahora, para saber cómo venía la semana o el mes había que entrar a la app; solo se avisaban vencimientos y umbrales. Es la entrega 4 de la tanda 1 del roadmap de producto, que se divide en el resumen semanal (4a) y el de cierre de período (4b).
+
+### Decisión
+- **Qué y cuándo**: los lunes, el resumen de la semana anterior (lunes a domingo). Incluye cuánto se gastó y en cuántos gastos, la categoría que más pesó, la comparación con la semana previa y cuánto se lleva del período financiero frente a los ingresos. La lógica vive en `apps/notifications/summaries.py`.
+- **Si no hubo gastos en la semana, no se manda nada**: un resumen vacío enseña a ignorar el siguiente.
+- **Canales**: push a quien tenga un dispositivo activo y email solo a quien tenga el **email verificado**, para no rebotar contra direcciones sin confirmar y cuidar la reputación del dominio en Brevo. Una entrada en la campanita, igual que los demás avisos.
+- **Preferencia `summaries_enabled`, activada por defecto**, que cubre push y email. Se cambia desde Mi cuenta y la API. Cada email trae un link de baja firmado (`django.core.signing`) que funciona sin iniciar sesión; el GET solo pide confirmación, porque los escáneres de links de los clientes de correo abren los links y darían de baja sin que el usuario lo pidiera.
+- **Por tandas**: el endpoint `/api/v1/notifications/cron/summaries/` entrega hasta 25 usuarios por request (Render corta a los 60 s) y devuelve `{"sent", "remaining"}`. El workflow `reminders.yml` lo llama en bucle hasta `remaining: 0`, o hasta que una tanda no entregue nada.
+- **Tope de 200 emails por día**, contados con `SummaryLog.emailed`: el plan gratuito de Brevo da unos 300 y el resto queda para verificación de cuenta y cambio de contraseña. Si el tope corta, los usuarios sin push quedan para el día siguiente.
+- **Idempotencia y reintento**: `SummaryLog` (usuario, tipo, inicio del período, único) se crea solo si algún canal entregó. Lo que no salió se reintenta en las ejecuciones siguientes hasta el miércoles; después se descarta, porque un resumen semanal del jueves ya no sirve.
+
+### Alternativas descartadas
+- **Activación opcional (opt-in)**: casi nadie lo encontraría ni lo activaría; con baja de un clic, el costo de recibirlo sin pedirlo es bajo.
+- **Enviar todo en un solo request**: con cientos de usuarios supera los 60 s del request de Render.
+- **Email HTML**: `send_brevo_email` manda texto plano; un HTML prolijo se puede sumar después sin cambiar la lógica.
+
+### Riesgo aceptado
+Si un usuario tiene push pero el tope de emails ya se alcanzó, recibe solo el push y no se le reenvía el email al día siguiente. El email no lleva el encabezado `List-Unsubscribe`, porque `send_brevo_email` no permite encabezados; la baja es por el link del pie.

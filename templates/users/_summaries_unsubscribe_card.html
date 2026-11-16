@@ -1,0 +1,25 @@
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="card shadow-sm">
+            <div class="card-body p-4 p-md-5 text-center">
+                {% if invalid %}
+                <div class="auth-logo mb-3"><i class="bi bi-x-circle"></i></div>
+                <h1 class="h4 fw-bold mb-3">Link inválido</h1>
+                <p class="text-muted mb-0">No pudimos reconocer este link. Podés desactivar el resumen desde Mi cuenta.</p>
+                {% elif done %}
+                <div class="auth-logo mb-3"><i class="bi bi-check-circle"></i></div>
+                <h1 class="h4 fw-bold mb-3">Listo</h1>
+                <p class="text-muted mb-0">No vas a recibir más el resumen semanal. Si cambiás de idea, lo activás de nuevo desde Mi cuenta.</p>
+                {% else %}
+                <div class="auth-logo mb-3"><i class="bi bi-envelope-dash"></i></div>
+                <h1 class="h4 fw-bold mb-3">¿Dejar de recibir el resumen semanal?</h1>
+                <p class="text-muted mb-4">Se desactiva por email y por push en la app. Los demás avisos siguen igual.</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary">Sí, no quiero recibirlo</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

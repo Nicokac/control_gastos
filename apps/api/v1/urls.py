@@ -21,6 +21,7 @@ from apps.api.v1.views.notifications import (
     NotificationMarkReadView,
     NotificationUnreadCountView,
     RecurringRemindersCronView,
+    SummariesCronView,
 )
 from apps.api.v1.views.recurring import RecurringExpenseViewSet
 from apps.api.v1.views.recurring_income import RecurringIncomeViewSet
@@ -75,6 +76,11 @@ urlpatterns = [
         "notifications/cron/recurring-reminders/",
         RecurringRemindersCronView.as_view(),
         name="cron-recurring-reminders",
+    ),
+    path(
+        "notifications/cron/summaries/",
+        SummariesCronView.as_view(),
+        name="cron-summaries",
     ),
     # Docs
     path("schema/", SpectacularAPIView.as_view(), name="schema"),

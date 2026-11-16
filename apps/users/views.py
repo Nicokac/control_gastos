@@ -7,7 +7,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, PasswordResetView
 from django.http import JsonResponse
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.utils.encoding import force_bytes, force_str
@@ -23,6 +23,7 @@ from apps.core.logging import (
     log_user_registration,
 )
 from apps.core.utils import send_brevo_email
+from apps.notifications.summaries import user_from_unsubscribe_token
 
 from .forms import BrevoPasswordResetForm, LoginForm, ProfileForm, RegisterForm
 from .models import User
@@ -218,6 +219,28 @@ class VerifyEmailView(View):
         if request.user.is_authenticated:
             return redirect("reports:dashboard")
         return redirect("users:login")
+
+
+class SummariesUnsubscribeView(View):
+    """Baja del resumen semanal desde el link del email, sin iniciar sesión.
+
+    El GET solo confirma: los escáneres de links de los clientes de correo abren los links,
+    y una baja en el GET desactivaría el resumen sin que el usuario lo pidiera.
+    """
+
+    template_name = "users/summaries_unsubscribe.html"
+
+    def get(self, request, token):
+        user = user_from_unsubscribe_token(token)
+        return render(request, self.template_name, {"invalid": user is None})
+
+    def post(self, request, token):
+        user = user_from_unsubscribe_token(token)
+        if user is None:
+            return render(request, self.template_name, {"invalid": True})
+        user.summaries_enabled = False
+        user.save(update_fields=["summaries_enabled"])
+        return render(request, self.template_name, {"done": True})
 
 
 class TourDoneView(LoginRequiredMixin, View):

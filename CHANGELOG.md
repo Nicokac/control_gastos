@@ -5,6 +5,17 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.35.0] — 2026-11-16
+
+### Added
+
+- **Resumen semanal por push y email** (roadmap de producto, tanda 1, entrega 4, fase 4a; ver D-023): los lunes, el resumen de la semana anterior con el total gastado, la categoría que más pesó, la comparación con la semana previa y lo que se lleva del período financiero frente a los ingresos. Si no hubo gastos, no se envía.
+  - Push a quien tenga la app y email solo con el email verificado. Preferencia `summaries_enabled` (activada por defecto) en Mi cuenta y en la API, y link de baja firmado en cada email, que funciona sin iniciar sesión.
+  - Endpoint `/api/v1/notifications/cron/summaries/` que entrega tandas de 25 usuarios; `reminders.yml` lo llama en bucle. Tope de 200 emails por día para reservar cupo de Brevo a los emails de cuenta, y reintento hasta el miércoles.
+  - Modelo `SummaryLog` para no repetir envíos y contar los emails del día.
+
+---
+
 ## [1.34.0] — 2026-11-15
 
 ### Added

@@ -39,6 +39,11 @@ class User(AbstractUser):
         verbose_name="Alertas de gastos",
         help_text="Aviso push en mobile al superar el umbral de gastos del período o el límite de una subcategoría.",
     )
+    summaries_enabled = models.BooleanField(
+        default=True,
+        verbose_name="Resumen semanal",
+        help_text="Los lunes, un resumen de la semana anterior por push y por email (si está verificado).",
+    )
 
     class Meta:
         verbose_name = "Usuario"

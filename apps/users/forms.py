@@ -155,8 +155,12 @@ class ProfileForm(forms.ModelForm):
             "default_currency",
             "alert_threshold",
             "financial_month_start_day",
+            "summaries_enabled",
         ]
         widgets = {
+            "summaries_enabled": forms.CheckboxInput(
+                attrs={"class": "form-check-input", "role": "switch"}
+            ),
             "first_name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Nombre"}),
             "last_name": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "Apellido"}
