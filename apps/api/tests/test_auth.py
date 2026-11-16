@@ -276,3 +276,34 @@ class TestMeEndpoint:
         assert response.status_code == 200
         user.refresh_from_db()
         assert user.first_name == "Nicolás"
+
+
+@pytest.mark.django_db
+class TestApiDocsPermissions:
+    """El schema y el Swagger UI quedaban públicos y exponían toda la superficie
+    de la API; ahora requieren sesión de staff."""
+
+    schema_url = "/api/v1/schema/"
+    docs_url = "/api/v1/docs/"
+
+    def test_schema_bloqueado_para_anonimos(self, client):
+        response = client.get(self.schema_url)
+        assert response.status_code in (401, 403)
+
+    def test_docs_bloqueado_para_anonimos(self, client):
+        response = client.get(self.docs_url)
+        assert response.status_code in (401, 403)
+
+    def test_schema_accesible_para_staff(self, client, admin_user):
+        client.force_login(admin_user)
+        response = client.get(self.schema_url)
+        assert response.status_code == 200
+
+    def test_docs_accesible_para_staff(self, client, admin_user):
+        client.force_login(admin_user)
+        response = client.get(self.docs_url)
+        assert response.status_code == 200
+
+    def test_schema_bloqueado_para_usuario_comun(self, authenticated_client):
+        response = authenticated_client.get(self.schema_url)
+        assert response.status_code == 403

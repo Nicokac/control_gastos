@@ -201,11 +201,11 @@ AXES_FAILURE_LIMIT = 5
 # Tiempo de bloqueo en horas (None = hasta desbloqueo manual)
 AXES_COOLOFF_TIME = 1  # 1 hora
 
-# Qué considerar para el bloqueo
-# 'ip_address' = solo IP
-# 'username' = solo usuario
-# 'ip_address,username' = combinación (más seguro)
-AXES_LOCKOUT_PARAMETERS = ["username"]
+# Bloqueo por combinación (IP, usuario): solo se bloquea ese par, no el usuario
+# en todas las IPs. Evita el DoS dirigido en que un tercero, sabiendo tu email,
+# te dejaba fuera 1 hora fallando el login desde cualquier IP. El brute-force de
+# una cuenta desde una sola IP sigue cortado a los AXES_FAILURE_LIMIT intentos.
+AXES_LOCKOUT_PARAMETERS = [["ip_address", "username"]]
 
 # Reset de intentos después de login exitoso
 AXES_RESET_ON_SUCCESS = True

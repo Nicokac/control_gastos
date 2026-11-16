@@ -5,6 +5,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.35.1] — 2026-11-16
+
+### Security
+
+- **Bloqueo de login por (IP, usuario)** en vez de solo por usuario: evita que un tercero que conozca un email pueda dejar esa cuenta bloqueada desde cualquier IP (DoS dirigido). El brute-force desde una sola IP sigue cortado a los 5 intentos, y el cambio también cubre el login de la API. Ver DT-119.
+- **Schema y documentación de la API restringidos a staff** (`/api/v1/schema/` y `/api/v1/docs/`): antes respondían sin autenticación y exponían toda la superficie de la API. Ver DT-119.
+
+---
+
 ## [1.35.0] — 2026-11-16
 
 ### Added

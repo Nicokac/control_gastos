@@ -2388,6 +2388,26 @@ Encontrados al revisar la v1.31.0 en producción con Playwright (2026-11-13), de
 
 ---
 
+### DT-119 — Endurecimiento de seguridad: lockout por (IP, usuario) y docs de la API solo para staff
+
+**Estado:** ✅ Resuelto (v1.35.1)
+
+Hallazgos de una revisión de seguridad en producción (2026-11-16, Playwright + sondeos no destructivos):
+
+- **Lockout de axes solo por `username`:** con `AXES_LOCKOUT_PARAMETERS = ["username"]`, un tercero que supiera tu email podía fallar el login 5 veces desde cualquier IP y dejarte fuera 1 hora (DoS dirigido de cuenta).
+- **Schema y Swagger de la API públicos:** `/api/v1/schema/` y `/api/v1/docs/` respondían 200 sin autenticación y exponían toda la superficie de la API (endpoints, campos, parámetros).
+
+**Why:** ambos bajan la barra para un atacante. El lockout por usuario, pensado para frenar el brute-force, habilitaba el bloqueo dirigido de la cuenta del dueño; los docs públicos entregaban el mapa completo de la API.
+
+**Resolución:**
+
+- `AXES_LOCKOUT_PARAMETERS = [["ip_address", "username"]]`: el bloqueo pasa a ser por el par (IP, usuario). Se elimina el DoS dirigido y el brute-force de una cuenta desde una sola IP sigue cortado a los `AXES_FAILURE_LIMIT` intentos. Como SimpleJWT pasa el `request` a `authenticate()`, axes también cubre `/api/v1/auth/token/`.
+- `SpectacularAPIView` y `SpectacularSwaggerView` con `permission_classes=[IsAdminUser]` y `authentication_classes=[SessionAuthentication]` (en `apps/api/v1/urls.py`): el dueño los ve con su sesión de staff; un anónimo recibe 401/403.
+
+**Riesgo aceptado:** el lockout por combinación permite el brute-force distribuido (muchas IPs) contra una cuenta, 5 intentos por IP. Para esta app, con contraseñas validadas por Django, el DoS dirigido era la amenaza más realista. No se agregó un throttle por IP en el login: detrás de Cloudflare + Render, DRF tomaría la IP del proxy (salvo configurar `NUM_PROXIES`) y, con el CGNAT de las redes móviles, agruparía usuarios no relacionados en un mismo cubo, con riesgo de disponibilidad desproporcionado.
+
+---
+
 ### No reproducido: selector de ícono en "Apariencia" de Ahorro no responde al tap
 
 Reportado por Geri Rampersad: en la pantalla de crear meta de ahorro, los color dots del picker de color funcionan, pero los íconos de categoría (auto, casa, avión) arriba de ellos no responden al tocarlos.

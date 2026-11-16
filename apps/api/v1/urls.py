@@ -1,6 +1,8 @@
 from django.urls import include, path
 
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAdminUser
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -82,9 +84,25 @@ urlpatterns = [
         SummariesCronView.as_view(),
         name="cron-summaries",
     ),
-    # Docs
-    path("schema/", SpectacularAPIView.as_view(), name="schema"),
-    path("docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+    # Docs — solo staff (sesión del admin); antes quedaban públicos y exponían
+    # toda la superficie de la API a cualquiera.
+    path(
+        "schema/",
+        SpectacularAPIView.as_view(
+            authentication_classes=[SessionAuthentication],
+            permission_classes=[IsAdminUser],
+        ),
+        name="schema",
+    ),
+    path(
+        "docs/",
+        SpectacularSwaggerView.as_view(
+            url_name="schema",
+            authentication_classes=[SessionAuthentication],
+            permission_classes=[IsAdminUser],
+        ),
+        name="swagger-ui",
+    ),
     # Resources
     path("", include(router.urls)),
 ]
