@@ -2403,6 +2403,11 @@ Hallazgos de una revisión de seguridad en producción (2026-11-16, Playwright +
 
 - `AXES_LOCKOUT_PARAMETERS = [["ip_address", "username"]]`: el bloqueo pasa a ser por el par (IP, usuario). Se elimina el DoS dirigido y el brute-force de una cuenta desde una sola IP sigue cortado a los `AXES_FAILURE_LIMIT` intentos. Como SimpleJWT pasa el `request` a `authenticate()`, axes también cubre `/api/v1/auth/token/`.
 - `SpectacularAPIView` y `SpectacularSwaggerView` con `permission_classes=[IsAdminUser]` y `authentication_classes=[SessionAuthentication]` (en `apps/api/v1/urls.py`): el dueño los ve con su sesión de staff; un anónimo recibe 401/403.
+- Se quitó `SILENCED_SYSTEM_CHECKS = ["axes.W006"]` de `prod.py`: W006 avisaba del lockout solo-por-username y ya no se dispara, porque la combinación incluye `ip_address`. El comentario que afirmaba que Render hacía llegar todas las IPs como `127.0.0.1` estaba desactualizado: los logs de producción (2026-11-16) muestran IPs públicas reales vía `X-Forwarded-For`.
+
+**Verificado en producción (2026-11-16):** `/api/v1/schema/` y `/api/v1/docs/` → 403 sin sesión de staff; axes registra la IP pública real del cliente, no `127.0.0.1`, así que el bloqueo por (IP, usuario) distingue clientes distintos.
+
+**Pendiente:** validar que la IP efectiva de axes resista un `X-Forwarded-For` falsificado. Con `AXES_IPWARE_PROXY_COUNT = 1` y el orden por defecto `left-most`, ipware podría estar tomando la IP de más a la izquierda (la que pone el cliente). Si fuera así, un atacante podría rotar IPs falsas y evitar el lockout por (IP, usuario). Camino: probar en prod con un usuario ficticio mandando XFF distintos y ver si igual bloquea; si no, pasar a `AXES_IPWARE_PROXY_ORDER = "right-most"` o fijar la IP confiable que agrega el proxy.
 
 **Riesgo aceptado:** el lockout por combinación permite el brute-force distribuido (muchas IPs) contra una cuenta, 5 intentos por IP. Para esta app, con contraseñas validadas por Django, el DoS dirigido era la amenaza más realista. No se agregó un throttle por IP en el login: detrás de Cloudflare + Render, DRF tomaría la IP del proxy (salvo configurar `NUM_PROXIES`) y, con el CGNAT de las redes móviles, agruparía usuarios no relacionados en un mismo cubo, con riesgo de disponibilidad desproporcionado.
 

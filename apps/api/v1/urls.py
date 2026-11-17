@@ -1,5 +1,6 @@
 from django.urls import include, path
 
+from csp.decorators import csp_replace
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAdminUser
@@ -94,12 +95,18 @@ urlpatterns = [
         ),
         name="schema",
     ),
+    # El Swagger UI trae un <script> inline de init que la CSP global bloquea:
+    # script-src tiene un hash y, por spec, un hash anula 'unsafe-inline'. Se
+    # reemplaza script-src solo en esta vista (ya restringida a staff) para que
+    # el inline corra; los assets siguen saliendo de jsdelivr.
     path(
         "docs/",
-        SpectacularSwaggerView.as_view(
-            url_name="schema",
-            authentication_classes=[SessionAuthentication],
-            permission_classes=[IsAdminUser],
+        csp_replace(SCRIPT_SRC=["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"])(
+            SpectacularSwaggerView.as_view(
+                url_name="schema",
+                authentication_classes=[SessionAuthentication],
+                permission_classes=[IsAdminUser],
+            )
         ),
         name="swagger-ui",
     ),

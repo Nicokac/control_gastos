@@ -307,3 +307,13 @@ class TestApiDocsPermissions:
     def test_schema_bloqueado_para_usuario_comun(self, authenticated_client):
         response = authenticated_client.get(self.schema_url)
         assert response.status_code == 403
+
+    def test_docs_relaja_csp_para_el_script_inline_de_swagger(self, client, admin_user):
+        # El Swagger UI usa un <script> inline; la CSP global lo bloquea porque
+        # tiene un hash (que anula 'unsafe-inline'). La vista reemplaza script-src.
+        client.force_login(admin_user)
+        response = client.get(self.docs_url)
+        csp = response.headers.get("Content-Security-Policy", "")
+        script_src = next((d for d in csp.split(";") if d.strip().startswith("script-src")), "")
+        assert "'unsafe-inline'" in script_src
+        assert "sha256-" not in script_src
