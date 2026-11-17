@@ -9,4 +9,8 @@
     <string name="spending_alerts_channel_id" translatable="false">spending_alerts</string>
     <string name="spending_alerts_channel_name">Alertas de gastos</string>
     <string name="spending_alerts_channel_description">Avisos al superar el umbral de gastos del período o el límite de una subcategoría.</string>
+    <!-- Resumen semanal (D-023): el backend lo envía por este canal. -->
+    <string name="weekly_summary_channel_id" translatable="false">weekly_summary</string>
+    <string name="weekly_summary_channel_name">Resumen semanal</string>
+    <string name="weekly_summary_channel_description">Los lunes, cuánto gastaste la semana anterior y qué categoría pesó más.</string>
 </resources>

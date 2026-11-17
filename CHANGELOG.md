@@ -5,6 +5,17 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [Mobile 1.28.0+38] — 2026-11-16
+
+### Added
+
+- **Resumen semanal en la app** (D-023): el backend ya lo enviaba desde la 1.35.0, pero la app no lo manejaba.
+  - Interruptor "Resumen semanal" en Notificaciones, sobre la preferencia `summaries_enabled` del perfil.
+  - Tocar el push o el aviso de la campanita abre Gastos; en el historial tiene su propio ícono.
+  - Canal de Android propio, "Resumen semanal", para poder silenciarlo sin apagar los recordatorios de gastos fijos. El backend manda el push con `channel_id="weekly_summary"`; en versiones anteriores de la app, que no tienen el canal, FCM usa el de recordatorios, como hasta ahora.
+
+---
+
 ## [1.35.1] — 2026-11-16
 
 ### Security

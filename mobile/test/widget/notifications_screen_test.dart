@@ -28,6 +28,7 @@ class _FakeAuth extends AuthNotifier {
 
 final _reminders = find.widgetWithText(SwitchListTile, 'Recordatorios de gastos fijos');
 final _spending = find.widgetWithText(SwitchListTile, 'Alertas de gastos');
+final _summaries = find.widgetWithText(SwitchListTile, 'Resumen semanal');
 
 void main() {
   late MockNotificationRepository repo;
@@ -36,12 +37,14 @@ void main() {
     WidgetTester tester, {
     bool enabled = true,
     bool spendingEnabled = true,
+    bool summariesEnabled = true,
     bool saveOk = true,
   }) async {
     final auth = _FakeAuth({
       'id': 7,
       'recurring_reminders_enabled': enabled,
       'spending_alerts_enabled': spendingEnabled,
+      'summaries_enabled': summariesEnabled,
     }, saveOk: saveOk);
     await tester.pumpWidget(
       ProviderScope(
@@ -136,5 +139,42 @@ void main() {
       {'spending_alerts_enabled': false},
     ]);
     expect(tester.widget<SwitchListTile>(_reminders).value, isTrue);
+  });
+
+  testWidgets('el interruptor del resumen semanal refleja su propia preferencia', (tester) async {
+    await pumpScreen(tester, summariesEnabled: false);
+
+    expect(tester.widget<SwitchListTile>(_summaries).value, isFalse);
+    expect(tester.widget<SwitchListTile>(_spending).value, isTrue);
+  });
+
+  testWidgets('apagar el resumen semanal guarda solo esa preferencia', (tester) async {
+    final auth = await pumpScreen(tester);
+
+    await tester.tap(_summaries);
+    await tester.pumpAndSettle();
+
+    expect(auth.saved, [
+      {'summaries_enabled': false},
+    ]);
+    expect(tester.widget<SwitchListTile>(_summaries).value, isFalse);
+  });
+
+  testWidgets('el resumen semanal del historial usa su propio ícono', (tester) async {
+    when(repo.getNotifications()).thenAnswer((_) async => [
+          {
+            'id': 2,
+            'type': 'weekly_summary',
+            'title': 'Tu semana',
+            'body': r'Gastaste $ 45.000. Lo que más pesó: Comida.',
+            'created_at': '2026-11-16T12:00:00Z',
+            'read_at': null,
+          },
+        ]);
+
+    await pumpScreen(tester);
+
+    expect(find.text('Tu semana'), findsOneWidget);
+    expect(find.byIcon(Icons.insights), findsOneWidget);
   });
 }

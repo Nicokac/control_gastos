@@ -103,6 +103,10 @@ void main() {
       expect(routeForPushData({'type': 'spending_threshold'}), '/expenses');
     });
 
+    test('el resumen semanal abre Gastos', () {
+      expect(routeForPushData({'type': 'weekly_summary'}), '/expenses');
+    });
+
     test('la alerta de límite de subcategoría abre Categorías', () {
       expect(routeForPushData({'type': 'category_threshold'}), '/categories');
     });

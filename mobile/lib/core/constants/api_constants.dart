@@ -6,7 +6,7 @@ class ApiConstants {
 
   // Resumen de novedades de la versión actual (DT-068) — actualizar junto con el bump de pubspec.yaml.
   static const String latestReleaseSummary =
-      'La app deja de estar en beta. El sitio web, los términos, la privacidad y el contacto ahora están en controldegastos.ar.';
+      'Llega el resumen semanal: los lunes te avisamos cuánto gastaste la semana anterior y qué categoría pesó más. Lo podés apagar desde Notificaciones.';
   static const String websiteUrl = 'https://controldegastos.ar';
   static const String termsUrl =
       'https://controldegastos.ar/terms/';

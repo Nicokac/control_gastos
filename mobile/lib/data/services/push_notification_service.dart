@@ -12,7 +12,7 @@ const _kRegisteredFidKey = 'push_registered_fid';
 String? routeForPushData(Map<String, dynamic> data) {
   return switch (data['type']) {
     'recurring_reminder' || 'recurring_overdue' => '/recurring',
-    'spending_threshold' => '/expenses',
+    'spending_threshold' || 'weekly_summary' => '/expenses',
     'category_threshold' => '/categories',
     _ => null,
   };

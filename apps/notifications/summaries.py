@@ -27,6 +27,9 @@ from apps.users.models import User
 logger = logging.getLogger("apps.notifications")
 
 WEEKLY_TITLE = "Tu semana en gastos"
+# Canal de Android propio (mobile 1.28.0+38). Los teléfonos con una versión anterior no
+# lo tienen y FCM usa el canal por defecto del manifest, el de recordatorios.
+WEEKLY_SUMMARY_CHANNEL = "weekly_summary"
 BATCH_SIZE = 25
 # Brevo free allows ~300 emails/day shared with account emails (verification, password reset).
 EMAIL_DAILY_LIMIT = 200
@@ -207,6 +210,7 @@ def send_weekly_summaries(today: date | None = None, batch_size: int = BATCH_SIZ
                 title=WEEKLY_TITLE,
                 body=push_body,
                 data={"type": NotificationType.WEEKLY_SUMMARY},
+                channel_id=WEEKLY_SUMMARY_CHANNEL,
             )
         )
         emailed = False

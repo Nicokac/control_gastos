@@ -46,6 +46,12 @@ class NotificationsScreen extends ConsumerWidget {
             subtitle:
                 'Al superar el umbral del período o el límite de una subcategoría',
           ),
+          const _PreferenceToggle(
+            field: 'summaries_enabled',
+            title: 'Resumen semanal',
+            subtitle:
+                'Los lunes, cuánto gastaste la semana anterior y qué categoría pesó más',
+          ),
           const Divider(height: 1),
           Expanded(
             child: notificationsAsync.when(
@@ -62,7 +68,7 @@ class NotificationsScreen extends ConsumerWidget {
                             icon: Icons.notifications_none,
                             title: 'Sin notificaciones',
                             subtitle:
-                                'Acá vas a ver los recordatorios de gastos fijos y las alertas de gastos',
+                                'Acá vas a ver los recordatorios de gastos fijos, las alertas de gastos y el resumen semanal',
                           ),
                         ],
                       )
@@ -87,6 +93,7 @@ IconData iconForNotificationType(String? type) {
   return switch (type) {
     'recurring_overdue' => Icons.event_busy,
     'spending_threshold' || 'category_threshold' => Icons.trending_up,
+    'weekly_summary' => Icons.insights,
     _ => Icons.event_repeat,
   };
 }
@@ -156,7 +163,9 @@ class _NotificationTile extends StatelessWidget {
     final type = notification['type'] as String?;
     final iconColor = switch (type) {
       'recurring_overdue' => colors.overdue,
-      'spending_threshold' || 'category_threshold' => colors.expense,
+      'spending_threshold' ||
+      'category_threshold' ||
+      'weekly_summary' => colors.expense,
       _ => colors.recurring,
     };
 

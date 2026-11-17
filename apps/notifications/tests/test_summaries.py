@@ -31,8 +31,10 @@ def channels(monkeypatch):
     """Reemplaza push y email reales; `push` y `email` son lo que devuelve cada envío."""
     state = {"pushes": [], "emails": [], "push": 1, "email": True}
 
-    def _push(user, title, body, data=None):
-        state["pushes"].append({"user": user, "title": title, "body": body, "data": data})
+    def _push(user, title, body, data=None, channel_id=None):
+        state["pushes"].append(
+            {"user": user, "title": title, "body": body, "data": data, "channel_id": channel_id}
+        )
         return state["push"]
 
     def _email(to_email, subject, body):
@@ -199,6 +201,8 @@ class TestSendWeeklySummaries:
 
         assert result == {"sent": 1, "remaining": 0}
         assert len(channels["pushes"]) == 1
+        assert channels["pushes"][0]["data"] == {"type": "weekly_summary"}
+        assert channels["pushes"][0]["channel_id"] == "weekly_summary"
         assert channels["emails"][0]["to"] == verified.email
         log = SummaryLog.objects.get(user=verified)
         assert (log.kind, log.period_start, log.pushed, log.emailed) == (

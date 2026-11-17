@@ -7,11 +7,12 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 
 ## Estado Actual
 
-- ✅ Backend Django completo (web app funcional en producción — v1.29.5, en https://controldegastos.ar)
+- ✅ Backend Django completo (web app funcional en producción — v1.35.1, en https://controldegastos.ar)
 - ✅ API REST completa (DRF + JWT, todos los endpoints)
 - ✅ App Flutter publicada en Google Play — producción, Mobile 1.27.2+37, solo Argentina (2026-11-13)
-- ✅ Prueba cerrada con testers completada (requisito de Google Play para pedir acceso a producción)
-- ⏳ Pendiente: solicitar a Google Play Console el acceso a producción para publicar la app oficialmente (ver Fase 8)
+- 🟡 Mobile 1.28.0+38 (resumen semanal) lista para subir a Play Console
+- ✅ Prueba cerrada con testers completada y acceso a producción aprobado (ver Fase 8)
+- ⏳ Features de la web que la app todavía no tiene: carga rápida de gastos (1.32.0) y reglas de categorías (1.33.0)
 
 ---
 
@@ -402,3 +403,4 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-11-12 | Fase 5 | Google aprueba el acceso a producción. Siguiente paso: publicar la 1.27.2+37. |
 | 2026-11-13 | Fase 5 | 1.27.2+37 promovida de prueba cerrada a producción (países: Argentina) y enviada a revisión. Se verificó la ficha: capturas sin BETA; se ajustó la descripción para no prometer en la app los reportes y la exportación, que son solo de la web, y se sumaron las alertas de gasto. |
 | 2026-11-13 | Fase 5 | **App publicada en producción en Google Play** (1.27.2+37, Argentina). Los canales de prueba interna y cerrada se mantienen para probar las próximas versiones. |
+| 2026-11-16 | Fase 8 | Resumen semanal en la app (D-023): interruptor en Notificaciones, ruteo a Gastos desde el push y la campanita, ícono propio y canal de Android "Resumen semanal" (el backend lo envía con `channel_id`). Bump a 1.28.0+38. |
