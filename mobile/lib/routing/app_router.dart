@@ -134,8 +134,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/expenses/new',
-        pageBuilder: (c, s) =>
-            _buildPage(context: c, state: s, child: const ExpenseFormScreen()),
+        pageBuilder: (c, s) => _buildPage(
+          context: c,
+          state: s,
+          child: ExpenseFormScreen(initial: s.extra as Map<String, dynamic>?),
+        ),
       ),
       GoRoute(
         path: '/expenses/edit/:id',

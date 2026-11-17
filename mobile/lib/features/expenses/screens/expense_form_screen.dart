@@ -10,7 +10,10 @@ import '../../../core/widgets/section_label.dart';
 class ExpenseFormScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic>? existing;
 
-  const ExpenseFormScreen({super.key, this.existing});
+  /// Datos para precargar un gasto nuevo (p. ej. desde la carga rápida), sin entrar en modo edición.
+  final Map<String, dynamic>? initial;
+
+  const ExpenseFormScreen({super.key, this.existing, this.initial});
 
   @override
   ConsumerState<ExpenseFormScreen> createState() => _ExpenseFormScreenState();
@@ -33,9 +36,9 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
   @override
   void initState() {
     super.initState();
-    final e = widget.existing;
+    final e = widget.existing ?? widget.initial;
     if (e != null) {
-      _amountCtrl.text = e['amount']?.toString() ?? '';
+      _amountCtrl.text = apiAmountToInput(e['amount']?.toString() ?? '');
       _descCtrl.text = e['description'] as String? ?? '';
       _date = DateTime.tryParse(e['date'] as String? ?? '') ?? DateTime.now();
       _categoryId = e['category'] as int?;

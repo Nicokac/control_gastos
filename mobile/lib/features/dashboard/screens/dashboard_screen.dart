@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../expenses/widgets/quick_expense_sheet.dart';
 import '../../notifications/providers/notifications_provider.dart';
 import '../providers/dashboard_provider.dart';
 import '../widgets/balance_card.dart';
@@ -53,6 +54,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               : 'Dashboard',
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.bolt),
+            tooltip: 'Carga rápida',
+            onPressed: () => showQuickExpenseSheet(context),
+          ),
           IconButton(
             icon: Icon(amountsHidden ? Icons.visibility_off : Icons.visibility),
             tooltip: amountsHidden ? 'Mostrar montos' : 'Ocultar montos',

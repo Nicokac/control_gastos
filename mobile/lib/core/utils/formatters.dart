@@ -15,3 +15,12 @@ double? parseArgentineAmount(String input) {
   final normalized = input.replaceAll('.', '').replaceAll(',', '.');
   return double.tryParse(normalized);
 }
+
+// Monto que devuelve la API ("8500.00") al formato que lee parseArgentineAmount
+// ("8500" o "1500,50"): pasado tal cual, el punto decimal se tomaría como de miles.
+String apiAmountToInput(String apiAmount) {
+  final value = double.tryParse(apiAmount);
+  if (value == null) return apiAmount;
+  if (value == value.truncateToDouble()) return value.toStringAsFixed(0);
+  return value.toStringAsFixed(2).replaceAll('.', ',');
+}

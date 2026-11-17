@@ -43,6 +43,18 @@ class ExpenseListNotifier extends AsyncNotifier<List<dynamic>> {
     }
   }
 
+  /// Devuelve la respuesta del backend (con `learned_rule`) o null si falló.
+  Future<Map<String, dynamic>?> quickCreate(Map<String, dynamic> data) async {
+    try {
+      final created =
+          await ref.read(expenseRepositoryProvider).quickCreate(data);
+      unawaited(_reloadAfterPop());
+      return created;
+    } catch (_) {
+      return null;
+    }
+  }
+
   Future<bool> editExpense(int id, Map<String, dynamic> data) async {
     try {
       await ref.read(expenseRepositoryProvider).updateExpense(id, data);

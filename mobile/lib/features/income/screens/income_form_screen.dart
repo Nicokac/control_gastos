@@ -34,7 +34,7 @@ class _IncomeFormScreenState extends ConsumerState<IncomeFormScreen> {
     super.initState();
     final e = widget.existing;
     if (e != null) {
-      _amountCtrl.text = e['amount']?.toString() ?? '';
+      _amountCtrl.text = apiAmountToInput(e['amount']?.toString() ?? '');
       _descCtrl.text = e['description'] as String? ?? '';
       _date = DateTime.tryParse(e['date'] as String? ?? '') ?? DateTime.now();
       _categoryId = e['category'] as int?;

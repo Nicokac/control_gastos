@@ -5,6 +5,21 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [Mobile 1.29.0+39] — 2026-11-16
+
+### Added
+
+- **Carga rápida de gastos en la app** (la misma de la web 1.32.0): el botón con el rayo, en la barra del inicio y de Gastos, abre una hoja donde se escribe el gasto en una línea ("8500 nafta efectivo", "ayer farmacia 12000", "netflix 20 usd").
+  - Usa `POST /api/v1/expenses/quick-parse/` para la vista previa: monto (con la conversión si es en dólares), fecha, medio de pago, descripción y la categoría sugerida con su origen (regla, gastos anteriores o nombre). La categoría se cambia desde un selector agrupado, sin las subcategorías ocultas.
+  - "Formulario completo" abre el formulario de gasto con los datos precargados (`ExpenseFormScreen.initial`, sin modo edición).
+- **`POST /api/v1/expenses/quick-create/`** (backend, sin cambio de versión web): guarda el gasto y, si la categoría elegida no es la sugerida, aprende la regla igual que la web; la devuelve en `learned_rule` para que la app lo avise.
+
+### Fixed
+
+- **Montos multiplicados por 100 al editar**: los formularios de gasto, ingreso, gasto compartido y meta de ahorro precargaban el monto como lo devuelve la API (`"8500.00"`), y al guardar se leía en formato argentino, donde el punto es de miles: sin tocar el campo, se guardaba 850000. Ahora se convierte al cargar con `apiAmountToInput` (en `core/utils/formatters.dart`). Los gastos fijos ya convertían bien.
+
+---
+
 ## [Mobile 1.28.0+38] — 2026-11-16
 
 ### Added

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/expense_provider.dart';
 import '../widgets/expense_tile.dart';
+import '../widgets/quick_expense_sheet.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/empty_state.dart';
@@ -26,6 +27,11 @@ class ExpenseListScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Gastos'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.bolt),
+            tooltip: 'Carga rápida',
+            onPressed: () => showQuickExpenseSheet(context),
+          ),
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () => context.push('/expenses/new'),

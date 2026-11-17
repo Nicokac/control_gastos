@@ -4,6 +4,7 @@ from datetime import date
 
 import pytest
 
+from apps.categories.models import CategoryRule
 from apps.expenses.models import Expense
 
 
@@ -111,3 +112,100 @@ class TestExpenseDeleteEndpoint:
         headers = auth_header(client, user)
         response = client.delete(f"/api/v1/expenses/{expense.pk}/", **headers)
         assert response.status_code == 404
+
+
+@pytest.mark.django_db
+class TestExpenseQuickCreateEndpoint:
+    """Guardado de la carga rápida desde la app: aprende la regla igual que la web."""
+
+    url = "/api/v1/expenses/quick-create/"
+
+    def _data(self, category, suggested=None, description="Verdulería Don Pepe"):
+        return {
+            "date": "2026-11-16",
+            "description": description,
+            "amount": "8500.00",
+            "currency": "ARS",
+            "exchange_rate": "1",
+            "payment_method": "CASH",
+            "category": category.pk,
+            "suggested_category": suggested.pk if suggested else "",
+        }
+
+    def test_crea_el_gasto(self, client, user, expense_category):
+        headers = auth_header(client, user)
+        response = client.post(
+            self.url,
+            self._data(expense_category, suggested=expense_category),
+            content_type="application/json",
+            **headers,
+        )
+        assert response.status_code == 201
+        assert response.json()["description"] == "Verdulería Don Pepe"
+        assert Expense.objects.filter(user=user, amount=8500).exists()
+
+    def test_con_la_categoria_sugerida_no_aprende_regla(self, client, user, expense_category):
+        headers = auth_header(client, user)
+        response = client.post(
+            self.url,
+            self._data(expense_category, suggested=expense_category),
+            content_type="application/json",
+            **headers,
+        )
+        assert response.json()["learned_rule"] is None
+        assert not CategoryRule.objects.filter(user=user).exists()
+
+    def test_al_corregir_la_categoria_aprende_la_regla(
+        self, client, user, expense_category, expense_category_factory
+    ):
+        other = expense_category_factory(user, name="Verdulería")
+        headers = auth_header(client, user)
+        response = client.post(
+            self.url,
+            self._data(other, suggested=expense_category),
+            content_type="application/json",
+            **headers,
+        )
+        assert response.status_code == 201
+        assert response.json()["learned_rule"] == {
+            "pattern": "verduleria don pepe",
+            "category_name": "Verdulería",
+        }
+        rule = CategoryRule.objects.get(user=user)
+        assert (rule.pattern, rule.category) == ("verduleria don pepe", other)
+
+    def test_sin_sugerencia_aprende_la_categoria_elegida(self, client, user, expense_category):
+        headers = auth_header(client, user)
+        response = client.post(
+            self.url, self._data(expense_category), content_type="application/json", **headers
+        )
+        assert response.json()["learned_rule"]["category_name"] == expense_category.name
+
+    def test_sin_descripcion_no_aprende_regla(self, client, user, expense_category):
+        headers = auth_header(client, user)
+        response = client.post(
+            self.url,
+            self._data(expense_category, description=""),
+            content_type="application/json",
+            **headers,
+        )
+        assert response.status_code == 201
+        assert response.json()["learned_rule"] is None
+
+    def test_no_puede_usar_categoria_ajena(
+        self, client, user, other_user, expense_category_factory
+    ):
+        ajena = expense_category_factory(other_user, name="Ajena")
+        headers = auth_header(client, user)
+        response = client.post(
+            self.url, self._data(ajena), content_type="application/json", **headers
+        )
+        assert response.status_code == 400
+        assert not Expense.objects.filter(user=user).exists()
+        assert not CategoryRule.objects.filter(user=user).exists()
+
+    def test_requiere_autenticacion(self, client, expense_category):
+        response = client.post(
+            self.url, self._data(expense_category), content_type="application/json"
+        )
+        assert response.status_code == 401

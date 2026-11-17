@@ -94,6 +94,40 @@ void main() {
     });
   });
 
+  group('ExpenseListNotifier — quickCreate', () {
+    test('devuelve la respuesta con la regla aprendida y recarga', () async {
+      final created = {
+        'id': 9,
+        'learned_rule': {'pattern': 'verduleria', 'category_name': 'Verdulería'},
+      };
+      when(mockRepo.getExpenses(month: anyNamed('month'), year: anyNamed('year')))
+          .thenAnswer((_) async => fakeExpenses);
+      when(mockRepo.quickCreate(any)).thenAnswer((_) async => created);
+
+      await container.read(expenseListProvider.future);
+      final result = await container
+          .read(expenseListProvider.notifier)
+          .quickCreate({'amount': '8500.00', 'category': 3, 'suggested_category': 2});
+      await Future<void>.delayed(Duration.zero);
+
+      expect(result?['learned_rule']['pattern'], 'verduleria');
+      verify(mockRepo.getExpenses(month: anyNamed('month'), year: anyNamed('year')))
+          .called(greaterThanOrEqualTo(2));
+    });
+
+    test('si falla devuelve null', () async {
+      when(mockRepo.getExpenses(month: anyNamed('month'), year: anyNamed('year')))
+          .thenAnswer((_) async => fakeExpenses);
+      when(mockRepo.quickCreate(any)).thenThrow(Exception('Error de red'));
+
+      await container.read(expenseListProvider.future);
+      final result =
+          await container.read(expenseListProvider.notifier).quickCreate({});
+
+      expect(result, isNull);
+    });
+  });
+
   group('ExpenseListNotifier — delete', () {
     test('delete exitoso retorna true', () async {
       when(mockRepo.getExpenses(month: anyNamed('month'), year: anyNamed('year')))

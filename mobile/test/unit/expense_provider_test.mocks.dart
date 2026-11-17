@@ -34,6 +34,26 @@ class MockExpenseRepository extends _i1.Mock implements _i2.ExpenseRepository {
   }
 
   @override
+  _i3.Future<Map<String, dynamic>> quickParse(String? text) =>
+      (super.noSuchMethod(
+            Invocation.method(#quickParse, [text]),
+            returnValue: _i3.Future<Map<String, dynamic>>.value(
+              <String, dynamic>{},
+            ),
+          )
+          as _i3.Future<Map<String, dynamic>>);
+
+  @override
+  _i3.Future<Map<String, dynamic>> quickCreate(Map<String, dynamic>? data) =>
+      (super.noSuchMethod(
+            Invocation.method(#quickCreate, [data]),
+            returnValue: _i3.Future<Map<String, dynamic>>.value(
+              <String, dynamic>{},
+            ),
+          )
+          as _i3.Future<Map<String, dynamic>>);
+
+  @override
   _i3.Future<List<dynamic>> getExpenses({
     int? month,
     int? year,

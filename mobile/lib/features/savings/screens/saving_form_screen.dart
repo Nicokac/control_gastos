@@ -48,7 +48,7 @@ class _SavingFormScreenState extends ConsumerState<SavingFormScreen> {
     if (e != null) {
       _nameCtrl.text = e['name'] as String? ?? '';
       _descCtrl.text = e['description'] as String? ?? '';
-      _targetCtrl.text = e['target_amount']?.toString() ?? '';
+      _targetCtrl.text = apiAmountToInput(e['target_amount']?.toString() ?? '');
       _currency = e['currency'] as String? ?? 'ARS';
       _icon = e['icon'] as String? ?? _iconChoices.first.$1;
       _color = e['color'] as String? ?? '#28a745';

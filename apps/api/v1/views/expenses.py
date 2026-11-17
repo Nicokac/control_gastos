@@ -6,6 +6,7 @@ from rest_framework.response import Response
 
 from apps.api.v1.pagination import ConfigurablePageNumberPagination
 from apps.api.v1.serializers.expenses import ExpenseSerializer
+from apps.categories.rules import learn_rule
 from apps.expenses.models import Expense
 from apps.expenses.quick_entry import QuickEntryError, parse_quick_expense, quick_expense_to_dict
 
@@ -48,3 +49,23 @@ class ExpenseViewSet(viewsets.ModelViewSet):
         except QuickEntryError as error:
             return Response({"ok": False, "error": str(error)}, status=status.HTTP_400_BAD_REQUEST)
         return Response({"ok": True, **quick_expense_to_dict(parsed)})
+
+    @extend_schema(
+        request=ExpenseSerializer,
+        responses={201: dict, 400: dict},
+        summary="Guarda el gasto de la carga rápida y aprende la regla si se corrigió la categoría",
+    )
+    @action(detail=False, methods=["post"], url_path="quick-create")
+    def quick_create(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        expense = serializer.save()
+
+        learned = None
+        if str(expense.category_id) != str(request.data.get("suggested_category") or ""):
+            rule = learn_rule(request.user, expense.description, expense.category)
+            if rule:
+                learned = {"pattern": rule.pattern, "category_name": expense.category.name}
+        return Response(
+            {**serializer.data, "learned_rule": learned}, status=status.HTTP_201_CREATED
+        )

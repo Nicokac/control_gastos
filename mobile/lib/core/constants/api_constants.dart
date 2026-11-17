@@ -6,7 +6,7 @@ class ApiConstants {
 
   // Resumen de novedades de la versión actual (DT-068) — actualizar junto con el bump de pubspec.yaml.
   static const String latestReleaseSummary =
-      'Llega el resumen semanal: los lunes te avisamos cuánto gastaste la semana anterior y qué categoría pesó más. Lo podés apagar desde Notificaciones.';
+      'Carga rápida: tocá el rayo arriba en el inicio o en Gastos y escribí el gasto en una línea, como "8500 nafta efectivo". La categoría te la sugerimos y, si la cambiás, la recordamos para la próxima. Además, corregimos un error que al editar un gasto, ingreso o meta de ahorro podía guardar el monto multiplicado por 100.';
   static const String websiteUrl = 'https://controldegastos.ar';
   static const String termsUrl =
       'https://controldegastos.ar/terms/';
@@ -25,6 +25,8 @@ class ApiConstants {
 
   static const String categories = '/categories/';
   static const String expenses = '/expenses/';
+  static const String expenseQuickParse = '/expenses/quick-parse/';
+  static const String expenseQuickCreate = '/expenses/quick-create/';
   static const String income = '/income/';
   static const String savings = '/savings/';
   static const String rolloverSuggestions = '/rollover-suggestions/';
