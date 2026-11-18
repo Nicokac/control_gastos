@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [Mobile 1.29.1+40] — 2026-11-17
+
+### Fixed
+
+- **Login trabado después de reinstalar**: Android restauraba desde el backup de Google los tokens cifrados de `flutter_secure_storage`, pero no la clave del Keystore para descifrarlos, y el inicio de sesión quedaba cargando sin fin hasta borrar los datos de la app. Se desactiva el backup automático (`allowBackup` y `fullBackupContent` en `false`): al reinstalar o cambiar de celular hay que volver a iniciar sesión, pero los datos viven en el servidor.
+
+---
+
 ## [Mobile 1.29.0+39] — 2026-11-16
 
 ### Added

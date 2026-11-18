@@ -9,8 +9,8 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 
 - ✅ Backend Django completo (web app funcional en producción — v1.35.1, en https://controldegastos.ar)
 - ✅ API REST completa (DRF + JWT, todos los endpoints)
-- ✅ App Flutter publicada en Google Play — producción, Mobile 1.27.2+37, solo Argentina (2026-11-13)
-- 🟡 Mobile 1.28.0+38 (resumen semanal) subida a Play Console; 1.29.0+39 (carga rápida) lista para subir
+- ✅ App Flutter publicada en Google Play — producción, Mobile 1.29.0+39 (resumen semanal y carga rápida), solo Argentina
+- 🟡 Mobile 1.29.1+40 (fix de login trabado tras reinstalar) lista para subir
 - ✅ Prueba cerrada con testers completada y acceso a producción aprobado (ver Fase 8)
 - ⏳ Features de la web que la app todavía no tiene: administrar reglas de categorías (1.33.0; la carga rápida ya las aprende)
 
@@ -406,3 +406,4 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-11-16 | Fase 8 | Resumen semanal en la app (D-023): interruptor en Notificaciones, ruteo a Gastos desde el push y la campanita, ícono propio y canal de Android "Resumen semanal" (el backend lo envía con `channel_id`). Bump a 1.28.0+38. |
 | 2026-11-16 | Fase 8 | Carga rápida de gastos (paridad con la web 1.32.0): hoja con el rayo en el inicio y en Gastos, vista previa con `quick-parse`, guardado con el endpoint nuevo `quick-create` (aprende la regla si se corrige la categoría) y "Formulario completo" con los datos precargados. Bump a 1.29.0+39. |
 | 2026-11-17 | Fix | Montos ×100 al editar: los formularios de gasto, ingreso, gasto compartido y meta de ahorro precargaban "8500.00" y lo guardaban como 850000. Se convierte al cargar con `apiAmountToInput`. Sale en la 1.29.0+39. |
+| 2026-11-17 | Fix | Login trabado tras reinstalar: el backup automático de Android restauraba los tokens cifrados sin la clave del Keystore. Se desactiva `allowBackup`. Mobile 1.29.1+40. |
