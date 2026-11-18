@@ -15,6 +15,7 @@ from apps.api.v1.views.auth import (
 )
 from apps.api.v1.views.categories import CategoryViewSet
 from apps.api.v1.views.dashboard import DashboardView
+from apps.api.v1.views.debug import ClientIpDebugView
 from apps.api.v1.views.expenses import ExpenseViewSet
 from apps.api.v1.views.feedback import FeedbackView
 from apps.api.v1.views.income import IncomeViewSet
@@ -44,6 +45,7 @@ router.register(r"household-members", HouseholdMemberViewSet, basename="househol
 
 urlpatterns = [
     # Auth
+    path("debug/client-ip/", ClientIpDebugView.as_view(), name="debug-client-ip"),
     path("auth/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("auth/register/", RegisterView.as_view(), name="register"),
