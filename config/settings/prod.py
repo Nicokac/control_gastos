@@ -234,18 +234,6 @@ CSP_FORM_ACTION = ("'self'",)
 AXES_FAILURE_LIMIT = 5  # Mantener en 5
 AXES_COOLOFF_TIME = 2  # 2 horas en producción
 
-# Detrás del proxy de Render, la IP del cliente llega en X-Forwarded-For
-# (verificado en logs de producción: axes registra IPs públicas, no 127.0.0.1),
-# por eso el bloqueo por (ip_address, username) ya distingue clientes distintos.
-# Pendiente de validar: con PROXY_COUNT=1 y el orden por defecto (left-most),
-# si la IP efectiva es resistente a un X-Forwarded-For falsificado (ver DT-119).
-AXES_IPWARE_PROXY_COUNT = 1
-AXES_IPWARE_META_PRECEDENCE_ORDER = (
-    "HTTP_X_FORWARDED_FOR",
-    "HTTP_X_REAL_IP",
-    "REMOTE_ADDR",
-)
-
 # Logging de intentos
 AXES_VERBOSE = True
 

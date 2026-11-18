@@ -22,6 +22,8 @@ from django.core.cache import cache
 from django.http import HttpResponse
 from django.urls import include, path
 
+from apps.core.logging import get_client_ip
+
 SITE_URL = settings.SITE_URL
 
 
@@ -55,11 +57,7 @@ def healthz(request):
     """Health check endpoint que verifica conexión a DB."""
     user_agent = request.META.get("HTTP_USER_AGENT", "")
     if "Render" not in user_agent:
-        ip = (
-            request.META.get("HTTP_X_FORWARDED_FOR", request.META.get("REMOTE_ADDR", ""))
-            .split(",")[0]
-            .strip()
-        )
+        ip = get_client_ip(request)
         cache_key = f"healthz_hits_{ip}"
         hits = cache.get(cache_key, 0)
         if hits >= _HEALTHZ_LIMIT:

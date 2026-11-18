@@ -62,3 +62,21 @@ class TestHealthz:
 
         hits = cache.get(f"healthz_hits_{ip}", 0)
         assert hits == 2
+
+
+@pytest.mark.django_db
+class TestHealthzClientIp:
+    def test_rotar_x_forwarded_for_no_evita_el_limite(self, client):
+        from config.urls import _HEALTHZ_LIMIT
+
+        ip = "203.0.113.20"
+        cache.set(f"healthz_hits_{ip}", _HEALTHZ_LIMIT, timeout=60)
+
+        response = client.get(
+            "/healthz/",
+            REMOTE_ADDR="127.0.0.1",
+            HTTP_CF_CONNECTING_IP=ip,
+            HTTP_X_FORWARDED_FOR="198.51.100.9",
+        )
+
+        assert response.status_code == 429

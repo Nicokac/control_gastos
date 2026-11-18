@@ -57,13 +57,11 @@ def log_sensitive_action(action: str, username: str, ip_address: str, details: s
 
 
 def get_client_ip(request) -> str:
-    """Obtiene la IP real del cliente, considerando proxies."""
-    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(",")[0].strip()
-    else:
-        ip = request.META.get("REMOTE_ADDR", "unknown")
-    return ip
+    """IP real del cliente; también la usa axes (AXES_CLIENT_IP_CALLABLE)."""
+    # En Render todo entra por Cloudflare: REMOTE_ADDR es 127.0.0.1 para todos y
+    # X-Forwarded-For arranca con lo que mande el cliente. CF-Connecting-IP lo pone
+    # Cloudflare, que rechaza con 403 a quien intente enviarlo (verificado, DT-119).
+    return request.META.get("HTTP_CF_CONNECTING_IP") or request.META.get("REMOTE_ADDR") or "unknown"
 
 
 def log_view_access(view_name: str):

@@ -317,21 +317,3 @@ class TestApiDocsPermissions:
         script_src = next((d for d in csp.split(";") if d.strip().startswith("script-src")), "")
         assert "'unsafe-inline'" in script_src
         assert "sha256-" not in script_src
-
-
-@pytest.mark.django_db
-class TestClientIpDebugView:
-    url = "/api/v1/debug/client-ip/"
-
-    def test_bloqueado_para_anonimos(self, client):
-        assert client.get(self.url).status_code in (401, 403)
-
-    def test_bloqueado_para_usuario_comun(self, authenticated_client):
-        assert authenticated_client.get(self.url).status_code == 403
-
-    def test_staff_ve_los_headers_de_ip(self, client, admin_user):
-        client.force_login(admin_user)
-        response = client.get(self.url, HTTP_X_FORWARDED_FOR="203.0.113.77, 186.1.1.1")
-        assert response.status_code == 200
-        assert response.json()["HTTP_X_FORWARDED_FOR"] == "203.0.113.77, 186.1.1.1"
-        assert "REMOTE_ADDR" in response.json()

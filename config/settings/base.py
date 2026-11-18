@@ -207,6 +207,10 @@ AXES_COOLOFF_TIME = 1  # 1 hora
 # una cuenta desde una sola IP sigue cortado a los AXES_FAILURE_LIMIT intentos.
 AXES_LOCKOUT_PARAMETERS = [["ip_address", "username"]]
 
+# Sin esto axes usa REMOTE_ADDR, que detrás de Cloudflare + Render es 127.0.0.1
+# para todos y deja el bloqueo como si fuera solo por usuario (DT-119).
+AXES_CLIENT_IP_CALLABLE = "apps.core.logging.get_client_ip"
+
 # Reset de intentos después de login exitoso
 AXES_RESET_ON_SUCCESS = True
 
@@ -229,10 +233,6 @@ AXES_LOCKOUT_TEMPLATE = "users/account_locked.html"
 # Excluir IPs específicas del rate limiting (ej: tu IP de desarrollo)
 # AXES_NEVER_LOCKOUT_GET = True  # No bloquear requests GET
 # AXES_IP_WHITELIST = ['127.0.0.1']
-
-# Para proxies/load balancers - obtener IP real del header
-# AXES_PROXY_COUNT = 1
-# AXES_META_PRECEDENCE_ORDER = ['HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR']
 
 
 # =============================================================================

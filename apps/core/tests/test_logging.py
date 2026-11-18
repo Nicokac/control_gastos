@@ -28,39 +28,34 @@ class TestGetClientIp:
 
         assert ip == "192.168.1.100"
 
-    def test_returns_x_forwarded_for(self):
-        """Verifica que retorna X-Forwarded-For cuando hay proxy."""
+    def test_returns_cf_connecting_ip(self):
+        request = Mock()
+        request.META = {"HTTP_CF_CONNECTING_IP": "186.127.39.70", "REMOTE_ADDR": "127.0.0.1"}
+
+        assert get_client_ip(request) == "186.127.39.70"
+
+    def test_ignora_x_forwarded_for_falsificado(self):
+        # Cadena real de producción con un valor falso agregado por el cliente al inicio.
         request = Mock()
         request.META = {
-            "HTTP_X_FORWARDED_FOR": "203.0.113.195, 70.41.3.18, 150.172.238.178",
+            "HTTP_X_FORWARDED_FOR": "203.0.113.77,186.127.39.70, 162.158.195.178, 10.28.58.147",
+            "HTTP_CF_CONNECTING_IP": "186.127.39.70",
             "REMOTE_ADDR": "127.0.0.1",
         }
 
-        ip = get_client_ip(request)
+        assert get_client_ip(request) == "186.127.39.70"
 
-        # Debería retornar la primera IP (la del cliente original)
-        assert ip == "203.0.113.195"
+    def test_sin_cloudflare_no_lee_x_forwarded_for(self):
+        request = Mock()
+        request.META = {"HTTP_X_FORWARDED_FOR": "203.0.113.77", "REMOTE_ADDR": "192.168.1.100"}
+
+        assert get_client_ip(request) == "192.168.1.100"
 
     def test_returns_unknown_when_no_ip(self):
-        """Verifica que retorna 'unknown' cuando no hay IP."""
         request = Mock()
         request.META = {}
 
-        ip = get_client_ip(request)
-
-        assert ip == "unknown"
-
-    def test_strips_whitespace_from_forwarded_ip(self):
-        """Verifica que elimina espacios de la IP."""
-        request = Mock()
-        request.META = {
-            "HTTP_X_FORWARDED_FOR": "  10.0.0.1  , 192.168.1.1",
-            "REMOTE_ADDR": "127.0.0.1",
-        }
-
-        ip = get_client_ip(request)
-
-        assert ip == "10.0.0.1"
+        assert get_client_ip(request) == "unknown"
 
 
 class TestLogFunctions:
@@ -244,15 +239,16 @@ class TestLogViewAccessDecorator:
         assert result == "item=42, action=edit"
 
     @patch("apps.core.logging.app_logger")
-    def test_decorator_with_x_forwarded_for(self, mock_logger):
-        """Verifica que el decorador usa X-Forwarded-For cuando está presente."""
+    def test_decorator_with_cf_connecting_ip(self, mock_logger):
+        """Verifica que el decorador loguea la IP de CF-Connecting-IP."""
         from apps.core.logging import log_view_access
 
         request = Mock()
         request.user.is_authenticated = True
         request.user.username = "proxyuser"
         request.META = {
-            "HTTP_X_FORWARDED_FOR": "203.0.113.50, 70.41.3.18",
+            "HTTP_X_FORWARDED_FOR": "198.51.100.1, 203.0.113.50, 70.41.3.18",
+            "HTTP_CF_CONNECTING_IP": "203.0.113.50",
             "REMOTE_ADDR": "127.0.0.1",
         }
 

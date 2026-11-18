@@ -184,3 +184,43 @@ class TestAxesLockout:
 
         assert response.status_code == 429
         assert "users/account_locked.html" in [t.name for t in response.templates]
+
+
+@pytest.mark.django_db
+class TestAxesClientIp:
+    """En producción REMOTE_ADDR es 127.0.0.1 para todos (Cloudflare + Render); axes
+    debe distinguir clientes por CF-Connecting-IP y no confiar en X-Forwarded-For (DT-119)."""
+
+    credentials = {
+        "username": "victima@example.com",
+        "password": "WrongPass123!",  # pragma: allowlist secret
+    }
+
+    def _fail(self, client, cf_ip, xff=None):
+        extra = {"REMOTE_ADDR": "127.0.0.1", "HTTP_CF_CONNECTING_IP": cf_ip}
+        if xff:
+            extra["HTTP_X_FORWARDED_FOR"] = xff
+        return client.post(reverse("users:login"), self.credentials, **extra)
+
+    def test_un_atacante_no_bloquea_al_usuario_desde_otra_ip(self, client, settings):
+        from axes.models import AccessAttempt
+
+        settings.AXES_FAILURE_LIMIT = 2
+        AccessAttempt.objects.all().delete()
+
+        self._fail(client, "203.0.113.10")
+        assert self._fail(client, "203.0.113.10").status_code == 429
+
+        assert self._fail(client, "186.127.39.70").status_code == 200
+
+    def test_rotar_x_forwarded_for_no_evita_el_bloqueo(self, client, settings):
+        from axes.models import AccessAttempt
+
+        settings.AXES_FAILURE_LIMIT = 2
+        AccessAttempt.objects.all().delete()
+
+        self._fail(client, "203.0.113.10", xff="198.51.100.1")
+        response = self._fail(client, "203.0.113.10", xff="198.51.100.2")
+
+        assert response.status_code == 429
+        assert AccessAttempt.objects.get().ip_address == "203.0.113.10"

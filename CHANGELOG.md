@@ -39,6 +39,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.35.2] — 2026-11-18
+
+### Security
+
+- **El bloqueo de login por (IP, usuario) ahora usa la IP real del cliente**: en producción todo entra por Cloudflare + Render y axes tomaba `REMOTE_ADDR`, que era `127.0.0.1` para todos, así que el bloqueo de la 1.35.1 seguía comportándose como solo-por-usuario y el DoS dirigido seguía abierto. Ahora axes, el log de seguridad y el límite de `/healthz/` usan `CF-Connecting-IP`, que pone Cloudflare y que un cliente no puede falsificar; `X-Forwarded-For` ya no se lee porque arranca con lo que mande el cliente. Se quitó la configuración `AXES_IPWARE_*`, que no tenía efecto porque `ipware` no está instalado. Ver DT-119.
+
+---
+
 ## [1.35.1] — 2026-11-16
 
 ### Security

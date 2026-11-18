@@ -2390,7 +2390,7 @@ Encontrados al revisar la v1.31.0 en producción con Playwright (2026-11-13), de
 
 ### DT-119 — Endurecimiento de seguridad: lockout por (IP, usuario) y docs de la API solo para staff
 
-**Estado:** ✅ Resuelto (v1.35.1)
+**Estado:** ✅ Resuelto (v1.35.1; la IP real de axes, en v1.35.2)
 
 Hallazgos de una revisión de seguridad en producción (2026-11-16, Playwright + sondeos no destructivos):
 
@@ -2405,9 +2405,19 @@ Hallazgos de una revisión de seguridad en producción (2026-11-16, Playwright +
 - `SpectacularAPIView` y `SpectacularSwaggerView` con `permission_classes=[IsAdminUser]` y `authentication_classes=[SessionAuthentication]` (en `apps/api/v1/urls.py`): el dueño los ve con su sesión de staff; un anónimo recibe 401/403.
 - Se quitó `SILENCED_SYSTEM_CHECKS = ["axes.W006"]` de `prod.py`: W006 avisaba del lockout solo-por-username y ya no se dispara, porque la combinación incluye `ip_address`. El comentario que afirmaba que Render hacía llegar todas las IPs como `127.0.0.1` estaba desactualizado: los logs de producción (2026-11-16) muestran IPs públicas reales vía `X-Forwarded-For`.
 
-**Verificado en producción (2026-11-16):** `/api/v1/schema/` y `/api/v1/docs/` → 403 sin sesión de staff; axes registra la IP pública real del cliente, no `127.0.0.1`, así que el bloqueo por (IP, usuario) distingue clientes distintos.
+**Verificado en producción (2026-11-16):** `/api/v1/schema/` y `/api/v1/docs/` → 403 sin sesión de staff.
 
-**Pendiente:** validar que la IP efectiva de axes resista un `X-Forwarded-For` falsificado. Con `AXES_IPWARE_PROXY_COUNT = 1` y el orden por defecto `left-most`, ipware podría estar tomando la IP de más a la izquierda (la que pone el cliente). Si fuera así, un atacante podría rotar IPs falsas y evitar el lockout por (IP, usuario). Camino: probar en prod con un usuario ficticio mandando XFF distintos y ver si igual bloquea; si no, pasar a `AXES_IPWARE_PROXY_ORDER = "right-most"` o fijar la IP confiable que agrega el proxy.
+**Corrección (2026-11-18, v1.35.2) — axes veía `127.0.0.1` para todos.** La verificación del 16/11 de que axes registraba la IP real fue errónea: la IP pública que se vio salía del log de seguridad propio (`get_client_ip`, que leía `X-Forwarded-For`), no de axes. Al probar la falsificación de `X-Forwarded-For` se encontró:
+
+- `ipware` no está instalado, así que axes ignoraba `AXES_IPWARE_PROXY_COUNT` y `AXES_IPWARE_META_PRECEDENCE_ORDER` y usaba `REMOTE_ADDR`. En Render, `REMOTE_ADDR` es `127.0.0.1` para todas las requests (confirmado en el admin de axes con un login fallido de `xff-test@example.invalid`). El bloqueo por (IP, usuario) quedaba, en la práctica, solo por usuario: el DoS dirigido seguía abierto.
+- Headers medidos con un endpoint temporal solo para staff, por `controldegastos.ar` y por `control-gastos-fr8z.onrender.com` (los dos pasan por Cloudflare, que Render pone delante de todos sus servicios):
+  - `X-Forwarded-For`: `[lo que mande el cliente], IP real, IP de Cloudflare, IP interna de Render`. Falsificable al inicio.
+  - `CF-Connecting-IP`: la IP real. Si el cliente lo manda, Cloudflare responde 403.
+  - `True-Client-IP`: Cloudflare lo reescribe con la IP real. `X-Real-IP`: Cloudflare lo descarta.
+
+Resolución: `get_client_ip` en `apps/core/logging.py` devuelve `CF-Connecting-IP` o, si no viene (desarrollo, tests), `REMOTE_ADDR`, y nunca lee `X-Forwarded-For`. Axes la usa vía `AXES_CLIENT_IP_CALLABLE`, y también el log de seguridad y el límite de `/healthz/`, que antes tomaban el primer valor de `X-Forwarded-For` (falsificable). Se borraron los `AXES_IPWARE_*` y el endpoint de diagnóstico. Tests de spoofing en `apps/users/tests/test_auth_logging.py` (`TestAxesClientIp`), `apps/core/tests/test_logging.py` y `apps/core/tests/test_healthz.py`.
+
+**Riesgo aceptado (v1.35.2):** depende de que Cloudflare siga delante de Render. Si dejara de estarlo, `CF-Connecting-IP` no llegaría y se volvería a `REMOTE_ADDR` (`127.0.0.1`), es decir, al estado anterior al fix, nunca a uno peor; pero en ese escenario sin Cloudflare un cliente podría mandar `CF-Connecting-IP` falso. Si Render cambia de proxy, revisar con un endpoint de diagnóstico como el de esta corrección.
 
 **Riesgo aceptado:** el lockout por combinación permite el brute-force distribuido (muchas IPs) contra una cuenta, 5 intentos por IP. Para esta app, con contraseñas validadas por Django, el DoS dirigido era la amenaza más realista. No se agregó un throttle por IP en el login: detrás de Cloudflare + Render, DRF tomaría la IP del proxy (salvo configurar `NUM_PROXIES`) y, con el CGNAT de las redes móviles, agruparía usuarios no relacionados en un mismo cubo, con riesgo de disponibilidad desproporcionado.
 
