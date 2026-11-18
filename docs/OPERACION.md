@@ -2,7 +2,7 @@
 
 Cómo se despliega, se verifica, se vuelve atrás y se diagnostica la producción. La arquitectura está en [`ARQUITECTURA.md`](ARQUITECTURA.md); la app mobile y su release, en [`mobile/README.md`](../mobile/README.md).
 
-Última revisión: 2026-11-10.
+Última revisión: 2026-11-17.
 
 ---
 
@@ -13,12 +13,12 @@ Cómo se despliega, se verifica, se vuelve atrás y se diagnostica la producció
 | Web | `https://controldegastos.ar` (también `https://control-gastos-fr8z.onrender.com`) |
 | Servicio web | Render, plan **Free** (0,1 CPU, 512 MB). Se apaga tras 15 min sin tráfico |
 | Base de datos | Render PostgreSQL, plan **Basic** (`basic-256mb`). No se apaga ni vence |
-| Arranque | `gunicorn config.wsgi:application --workers 2 --timeout 60` |
-| Build en Render | `pip install -r requirements/prod.txt && collectstatic && migrate` (ver `render.yaml`) |
+| Build en Render | `pip install -r requirements/prod.txt && collectstatic` (ver `render.yaml`) |
+| Arranque | `migrate && seed_categories && ensure_superuser && gunicorn ... --workers ${WEB_CONCURRENCY:-1}` (Render fija `WEB_CONCURRENCY=1` en el plan Free) |
 | Healthcheck | `/healthz/` (verifica la conexión a la base) |
 | Errores | Sentry (si `SENTRY_DSN` está cargado) |
 
-El plan Free **no tiene Shell ni cron**: lo que en otro hosting se haría con un comando en el servidor se resuelve con un endpoint protegido llamado desde GitHub Actions (como los recordatorios push, D-019) o sumando el comando al build (como `ensure_superuser`).
+El plan Free **no tiene Shell ni cron**: lo que en otro hosting se haría con un comando en el servidor se resuelve con un endpoint protegido llamado desde GitHub Actions (como los recordatorios push, D-019) o sumando el comando al build o al arranque (como `ensure_superuser`). Para un diagnóstico de solo lectura por única vez, como `find_x100_amounts`, se agrega al final del Build Command, se lee la salida en **Events** → el deploy, y se quita.
 
 ---
 
