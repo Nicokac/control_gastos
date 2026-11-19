@@ -438,3 +438,7 @@ CRON_SECRET = config("CRON_SECRET", default="")
 SITE_URL = config("SITE_URL", default="https://controldegastos.ar")
 BREVO_SENDER_EMAIL = config("BREVO_SENDER_EMAIL", default="noreply@controldegastos.ar")
 CONTACT_EMAIL = config("CONTACT_EMAIL", default="contacto@controldegastos.ar")
+
+# Verificación, bienvenida y reset de contraseña se mandan en un hilo aparte (DT-013).
+# Los tests lo apagan en conftest.py para que los envíos sean sincrónicos.
+EMAILS_IN_BACKGROUND = True

@@ -2,7 +2,9 @@
 Tests para las funciones de utilidad.
 """
 
+import threading
 from decimal import Decimal
+from unittest.mock import patch
 
 from django.utils import timezone
 
@@ -17,7 +19,49 @@ from apps.core.utils import (
     get_months_choices,
     get_years_choices,
     send_brevo_email,
+    send_in_background,
 )
+
+
+class TestSendInBackground:
+    """DT-013: envíos fuera del request."""
+
+    def test_en_segundo_plano_corre_en_otro_hilo_sin_esperar(self, settings):
+        settings.EMAILS_IN_BACKGROUND = True
+        release, done = threading.Event(), threading.Event()
+        threads = []
+
+        def slow(value):
+            threads.append(threading.current_thread().name)
+            release.wait(timeout=5)
+            done.set()
+
+        send_in_background(slow, 1)
+        assert not done.is_set()
+        release.set()
+        assert done.wait(timeout=5)
+        assert threads[0].startswith("email")
+
+    def test_un_error_en_el_hilo_se_registra_y_no_se_propaga(self, settings):
+        settings.EMAILS_IN_BACKGROUND = True
+        logged = threading.Event()
+
+        def boom():
+            raise RuntimeError("smtp caído")
+
+        with patch("apps.core.utils.logger.exception", side_effect=lambda *a: logged.set()) as log:
+            send_in_background(boom)
+            assert logged.wait(timeout=5)
+
+        assert "segundo plano" in log.call_args.args[0]
+
+    def test_sin_segundo_plano_corre_en_el_mismo_hilo(self, settings):
+        settings.EMAILS_IN_BACKGROUND = False
+        threads = []
+
+        send_in_background(lambda: threads.append(threading.current_thread()))
+
+        assert threads == [threading.current_thread()]
 
 
 class TestGetCurrentMonthYear:

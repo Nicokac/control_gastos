@@ -359,7 +359,9 @@ function initSidebarToggle() {
  */
 function initWhatsNewBadge() {
     const appData = document.getElementById('app-data');
-    const currentVersion = appData ? appData.dataset.appVersion : '';
+    // La última versión con novedades, no APP_VERSION: un PATCH sin entrada en WHATS_NEW
+    // dejaba al badge y al modal comparando versiones distintas y se reactivaban entre sí.
+    const currentVersion = appData ? appData.dataset.latestRelease : '';
     const seen = localStorage.getItem('whats_new_seen');
     if (currentVersion && seen !== currentVersion) {
         document.querySelectorAll('#sidebarNewBadge').forEach(el => {

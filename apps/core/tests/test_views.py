@@ -2,12 +2,15 @@
 Tests para las vistas de Core (Dashboard).
 """
 
+import re
 from decimal import Decimal
 
 from django.urls import NoReverseMatch, reverse
 from django.utils import timezone
 
 import pytest
+
+from apps.core.views import WHATS_NEW
 
 
 @pytest.mark.django_db
@@ -291,3 +294,28 @@ class TestAppFooterLegalLinks:
         content = response.content.decode()
         assert reverse("core:terms") in content
         assert reverse("core:privacy") in content
+
+
+@pytest.mark.django_db
+class TestWhatsNewVersionUnica:
+    """Badge, modal y página de novedades marcan la misma versión aunque APP_VERSION
+    sea un PATCH sin entrada en WHATS_NEW; si no, se reactivaban entre sí."""
+
+    @pytest.fixture(autouse=True)
+    def _patch_sin_novedades(self, monkeypatch):
+        monkeypatch.setattr("apps.core.context_processors.APP_VERSION", "9.9.9")
+        monkeypatch.setattr("apps.core.views.APP_VERSION", "9.9.9")
+
+    def test_badge_y_modal_usan_la_ultima_version_con_novedades(self, authenticated_client):
+        latest = WHATS_NEW[0]["version"]
+        content = authenticated_client.get(reverse("reports:dashboard")).content.decode()
+
+        assert f'data-latest-release="{latest}"' in content
+        modal = re.search(r'id="whatsNewModal"[^>]*data-version="([^"]*)"', content)
+        assert modal.group(1) == latest
+
+    def test_la_pagina_de_novedades_marca_la_misma_version(self, authenticated_client):
+        content = authenticated_client.get(reverse("core:whats_new")).content.decode()
+
+        assert f'id="whats-new-marker" data-version="{WHATS_NEW[0]["version"]}"' in content
+        assert "v9.9.9" in content

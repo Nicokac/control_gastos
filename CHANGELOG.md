@@ -5,10 +5,12 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
-## [Unreleased]
+## [1.35.6] — 2026-11-19
 
 ### Fixed
 
+- **Los emails ya no frenan la app (DT-013)**: la verificación del registro, su reenvío, la bienvenida y el reset de contraseña (web y API mobile) se mandaban a Brevo dentro del request. Render Free corre un solo proceso, así que mientras se esperaba a Brevo (hasta 10 s de timeout) quedaba trabada la app para todos. Ahora salen por `send_in_background` (`apps/core/utils.py`), un pool de 2 hilos dentro del mismo proceso; los errores siguen yendo a Sentry. El feedback queda sincrónico porque le dice al usuario si el reporte se envió.
+- **El aviso de novedades se repetía después de un PATCH sin novedades**: el badge "Nuevo" y la página de Novedades marcaban como vista `APP_VERSION`, pero el modal comparaba contra la última entrada de `WHATS_NEW`. Cuando las dos no coincidían (1.35.1 a 1.35.3), cerrar el modal volvía a encender el badge y abrir Novedades volvía a mostrar el modal. Ahora los tres usan la última versión con novedades.
 - **Tests que fallaban de noche (DT-064)**: unos 160 tests fechaban los datos con `timezone.now().date()` (UTC) o `date.today()` (hora del sistema). Entre las 21 y las 24 hs de Argentina la fecha UTC ya es el día siguiente, y cerca de fin de mes los gastos de prueba caían fuera del "mes actual". Ahora usan `timezone.localdate()`, y `test_dates_in_tests.py` falla si vuelve a aparecer el patrón.
 
 ---

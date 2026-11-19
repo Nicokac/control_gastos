@@ -23,6 +23,12 @@ def _clear_throttle_cache():
     cache.clear()
 
 
+@pytest.fixture(autouse=True)
+def _emails_inline(settings):
+    """Los emails en segundo plano corren sincrónicos para que los mocks vean el envío."""
+    settings.EMAILS_IN_BACKGROUND = False
+
+
 # =============================================================================
 # USER FIXTURES
 # =============================================================================

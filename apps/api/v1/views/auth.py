@@ -19,7 +19,7 @@ from apps.api.v1.serializers.auth import (
     RegisterSerializer,
     UserProfileSerializer,
 )
-from apps.core.utils import send_brevo_email
+from apps.core.utils import send_brevo_email, send_in_background
 
 User = get_user_model()
 
@@ -69,7 +69,7 @@ class PasswordResetRequestView(APIView):
             }
             subject = render_to_string("users/emails/password_reset_subject.txt", context).strip()
             body = render_to_string("users/emails/password_reset.txt", context)
-            send_brevo_email(user.email, subject, body)
+            send_in_background(send_brevo_email, user.email, subject, body)
 
         return Response(
             {"detail": "Si el email existe, vas a recibir un correo con instrucciones."},

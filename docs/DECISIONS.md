@@ -496,9 +496,15 @@ Vista de reporte anual con comparativa mes a mes: gastos, ingresos, ahorro y bal
 
 ### DT-013 — Emails transaccionales síncronos en request path
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.35.6)
 
 `_send_verification_email`, `_send_welcome_email` y `FeedbackView` hacen llamadas HTTP a Brevo de forma síncrona durante el ciclo de request/response. Si Brevo tarda o falla, el usuario espera hasta el timeout (10s). La solución correcta es una cola de tareas (Celery + Redis, o Django-Q). No se implementa ahora porque Render Free no incluye workers adicionales sin costo extra. Aceptable en MVP con bajo volumen de registros.
+
+**Resolución:** en vez de una cola con worker aparte, `send_in_background` (`apps/core/utils.py`) manda el email desde un `ThreadPoolExecutor` de 2 hilos dentro del mismo proceso de gunicorn. Lo usan la verificación y su reenvío, la bienvenida, el reset web (`BrevoPasswordResetForm`, con el fallback al backend de Django también dentro del hilo) y el reset de la API mobile. Con un solo proceso en Render Free, el problema no era solo la espera de quien se registraba: mientras tanto la app entera quedaba bloqueada. El texto del email se arma antes de pasar al hilo, que no toca la base. Los hilos no son daemon, así que en un reinicio ordenado (deploy) Python espera los envíos en curso; las excepciones se registran con `logger.exception` porque el `Future` las ocultaría. Los tests corren todo sincrónico (`EMAILS_IN_BACKGROUND = False` en un fixture autouse de `conftest.py`), y `test_emails_in_background.py` prueba con el hilo real que el request responde antes de que Brevo termine.
+
+Se descartó una cola en la base procesada por el cron de GitHub Actions, que corre una vez por día y no sirve para verificación ni reset. El feedback (web y API) queda sincrónico a propósito: es poco frecuente y le dice al usuario si el reporte se envió, para que reintente si falló. El resumen semanal también, porque corre en el endpoint del cron y cuenta los envíos.
+
+**Riesgo aceptado:** si el proceso muere de golpe (por ejemplo, por falta de memoria), se puede perder un email en curso. El usuario puede reenviar la verificación o pedir el reset de nuevo.
 
 ### DT-014 — `alert_threshold` en User sin funcionalidad activa
 

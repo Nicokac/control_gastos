@@ -22,7 +22,7 @@ from apps.core.logging import (
     log_sensitive_action,
     log_user_registration,
 )
-from apps.core.utils import send_brevo_email
+from apps.core.utils import send_brevo_email, send_in_background
 from apps.notifications.summaries import user_from_unsubscribe_token
 
 from .forms import BrevoPasswordResetForm, LoginForm, ProfileForm, RegisterForm
@@ -44,12 +44,12 @@ def _send_verification_email(request, user):
         f"Si no creaste una cuenta, podés ignorar este email.\n\n"
         f"Control de Gastos"
     )
-    send_brevo_email(user.email, "Verificá tu email — Control de Gastos", body)
+    send_in_background(send_brevo_email, user.email, "Verificá tu email — Control de Gastos", body)
 
 
 def _send_welcome_email(user):
     body = render_to_string("users/emails/welcome.txt", {"username": user.username})
-    send_brevo_email(user.email, "¡Bienvenido a Control de Gastos!", body)
+    send_in_background(send_brevo_email, user.email, "¡Bienvenido a Control de Gastos!", body)
 
 
 logger = logging.getLogger(__name__)

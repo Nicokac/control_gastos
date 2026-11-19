@@ -7,7 +7,7 @@ from django.db.models import Q
 from django.template.loader import render_to_string
 
 from apps.core.forms import HoneypotMixin
-from apps.core.utils import send_brevo_email
+from apps.core.utils import send_brevo_email, send_in_background
 
 from .models import User
 
@@ -197,6 +197,25 @@ class BrevoPasswordResetForm(PasswordResetForm):
     """Envía el email de reset por Brevo; si falla, por el backend de email de Django."""
 
     def send_mail(
+        self,
+        subject_template_name,
+        email_template_name,
+        context,
+        from_email,
+        to_email,
+        html_email_template_name=None,
+    ):
+        send_in_background(
+            self._deliver,
+            subject_template_name,
+            email_template_name,
+            context,
+            from_email,
+            to_email,
+            html_email_template_name,
+        )
+
+    def _deliver(
         self,
         subject_template_name,
         email_template_name,

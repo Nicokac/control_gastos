@@ -7,7 +7,7 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 
 ## Estado Actual
 
-- ✅ Backend Django completo (web app funcional en producción — v1.35.5, en https://controldegastos.ar)
+- ✅ Backend Django completo (web app funcional en producción — v1.35.6, en https://controldegastos.ar)
 - ✅ API REST completa (DRF + JWT, todos los endpoints)
 - ✅ App Flutter publicada en Google Play — producción, Mobile 1.29.0+39 (resumen semanal y carga rápida), solo Argentina
 - 🟡 Mobile 1.29.1+40 (fix de login trabado tras reinstalar) lista para subir

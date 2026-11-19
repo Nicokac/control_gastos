@@ -162,7 +162,7 @@ def exchange_rate_today(request):
     return JsonResponse(quote)
 
 
-APP_VERSION = "1.35.5"
+APP_VERSION = "1.35.6"
 
 WHATS_NEW = [
     {

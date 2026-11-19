@@ -5,6 +5,7 @@ Funciones de utilidad para todo el proyecto
 import json
 import logging
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date
 from decimal import Decimal, InvalidOperation
 
@@ -16,6 +17,26 @@ from django.utils import timezone
 import requests
 
 logger = logging.getLogger(__name__)
+
+# Render Free corre un solo proceso: esperar a Brevo dentro del request frena a todos (DT-013).
+# Los hilos no son daemon, así que al reiniciar el proceso Python espera los envíos en curso.
+_background_executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="email")
+
+
+def send_in_background(func, *args):
+    """Ejecuta func(*args) fuera del request; inline si EMAILS_IN_BACKGROUND es False."""
+    if not settings.EMAILS_IN_BACKGROUND:
+        _run_logged(func, *args)
+        return
+    _background_executor.submit(_run_logged, func, *args)
+
+
+def _run_logged(func, *args):
+    # El Future de un submit se traga la excepción: sin este log, un fallo no llega a Sentry.
+    try:
+        func(*args)
+    except Exception:
+        logger.exception("Error en envío en segundo plano (%s)", getattr(func, "__name__", func))
 
 
 def send_brevo_email(to_email: str, subject: str, body: str) -> bool:
