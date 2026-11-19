@@ -39,6 +39,16 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.35.5] — 2026-11-19
+
+### Fixed
+
+- **Montos con formato argentino en ahorro**: el formulario de meta (`target_amount`) y el de movimiento y depósito rápido (`amount`) usaban el `DecimalField` estándar, que rechaza "150.000,50" o "1234,50" con "Introduzca un número" antes de llegar a `clean_*` (el `_normalize_ars` que había nunca se ejecutaba). Pasan a `ARSDecimalField` (`Meta.field_classes`), el mismo de gastos e ingresos; los montos sin coma se siguen aceptando igual. Al editar, la meta se muestra como "150.000,50".
+- **Formato de montos bloqueado por la CSP**: `saving_form.html` y `saving_movement_form.html` llamaban a `initAmountFormatting()` con un `<script>` inline, que la CSP de producción bloquea. Ahora los formularios llevan `data-amount-format` y `transaction_form.js` lo inicializa.
+- **Estáticos sin hash ni compresión en producción**: `STATICFILES_STORAGE` se eliminó en Django 5.1 y se ignoraba sin aviso, así que WhiteNoise servía `main.css` y los JS sin hash en el nombre (caché de 60 s y revalidación constante) y sin compresión. Se pasa a `STORAGES` con `CompressedManifestStaticFilesStorage`. Como el manifest da 500 si un `{% static %}` apunta a un archivo inexistente, se agrega un test que verifica todas las referencias de los templates.
+
+---
+
 ## [1.35.4] — 2026-11-19
 
 ### Fixed

@@ -59,7 +59,7 @@ curl https://controldegastos.ar/healthz/   # "ok"
 curl -I https://controldegastos.ar/        # 200
 ```
 
-Y en el navegador, con **Ctrl+F5** (los JS y CSS llevan `?v=APP_VERSION`, pero conviene descartar caché): versión en el sidebar y el cambio que se subió.
+Y en el navegador, con **Ctrl+F5** (en producción los estáticos llevan un hash en el nombre, desde v1.35.5, y algunos JS además `?v=APP_VERSION`, pero conviene descartar caché): versión en el sidebar y el cambio que se subió.
 
 ---
 

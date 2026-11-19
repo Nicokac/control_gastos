@@ -436,3 +436,46 @@ class TestSavingMovementFormCleanedData:
 
         # Verificar tipos
         assert isinstance(form.cleaned_data["amount"], Decimal)
+
+
+@pytest.mark.django_db
+class TestSavingFormsFormatoArgentino:
+    @pytest.mark.parametrize(
+        ("valor", "esperado"),
+        [
+            ("150.000,50", Decimal("150000.50")),
+            ("1234,50", Decimal("1234.50")),
+            ("1234.50", Decimal("1234.50")),
+            ("50000", Decimal("50000")),
+        ],
+    )
+    def test_meta_acepta_formato_argentino(self, valor, esperado):
+        form = SavingForm(data={"name": "Auto", "target_amount": valor, "currency": "ARS"})
+
+        assert form.is_valid(), form.errors
+        assert form.cleaned_data["target_amount"] == esperado
+
+    @pytest.mark.parametrize(
+        ("valor", "esperado"),
+        [("1.500,25", Decimal("1500.25")), ("1000.00", Decimal("1000.00"))],
+    )
+    def test_movimiento_acepta_formato_argentino(self, saving, valor, esperado):
+        form = SavingMovementForm(data={"type": "DEPOSIT", "amount": valor}, saving=saving)
+
+        assert form.is_valid(), form.errors
+        assert form.cleaned_data["amount"] == esperado
+
+    @pytest.mark.parametrize("valor", ["abc", "1,2,3"])
+    def test_monto_invalido_da_error(self, valor):
+        form = SavingForm(data={"name": "Auto", "target_amount": valor, "currency": "ARS"})
+
+        assert not form.is_valid()
+        assert "target_amount" in form.errors
+
+    def test_editar_muestra_el_monto_con_formato_argentino(self, saving):
+        saving.target_amount = Decimal("150000.50")
+        saving.save()
+
+        html = str(SavingForm(instance=saving)["target_amount"])
+
+        assert 'value="150.000,50"' in html

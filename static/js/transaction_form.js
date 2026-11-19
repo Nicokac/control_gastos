@@ -20,6 +20,11 @@ function initTransactionForm(formId) {
     initCategorySearch();
 }
 
+// Formularios que solo necesitan el formato de montos (ahorro); la CSP bloquea llamarlo inline.
+document.addEventListener('DOMContentLoaded', function () {
+    if (document.querySelector('form[data-amount-format]')) initAmountFormatting();
+});
+
 function formatAmountAR(raw) {
     const s = String(raw).trim();
     let normalized;

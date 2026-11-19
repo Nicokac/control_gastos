@@ -2,24 +2,12 @@
 Formularios para ahorro.
 """
 
-from decimal import Decimal, InvalidOperation
-
 from django import forms
 from django.utils import timezone
 
+from apps.core.forms import ARSDecimalField
+
 from .models import MovementType, Saving, SavingMovement, SavingStatus
-
-
-def _normalize_ars(value):
-    """Convierte string con formato argentino a Decimal."""
-    if not isinstance(value, str):
-        return value
-    v = value.strip().replace(".", "").replace(",", ".")
-    try:
-        return Decimal(v)
-    except InvalidOperation:
-        return None
-
 
 # Iconos disponibles para metas de ahorro
 SAVING_ICONS = [
@@ -71,6 +59,7 @@ class SavingForm(forms.ModelForm):
             "icon",
             "color",
         ]
+        field_classes = {"target_amount": ARSDecimalField}
         widgets = {
             "name": forms.TextInput(
                 attrs={
@@ -132,10 +121,6 @@ class SavingForm(forms.ModelForm):
     def clean_target_amount(self):
         """Valida que el monto objetivo sea positivo."""
         target_amount = self.cleaned_data.get("target_amount")
-        if isinstance(target_amount, str):
-            target_amount = _normalize_ars(target_amount)
-            if target_amount is None:
-                raise forms.ValidationError("Ingresá un monto válido.")
         if target_amount is not None and target_amount <= 0:
             raise forms.ValidationError("El monto objetivo debe ser mayor a cero.")
         return target_amount
@@ -179,6 +164,7 @@ class SavingMovementForm(forms.ModelForm):
     class Meta:
         model = SavingMovement
         fields = ["type", "amount"]
+        field_classes = {"amount": ARSDecimalField}
         widgets = {
             "type": forms.RadioSelect(attrs={"class": "movement-type-radio"}),
             "amount": forms.TextInput(
@@ -202,10 +188,6 @@ class SavingMovementForm(forms.ModelForm):
     def clean_amount(self):
         """Valida el monto según el tipo de movimiento."""
         amount = self.cleaned_data.get("amount")
-        if isinstance(amount, str):
-            amount = _normalize_ars(amount)
-            if amount is None:
-                raise forms.ValidationError("Ingresá un monto válido.")
         if amount is not None and amount <= 0:
             raise forms.ValidationError("El monto debe ser mayor a cero.")
         return amount

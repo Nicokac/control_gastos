@@ -162,9 +162,18 @@ def exchange_rate_today(request):
     return JsonResponse(quote)
 
 
-APP_VERSION = "1.35.4"
+APP_VERSION = "1.35.5"
 
 WHATS_NEW = [
+    {
+        "version": "1.35.5",
+        "date": "Noviembre 2026",
+        "title": "Montos en las metas de ahorro",
+        "items": [
+            "Corregido: al crear o editar una meta de ahorro, o al cargar un depósito o retiro, no se podían escribir montos con coma decimal (por ejemplo 1.234,56)",
+            "Esos montos ahora se muestran con separador de miles mientras los escribís, igual que en gastos e ingresos",
+        ],
+    },
     {
         "version": "1.35.4",
         "date": "Noviembre 2026",

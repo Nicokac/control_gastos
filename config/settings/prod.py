@@ -108,8 +108,12 @@ else:
 SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin"
 SECURE_CROSS_ORIGIN_RESOURCE_POLICY = "same-origin"
 
-# Static files with WhiteNoise
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+# Static files con WhiteNoise: nombres con hash (cache busting) + gzip.
+# STATICFILES_STORAGE se eliminó en Django 5.1 y se ignoraba sin aviso.
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+}
 
 
 # =============================================================================

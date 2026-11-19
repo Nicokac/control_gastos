@@ -21,7 +21,7 @@
                 </h1>
             </div>
 
-            <form method="post" novalidate>
+            <form method="post" novalidate data-amount-format>
                 {% csrf_token %}
 
                 <!-- Errores generales -->
@@ -174,5 +174,4 @@
 
 {% block extra_js %}
 <script src="{% static 'js/transaction_form.js' %}?v={{ APP_VERSION }}"></script>
-<script>initAmountFormatting();</script>
 {% endblock %}

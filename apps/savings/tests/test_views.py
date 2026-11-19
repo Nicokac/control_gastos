@@ -362,6 +362,16 @@ class TestSavingUpdateView:
         assert len(checked) == 1 and 'value="#dc3545"' in checked[0]
         assert "color-btn" not in content
 
+    def test_formularios_de_ahorro_sin_script_inline(self, authenticated_client, saving):
+        # La CSP de producción bloquea scripts inline: el formato de montos se activa por data-amount-format.
+        for url in (
+            reverse("savings:update", kwargs={"pk": saving.pk}),
+            reverse("savings:add_movement", kwargs={"pk": saving.pk}),
+        ):
+            content = authenticated_client.get(url).content.decode()
+            assert "data-amount-format" in content
+            assert "<script>initAmountFormatting" not in content
+
     def test_cannot_update_other_user_saving(
         self, authenticated_client, other_user, saving_factory
     ):
@@ -542,6 +552,12 @@ class TestQuickDepositView:
         assert response.url == reverse("savings:list")
         saving.refresh_from_db()
         assert saving.current_amount == Decimal("3000.00")
+
+    def test_quick_deposit_con_formato_argentino(self, authenticated_client, saving):
+        url = reverse("savings:quick_deposit", kwargs={"pk": saving.pk})
+        authenticated_client.post(url, {"type": "DEPOSIT", "amount": "1.500,25"})
+        saving.refresh_from_db()
+        assert saving.current_amount == Decimal("1500.25")
 
     def test_quick_deposit_invalid_amount(self, authenticated_client, saving):
         """Verifica que monto inválido redirija a list."""
