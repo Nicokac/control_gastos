@@ -5,6 +5,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.36.0] — 2026-11-19
+
+### Added
+
+- **Descargar mis datos (DT-062)**: `users:data_export` (Mi Cuenta → Descargar mis datos) arma en memoria un Excel con una hoja por entidad: perfil y preferencias (sin contraseña ni permisos), categorías propias y de sistema ocultas, reglas de categorías, gastos, ingresos, gastos e ingresos fijos, metas de ahorro y sus movimientos, integrantes del hogar y gastos compartidos. Cada registro lleva el nombre de su categoría, meta o integrante en vez de un id. Quedan afuera los datos técnicos o generados por el sistema (tokens de dispositivos, logs de avisos, notificaciones, sugerencias de traspaso). Son 11 consultas, sin importar cuántos registros haya. La página de eliminar cuenta sugiere descargar los datos antes, y la descarga queda registrada en el log de seguridad.
+
+### Fixed
+
+- **Política de Privacidad**: decía que los datos eran "exportables a CSV"; ahora apunta a la descarga completa en Excel.
+
+---
+
 ## [1.35.6] — 2026-11-19
 
 ### Fixed

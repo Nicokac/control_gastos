@@ -13,6 +13,10 @@
                 <div class="card-body">
                     <p class="mb-2">Estás a punto de eliminar tu cuenta de forma permanente.</p>
                     <p class="mb-4 text-muted small">Se borrarán todos tus datos: gastos, ingresos, metas de ahorro y categorías. Esta acción no se puede deshacer.</p>
+                    <div class="alert alert-light border small mb-4">
+                        <i class="bi bi-download me-1"></i>Si querés guardar una copia, primero
+                        <a href="{% url 'users:data_export' %}">descargá tus datos</a> en Excel.
+                    </div>
 
                     <form method="post" novalidate>
                         {% csrf_token %}

@@ -936,13 +936,17 @@ Las metas de ahorro requieren depósito manual. No hay forma de automatizar apor
 
 ### DT-062 — Export/backup completo de datos del usuario
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto la exportación (v1.36.0) · ⏳ Importación pendiente
 
 La exportación actual cubre solo gastos e ingresos en Excel con filtros. No hay forma de exportar todos los datos ni de importarlos de vuelta.
 
 **Why:** "mis datos son míos" es un argumento de confianza que reduce la fricción de registro. Complementa el delete de cuenta que ya existe. También sirve como mecanismo de migración si el usuario cambia de dispositivo.
 
 **Camino de resolución:** vista de exportación completa que genera un ZIP con JSONs de todas las entidades del usuario (gastos, ingresos, categorías, metas, gastos fijos, compartidos). Opcionalmente, importación desde ese mismo formato para restore o migración.
+
+**Resolución (exportación, v1.36.0):** en vez del ZIP con JSON se eligió un solo Excel con una hoja por entidad (`apps/users/data_export.py`, vista `DataExportView`). El que pide sus datos casi siempre es un usuario no técnico que quiere abrirlos y entenderlos, y un JSON no le sirve. Por eso cada fila trae nombres (grupo y subcategoría, meta, gasto fijo, quién pagó) en vez de ids, y las fechas son fechas reales de Excel. Las categorías de sistema solo aparecen si el usuario las ocultó, porque son las mismas para todos. Se excluye lo técnico o generado por el sistema: `DeviceToken`, los logs de recordatorios, alertas y resúmenes, `Notification` y `RolloverSuggestion`. El archivo se arma en memoria al pedirlo; el volumen por usuario es chico (el usuario local con más datos tarda 0,03 s), y un test fija que las consultas no crecen con la cantidad de registros.
+
+**Camino para la importación:** se puede leer el mismo Excel, resolviendo categorías por (tipo, grupo, subcategoría) y metas o gastos fijos por nombre. No se hace hasta que alguien lo necesite: hoy no hay un caso de migración real, y un import mal resuelto puede duplicar datos.
 
 ---
 

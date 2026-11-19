@@ -1,15 +1,17 @@
 """Vistas de autenticación y perfil de usuario."""
 
+import io
 import logging
 
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView, PasswordChangeView, PasswordResetView
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views.generic import CreateView, DeleteView, UpdateView, View
@@ -25,6 +27,7 @@ from apps.core.logging import (
 from apps.core.utils import send_brevo_email, send_in_background
 from apps.notifications.summaries import user_from_unsubscribe_token
 
+from .data_export import build_user_workbook
 from .forms import BrevoPasswordResetForm, LoginForm, ProfileForm, RegisterForm
 from .models import User
 from .tokens import email_verification_token
@@ -163,6 +166,26 @@ class ProfileView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         messages.success(self.request, "Perfil actualizado correctamente.")
         return super().form_valid(form)
+
+
+class DataExportView(LoginRequiredMixin, View):
+    """Descarga todos los datos del usuario en un Excel con una hoja por entidad (DT-062)."""
+
+    def get(self, request):
+        buffer = io.BytesIO()
+        build_user_workbook(request.user).save(buffer)
+        filename = f"mis datos {timezone.localdate().strftime('%d.%m.%Y')}.xlsx"
+        response = HttpResponse(
+            buffer.getvalue(),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        log_sensitive_action(
+            action="DATA_EXPORTED",
+            username=request.user.email,
+            ip_address=get_client_ip(request),
+        )
+        return response
 
 
 class DeleteAccountView(LoginRequiredMixin, DeleteView):

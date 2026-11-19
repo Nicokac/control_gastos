@@ -95,7 +95,16 @@
                                 </div>
 
                                 <hr class="my-4">
-                                <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex justify-content-between align-items-center gap-3 mb-4">
+                                    <div>
+                                        <p class="mb-0 fw-semibold small">Tus datos</p>
+                                        <p class="mb-0 text-muted small">Descargá todo lo que cargaste en un Excel: gastos, ingresos, categorías, metas, gastos fijos y compartidos.</p>
+                                    </div>
+                                    <a href="{% url 'users:data_export' %}" class="btn btn-outline-success btn-sm text-nowrap">
+                                        <i class="bi bi-download me-1"></i>Descargar mis datos
+                                    </a>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center gap-3">
                                     <div>
                                         <p class="mb-0 fw-semibold text-danger small">Zona de peligro</p>
                                         <p class="mb-0 text-muted small">Elimina tu cuenta y todos tus datos de forma permanente.</p>

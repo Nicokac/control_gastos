@@ -14,6 +14,7 @@ urlpatterns = [
     path("profile/", views.ProfileView.as_view(), name="profile"),
     path("password/change/", views.CustomPasswordChangeView.as_view(), name="password_change"),
     path("delete/", views.DeleteAccountView.as_view(), name="delete_account"),
+    path("export/", views.DataExportView.as_view(), name="data_export"),
     path("verify/<uidb64>/<token>/", views.VerifyEmailView.as_view(), name="verify_email"),
     path("verify/resend/", views.ResendVerificationView.as_view(), name="resend_verification"),
     path("tour/done/", views.TourDoneView.as_view(), name="tour_done"),

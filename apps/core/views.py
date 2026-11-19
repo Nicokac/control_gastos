@@ -162,9 +162,18 @@ def exchange_rate_today(request):
     return JsonResponse(quote)
 
 
-APP_VERSION = "1.35.6"
+APP_VERSION = "1.36.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.36.0",
+        "date": "Noviembre 2026",
+        "title": "Descargá todos tus datos",
+        "items": [
+            "Nuevo: en Mi Cuenta → Descargar mis datos bajás todo lo que cargaste en un Excel, con una hoja para gastos, ingresos, categorías, metas de ahorro, gastos fijos y compartidos",
+            "Sirve para tener tu propia copia o analizar tus números por tu cuenta. Si vas a eliminar la cuenta, te lo recordamos antes",
+        ],
+    },
     {
         "version": "1.35.5",
         "date": "Noviembre 2026",
