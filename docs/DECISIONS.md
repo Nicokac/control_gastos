@@ -1481,7 +1481,7 @@ Usuario reportó 6 problemas relevados por uso real:
 
 ### DT-091 — Web: selector de color sin colores visibles en Nueva/Editar Meta de Ahorro
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.35.4)
 
 Encontrado probando DT-067 en local: en `/savings/new` (y presumiblemente `/savings/edit/<id>`), la sección "Color" del formulario muestra 4 círculos de radio nativos sin color — ninguna de las 4 opciones (verde/azul/rojo/naranja, `SAVING_COLORS` en `apps/savings/forms.py`) se ve pintada.
 
@@ -1490,6 +1490,8 @@ Encontrado probando DT-067 en local: en `/savings/new` (y presumiblemente `/savi
 **Contraste con el patrón que sí funciona:** `templates/categories/category_form.html` resuelve el mismo problema (selector de color para categorías) con `style="background-color:{{ hex }}"` **inline, renderizado directamente por Django** — sin depender de JS ni de una clase CSS externa. Es el patrón correcto y ya probado en el proyecto; `saving_form.html` quedó con una implementación distinta y rota, probablemente escrita antes de que existiera el patrón de categorías.
 
 **Camino de resolución:** reescribir la sección "Color" de `saving_form.html` siguiendo el mismo patrón que `category_form.html` (clase `color-swatch` + `style="background-color:{{ hex }}"` inline), reemplazando el `data-color-bg` + clase CSS inexistente. Revisar también si `saving_form.html` reutiliza el mismo bloque para editar una meta existente (no solo crear) para no dejar ese caso sin corregir.
+
+**Resolución (2026-11-19, v1.35.4):** cada opción es un `<span class="color-swatch" style="background-color:...">` junto a un radio `visually-hidden`. A diferencia de categorías (que usa botones + JS porque tiene color libre), acá son 4 opciones fijas, así que la elegida se marca solo con CSS (`.color-option input:checked + .color-swatch`, mismo borde que `.color-swatch--active`, con variante dark) y el foco de teclado con `:focus-visible`. Crear y editar comparten el template, así que quedan corregidos los dos. Test en `TestSavingUpdateView`.
 
 ---
 
@@ -2374,7 +2376,7 @@ Encontrado en la segunda revisión de gráficos (2026-11-13, v1.30.0). Con DT-11
 
 ### DT-118 — Gráficos: detalles de la revisión en producción de v1.31.0
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.35.4)
 
 Encontrados al revisar la v1.31.0 en producción con Playwright (2026-11-13), después de cerrar DT-112 a DT-117:
 
@@ -2387,6 +2389,11 @@ Encontrados al revisar la v1.31.0 en producción con Playwright (2026-11-13), de
 
 - **Ranking:** quitar el alto fijo y el scroll, o mostrar los primeros grupos con un "Ver todos" que expanda la lista. Hay que cuidar que la tarjeta no quede mucho más alta que la del donut de al lado.
 - **Eje Y:** en `static/js/evolution_chart.js`, fijar `suggestedMin` en un margen proporcional al mínimo real, por ejemplo el 10 % del máximo, para que un negativo chico no obligue a un paso entero de la escala. Verificar con un mes negativo grande, que debe seguir viéndose completo.
+
+**Resolución (2026-11-19, v1.35.4):**
+
+- **Ranking:** sin alto fijo ni scroll. Se ven los primeros 8 grupos y, si hay más, el resto lleva `collapse ranking-extra` y un botón "Ver N más" / "Ver menos" (collapse de Bootstrap con `data-bs-target=".ranking-extra"`, el texto se alterna por CSS según `aria-expanded`, sin JS propio). Con 8 o menos no aparece el botón. Tests en `TestRankingVerMas`.
+- **Eje Y:** `suggestedMin` no alcanza, porque Chart.js igual redondea el mínimo al paso siguiente de la escala; se usa `min` fijo en −10 % del máximo solo cuando el mínimo es negativo y menor a ese 10 %. Ese tick no es redondo (por ejemplo −$ 800k) y quedaba pegado al $ 0, así que su etiqueta se oculta. Verificado con Playwright: −$ 25.690 frente a $ 8 M deja el eje en −$ 800k (antes −$ 2 M); −$ 3 M sigue con la escala automática (−$ 5 M) y se ve completo; sin negativos el eje arranca en $ 0.
 
 ---
 

@@ -39,6 +39,16 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.35.4] — 2026-11-19
+
+### Fixed
+
+- **Selector de color de las metas de ahorro** (DT-091): cada opción era un `<div class="color-btn">` sin CSS (medía 0×0) que además dependía de JS para pintarse, así que no se veía ningún color. Ahora cada opción es un `.color-swatch` con el color inline renderizado por Django; la elegida se marca con CSS, sin JS, y el radio sigue siendo accesible con teclado.
+- **Ranking de categorías del dashboard** (DT-118): ya no tiene alto fijo con scroll interno que escondía grupos. Muestra los primeros 8 y, si hay más, un "Ver N más" (collapse de Bootstrap) que despliega el resto.
+- **Eje Y del gráfico de evolución** (DT-118): si el mínimo es negativo pero menor al 10 % del máximo, el eje baja hasta −10 % del máximo en vez de un paso entero de la escala (antes un mes con −$ 25.690 llevaba el eje a −$ 2 M). Un negativo grande sigue con la escala automática.
+
+---
+
 ## [1.35.3] — 2026-11-18
 
 ### Security

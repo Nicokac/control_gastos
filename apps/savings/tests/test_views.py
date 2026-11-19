@@ -2,6 +2,7 @@
 Tests para las vistas de Saving.
 """
 
+import re
 from datetime import date
 from decimal import Decimal
 
@@ -9,7 +10,7 @@ from django.urls import reverse
 
 import pytest
 
-from apps.savings.forms import SavingForm
+from apps.savings.forms import SAVING_COLORS, SavingForm
 from apps.savings.models import RolloverSuggestion, RolloverSuggestionStatus, Saving, SavingStatus
 
 
@@ -344,6 +345,22 @@ class TestSavingUpdateView:
 
         assert response.status_code == 200
         assert "form" in response.context
+
+    def test_cada_color_se_pinta_y_el_guardado_queda_elegido(self, authenticated_client, saving):
+        saving.color = "#dc3545"
+        saving.save()
+
+        content = authenticated_client.get(
+            reverse("savings:update", kwargs={"pk": saving.pk})
+        ).content.decode()
+
+        for hex_color, _label in SAVING_COLORS:
+            assert f'style="background-color:{hex_color}"' in content
+        radios = re.findall(r'<input type="radio"[^>]*name="color"[^>]*>', content)
+        checked = [r for r in radios if "checked" in r]
+        assert len(radios) == len(SAVING_COLORS)
+        assert len(checked) == 1 and 'value="#dc3545"' in checked[0]
+        assert "color-btn" not in content
 
     def test_cannot_update_other_user_saving(
         self, authenticated_client, other_user, saving_factory

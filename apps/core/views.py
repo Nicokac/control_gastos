@@ -162,9 +162,19 @@ def exchange_rate_today(request):
     return JsonResponse(quote)
 
 
-APP_VERSION = "1.35.3"
+APP_VERSION = "1.35.4"
 
 WHATS_NEW = [
+    {
+        "version": "1.35.4",
+        "date": "Noviembre 2026",
+        "title": "Correcciones visuales",
+        "items": [
+            "Corregido: los colores de las metas de ahorro no se veían al crearlas o editarlas",
+            "El ranking de categorías del inicio ya no esconde grupos detrás de un scroll: si hay muchos, tocá Ver más",
+            "En el gráfico de evolución, un mes con balance apenas negativo ya no deja un espacio vacío grande debajo del cero",
+        ],
+    },
     {
         "version": "1.35.0",
         "date": "Noviembre 2026",

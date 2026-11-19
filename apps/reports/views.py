@@ -482,7 +482,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         Obtiene distribución de gastos agrupada por grupo padre de la categoría.
 
         Retorna:
-        - ranking_distribution: grupos ordenados por total (para el ranking con scroll)
+        - ranking_distribution: grupos ordenados por total (para el ranking)
         - chart_*: grupos del donut + "Otros" (criterio compartido con el listado de gastos)
         """
         start_date, end_date = get_month_date_range_exclusive(month, year)

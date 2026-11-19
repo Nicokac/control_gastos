@@ -561,6 +561,59 @@ class TestExpenseDistribution:
 
 
 @pytest.mark.django_db
+class TestRankingVerMas:
+    COLORS = [
+        "#dc3545",
+        "#fd7e14",
+        "#ffc107",
+        "#28a745",
+        "#20c997",
+        "#0dcaf0",
+        "#0d6efd",
+        "#6610f2",
+        "#d63384",
+        "#6c757d",
+        "#dc3545",
+    ]
+
+    def _crear_grupos(self, user, cantidad):
+        today = timezone.now().date()
+        for i in range(cantidad):
+            category = Category.objects.create(
+                name=f"Grupo {i}", type=CategoryType.EXPENSE, is_system=True, color=self.COLORS[i]
+            )
+            Expense.objects.create(
+                user=user,
+                category=category,
+                description=f"Gasto {i}",
+                amount=Decimal(1000 - i),
+                amount_ars=Decimal(1000 - i),
+                currency="ARS",
+                exchange_rate=Decimal("1.00"),
+                date=today,
+            )
+
+    def test_mas_de_ocho_grupos_esconde_el_resto_tras_ver_mas(self, client, user):
+        self._crear_grupos(user, 11)
+        client.force_login(user)
+
+        content = client.get(reverse("reports:dashboard")).content.decode()
+
+        assert "Ver 3 más" in content
+        assert content.count("collapse ranking-extra") == 3
+        assert "overflow-y: auto" not in content
+
+    def test_ocho_grupos_o_menos_no_muestra_ver_mas(self, client, user):
+        self._crear_grupos(user, 8)
+        client.force_login(user)
+
+        content = client.get(reverse("reports:dashboard")).content.decode()
+
+        assert "ranking-toggle" not in content
+        assert "ranking-extra" not in content
+
+
+@pytest.mark.django_db
 class TestDashboardQueryPerformance:
     """Tests de performance para el dashboard."""
 

@@ -520,10 +520,10 @@
                         &mdash; {{ ranking_distribution|length }} grupo{{ ranking_distribution|length|pluralize }}
                     </small>
                 </div>
-                <div style="height: 320px; overflow-y: auto;">
+                <div>
                     <ul class="list-group list-group-flush" id="ranking-list">
                         {% for item in ranking_distribution %}
-                        <li class="list-group-item px-3 py-2">
+                        <li class="list-group-item px-3 py-2{% if forloop.counter > 8 %} collapse ranking-extra{% endif %}">
                             <div class="d-flex align-items-center justify-content-between ranking-group-row"
                                  role="button"
                                  data-group="{{ item.name }}"
@@ -565,6 +565,16 @@
                         </li>
                         {% endfor %}
                     </ul>
+                    {% if ranking_distribution|length > 8 %}
+                    <button type="button"
+                            class="btn btn-link btn-sm w-100 text-decoration-none border-top rounded-0 ranking-toggle"
+                            data-bs-toggle="collapse"
+                            data-bs-target=".ranking-extra"
+                            aria-expanded="false">
+                        <span class="ranking-toggle-more">Ver {{ ranking_distribution|length|add:"-8" }} más <i class="bi bi-chevron-down"></i></span>
+                        <span class="ranking-toggle-less">Ver menos <i class="bi bi-chevron-up"></i></span>
+                    </button>
+                    {% endif %}
                 </div>
                 {% else %}
                 <div class="text-center py-4">

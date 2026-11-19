@@ -518,6 +518,31 @@ form#incomeForm .category-btn:hover .btn {
     transform: scale(1.15);
 }
 
+.color-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.color-option {
+    cursor: pointer;
+}
+
+.color-option input[type="radio"]:checked + .color-swatch {
+    border-color: #333 !important;
+    transform: scale(1.15);
+}
+
+.color-option input[type="radio"]:focus-visible + .color-swatch {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+}
+
+.ranking-toggle[aria-expanded="true"] .ranking-toggle-more,
+.ranking-toggle[aria-expanded="false"] .ranking-toggle-less {
+    display: none;
+}
+
 .color-swatch--custom {
     background-color: #f8f9fa !important;
     border-color: #dee2e6 !important;
@@ -625,7 +650,8 @@ form#incomeForm .category-btn:hover .btn {
     color: #dee2e6;
 }
 
-[data-bs-theme="dark"] .color-swatch--active {
+[data-bs-theme="dark"] .color-swatch--active,
+[data-bs-theme="dark"] .color-option input[type="radio"]:checked + .color-swatch {
     border-color: #dee2e6 !important;
 }
 

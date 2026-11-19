@@ -135,12 +135,14 @@
                             <label class="form-label">Color</label>
                             <div class="color-grid">
                                 {% for value, label in form.color.field.choices %}
-                                <label class="color-option">
+                                <label class="color-option" title="{{ label }}">
                                     <input type="radio"
+                                           class="visually-hidden"
                                            name="color"
                                            value="{{ value }}"
+                                           aria-label="{{ label }}"
                                            {% if form.color.value == value %}checked{% endif %}>
-                                    <div class="color-btn" data-color-bg="{{ value }}" title="{{ label }}"></div>
+                                    <span class="color-swatch" style="background-color:{{ value }}"></span>
                                 </label>
                                 {% endfor %}
                             </div>

@@ -28,6 +28,12 @@ document.addEventListener('DOMContentLoaded', function () {
         return sign + '$ ' + abs;
     };
 
+    // Un negativo chico frente al máximo haría que Chart.js baje el eje un paso entero de la escala (DT-118).
+    const values = income.concat(expenses, savings, balance).filter(function (v) { return v !== null; });
+    const dataMax = Math.max.apply(null, values.concat(0));
+    const dataMin = Math.min.apply(null, values.concat(0));
+    const yMin = dataMin < 0 && -dataMin < dataMax * 0.1 ? -dataMax * 0.1 : undefined;
+
     const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
     const datasets = [
         { type: 'bar', label: 'Ingresos', data: income, backgroundColor: 'rgba(25, 135, 84, 0.75)', borderRadius: 3, order: 2 },
@@ -81,8 +87,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     ticks: { font: { size: 11 }, maxRotation: 0, autoSkip: true },
                 },
                 y: {
+                    min: yMin,
                     grid: { color: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.05)' },
-                    ticks: { font: { size: 11 }, maxTicksLimit: 6, callback: formatCompact },
+                    ticks: {
+                        font: { size: 11 },
+                        maxTicksLimit: 6,
+                        callback: function (value) { return value === yMin ? '' : formatCompact(value); },
+                    },
                 },
             },
             onClick: function (event, elements) {
