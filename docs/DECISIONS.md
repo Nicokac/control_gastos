@@ -133,6 +133,8 @@ Throttle simple en memoria en `config/urls.py`: máximo 10 requests por IP en ve
 - `django-axes` está orientado a login, no a endpoints públicos.
 - El health checker de Render (`User-Agent: Render/1.0`) queda excluido del throttle — llama cada 5 segundos y un 429 hace que Render mate el proceso.
 
+**Actualización (2026-11-18, v1.35.3):** la exclusión por `User-Agent` se podía falsificar y dejaba el throttle sin efecto. Ahora el throttle se aplica solo a los requests que traen `CF-Connecting-IP` (todo el tráfico de internet pasa por Cloudflare, que pone ese header y rechaza a quien lo falsifica, ver DT-119), y lo que llega sin él (el health check de Render, directo a la instancia) queda exento. Se eligió esto en vez de throttlear también al health check porque, si Cloudflare dejara de estar delante de Render, todo compartiría el contador de `127.0.0.1` y un atacante podría provocar 429 al health check y reinicios en loop; con este criterio, en ese escenario se pierde el throttle pero no la disponibilidad.
+
 ### Riesgo aceptado
 El dict en memoria se resetea con cada restart del proceso (Render Free reinicia frecuentemente). No persiste entre workers si se escala horizontalmente — aceptable para el contexto actual.
 

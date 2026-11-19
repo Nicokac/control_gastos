@@ -30,42 +30,64 @@ class TestHealthz:
         """Verifica que devuelve 429 al superar el límite de requests."""
         from config.urls import _HEALTHZ_LIMIT
 
-        ip = "10.0.0.1"
+        ip = "203.0.113.1"
         cache.set(f"healthz_hits_{ip}", _HEALTHZ_LIMIT, timeout=60)
 
-        response = client.get("/healthz/", REMOTE_ADDR=ip)
+        response = client.get("/healthz/", HTTP_CF_CONNECTING_IP=ip)
 
         assert response.status_code == 429
 
-    def test_healthz_bypasses_throttle_for_render(self, client):
-        """Verifica que el health checker de Render no se throttlea."""
+    def test_healthz_increments_cache_counter(self, client):
+        """Verifica que cada request incrementa el contador en cache."""
+        ip = "203.0.113.3"
+
+        client.get("/healthz/", HTTP_CF_CONNECTING_IP=ip)
+        client.get("/healthz/", HTTP_CF_CONNECTING_IP=ip)
+
+        assert cache.get(f"healthz_hits_{ip}", 0) == 2
+
+
+@pytest.mark.django_db
+class TestHealthzRenderBypass:
+    def setup_method(self):
+        cache.clear()
+
+    def test_health_check_interno_no_se_throttlea(self, client):
         from config.urls import _HEALTHZ_LIMIT
 
-        ip = "10.0.0.2"
+        ip = "127.0.0.1"
         cache.set(f"healthz_hits_{ip}", _HEALTHZ_LIMIT + 10, timeout=60)
 
-        response = client.get(
-            "/healthz/",
-            REMOTE_ADDR=ip,
-            HTTP_USER_AGENT="Render/1.0",
-        )
+        response = client.get("/healthz/", REMOTE_ADDR=ip, HTTP_USER_AGENT="Render/1.0")
 
         assert response.status_code == 200
 
-    def test_healthz_increments_cache_counter(self, client):
-        """Verifica que cada request incrementa el contador en cache."""
-        ip = "10.0.0.3"
-        cache.delete(f"healthz_hits_{ip}")
+    def test_health_check_interno_no_suma_al_contador(self, client):
+        client.get("/healthz/", REMOTE_ADDR="127.0.0.1")
 
-        client.get("/healthz/", REMOTE_ADDR=ip)
-        client.get("/healthz/", REMOTE_ADDR=ip)
+        assert cache.get("healthz_hits_127.0.0.1") is None
 
-        hits = cache.get(f"healthz_hits_{ip}", 0)
-        assert hits == 2
+    def test_user_agent_render_desde_internet_se_throttlea(self, client):
+        from config.urls import _HEALTHZ_LIMIT
+
+        ip = "203.0.113.2"
+        cache.set(f"healthz_hits_{ip}", _HEALTHZ_LIMIT, timeout=60)
+
+        response = client.get(
+            "/healthz/",
+            REMOTE_ADDR="127.0.0.1",
+            HTTP_CF_CONNECTING_IP=ip,
+            HTTP_USER_AGENT="Render/1.0",
+        )
+
+        assert response.status_code == 429
 
 
 @pytest.mark.django_db
 class TestHealthzClientIp:
+    def setup_method(self):
+        cache.clear()
+
     def test_rotar_x_forwarded_for_no_evita_el_limite(self, client):
         from config.urls import _HEALTHZ_LIMIT
 

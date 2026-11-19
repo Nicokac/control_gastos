@@ -39,6 +39,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.35.3] — 2026-11-18
+
+### Security
+
+- **El límite de `/healthz/` ya no se saltea con el User-Agent**: cualquier request con "Render" en el `User-Agent` quedaba exento, y ese header lo puede mandar cualquiera. Ahora el límite se aplica a todo lo que llega desde internet (trae `CF-Connecting-IP`, que pone Cloudflare), y solo queda exento el health check de Render, que pega directo a la instancia. Ver D-004.
+
+---
+
 ## [1.35.2] — 2026-11-18
 
 ### Security

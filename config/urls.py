@@ -55,8 +55,9 @@ _HEALTHZ_WINDOW = 60  # segundos
 
 def healthz(request):
     """Health check endpoint que verifica conexión a DB."""
-    user_agent = request.META.get("HTTP_USER_AGENT", "")
-    if "Render" not in user_agent:
+    # Solo el tráfico de internet trae CF-Connecting-IP (no se puede falsificar); el health
+    # check de Render pega directo a la instancia y un 429 hace que Render reinicie el proceso.
+    if "HTTP_CF_CONNECTING_IP" in request.META:
         ip = get_client_ip(request)
         cache_key = f"healthz_hits_{ip}"
         hits = cache.get(cache_key, 0)
