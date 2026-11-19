@@ -1,5 +1,7 @@
 """Tests para los endpoints de gastos recurrentes de la API v1."""
 
+from django.utils import timezone
+
 import pytest
 
 from apps.recurring.models import RecurringExpense
@@ -130,7 +132,6 @@ class TestRecurringUnmarkPaidEndpoint:
         assert "No hay pago" in response.json()["detail"]
 
     def test_unmark_paid_reactiva_cuota_completada(self, client, user, expense_category):
-        from datetime import date
 
         headers = auth_header(client, user)
         rec = RecurringExpense.objects.create(
@@ -139,7 +140,7 @@ class TestRecurringUnmarkPaidEndpoint:
             category=expense_category,
             due_day=10,
             total_installments=1,
-            start_date=date.today().replace(day=1),
+            start_date=timezone.localdate().replace(day=1),
         )
         client.post(
             f"/api/v1/recurring/{rec.pk}/mark-paid/",

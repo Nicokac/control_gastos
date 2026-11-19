@@ -57,7 +57,7 @@ class TestDashboardView:
             is_system=True,
         )
 
-        today = timezone.now().date()
+        today = timezone.localdate()
 
         # Crear ingreso
         Income.objects.create(
@@ -105,7 +105,7 @@ class TestDashboardView:
             is_system=True,
         )
 
-        today = timezone.now().date()
+        today = timezone.localdate()
 
         Income.objects.create(
             user=user,
@@ -284,7 +284,7 @@ class TestRecentTransactions:
             is_system=True,
         )
 
-        today = timezone.now().date()
+        today = timezone.localdate()
 
         Expense.objects.create(
             user=user,
@@ -313,7 +313,7 @@ class TestRecentTransactions:
             is_system=True,
         )
 
-        today = timezone.now().date()
+        today = timezone.localdate()
 
         Income.objects.create(
             user=user,
@@ -347,7 +347,7 @@ class TestRecentTransactions:
             is_system=True,
         )
 
-        today = timezone.now().date()
+        today = timezone.localdate()
         from datetime import timedelta
 
         # Crear transacciones con diferentes fechas
@@ -403,7 +403,7 @@ class TestRecentTransactions:
             is_system=True,
         )
 
-        today = timezone.now().date()
+        today = timezone.localdate()
         from datetime import timedelta
 
         # Crear 10 gastos
@@ -446,7 +446,7 @@ class TestRecentTransactions:
             is_system=True,
         )
 
-        today = timezone.now().date()
+        today = timezone.localdate()
         from datetime import timedelta
 
         # Crear 8 gastos recientes (días 0-7)
@@ -515,7 +515,7 @@ class TestExpenseDistribution:
             color="#00FF00",
         )
 
-        today = timezone.now().date()
+        today = timezone.localdate()
 
         # Dos gastos en Comida
         Expense.objects.create(
@@ -577,7 +577,7 @@ class TestRankingVerMas:
     ]
 
     def _crear_grupos(self, user, cantidad):
-        today = timezone.now().date()
+        today = timezone.localdate()
         for i in range(cantidad):
             category = Category.objects.create(
                 name=f"Grupo {i}", type=CategoryType.EXPENSE, is_system=True, color=self.COLORS[i]
@@ -645,7 +645,7 @@ class TestDashboardQueryPerformance:
         """Verifica que queries no escalan con cantidad de datos (N+1 check)."""
         client.force_login(user)
 
-        today = timezone.now().date()
+        today = timezone.localdate()
         from datetime import timedelta
 
         # Crear dataset representativo
@@ -698,7 +698,7 @@ class TestDashboardQueryPerformance:
         """
         client.force_login(user)
 
-        today = timezone.now().date()
+        today = timezone.localdate()
         from datetime import timedelta
 
         # Dataset más grande
@@ -773,7 +773,7 @@ class TestMonthlyEvolution:
         self, authenticated_client, url_helper, user, income_factory, income_category
     ):
         """Un ingreso del mes actual aparece en el último elemento de evolution_income."""
-        today = timezone.now().date()
+        today = timezone.localdate()
         income_factory(user, income_category, amount=Decimal("5000.00"), date=today)
         response = authenticated_client.get(url_helper("dashboard"))
         assert response.context["evolution_income"][-1] == 5000.0
@@ -782,7 +782,7 @@ class TestMonthlyEvolution:
         self, authenticated_client, url_helper, user, expense_factory, expense_category
     ):
         """Un gasto del mes actual aparece en el último elemento de evolution_expenses."""
-        today = timezone.now().date()
+        today = timezone.localdate()
         expense_factory(user, expense_category, amount=Decimal("1500.00"), date=today)
         response = authenticated_client.get(url_helper("dashboard"))
         assert response.context["evolution_expenses"][-1] == 1500.0
@@ -796,7 +796,7 @@ class TestMonthlyEvolution:
         income_factory,
     ):
         """Los datos de otro usuario no aparecen en la evolución."""
-        today = timezone.now().date()
+        today = timezone.localdate()
         other_cat = income_category_factory(other_user, name="OtherIncome")
         income_factory(other_user, other_cat, amount=Decimal("9999.00"), date=today)
         response = authenticated_client.get(url_helper("dashboard"))
@@ -806,7 +806,7 @@ class TestMonthlyEvolution:
         self, authenticated_client, url_helper, user, expense_factory, expense_category
     ):
         """Múltiples gastos en el mismo mes se suman correctamente."""
-        today = timezone.now().date()
+        today = timezone.localdate()
         expense_factory(user, expense_category, amount=Decimal("1000.00"), date=today)
         expense_factory(user, expense_category, amount=Decimal("500.00"), date=today)
         response = authenticated_client.get(url_helper("dashboard"))
@@ -911,7 +911,7 @@ class TestNextMonthCommitment:
         )
         expense_factory(user, expense_category, amount=Decimal("3000.00"), recurring=rec)
 
-        today = timezone.now().date()
+        today = timezone.localdate()
         prev_month = 12 if today.month == 1 else today.month - 1
         prev_year = today.year - 1 if today.month == 1 else today.year
 

@@ -27,7 +27,7 @@ class TestExpenseModel:
             amount=Decimal("1500.50"),
             currency=Currency.ARS,
             exchange_rate=Decimal("1.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         assert expense.pk is not None
@@ -44,7 +44,7 @@ class TestExpenseModel:
             amount=Decimal("100.00"),
             currency=Currency.USD,
             exchange_rate=Decimal("1150.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         assert expense.currency == Currency.USD
@@ -65,7 +65,7 @@ class TestExpenseModel:
             amount=Decimal("1500.50"),
             currency=Currency.ARS,
             exchange_rate=Decimal("1.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         formatted = expense.formatted_amount
@@ -111,7 +111,7 @@ class TestExpenseCalculations:
             amount=Decimal("50.00"),
             currency=Currency.USD,
             exchange_rate=Decimal("1200.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         assert expense.amount_ars == Decimal("60000.00")
@@ -125,7 +125,7 @@ class TestExpenseCalculations:
             amount=Decimal("5000.00"),
             currency=Currency.ARS,
             exchange_rate=Decimal("1.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         assert expense.amount_ars == Decimal("5000.00")
@@ -138,7 +138,7 @@ class TestExpenseCalculations:
             description="Test",
             amount=Decimal("100.00"),
             currency=Currency.ARS,
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         # El exchange_rate debería ser 1 para ARS o el default
@@ -225,7 +225,7 @@ class TestExpenseValidations:
             amount=Decimal("-100.00"),
             currency=Currency.ARS,
             exchange_rate=Decimal("1.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         with pytest.raises(ValidationError):
@@ -240,7 +240,7 @@ class TestExpenseValidations:
             amount=Decimal("0.00"),
             currency=Currency.ARS,
             exchange_rate=Decimal("1.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         with pytest.raises(ValidationError):
@@ -255,7 +255,7 @@ class TestExpenseValidations:
             amount=Decimal("100.00"),
             currency=Currency.USD,
             exchange_rate=None,
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         with pytest.raises((ValidationError, IntegrityError)):
@@ -271,7 +271,7 @@ class TestExpenseValidations:
     #         amount=Decimal('100.00'),
     #         currency=Currency.USD,
     #         exchange_rate=Decimal('0.00'),
-    #         date=timezone.now().date()
+    #         date=timezone.localdate()
     #     )
 
     #     with pytest.raises(ValidationError):
@@ -286,7 +286,7 @@ class TestExpenseValidations:
             amount=Decimal("100.00"),
             currency=Currency.ARS,
             exchange_rate=Decimal("1.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         # No debería lanzar error
@@ -304,7 +304,7 @@ class TestExpenseValidations:
             amount=Decimal("100.00"),
             currency=Currency.ARS,
             exchange_rate=Decimal("1.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
         # No debe lanzar ValidationError
         expense.full_clean()
@@ -319,7 +319,7 @@ class TestExpenseValidations:
                 amount=Decimal("100.00"),
                 currency=Currency.ARS,
                 exchange_rate=Decimal("1.00"),
-                date=timezone.now().date(),
+                date=timezone.localdate(),
             )
             expense.full_clean()
             expense.save()
@@ -338,7 +338,7 @@ class TestExpenseCategoryValidation:
             amount=Decimal("100.00"),
             currency=Currency.ARS,
             exchange_rate=Decimal("1.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         with pytest.raises(ValidationError) as exc_info:
@@ -355,7 +355,7 @@ class TestExpenseCategoryValidation:
             amount=Decimal("100.00"),
             currency=Currency.ARS,
             exchange_rate=Decimal("1.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         # No debe lanzar error
@@ -379,7 +379,7 @@ class TestExpenseCategoryValidation:
             amount=Decimal("100.00"),
             currency=Currency.ARS,
             exchange_rate=Decimal("1.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         expense.full_clean()

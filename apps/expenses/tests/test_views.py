@@ -51,7 +51,7 @@ class TestExpenseListView:
 
     def test_filter_by_month(self, authenticated_client, user, expense_category, expense_factory):
         """Verifica filtrado por mes."""
-        today = timezone.now().date()
+        today = timezone.localdate()
         expense_factory(user, expense_category, description="Este Mes", date=today)
 
         url = reverse("expenses:list")
@@ -120,7 +120,7 @@ class TestExpenseListView:
             expense_category,
             description="Gasto UX",
             amount=Decimal("500.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         url = reverse("expenses:list")
@@ -161,7 +161,7 @@ class TestExpenseCreateView:
             "description": "Nuevo Gasto",
             "amount": "1500.00",
             "currency": Currency.ARS,
-            "date": timezone.now().date().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
 
         response = authenticated_client.post(url, data)
@@ -178,7 +178,7 @@ class TestExpenseCreateView:
             "amount": "100.00",
             "currency": Currency.USD,
             "exchange_rate": "1150.00",
-            "date": timezone.now().date().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
 
         response = authenticated_client.post(url, data)
@@ -197,7 +197,7 @@ class TestExpenseCreateView:
             "description": "",
             "amount": "",  # Monto inválido
             "currency": Currency.ARS,
-            "date": timezone.now().date().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
 
         response = authenticated_client.post(url, data)
@@ -214,7 +214,7 @@ class TestExpenseCreateView:
             "description": "Mi Gasto",
             "amount": "500.00",
             "currency": Currency.ARS,
-            "date": timezone.now().date().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
 
         authenticated_client.post(url, data)
@@ -274,7 +274,7 @@ class TestExpenseCreateWithSaving:
             "description": "Gasto con ahorro",
             "amount": "1000.00",
             "currency": "ARS",
-            "date": timezone.now().date().isoformat(),
+            "date": timezone.localdate().isoformat(),
             "saving": saving.pk,
         }
         response = authenticated_client.post(url, data)
@@ -298,7 +298,7 @@ class TestExpenseCreateWithSaving:
             "description": "Gasto sin ahorro",
             "amount": "500.00",
             "currency": "ARS",
-            "date": timezone.now().date().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
         authenticated_client.post(url, data)
 
@@ -316,7 +316,7 @@ class TestExpenseCreateWithSaving:
             "description": "Gasto ajeno",
             "amount": "500.00",
             "currency": "ARS",
-            "date": timezone.now().date().isoformat(),
+            "date": timezone.localdate().isoformat(),
             "saving": other_saving.pk,
         }
         response = authenticated_client.post(url, data)
@@ -348,7 +348,7 @@ class TestExpenseUpdateWithSaving:
             amount=Decimal("1000.00"),
             currency="ARS",
             exchange_rate=Decimal("1"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
             saving=saving,
         )
         saving.add_deposit(Decimal("1000.00"), "depósito inicial")
@@ -360,7 +360,7 @@ class TestExpenseUpdateWithSaving:
             "description": "Gasto original",
             "amount": "1000.00",
             "currency": "ARS",
-            "date": timezone.now().date().isoformat(),
+            "date": timezone.localdate().isoformat(),
             "saving": saving.pk,
         }
         response = authenticated_client.post(url, data)
@@ -383,7 +383,7 @@ class TestExpenseUpdateWithSaving:
             amount=Decimal("1000.00"),
             currency="ARS",
             exchange_rate=Decimal("1"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
             saving=saving,
         )
         saving.add_deposit(Decimal("1000.00"), "depósito inicial")
@@ -396,7 +396,7 @@ class TestExpenseUpdateWithSaving:
             "description": "Gasto original",
             "amount": "1500.00",
             "currency": "ARS",
-            "date": timezone.now().date().isoformat(),
+            "date": timezone.localdate().isoformat(),
             "saving": saving.pk,
         }
         response = authenticated_client.post(url, data)
@@ -419,7 +419,7 @@ class TestExpenseUpdateWithSaving:
             amount=Decimal("1000.00"),
             currency="ARS",
             exchange_rate=Decimal("1"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
             saving=saving,
         )
         saving.add_deposit(Decimal("1000.00"), "depósito inicial")
@@ -432,7 +432,7 @@ class TestExpenseUpdateWithSaving:
             "description": "Gasto original",
             "amount": "1000.00",
             "currency": "ARS",
-            "date": timezone.now().date().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
         response = authenticated_client.post(url, data)
 
@@ -455,7 +455,7 @@ class TestExpenseUpdateWithSaving:
             amount=Decimal("1000.00"),
             currency="ARS",
             exchange_rate=Decimal("1"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
             saving=saving_a,
         )
         saving_a.add_deposit(Decimal("1000.00"), "depósito inicial")
@@ -470,7 +470,7 @@ class TestExpenseUpdateWithSaving:
             "description": "Gasto original",
             "amount": "1000.00",
             "currency": "ARS",
-            "date": timezone.now().date().isoformat(),
+            "date": timezone.localdate().isoformat(),
             "saving": saving_b.pk,
         }
         response = authenticated_client.post(url, data)
@@ -493,7 +493,7 @@ class TestExpenseCreateMessages:
             "description": "Gasto Toast",
             "amount": "999.00",
             "currency": Currency.ARS,
-            "date": timezone.now().date().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
 
         response = authenticated_client.post(url, data, follow=True)
@@ -510,7 +510,7 @@ class TestExpenseCreateMessages:
             "description": "Inválido",
             "amount": "",
             "currency": Currency.ARS,
-            "date": timezone.now().date().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
 
         response = authenticated_client.post(url, data, follow=True)
@@ -839,7 +839,7 @@ class TestExpenseViewRedirects:
             "description": "Nuevo Gasto",
             "amount": "1500.00",
             "currency": Currency.ARS,
-            "date": timezone.now().date().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
 
         response = authenticated_client.post(url, data)
@@ -988,7 +988,7 @@ class TestExpenseListViewOrdering:
 
         from django.utils import timezone
 
-        today = timezone.now().date()
+        today = timezone.localdate()
 
         # Crear gastos en el mismo día
         expense_factory(user, expense_category, date=today, description="Gasto A")
@@ -1197,7 +1197,7 @@ class TestExpenseCreateWithRecurring:
             "description": "Edenor",
             "amount": "5000.00",
             "currency": "ARS",
-            "date": timezone.now().date().isoformat(),
+            "date": timezone.localdate().isoformat(),
             "recurring": recurring.pk,
         }
         response = authenticated_client.post(url, data)
@@ -1209,7 +1209,7 @@ class TestExpenseCreateWithRecurring:
     def test_recurring_status_becomes_paid_after_expense(
         self, authenticated_client, user, expense_category, recurring
     ):
-        today = timezone.now().date()
+        today = timezone.localdate()
         url = reverse("expenses:create")
         data = {
             "category": expense_category.pk,
@@ -1232,7 +1232,7 @@ class TestExpenseCreateWithRecurring:
             "description": "Edenor",
             "amount": "5000.00",
             "currency": "ARS",
-            "date": timezone.now().date().isoformat(),
+            "date": timezone.localdate().isoformat(),
             "recurring": recurring.pk,
         }
         response = authenticated_client.post(url, data, follow=True)

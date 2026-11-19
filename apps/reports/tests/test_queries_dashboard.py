@@ -30,7 +30,7 @@ class TestDashboardQueries:
         exp_cat = expense_category_factory(user, name="Cat Expense 1")
         inc_cat = income_category_factory(user, name="Cat Income 1")
 
-        today = timezone.now().date()
+        today = timezone.localdate()
 
         expense_factory(user, exp_cat, amount=Decimal("10.00"), date=today)
         income_factory(user, inc_cat, amount=Decimal("20.00"), date=today)

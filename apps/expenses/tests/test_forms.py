@@ -24,7 +24,7 @@ class TestExpenseForm:
                 "description": "Compra supermercado",
                 "amount": "1500.50",
                 "currency": Currency.ARS,
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -40,7 +40,7 @@ class TestExpenseForm:
                 "amount": "100.00",
                 "currency": Currency.USD,
                 "exchange_rate": "1150.00",
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -54,7 +54,7 @@ class TestExpenseForm:
                 "description": "Test",
                 "amount": "100.00",
                 "currency": Currency.ARS,
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -70,7 +70,7 @@ class TestExpenseForm:
                 "description": "",
                 "amount": "100.00",
                 "currency": Currency.ARS,
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -85,7 +85,7 @@ class TestExpenseForm:
                 "description": "Test",
                 "amount": "",
                 "currency": Currency.ARS,
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -117,7 +117,7 @@ class TestExpenseForm:
                 "description": "Test",
                 "amount": "-100.00",
                 "currency": Currency.ARS,
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -133,7 +133,7 @@ class TestExpenseForm:
                 "description": "Test",
                 "amount": "0",
                 "currency": Currency.ARS,
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -150,7 +150,7 @@ class TestExpenseForm:
                 "amount": "100.00",
                 "currency": Currency.USD,
                 "exchange_rate": "",
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -167,7 +167,7 @@ class TestExpenseForm:
                 "amount": "100.00",
                 "currency": Currency.USD,
                 "exchange_rate": "0",
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -184,7 +184,7 @@ class TestExpenseForm:
                 "amount": "100.00",
                 "currency": Currency.ARS,
                 "exchange_rate": "",  # No es requerido para ARS
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -256,7 +256,7 @@ class TestExpenseFormSave:
                 "description": "Nuevo gasto",
                 "amount": "500.00",
                 "currency": Currency.ARS,
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -280,7 +280,7 @@ class TestExpenseFormSave:
                 "amount": "100.00",
                 "currency": Currency.USD,
                 "exchange_rate": "1000.00",
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -306,7 +306,7 @@ class TestExpenseFormCategoryValidation:
                 "description": "Intento con categoría incorrecta",
                 "amount": "100.00",
                 "currency": Currency.ARS,
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -327,7 +327,7 @@ class TestExpenseFormCategoryValidation:
                 "description": "Gasto válido",
                 "amount": "100.00",
                 "currency": Currency.ARS,
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -357,7 +357,7 @@ class TestExpenseFormExchangeRate:
                 "amount": "1000.00",
                 "currency": Currency.ARS,
                 "exchange_rate": "999.00",  # Valor que debería ser ignorado
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -380,7 +380,7 @@ class TestExpenseFormExchangeRate:
                 "amount": "100.00",
                 "currency": Currency.USD,
                 "exchange_rate": "1150.50",
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -402,7 +402,7 @@ class TestExpenseFormExchangeRate:
                 "amount": "100.00",
                 "currency": Currency.USD,
                 "exchange_rate": "1200.00",
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -454,7 +454,7 @@ class TestExpenseFormCleanedData:
                 "description": "  Descripción con espacios  ",
                 "amount": "100.00",
                 "currency": Currency.ARS,
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -485,7 +485,7 @@ class TestExpenseFormInitialValues:
         """Verifica que fecha por defecto sea hoy."""
         form = ExpenseForm(user=user)
 
-        today = timezone.now().date()
+        today = timezone.localdate()
 
         if "date" in form.initial:
             assert form.initial["date"] == today

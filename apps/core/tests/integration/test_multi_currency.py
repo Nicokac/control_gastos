@@ -2,10 +2,10 @@
 Tests de integraciÃ³n para escenarios multi-moneda.
 """
 
-from datetime import date
 from decimal import Decimal
 
 from django.urls import reverse
+from django.utils import timezone
 
 import pytest
 
@@ -28,7 +28,7 @@ class TestMultiCurrencyExpenses:
             "description": "Gasto ARS",
             "amount": "1000.00",
             "currency": Currency.ARS,
-            "date": date.today().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
 
         authenticated_client.post(create_url, data)
@@ -46,7 +46,7 @@ class TestMultiCurrencyExpenses:
             "amount": "100.00",
             "currency": Currency.USD,
             "exchange_rate": "1150.50",
-            "date": date.today().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
 
         authenticated_client.post(create_url, data)
@@ -72,7 +72,7 @@ class TestMultiCurrencyIncome:
             "description": "Sueldo ARS",
             "amount": "150000.00",
             "currency": Currency.ARS,
-            "date": date.today().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
 
         authenticated_client.post(create_url, data)
@@ -90,7 +90,7 @@ class TestMultiCurrencyIncome:
             "amount": "1000.00",
             "currency": Currency.USD,
             "exchange_rate": "1200.00",
-            "date": date.today().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
 
         authenticated_client.post(create_url, data)

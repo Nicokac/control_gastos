@@ -130,7 +130,7 @@ class TestIncomeCreateWithRecurring:
             "description": "Sueldo fijo",
             "amount": "100000.00",
             "currency": Currency.ARS,
-            "date": timezone.now().date().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
         response = authenticated_client.post(url + f"?recurring={recurring_income_obj.pk}", data)
 
@@ -147,7 +147,7 @@ class TestIncomeCreateWithRecurring:
             "description": "Sueldo via recurrente",
             "amount": "80000.00",
             "currency": Currency.ARS,
-            "date": timezone.now().date().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
         response = authenticated_client.post(url + f"?recurring={recurring_income_obj.pk}", data)
 

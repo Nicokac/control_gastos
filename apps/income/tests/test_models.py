@@ -28,7 +28,7 @@ class TestIncomeModel:
             amount=Decimal("150000.00"),
             currency=Currency.ARS,
             exchange_rate=Decimal("1.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         assert income.pk is not None
@@ -45,7 +45,7 @@ class TestIncomeModel:
             amount=Decimal("500.00"),
             currency=Currency.USD,
             exchange_rate=Decimal("1150.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         assert income.currency == Currency.USD
@@ -66,7 +66,7 @@ class TestIncomeModel:
             amount=Decimal("50000.00"),
             currency=Currency.ARS,
             exchange_rate=Decimal("1.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         formatted = income.formatted_amount
@@ -95,7 +95,7 @@ class TestIncomeCalculations:
             amount=Decimal("100.00"),
             currency=Currency.USD,
             exchange_rate=Decimal("1200.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         assert income.amount_ars == Decimal("120000.00")
@@ -109,7 +109,7 @@ class TestIncomeCalculations:
             amount=Decimal("80000.00"),
             currency=Currency.ARS,
             exchange_rate=Decimal("1.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         assert income.amount_ars == Decimal("80000.00")
@@ -166,7 +166,7 @@ class TestIncomeValidations:
             amount=Decimal("-100.00"),
             currency=Currency.ARS,
             exchange_rate=Decimal("1.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         with pytest.raises(ValidationError):
@@ -181,7 +181,7 @@ class TestIncomeValidations:
             amount=Decimal("0.00"),
             currency=Currency.ARS,
             exchange_rate=Decimal("1.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         with pytest.raises(ValidationError):
@@ -196,7 +196,7 @@ class TestIncomeValidations:
             amount=Decimal("100.00"),
             currency=Currency.USD,
             exchange_rate=None,
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         with pytest.raises((ValidationError, IntegrityError)):
@@ -212,7 +212,7 @@ class TestIncomeValidations:
     #         amount=Decimal('100.00'),
     #         currency=Currency.USD,
     #         exchange_rate=Decimal('0.00'),
-    #         date=timezone.now().date()
+    #         date=timezone.localdate()
     #     )
 
     #     with pytest.raises(ValidationError):
@@ -227,7 +227,7 @@ class TestIncomeValidations:
             amount=Decimal("100.00"),
             currency=Currency.ARS,
             exchange_rate=Decimal("1.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         # No debería lanzar error
@@ -245,7 +245,7 @@ class TestIncomeValidations:
             amount=Decimal("100.00"),
             currency=Currency.ARS,
             exchange_rate=Decimal("1.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         income.full_clean()
@@ -264,7 +264,7 @@ class TestIncomeCategoryValidation:
             amount=Decimal("100.00"),
             currency=Currency.ARS,
             exchange_rate=Decimal("1.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         with pytest.raises(ValidationError) as exc_info:
@@ -281,7 +281,7 @@ class TestIncomeCategoryValidation:
             amount=Decimal("100.00"),
             currency=Currency.ARS,
             exchange_rate=Decimal("1.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         income.full_clean()
@@ -301,7 +301,7 @@ class TestIncomeCategoryValidation:
             amount=Decimal("100.00"),
             currency=Currency.ARS,
             exchange_rate=Decimal("1.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         # Ejecutar SOLO la validación custom del modelo

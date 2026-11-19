@@ -120,13 +120,13 @@ def last_month(today):
 @pytest.fixture
 def current_month():
     """Retorna el mes actual."""
-    return timezone.now().month
+    return timezone.localdate().month
 
 
 @pytest.fixture
 def current_year():
     """Retorna el año actual."""
-    return timezone.now().year
+    return timezone.localdate().year
 
 
 # =============================================================================
@@ -403,7 +403,7 @@ def saving_movement_factory(db):
             "saving": saving,
             "type": movement_type,
             "amount": Decimal("1000.00"),
-            "date": timezone.now().date(),
+            "date": timezone.localdate(),
             # 'notes': 'Movimiento de prueba',  # ELIMINAR - Campo no existe
         }
         defaults.update(kwargs)

@@ -3,10 +3,10 @@ Tests de journey completo de usuario.
 Simula el flujo real que seguirÃ­a un usuario nuevo en la aplicaciÃ³n.
 """
 
-from datetime import date
 from decimal import Decimal
 
 from django.urls import reverse
+from django.utils import timezone
 
 import pytest
 
@@ -32,7 +32,7 @@ class TestNewUserJourney:
         3. Editar gasto
         4. Eliminar gasto
         """
-        today = date.today()
+        today = timezone.localdate()
 
         # Crear grupo primero
         group = Category.objects.create(
@@ -111,7 +111,7 @@ class TestNewUserJourney:
         2. Registrar ingresos (ARS y USD)
         3. Verificar totales
         """
-        today = date.today()
+        today = timezone.localdate()
 
         # Crear grupo primero
         group = Category.objects.create(

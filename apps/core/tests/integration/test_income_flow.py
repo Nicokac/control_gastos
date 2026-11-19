@@ -2,11 +2,11 @@
 Tests de integración para el flujo completo de ingresos.
 """
 
-from datetime import date
 from decimal import Decimal
 
 from django.db import models
 from django.urls import reverse
+from django.utils import timezone
 
 import pytest
 
@@ -29,7 +29,7 @@ class TestIncomeCreationFlow:
             "description": "Sueldo Diciembre",
             "amount": "150000.00",
             "currency": Currency.ARS,
-            "date": date.today().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
 
         response = authenticated_client.post(create_url, data)
@@ -56,7 +56,7 @@ class TestIncomeCreationFlow:
             "description": "Ingreso Original",
             "amount": "50000.00",
             "currency": Currency.ARS,
-            "date": date.today().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
 
         authenticated_client.post(create_url, data)
@@ -90,7 +90,7 @@ class TestIncomeCreationFlow:
             "amount": "500.00",
             "currency": Currency.USD,
             "exchange_rate": "1200.00",
-            "date": date.today().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
 
         response = authenticated_client.post(create_url, data)
@@ -119,7 +119,7 @@ class TestIncomeBalanceCalculation:
                 "description": f"Ingreso {i + 1}",
                 "amount": amount,
                 "currency": Currency.ARS,
-                "date": date.today().isoformat(),
+                "date": timezone.localdate().isoformat(),
             }
             authenticated_client.post(create_url, data)
 

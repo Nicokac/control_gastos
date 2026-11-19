@@ -81,7 +81,7 @@ class TestDashboardView:
         income_factory,
     ):
         """Verifica que muestre datos del mes actual."""
-        today = timezone.now().date()
+        today = timezone.localdate()
 
         expense_factory(
             user,

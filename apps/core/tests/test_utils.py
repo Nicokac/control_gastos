@@ -32,7 +32,7 @@ class TestGetCurrentMonthYear:
     def test_returns_current_month(self):
         """Verifica que retorne el mes actual."""
         month, year = get_current_month_year()
-        today = timezone.now().date()
+        today = timezone.localdate()
         assert month == today.month
         assert year == today.year
 
@@ -159,7 +159,7 @@ class TestGetYearsChoices:
 
     def test_contains_current_year(self):
         """Verifica que contenga el año actual."""
-        current_year = timezone.now().year
+        current_year = timezone.localdate().year
         years = [y[0] for y in get_years_choices()]
         assert current_year in years
 

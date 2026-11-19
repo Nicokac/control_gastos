@@ -3,7 +3,6 @@ Tests de integración del Dashboard.
 Verifica que el dashboard muestre datos correctos después de operaciones.
 """
 
-from datetime import date
 from decimal import Decimal
 
 from django.urls import NoReverseMatch, reverse
@@ -68,7 +67,7 @@ class TestDashboardDataIntegration:
         if url is None:
             pytest.skip("Dashboard URL not configured")
 
-        today = timezone.now().date()
+        today = timezone.localdate()
 
         Expense.objects.create(
             user=user,
@@ -92,7 +91,7 @@ class TestDashboardDataIntegration:
         if url is None:
             pytest.skip("Dashboard URL not configured")
 
-        today = timezone.now().date()
+        today = timezone.localdate()
 
         Income.objects.create(
             user=user,
@@ -135,7 +134,7 @@ class TestDashboardAfterOperations:
         if url is None:
             pytest.skip("Dashboard URL not configured")
 
-        today = timezone.now().date()
+        today = timezone.localdate()
 
         expense = Expense.objects.create(
             user=user,
@@ -166,7 +165,7 @@ class TestDashboardAfterOperations:
         if url is None:
             pytest.skip("Dashboard URL not configured")
 
-        today = date.today()
+        today = timezone.localdate()
 
         expense = Expense.objects.create(
             user=user,
@@ -209,7 +208,7 @@ class TestDashboardMultiUserIsolation:
         if url is None:
             pytest.skip("Dashboard URL not configured")
 
-        today = date.today()
+        today = timezone.localdate()
 
         other_expense_cat = expense_category_factory(other_user, name="Otra Cat Expense")
         other_income_cat = income_category_factory(other_user, name="Otra Cat Income")
@@ -257,7 +256,7 @@ class TestDashboardProjection:
         if url is None:
             pytest.skip("Dashboard URL not configured")
 
-        today = timezone.now().date()
+        today = timezone.localdate()
         if today.day <= 3:
             pytest.skip("La proyección requiere al menos 3 días transcurridos en el mes")
 
@@ -291,7 +290,7 @@ class TestDashboardProjection:
         if url is None:
             pytest.skip("Dashboard URL not configured")
 
-        today = timezone.now().date()
+        today = timezone.localdate()
         Income.objects.create(
             user=user,
             category=income_category,

@@ -24,7 +24,7 @@ class TestExpenseListContext:
             user,
             cat,
             amount=Decimal("100.00"),
-            date=timezone.now().date(),
+            date=timezone.localdate(),
         )
 
         response = client.get(reverse("expenses:list"))

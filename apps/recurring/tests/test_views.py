@@ -1,6 +1,7 @@
 """Tests para las vistas de RecurringExpense."""
 
 from django.urls import reverse
+from django.utils import timezone
 
 import pytest
 
@@ -257,11 +258,10 @@ class TestRecurringEstimatedAmount:
     def test_list_prefers_real_payment_over_estimate(
         self, authenticated_client, user, recurring, expense_factory
     ):
-        from datetime import date
 
         recurring.estimated_amount = 1000
         recurring.save()
-        expense = expense_factory(user, recurring.category, date=date.today())
+        expense = expense_factory(user, recurring.category, date=timezone.localdate())
         expense.recurring = recurring
         expense.amount = 5000
         expense.save()

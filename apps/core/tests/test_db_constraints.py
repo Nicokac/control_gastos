@@ -21,7 +21,7 @@ class TestDbConstraints:
         e = Expense.objects.create(
             user=user,
             category=cat,
-            date=timezone.now().date(),
+            date=timezone.localdate(),
             amount=Decimal("1.00"),
             description="TEST_EXPENSE_OK",
         )
@@ -34,7 +34,7 @@ class TestDbConstraints:
         i = Income.objects.create(
             user=user,
             category=cat,
-            date=timezone.now().date(),
+            date=timezone.localdate(),
             amount=Decimal("1.00"),
             description="TEST_INCOME_OK",
         )

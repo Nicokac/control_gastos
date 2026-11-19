@@ -24,7 +24,7 @@ class TestIncomeForm:
                 "description": "Sueldo mensual",
                 "amount": "150000.00",
                 "currency": Currency.ARS,
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -40,7 +40,7 @@ class TestIncomeForm:
                 "amount": "500.00",
                 "currency": Currency.USD,
                 "exchange_rate": "1150.00",
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -54,7 +54,7 @@ class TestIncomeForm:
                 "description": "Test",
                 "amount": "100.00",
                 "currency": Currency.ARS,
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -70,7 +70,7 @@ class TestIncomeForm:
                 "description": "",
                 "amount": "100.00",
                 "currency": Currency.ARS,
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -85,7 +85,7 @@ class TestIncomeForm:
                 "description": "Test",
                 "amount": "",
                 "currency": Currency.ARS,
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -117,7 +117,7 @@ class TestIncomeForm:
                 "description": "Test",
                 "amount": "-100.00",
                 "currency": Currency.ARS,
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -133,7 +133,7 @@ class TestIncomeForm:
                 "description": "Test",
                 "amount": "0",
                 "currency": Currency.ARS,
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -150,7 +150,7 @@ class TestIncomeForm:
                 "amount": "100.00",
                 "currency": Currency.USD,
                 "exchange_rate": "",
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -166,7 +166,7 @@ class TestIncomeForm:
                 "description": "Ingreso ARS",
                 "amount": "100.00",
                 "currency": Currency.ARS,
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -212,7 +212,7 @@ class TestIncomeFormSave:
                 "description": "Nuevo ingreso",
                 "amount": "50000.00",
                 "currency": Currency.ARS,
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -236,7 +236,7 @@ class TestIncomeFormSave:
                 "amount": "500.00",
                 "currency": Currency.USD,
                 "exchange_rate": "1200.00",
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -262,7 +262,7 @@ class TestIncomeFormCategoryValidation:
                 "description": "Intento con categoría incorrecta",
                 "amount": "100.00",
                 "currency": Currency.ARS,
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -282,7 +282,7 @@ class TestIncomeFormCategoryValidation:
                 "description": "Ingreso válido",
                 "amount": "100.00",
                 "currency": Currency.ARS,
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -312,7 +312,7 @@ class TestIncomeFormExchangeRate:
                 "amount": "150000.00",
                 "currency": Currency.ARS,
                 "exchange_rate": "999.00",  # Debería ser ignorado
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )
@@ -334,7 +334,7 @@ class TestIncomeFormExchangeRate:
                 "amount": "500.00",
                 "currency": Currency.USD,
                 "exchange_rate": "1180.00",
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             user=user,
         )

@@ -975,7 +975,7 @@ Hoy el card "Gastos Fijos" del dashboard (web y mobile) lista los ítems pendien
 
 ### DT-064 — Tests de expenses/income con fecha UTC en vez de localdate
 
-**Estado:** 🟡 Parcialmente resuelto
+**Estado:** ✅ Resuelto (sin versión web: solo tests)
 
 `conftest.py` (`expense_factory`, `income_factory`) y varios tests en `apps/expenses/tests/test_views.py` usaban `timezone.now().date()` para fechar gastos/ingresos de prueba. Como `timezone.now()` devuelve UTC y Argentina es UTC-3, cualquier test corrido entre las 21:00 y las 23:59 hora local construye una fecha que ya es "mañana" en UTC — un día que puede caer fuera del mes actual real si se corre cerca de fin de mes, haciendo fallar los tests que dependen del filtro de "mes actual" de `ExpenseListView` (`timezone.localdate()`).
 
@@ -984,6 +984,8 @@ Hoy el card "Gastos Fijos" del dashboard (web y mobile) lista los ítems pendien
 **Resolución aplicada:** `expense_factory` e `income_factory` en `conftest.py` ahora usan `timezone.localdate()` como default. Los 2 call-sites de `test_views.py` que fallaron (`test_list_shows_total_period_summary`, `test_list_builds_payment_method_summary`) se corrigieron puntualmente.
 
 **Pendiente:** quedan ~20 ocurrencias más de `timezone.now().date()` en `apps/expenses/tests/test_views.py` (la mayoría usa la fecha como valor arbitrario dentro del mismo test, sin depender de un filtro de mes — bajo riesgo real, pero mismo antipatrón). No se tocaron todas para no hacer un refactor grande fuera del alcance de la tarea que detectó el bug. Si vuelve a aparecer un fallo nocturno similar, candidato a limpiar todas de una vez.
+
+**Resolución final (2026-11-19):** eran unas 160 ocurrencias en 24 archivos de tests, más `date.today()` en los tests de integración (en Linux coincide con la hora de Buenos Aires porque Django fija `TZ`, pero en Windows depende del sistema) y el fixture `current_month` con `timezone.now().month`. Se reemplazaron todas por `timezone.localdate()`. Para que no vuelva, `apps/core/tests/test_dates_in_tests.py` recorre `conftest.py` y los tests de `apps/` y falla si encuentra `timezone.now().date()`, `.year`/`.month`/`.day` sobre `timezone.now()`, `date.today()` o `datetime.today()`. Se verificó corriendo la suite completa con `django.utils.timezone.now` fijado en el 30/11 a las 23:30 de Argentina (ya 1/12 en UTC), con un plugin de pytest temporal que no quedó en el repo.
 
 ---
 

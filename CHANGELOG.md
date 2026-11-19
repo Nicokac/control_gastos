@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **Tests que fallaban de noche (DT-064)**: unos 160 tests fechaban los datos con `timezone.now().date()` (UTC) o `date.today()` (hora del sistema). Entre las 21 y las 24 hs de Argentina la fecha UTC ya es el día siguiente, y cerca de fin de mes los gastos de prueba caían fuera del "mes actual". Ahora usan `timezone.localdate()`, y `test_dates_in_tests.py` falla si vuelve a aparecer el patrón.
+
+---
+
 ## [Mobile 1.29.1+40] — 2026-11-17
 
 ### Fixed

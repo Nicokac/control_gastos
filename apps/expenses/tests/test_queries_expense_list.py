@@ -18,7 +18,7 @@ def test_expense_list_query_count_is_stable_requestfactory(
 ):
     # Arrange
     cat = expense_category_factory(user, name="Cat 1")
-    expense_factory(user, cat, amount=Decimal("10.00"), date=timezone.now().date())
+    expense_factory(user, cat, amount=Decimal("10.00"), date=timezone.localdate())
 
     rf = RequestFactory()
     request = rf.get(reverse("expenses:list"))

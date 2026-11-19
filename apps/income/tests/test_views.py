@@ -76,7 +76,7 @@ class TestIncomeCreateView:
             "description": "Nuevo Ingreso",
             "amount": "50000.00",
             "currency": Currency.ARS,
-            "date": timezone.now().date().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
 
         response = authenticated_client.post(url, data)
@@ -93,7 +93,7 @@ class TestIncomeCreateView:
             "amount": "500.00",
             "currency": Currency.USD,
             "exchange_rate": "1200.00",
-            "date": timezone.now().date().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
 
         response = authenticated_client.post(url, data)
@@ -111,7 +111,7 @@ class TestIncomeCreateView:
             "description": "Mi Ingreso",
             "amount": "100000.00",
             "currency": Currency.ARS,
-            "date": timezone.now().date().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
 
         authenticated_client.post(url, data)
@@ -127,7 +127,7 @@ class TestIncomeCreateView:
             "description": "Ingreso inválido",
             "amount": "",
             "currency": Currency.ARS,
-            "date": timezone.now().date().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
 
         response = authenticated_client.post(url, data, follow=True)
@@ -146,7 +146,7 @@ class TestIncomeCreateView:
             "description": "Ingreso con mensaje",
             "amount": "1234.00",
             "currency": Currency.ARS,
-            "date": timezone.now().date().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
 
         response = authenticated_client.post(url, data, follow=True)
@@ -333,7 +333,7 @@ class TestIncomeListViewOrdering:
     def test_list_context_includes_total_and_current_period(
         self, authenticated_client, user, income_category, income_factory
     ):
-        today = timezone.now().date()
+        today = timezone.localdate()
         income_factory(user, income_category, amount="1000.00", date=today)
         income_factory(user, income_category, amount="2500.00", date=today)
 

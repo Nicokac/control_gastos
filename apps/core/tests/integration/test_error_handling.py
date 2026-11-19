@@ -3,9 +3,10 @@ Tests de manejo de errores en flujos de integraciÃ³n.
 Verifica que el sistema maneje correctamente situaciones de error.
 """
 
-from datetime import date, timedelta
+from datetime import timedelta
 
 from django.urls import reverse
+from django.utils import timezone
 
 import pytest
 
@@ -28,7 +29,7 @@ class TestExpenseErrorHandling:
             "description": "Gasto con categorÃ­a invÃ¡lida",
             "amount": "1000.00",
             "currency": Currency.ARS,
-            "date": date.today().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
 
         response = authenticated_client.post(create_url, data)
@@ -48,7 +49,7 @@ class TestExpenseErrorHandling:
             "description": "Gasto negativo",
             "amount": "-500.00",
             "currency": Currency.ARS,
-            "date": date.today().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
 
         response = authenticated_client.post(create_url, data)
@@ -62,7 +63,7 @@ class TestExpenseErrorHandling:
     ):
         """Verifica error con fecha futura."""
         create_url = reverse("expenses:create")
-        future_date = date.today() + timedelta(days=30)
+        future_date = timezone.localdate() + timedelta(days=30)
 
         data = {
             "category": expense_category.pk,
@@ -87,7 +88,7 @@ class TestExpenseErrorHandling:
             "description": "Gasto USD sin TC",
             "amount": "100.00",
             "currency": Currency.USD,
-            "date": date.today().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
 
         response = authenticated_client.post(create_url, data)
@@ -105,7 +106,7 @@ class TestExpenseErrorHandling:
             "description": "",
             "amount": "1000.00",
             "currency": Currency.ARS,
-            "date": date.today().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
         response = authenticated_client.post(create_url, data)
 
@@ -229,7 +230,7 @@ class TestAuthenticationErrorHandling:
             "description": "Intento sin login",
             "amount": "1000.00",
             "currency": Currency.ARS,
-            "date": date.today().isoformat(),
+            "date": timezone.localdate().isoformat(),
         }
 
         response = client.post(create_url, data)

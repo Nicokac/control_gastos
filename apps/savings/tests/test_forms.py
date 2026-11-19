@@ -21,7 +21,7 @@ class TestSavingForm:
             data={
                 "name": "Vacaciones",
                 "target_amount": "50000.00",
-                "target_date": (timezone.now().date().replace(year=timezone.now().year + 1)),
+                "target_date": (timezone.localdate().replace(year=timezone.localdate().year + 1)),
                 "currency": "ARS",
                 "icon": "bi-piggy-bank",
                 "color": "#28a745",
@@ -224,7 +224,7 @@ class TestSavingMovementForm:
             data={
                 "type": "DEPOSIT",
                 "amount": "1000.00",
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             saving=saving,
         )
@@ -237,7 +237,7 @@ class TestSavingMovementForm:
             data={
                 "type": "WITHDRAWAL",
                 "amount": "1000.00",
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             saving=saving_with_progress,
         )
@@ -250,7 +250,7 @@ class TestSavingMovementForm:
             data={
                 "type": "DEPOSIT",
                 "amount": "",
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             saving=saving,
         )
@@ -264,7 +264,7 @@ class TestSavingMovementForm:
             data={
                 "type": "DEPOSIT",
                 "amount": "-1000.00",
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             saving=saving,
         )
@@ -279,7 +279,7 @@ class TestSavingMovementForm:
             data={
                 "type": "WITHDRAWAL",
                 "amount": "10000.00",  # Más que el saldo
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             saving=saving_with_progress,
         )
@@ -293,7 +293,7 @@ class TestSavingMovementForm:
             data={
                 "type": "WITHDRAWAL",
                 "amount": "100.00",
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             saving=saving,  # current_amount = 0
         )
@@ -309,7 +309,7 @@ class TestSavingMovementForm:
             data={
                 "type": "DEPOSIT",
                 "amount": "5000.00",
-                "date": timezone.now().date(),
+                "date": timezone.localdate(),
             },
             saving=saving,
         )
@@ -330,7 +330,7 @@ class TestSavingFormCleanedData:
         """Verifica tipos correctos en cleaned_data."""
         from datetime import date
 
-        future_date = timezone.now().date().replace(year=timezone.now().year + 1)
+        future_date = timezone.localdate().replace(year=timezone.localdate().year + 1)
 
         form = SavingForm(
             data={
