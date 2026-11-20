@@ -13,7 +13,7 @@ from apps.api.v1.views.auth import (
     PasswordResetRequestView,
     RegisterView,
 )
-from apps.api.v1.views.categories import CategoryViewSet
+from apps.api.v1.views.categories import CategoryRuleViewSet, CategoryViewSet
 from apps.api.v1.views.dashboard import DashboardView
 from apps.api.v1.views.expenses import ExpenseViewSet
 from apps.api.v1.views.feedback import FeedbackView
@@ -33,6 +33,7 @@ from apps.api.v1.views.shared_expenses import HouseholdMemberViewSet, SharedExpe
 
 router = DefaultRouter()
 router.register(r"categories", CategoryViewSet, basename="category")
+router.register(r"category-rules", CategoryRuleViewSet, basename="category-rule")
 router.register(r"expenses", ExpenseViewSet, basename="expense")
 router.register(r"income", IncomeViewSet, basename="income")
 router.register(r"savings", SavingViewSet, basename="saving")

@@ -5,9 +5,26 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.api.v1.pagination import ConfigurablePageNumberPagination
-from apps.api.v1.serializers.categories import CategorySerializer
-from apps.categories.models import Category, CategoryOverride
+from apps.api.v1.serializers.categories import CategoryRuleSerializer, CategorySerializer
+from apps.categories.models import Category, CategoryOverride, CategoryRule
 from apps.core.constants import CategoryType
+
+
+class CategoryRuleViewSet(viewsets.ModelViewSet):
+    """Reglas de categorización del usuario (la pantalla Reglas de la web)."""
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = CategoryRuleSerializer
+    pagination_class = ConfigurablePageNumberPagination
+
+    def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return CategoryRule.objects.none()
+        return (
+            CategoryRule.objects.filter(user=self.request.user)
+            .select_related("category__parent")
+            .order_by("pattern")
+        )
 
 
 class CategoryViewSet(viewsets.ModelViewSet):

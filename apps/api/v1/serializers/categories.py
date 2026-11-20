@@ -1,7 +1,41 @@
 from rest_framework import serializers
 
-from apps.categories.models import Category
+from apps.categories.models import Category, CategoryRule
+from apps.categories.rules import normalize_text
 from apps.core.constants import CategoryType
+
+
+class CategoryRuleSerializer(serializers.ModelSerializer):
+    """Mismas validaciones que CategoryRuleForm (web)."""
+
+    category_name = serializers.CharField(source="category.name", read_only=True)
+    group_name = serializers.CharField(source="category.parent.name", read_only=True)
+
+    class Meta:
+        model = CategoryRule
+        fields = ["id", "pattern", "category", "category_name", "group_name"]
+        read_only_fields = ["id"]
+
+    def validate_pattern(self, value):
+        pattern = normalize_text(value)
+        if not pattern:
+            raise serializers.ValidationError("Escribí al menos una palabra.")
+        duplicates = CategoryRule.objects.filter(user=self.context["request"].user, pattern=pattern)
+        if self.instance:
+            duplicates = duplicates.exclude(pk=self.instance.pk)
+        if duplicates.exists():
+            raise serializers.ValidationError("Ya tenés una regla con ese texto.")
+        return pattern
+
+    def validate_category(self, category):
+        user = self.context["request"].user
+        if not Category.get_expense_categories(user).filter(pk=category.pk).exists():
+            raise serializers.ValidationError("Elegí una subcategoría de gasto.")
+        return category
+
+    def create(self, validated_data):
+        validated_data["user"] = self.context["request"].user
+        return super().create(validated_data)
 
 
 class CategoryGroupSerializer(serializers.ModelSerializer):

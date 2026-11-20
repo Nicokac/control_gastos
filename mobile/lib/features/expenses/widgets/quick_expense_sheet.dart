@@ -35,6 +35,54 @@ List<({Map<String, dynamic> group, List<Map<String, dynamic>> subcategories})>
   ].where((g) => g.subcategories.isNotEmpty).toList();
 }
 
+/// Selector de subcategoría de gasto agrupado; devuelve el id elegido o null.
+Future<int?> pickExpenseCategory(
+  BuildContext context,
+  List<dynamic> categories, {
+  int? selectedId,
+}) {
+  final groups = groupExpenseCategories(categories);
+  return showModalBottomSheet<int>(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    builder: (ctx) => DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      minChildSize: 0.3,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (ctx, scrollCtrl) => ListView(
+        controller: scrollCtrl,
+        children: [
+          const Padding(
+            padding: EdgeInsets.all(16),
+            child: Text(
+              'Categoría',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+          for (final g in groups) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+              child: Text(
+                g.group['name'] as String,
+                style: Theme.of(ctx).textTheme.labelLarge,
+              ),
+            ),
+            for (final sub in g.subcategories)
+              ListTile(
+                title: Text(sub['name'] as String),
+                trailing:
+                    sub['id'] == selectedId ? const Icon(Icons.check) : null,
+                onTap: () => Navigator.pop(ctx, sub['id'] as int),
+              ),
+          ],
+        ],
+      ),
+    ),
+  );
+}
+
 /// Texto que explica de dónde salió la categoría sugerida (igual que la web).
 String categoryHint(Map<String, dynamic> preview, {required bool suggested}) {
   final hasDescription = (preview['description'] as String? ?? '').isNotEmpty;
@@ -160,47 +208,8 @@ class _QuickExpenseSheetState extends ConsumerState<QuickExpenseSheet> {
   }
 
   Future<void> _pickCategory(List<dynamic> categories) async {
-    final groups = groupExpenseCategories(categories);
-    final picked = await showModalBottomSheet<int>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      builder: (ctx) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.3,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (ctx, scrollCtrl) => ListView(
-          controller: scrollCtrl,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(
-                'Categoría',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-            ),
-            for (final g in groups) ...[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                child: Text(
-                  g.group['name'] as String,
-                  style: Theme.of(ctx).textTheme.labelLarge,
-                ),
-              ),
-              for (final sub in g.subcategories)
-                ListTile(
-                  title: Text(sub['name'] as String),
-                  trailing: sub['id'] == _categoryId
-                      ? const Icon(Icons.check)
-                      : null,
-                  onTap: () => Navigator.pop(ctx, sub['id'] as int),
-                ),
-            ],
-          ],
-        ),
-      ),
-    );
+    final picked =
+        await pickExpenseCategory(context, categories, selectedId: _categoryId);
     if (picked != null) setState(() => _categoryId = picked);
   }
 

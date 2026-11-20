@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/constants/category_colors.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/category_icons.dart';
@@ -26,6 +27,11 @@ class CategoriesScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Categorías'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.auto_fix_high),
+            tooltip: 'Reglas',
+            onPressed: () => context.push('/categories/rules'),
+          ),
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () => _showCreateDialog(context, ref, null),

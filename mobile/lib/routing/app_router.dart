@@ -19,6 +19,7 @@ import '../features/settings/screens/about_screen.dart';
 import '../features/notifications/screens/notifications_screen.dart';
 import '../features/feedback/screens/feedback_screen.dart';
 import '../features/categories/screens/categories_screen.dart';
+import '../features/categories/screens/category_rules_screen.dart';
 import '../features/recurring/screens/recurring_list_screen.dart';
 import '../features/recurring/screens/recurring_form_screen.dart';
 import '../features/savings/screens/savings_list_screen.dart';
@@ -224,6 +225,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/categories',
         pageBuilder: (c, s) =>
             _buildPage(context: c, state: s, child: const CategoriesScreen()),
+      ),
+      GoRoute(
+        path: '/categories/rules',
+        pageBuilder: (c, s) => _buildPage(
+          context: c,
+          state: s,
+          child: const CategoryRulesScreen(),
+        ),
       ),
       GoRoute(
         path: '/recurring',

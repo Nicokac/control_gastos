@@ -6,7 +6,7 @@ class ApiConstants {
 
   // Resumen de novedades de la versión actual (DT-068) — actualizar junto con el bump de pubspec.yaml.
   static const String latestReleaseSummary =
-      'Carga rápida: tocá el rayo arriba en el inicio o en Gastos y escribí el gasto en una línea, como "8500 nafta efectivo". La categoría te la sugerimos y, si la cambiás, la recordamos para la próxima. Además, corregimos un error que al editar un gasto, ingreso o meta de ahorro podía guardar el monto multiplicado por 100.';
+      'Reglas de categorías: en Categorías, tocá la varita para ver qué palabras te sugieren cada categoría en la carga rápida. Podés crear reglas nuevas, cambiarles la categoría o borrarlas, igual que en la web.';
   static const String websiteUrl = 'https://controldegastos.ar';
   static const String termsUrl =
       'https://controldegastos.ar/terms/';
@@ -24,6 +24,7 @@ class ApiConstants {
   static const String passwordResetConfirm = '/auth/password/reset/confirm/';
 
   static const String categories = '/categories/';
+  static const String categoryRules = '/category-rules/';
   static const String expenses = '/expenses/';
   static const String expenseQuickParse = '/expenses/quick-parse/';
   static const String expenseQuickCreate = '/expenses/quick-create/';

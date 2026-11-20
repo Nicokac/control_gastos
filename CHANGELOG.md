@@ -5,6 +5,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [Mobile 1.30.0+41] — 2026-11-19
+
+### Added
+
+- **Reglas de categorías en la app** (las mismas de la web 1.33.0): la varita en la barra de Categorías abre la pantalla "Reglas", con cada regla como "“super” → Comida › Supermercado". Se crean y editan desde una hoja con el texto y el selector de categoría agrupado de la carga rápida (extraído a `pickExpenseCategory` para usarlo en los dos lados), y se borran con confirmación. Los errores del backend, como una regla repetida, aparecen debajo del campo.
+- **`/api/v1/category-rules/`** (backend, sin cambio de versión web): CRUD de las reglas del usuario con las mismas validaciones que el formulario web (texto normalizado y sin repetir, categoría que sea una subcategoría de gasto disponible). Cada regla trae `category_name` y `group_name`.
+
+---
+
 ## [1.36.0] — 2026-11-19
 
 ### Added
