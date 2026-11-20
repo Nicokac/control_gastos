@@ -22,11 +22,14 @@ from apps.notifications.models import (
 )
 from apps.notifications.services import send_push_to_user
 from apps.notifications.spending_alerts import current_financial_period
+from apps.savings.models import RolloverSuggestionStatus
+from apps.savings.services import get_or_create_rollover_suggestion
 from apps.users.models import User
 
 logger = logging.getLogger("apps.notifications")
 
 WEEKLY_TITLE = "Tu semana en gastos"
+PERIOD_START_TITLE = "Empezó tu nuevo período"
 # Canal de Android propio (mobile 1.28.0+38). Los teléfonos con una versión anterior no
 # lo tienen y FCM usa el canal por defecto del manifest, el de recordatorios.
 WEEKLY_SUMMARY_CHANNEL = "weekly_summary"
@@ -239,3 +242,56 @@ def send_weekly_summaries(today: date | None = None, batch_size: int = BATCH_SIZ
     remaining = candidates.count()
     logger.info("WEEKLY_SUMMARY | week_start=%s sent=%s remaining=%s", start, sent, remaining)
     return {"sent": sent, "remaining": remaining}
+
+
+def build_period_start_body(previous_start: date) -> str:
+    # Sin monto: el aviso se ve en la pantalla bloqueada y la app permite ocultar montos.
+    label = f"{get_month_name(previous_start.month).lower()} {previous_start.year}"
+    return f"Tu período de {label} cerró con sobrante. ¿Lo pasás a un ahorro? Lo ves en el inicio."
+
+
+def send_period_start_notices(today: date | None = None) -> int:
+    """El día que empieza el período financiero, avisa a quien cerró el anterior con sobrante sin decidir qué hacer con él."""
+    today = today or timezone.localdate()
+    users = (
+        User.objects.filter(
+            is_active=True, summaries_enabled=True, financial_month_start_day=today.day
+        )
+        .filter(Exists(DeviceToken.objects.filter(user=OuterRef("pk"), is_active=True)))
+        .exclude(
+            Exists(
+                SummaryLog.objects.filter(
+                    user=OuterRef("pk"), kind=SummaryKind.PERIOD_START, period_start=today
+                )
+            )
+        )
+        .order_by("pk")
+    )
+
+    sent = 0
+    for user in users:
+        suggestion = get_or_create_rollover_suggestion(
+            user, today.month, today.year, user.financial_month_start_day
+        )
+        if suggestion is None or suggestion.status != RolloverSuggestionStatus.PENDING:
+            continue
+        body = build_period_start_body(suggestion.period_start)
+        pushed = send_push_to_user(
+            user,
+            title=PERIOD_START_TITLE,
+            body=body,
+            data={"type": NotificationType.PERIOD_START},
+            channel_id=WEEKLY_SUMMARY_CHANNEL,
+        )
+        if not pushed:
+            continue
+        SummaryLog.objects.create(
+            user=user, kind=SummaryKind.PERIOD_START, period_start=today, pushed=True
+        )
+        Notification.objects.create(
+            user=user, type=NotificationType.PERIOD_START, title=PERIOD_START_TITLE, body=body
+        )
+        sent += 1
+
+    logger.info("PERIOD_START | date=%s sent=%s", today, sent)
+    return sent

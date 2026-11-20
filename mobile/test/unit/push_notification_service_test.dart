@@ -115,6 +115,14 @@ void main() {
       expect(routeForPushData({'type': 'otro'}), isNull);
     });
 
+    test('ingreso fijo sin registrar abre Ingresos', () {
+      expect(routeForPushData({'type': 'income_expected'}), '/income');
+    });
+
+    test('inicio del período abre el dashboard, donde está el sobrante', () {
+      expect(routeForPushData({'type': 'period_start'}), '/dashboard');
+    });
+
     test('sin tipo no navega', () {
       expect(routeForPushData({}), isNull);
     });

@@ -147,6 +147,8 @@ class TestRecurringRemindersCronEndpoint:
             return 2
 
         monkeypatch.setattr("apps.api.v1.views.notifications.send_recurring_reminders", fake_send)
+        monkeypatch.setattr("apps.api.v1.views.notifications.send_income_reminders", lambda: 1)
+        monkeypatch.setattr("apps.api.v1.views.notifications.send_period_start_notices", lambda: 3)
         monkeypatch.setattr("apps.api.v1.views.notifications.check_brevo_account", lambda: True)
         return calls
 
@@ -154,7 +156,12 @@ class TestRecurringRemindersCronEndpoint:
         settings.CRON_SECRET = self.secret
         response = client.post(self.url, HTTP_X_CRON_SECRET=self.secret)
         assert response.status_code == 200
-        assert response.json() == {"sent": 2, "brevo_ok": True}
+        assert response.json() == {
+            "sent": 2,
+            "income_sent": 1,
+            "period_start_sent": 3,
+            "brevo_ok": True,
+        }
         assert len(sent_calls) == 1
 
     def test_informa_si_la_key_de_brevo_falla(self, client, settings, sent_calls, monkeypatch):
@@ -162,7 +169,7 @@ class TestRecurringRemindersCronEndpoint:
         monkeypatch.setattr("apps.api.v1.views.notifications.check_brevo_account", lambda: False)
         response = client.post(self.url, HTTP_X_CRON_SECRET=self.secret)
         assert response.status_code == 200
-        assert response.json() == {"sent": 2, "brevo_ok": False}
+        assert response.json()["brevo_ok"] is False
 
     def test_secreto_incorrecto_responde_403_sin_enviar(self, client, settings, sent_calls):
         settings.CRON_SECRET = self.secret
@@ -199,7 +206,12 @@ class TestRecurringRemindersCronEndpoint:
         settings.BREVO_API_KEY = ""
         response = client.post(self.url, HTTP_X_CRON_SECRET=self.secret)
         assert response.status_code == 200
-        assert response.json() == {"sent": 0, "brevo_ok": False}
+        assert response.json() == {
+            "sent": 0,
+            "income_sent": 0,
+            "period_start_sent": 0,
+            "brevo_ok": False,
+        }
 
 
 @pytest.fixture

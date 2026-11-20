@@ -31,8 +31,8 @@ class User(AbstractUser):
     has_seen_tour = models.BooleanField(default=False, verbose_name="Tour visto")
     recurring_reminders_enabled = models.BooleanField(
         default=True,
-        verbose_name="Recordatorios de gastos fijos",
-        help_text="Aviso push en mobile 3 días antes del vencimiento de cada gasto fijo.",
+        verbose_name="Recordatorios de gastos e ingresos fijos",
+        help_text="Aviso push en mobile antes de cada vencimiento, si un gasto fijo quedó sin pagar y si un ingreso fijo no se registró.",
     )
     spending_alerts_enabled = models.BooleanField(
         default=True,
@@ -41,8 +41,8 @@ class User(AbstractUser):
     )
     summaries_enabled = models.BooleanField(
         default=True,
-        verbose_name="Resumen semanal",
-        help_text="Los lunes, un resumen de la semana anterior por push y por email (si está verificado).",
+        verbose_name="Resúmenes",
+        help_text="Los lunes, un resumen de la semana anterior por push y por email (si está verificado); al empezar el período financiero, un push si quedó sobrante.",
     )
 
     class Meta:

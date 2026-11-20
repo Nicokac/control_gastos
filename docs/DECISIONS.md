@@ -1931,7 +1931,7 @@ El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, 
 2. Disparar a mano el workflow "Recordatorios push" desde Actions y comprobar que responde `{"sent": N}`.
 3. Recién después, compilar el AAB 1.26.0+34 y subirlo a Play Console. Si se publica antes del deploy, la app pide endpoints que todavía no existen en producción.
 
-### Fase E — Próximas notificaciones (E1 y E2 completas; E3-E5 pendientes)
+### Fase E — Próximas notificaciones (E1, E2, E4 y E5 completas; E3 pendiente)
 Relevadas al cerrar la Mobile 1.26.0, ordenadas por valor y costo. Cada tipo nuevo necesita su propio interruptor en la pantalla Notificaciones (un `BooleanField` por tipo en `User`, como `recurring_reminders_enabled`), su propio `NotificationType`, su ruta en `routeForPushData` y, si conviene silenciarlo por separado, su canal de Android. Por eso se agrupan en un mismo build mobile.
 
 | Id | Aviso | Disparador | Por defecto | Estado |
@@ -1939,8 +1939,8 @@ Relevadas al cerrar la Mobile 1.26.0, ordenadas por valor y costo. Cada tipo nue
 | E1 | **Gasto fijo vencido sin pagar**: al día siguiente del vencimiento, si no se registró el pago | Cron diario existente (`reminders.py`, mismo log por vencimiento con otro tipo) | Activado (mismo interruptor que los recordatorios) | ✅ Mobile 1.27.0+35 |
 | E2 | **Umbral de gastos superado**, dos variantes (decisión del usuario: ambas): gastos del período que cruzan `alert_threshold` (80% por defecto) de los ingresos, y una subcategoría que supera su `monthly_alert_threshold` en pesos. Cada aviso una sola vez por período | Al crear o editar un gasto (evento, no cron) | Activado (interruptor propio "Alertas de gastos") | ✅ Mobile 1.27.0+35 |
 | E3 | **Recordatorio de carga** a las 22:00, solo si no se cargó ningún gasto ese día (o en 2 días) | Cron diario nuevo (01:00 UTC) | **Desactivado** (opt-in): es el que más rápido cansa | ⏳ Después de evaluar el uso de E1/E2 |
-| E4 | **Inicio del mes financiero**: el día `financial_month_start_day`, con el sobrante del mes anterior y la sugerencia de usarlo | Cron diario | A definir | ⏳ Pendiente |
-| E5 | **Ingreso recurrente esperado**: "¿ya cobraste? registralo" | Cron diario | A definir | ⏳ Pendiente |
+| E4 | **Inicio del mes financiero**: el día `financial_month_start_day`, con el sobrante del mes anterior y la sugerencia de usarlo | Cron diario existente | Activado (interruptor del resumen semanal, ahora "Resúmenes") | ✅ Mobile 1.31.0+42 |
+| E5 | **Ingreso recurrente esperado**: "¿ya cobraste? registralo" | Cron diario existente | Activado (interruptor de recordatorios, ahora "Gastos e ingresos fijos") | ✅ Mobile 1.31.0+42 |
 
 Descartado: avisos de gastos compartidos. Los miembros del hogar no tienen cuenta (D-018), así que no hay a quién enviarles el push.
 
@@ -1972,6 +1972,14 @@ Descartado: avisos de gastos compartidos. Los miembros del hogar no tienen cuent
 - Verificado en emulador con el backend local: los dos canales creados; vencido por `recurring_reminders` y las dos alertas por `spending_alerts` (disparadas por la señal real al guardar un gasto); tocar cada aviso abre su pantalla; el interruptor de alertas persiste en el backend sin tocar el de recordatorios.
 
 - 25 tests nuevos: 23 en `test_spending_alerts.py` (umbral global y por subcategoría, límites exactos, umbral del usuario, sin ingresos, una vez por período, reintento sin entrega, gastos de otro período, aislamiento entre usuarios, ambas alertas en un gasto, preferencia, sin dispositivo, señal al crear y al editar, error que no rompe el guardado, cálculo del período financiero), 1 del canal en `test_services.py` y 1 de la preferencia en la API.
+
+### Fase E4/E5 — Resolución técnica (inicio del período e ingreso fijo sin registrar)
+- **Sin interruptores nuevos** (decisión del usuario): E5 va con `recurring_reminders_enabled` y E4 con `summaries_enabled`. Un interruptor por aviso dejaba cinco en la pantalla; agrupados por parecido ("Gastos e ingresos fijos", "Resúmenes") alcanza. Esto se aparta de la regla de la Fase E ("cada tipo nuevo necesita su propio interruptor"), igual que E1. Consecuencia: la baja desde el link del email del resumen semanal también apaga E4; la página de baja lo dice.
+- **E5 al día siguiente** (decisión del usuario), como E1: da tiempo a registrar el cobro el mismo día. Se compara contra `RecurringIncome.is_collected_in` (algún ingreso vinculado ese mes, aunque sea antes del día esperado). Un ingreso fijo creado después de la fecha esperada no avisa ese mes (`created_at__date`, en la zona horaria local). `IncomeReminderLog` (ingreso fijo, fecha esperada) en vez de sumar un tipo a `RecurringReminderLog`, que apunta a `RecurringExpense`.
+- **E4 sin monto** (decisión del usuario), como las alertas de gastos: el aviso se ve en la pantalla bloqueada y la app permite ocultar montos. Solo avisa si hay sobrante y la sugerencia sigue pendiente: si el período cerró en cero o en negativo, o el usuario ya la descartó o depositó, no hay nada que decir. Reutiliza `get_or_create_rollover_suggestion`, así el banner del dashboard ya está listo cuando el usuario toca el aviso. Se registra en `SummaryLog` (tipo `period_start`, `emailed=False`, así no cuenta contra el tope diario de emails) en vez de una tabla nueva.
+- **Mismo endpoint de cron**: `cron/recurring-reminders/` corre los tres envíos y devuelve `income_sent` y `period_start_sent` junto a `sent`. Sin cambios en `reminders.yml`.
+- **Mobile**: `period_start` abre `/dashboard` con `go` en vez de `push`, porque el dashboard es la raíz y `push` apilaba uno sobre otro (al tocar el push, el "Ver" del aviso en primer plano y el historial).
+- 26 tests nuevos: `test_income_reminders.py` (15: selección, cobro en el mes y en otro mes, día 31, inactivo, creado después, zona horaria, preferencia, sin dispositivo, agrupado, aislamiento, doble ejecución, reintento, mes siguiente) y `test_period_start.py` (11: día de inicio 1 y 10, otro día, sin sobrante, sugerencia decidida, preferencia, sin dispositivo, aislamiento, doble ejecución, reintento, cambio de año). En mobile, rutas e íconos de los dos tipos.
 
 ---
 

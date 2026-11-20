@@ -140,6 +140,8 @@ void main() {
       expect(iconForNotificationType('recurring_overdue'), Icons.event_busy);
       expect(iconForNotificationType('spending_threshold'), Icons.trending_up);
       expect(iconForNotificationType('category_threshold'), Icons.trending_up);
+      expect(iconForNotificationType('income_expected'), Icons.payments_outlined);
+      expect(iconForNotificationType('period_start'), Icons.savings_outlined);
     });
 
     test('un tipo desconocido usa el ícono de recordatorio', () {

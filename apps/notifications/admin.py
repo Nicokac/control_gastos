@@ -4,7 +4,13 @@ Configuración del admin para notificaciones push.
 
 from django.contrib import admin
 
-from .models import DeviceToken, Notification, RecurringReminderLog, SpendingAlertLog
+from .models import (
+    DeviceToken,
+    IncomeReminderLog,
+    Notification,
+    RecurringReminderLog,
+    SpendingAlertLog,
+)
 
 
 @admin.register(DeviceToken)
@@ -23,6 +29,15 @@ class RecurringReminderLogAdmin(admin.ModelAdmin):
     search_fields = ("recurring__name", "recurring__user__username")
     list_select_related = ("recurring", "recurring__user")
     readonly_fields = ("recurring", "due_date", "kind", "created_at", "updated_at")
+
+
+@admin.register(IncomeReminderLog)
+class IncomeReminderLogAdmin(admin.ModelAdmin):
+    list_display = ("recurring_income", "expected_date", "created_at")
+    list_filter = ("expected_date",)
+    search_fields = ("recurring_income__name", "recurring_income__user__username")
+    list_select_related = ("recurring_income", "recurring_income__user")
+    readonly_fields = ("recurring_income", "expected_date", "created_at", "updated_at")
 
 
 @admin.register(Notification)

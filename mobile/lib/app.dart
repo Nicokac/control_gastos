@@ -50,8 +50,8 @@ class _AppState extends ConsumerState<App> {
     if (profile == null || !mounted) return;
     final router = ref.read(routerProvider);
     // En arranque en frío el stack es /splash: se arma dashboard debajo para que "atrás" funcione.
-    if (coldStart) router.go('/dashboard');
-    router.push(route);
+    if (coldStart || route == '/dashboard') router.go('/dashboard');
+    if (route != '/dashboard') router.push(route);
   }
 
   /// Con la app abierta Android no muestra la notificación del sistema: se avisa dentro de la app.
@@ -68,7 +68,9 @@ class _AppState extends ConsumerState<App> {
             ? null
             : SnackBarAction(
                 label: 'Ver',
-                onPressed: () => ref.read(routerProvider).push(route),
+                onPressed: () => route == '/dashboard'
+                    ? ref.read(routerProvider).go(route)
+                    : ref.read(routerProvider).push(route),
               ),
       ),
     );

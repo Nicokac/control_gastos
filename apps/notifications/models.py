@@ -97,12 +97,40 @@ class RecurringReminderLog(TimestampMixin, models.Model):
         return f"{self.recurring} - {self.due_date} ({self.get_kind_display()})"
 
 
+class IncomeReminderLog(TimestampMixin, models.Model):
+    """Aviso "¿ya cobraste?" ya enviado para un ingreso fijo y una fecha esperada de cobro."""
+
+    recurring_income = models.ForeignKey(
+        "recurring_income.RecurringIncome",
+        on_delete=models.CASCADE,
+        related_name="reminder_logs",
+        verbose_name="Ingreso fijo",
+    )
+    expected_date = models.DateField(verbose_name="Fecha esperada de cobro")
+
+    class Meta:
+        verbose_name = "Aviso de ingreso enviado"
+        verbose_name_plural = "Avisos de ingresos enviados"
+        ordering = ["-expected_date"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["recurring_income", "expected_date"],
+                name="unique_income_reminder_per_expected_date",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.recurring_income} - {self.expected_date}"
+
+
 class NotificationType(models.TextChoices):
     RECURRING_REMINDER = "recurring_reminder", "Recordatorio de gastos fijos"
     RECURRING_OVERDUE = "recurring_overdue", "Gastos fijos vencidos sin pagar"
     SPENDING_THRESHOLD = "spending_threshold", "Umbral de gastos del período superado"
     CATEGORY_THRESHOLD = "category_threshold", "Límite de subcategoría superado"
     WEEKLY_SUMMARY = "weekly_summary", "Resumen semanal"
+    INCOME_EXPECTED = "income_expected", "Ingreso fijo sin registrar"
+    PERIOD_START = "period_start", "Inicio del período financiero"
 
 
 class Notification(TimestampMixin, models.Model):
@@ -184,6 +212,7 @@ class SpendingAlertLog(TimestampMixin, models.Model):
 
 class SummaryKind(models.TextChoices):
     WEEKLY = "weekly", "Semanal"
+    PERIOD_START = "period_start", "Inicio del período financiero"
 
 
 class SummaryLog(TimestampMixin, models.Model):

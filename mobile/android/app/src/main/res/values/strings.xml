@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Canal de notificaciones de recordatorios (D-019). El id no debe cambiar:
+    <!-- Recordatorios de gastos fijos e ingresos fijos (D-019, E5). El id no debe cambiar:
          Android guarda la configuración del usuario por id de canal. -->
     <string name="recurring_reminders_channel_id" translatable="false">recurring_reminders</string>
-    <string name="recurring_reminders_channel_name">Recordatorios de gastos fijos</string>
-    <string name="recurring_reminders_channel_description">Avisos de gastos fijos por vencer o vencidos sin pagar.</string>
+    <string name="recurring_reminders_channel_name">Gastos e ingresos fijos</string>
+    <string name="recurring_reminders_channel_description">Avisos de gastos fijos por vencer o vencidos sin pagar, y de ingresos fijos sin registrar.</string>
     <!-- Alertas de gastos (D-019 Fase E2): el backend las envía por este canal. -->
     <string name="spending_alerts_channel_id" translatable="false">spending_alerts</string>
     <string name="spending_alerts_channel_name">Alertas de gastos</string>
     <string name="spending_alerts_channel_description">Avisos al superar el umbral de gastos del período o el límite de una subcategoría.</string>
-    <!-- Resumen semanal (D-023): el backend lo envía por este canal. -->
+    <!-- Resumen semanal (D-023) e inicio del período (D-019 E4): el backend los envía por este canal. -->
     <string name="weekly_summary_channel_id" translatable="false">weekly_summary</string>
-    <string name="weekly_summary_channel_name">Resumen semanal</string>
-    <string name="weekly_summary_channel_description">Los lunes, cuánto gastaste la semana anterior y qué categoría pesó más.</string>
+    <string name="weekly_summary_channel_name">Resúmenes</string>
+    <string name="weekly_summary_channel_description">Los lunes, cuánto gastaste la semana anterior. Al empezar el período, si te quedó sobrante.</string>
 </resources>

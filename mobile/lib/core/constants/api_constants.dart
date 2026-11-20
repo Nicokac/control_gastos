@@ -6,7 +6,7 @@ class ApiConstants {
 
   // Resumen de novedades de la versión actual (DT-068) — actualizar junto con el bump de pubspec.yaml.
   static const String latestReleaseSummary =
-      'Reglas de categorías: en Categorías, tocá la varita para ver qué palabras te sugieren cada categoría en la carga rápida. Podés crear reglas nuevas, cambiarles la categoría o borrarlas, igual que en la web.';
+      'Avisos nuevos: si un ingreso fijo no aparece registrado, al día siguiente te preguntamos si ya cobraste. Y el día que empieza tu período, te avisamos si el anterior cerró con sobrante para que lo pases a un ahorro.';
   static const String websiteUrl = 'https://controldegastos.ar';
   static const String termsUrl =
       'https://controldegastos.ar/terms/';

@@ -61,9 +61,9 @@ def build_user_workbook(user):
         ("Moneda por defecto", user.get_default_currency_display()),
         ("Día de inicio del mes financiero", user.financial_month_start_day),
         ("Email verificado", _yes_no(user.email_verified)),
-        ("Recordatorios de gastos fijos", _yes_no(user.recurring_reminders_enabled)),
+        ("Recordatorios de gastos e ingresos fijos", _yes_no(user.recurring_reminders_enabled)),
         ("Alertas de gasto", _yes_no(user.spending_alerts_enabled)),
-        ("Resumen semanal", _yes_no(user.summaries_enabled)),
+        ("Resúmenes", _yes_no(user.summaries_enabled)),
         ("Exportado el", timezone.localdate()),
     ]
     _add_sheet(wb, "Perfil", ["Dato", "Valor"], profile)

@@ -37,8 +37,9 @@ class NotificationsScreen extends ConsumerWidget {
         children: [
           const _PreferenceToggle(
             field: 'recurring_reminders_enabled',
-            title: 'Recordatorios de gastos fijos',
-            subtitle: 'Antes de cada vencimiento y si quedó sin pagar',
+            title: 'Gastos e ingresos fijos',
+            subtitle:
+                'Antes de cada vencimiento, si un gasto quedó sin pagar y si no registraste un ingreso',
           ),
           const _PreferenceToggle(
             field: 'spending_alerts_enabled',
@@ -48,9 +49,9 @@ class NotificationsScreen extends ConsumerWidget {
           ),
           const _PreferenceToggle(
             field: 'summaries_enabled',
-            title: 'Resumen semanal',
+            title: 'Resúmenes',
             subtitle:
-                'Los lunes, cuánto gastaste la semana anterior y qué categoría pesó más',
+                'Los lunes, cómo te fue la semana anterior; y al empezar el período, si te quedó sobrante',
           ),
           const Divider(height: 1),
           Expanded(
@@ -94,6 +95,8 @@ IconData iconForNotificationType(String? type) {
     'recurring_overdue' => Icons.event_busy,
     'spending_threshold' || 'category_threshold' => Icons.trending_up,
     'weekly_summary' => Icons.insights,
+    'income_expected' => Icons.payments_outlined,
+    'period_start' => Icons.savings_outlined,
     _ => Icons.event_repeat,
   };
 }
@@ -187,7 +190,9 @@ class _NotificationTile extends StatelessWidget {
         style: Theme.of(context).textTheme.bodySmall,
       ),
       isThreeLine: true,
-      onTap: route == null ? null : () => context.push(route),
+      onTap: route == null
+          ? null
+          : () => route == '/dashboard' ? context.go(route) : context.push(route),
     );
   }
 }

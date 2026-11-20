@@ -12,8 +12,8 @@ from rest_framework.views import APIView
 from apps.api.v1.serializers.notifications import DeviceTokenSerializer, NotificationSerializer
 from apps.core.utils import check_brevo_account
 from apps.notifications.models import DeviceToken, Notification
-from apps.notifications.reminders import send_recurring_reminders
-from apps.notifications.summaries import send_weekly_summaries
+from apps.notifications.reminders import send_income_reminders, send_recurring_reminders
+from apps.notifications.summaries import send_period_start_notices, send_weekly_summaries
 
 
 @extend_schema(tags=["notifications"])
@@ -118,7 +118,14 @@ class RecurringRemindersCronView(APIView):
 
         # Brevo desactiva la API key tras 90 días sin uso y los emails fallan en silencio (DT-108):
         # la consulta diaria la mantiene activa y, si falla, deja un error en Sentry.
-        return Response({"sent": send_recurring_reminders(), "brevo_ok": check_brevo_account()})
+        return Response(
+            {
+                "sent": send_recurring_reminders(),
+                "income_sent": send_income_reminders(),
+                "period_start_sent": send_period_start_notices(),
+                "brevo_ok": check_brevo_account(),
+            }
+        )
 
 
 @extend_schema(exclude=True)

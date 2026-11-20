@@ -5,6 +5,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [Mobile 1.31.0+42] — 2026-11-20
+
+Notificaciones push, Fase E4/E5 (D-019). Como en las fases anteriores, el backend no pasa a `main` hasta tener lista esta versión: la app vieja recibiría avisos que al tocarlos no abren nada. Sin bump de la web: lo único visible ahí es el interruptor del perfil, que pasa de "Resumen semanal" a "Resúmenes".
+
+### Added
+
+- **Notificaciones push — E5: "¿Ya cobraste?" (D-019)**: el cron diario avisa, al día siguiente del día esperado de cobro, los ingresos fijos que no tienen un ingreso registrado ese mes. Agrupa los de un mismo usuario en un aviso y no avisa los ingresos creados después de la fecha esperada. `IncomeReminderLog` evita repetirlo. Lo controla el interruptor de recordatorios, que pasa a llamarse "Gastos e ingresos fijos".
+- **Notificaciones push — E4: inicio del período financiero (D-019)**: el día que empieza el período del usuario, si el anterior cerró con sobrante y todavía no decidió qué hacer con él, un aviso sin montos lo invita a pasarlo a un ahorro. Reutiliza `get_or_create_rollover_suggestion` (la misma sugerencia del banner del dashboard) y `SummaryLog` con el tipo nuevo `period_start`. Lo controla el interruptor del resumen semanal, que pasa a llamarse "Resúmenes", y usa su canal de Android.
+- **Mobile — avisos nuevos**: "¿Ya cobraste?" abre Ingresos e "inicio del período" abre el dashboard (con `go`, para no apilar un dashboard sobre otro); íconos propios en el historial; interruptores y canales de Android renombrados.
+
+---
+
 ## [Mobile 1.30.0+41] — 2026-11-19
 
 ### Added

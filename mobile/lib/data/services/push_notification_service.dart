@@ -14,6 +14,9 @@ String? routeForPushData(Map<String, dynamic> data) {
     'recurring_reminder' || 'recurring_overdue' => '/recurring',
     'spending_threshold' || 'weekly_summary' => '/expenses',
     'category_threshold' => '/categories',
+    'income_expected' => '/income',
+    // El banner del sobrante está en el dashboard, que es la raíz: se abre con go, no push.
+    'period_start' => '/dashboard',
     _ => null,
   };
 }

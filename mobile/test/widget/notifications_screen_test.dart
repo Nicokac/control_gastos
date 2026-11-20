@@ -26,9 +26,9 @@ class _FakeAuth extends AuthNotifier {
   }
 }
 
-final _reminders = find.widgetWithText(SwitchListTile, 'Recordatorios de gastos fijos');
+final _reminders = find.widgetWithText(SwitchListTile, 'Gastos e ingresos fijos');
 final _spending = find.widgetWithText(SwitchListTile, 'Alertas de gastos');
-final _summaries = find.widgetWithText(SwitchListTile, 'Resumen semanal');
+final _summaries = find.widgetWithText(SwitchListTile, 'Resúmenes');
 
 void main() {
   late MockNotificationRepository repo;

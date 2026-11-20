@@ -6,6 +6,7 @@ from datetime import date, timedelta
 from django.utils import timezone
 
 from apps.notifications.models import (
+    IncomeReminderLog,
     Notification,
     NotificationType,
     RecurringReminderLog,
@@ -13,12 +14,14 @@ from apps.notifications.models import (
 )
 from apps.notifications.services import send_push_to_user
 from apps.recurring.models import RecurringExpense
+from apps.recurring_income.models import RecurringIncome
 
 logger = logging.getLogger("apps.notifications")
 
 REMINDER_DAYS_BEFORE = 3
 REMINDER_TITLE = "Gastos fijos por vencer"
 OVERDUE_TITLE = "Gastos fijos vencidos"
+INCOME_TITLE = "¿Ya cobraste?"
 
 
 def _effective_due_date(due_day: int, year: int, month: int) -> date:
@@ -138,3 +141,64 @@ def send_recurring_reminders(today: date | None = None) -> int:
         build_overdue_body,
     )
     return due_soon + overdue
+
+
+def build_income_body(incomes) -> str:
+    names = _join_names([i.name for i in incomes])
+    if len(incomes) == 1:
+        return f"Ayer esperabas cobrar {names}. Si ya lo cobraste, registralo en Ingresos."
+    return f"Ayer esperabas cobrar {names}. Si ya los cobraste, registralos en Ingresos."
+
+
+def incomes_expected_on(target: date):
+    """Ingresos fijos activos que se esperaban en `target`, sin cobro registrado ese mes y sin aviso enviado."""
+    candidates = (
+        RecurringIncome.objects.filter(
+            is_active=True,
+            user__recurring_reminders_enabled=True,
+            user__device_tokens__is_active=True,
+            # Uno creado después de la fecha esperada recién aplica el mes siguiente.
+            created_at__date__lte=target,
+        )
+        .exclude(
+            pk__in=IncomeReminderLog.objects.filter(expected_date=target).values(
+                "recurring_income_id"
+            )
+        )
+        .select_related("user")
+        .distinct()
+        .order_by("user_id", "expected_day", "name")
+    )
+    return [
+        i
+        for i in candidates
+        if _effective_due_date(i.expected_day, target.year, target.month) == target
+        and not i.is_collected_in(target.month, target.year)
+    ]
+
+
+def send_income_reminders(today: date | None = None) -> int:
+    """Avisa, agrupados por usuario, los ingresos fijos que se esperaban ayer y no se registraron."""
+    target = (today or timezone.localdate()) - timedelta(days=1)
+    by_user = defaultdict(list)
+    for income in incomes_expected_on(target):
+        by_user[income.user].append(income)
+
+    notified = 0
+    for user, incomes in by_user.items():
+        body = build_income_body(incomes)
+        sent = send_push_to_user(
+            user, title=INCOME_TITLE, body=body, data={"type": NotificationType.INCOME_EXPECTED}
+        )
+        if sent:
+            IncomeReminderLog.objects.bulk_create(
+                [IncomeReminderLog(recurring_income=i, expected_date=target) for i in incomes],
+                ignore_conflicts=True,
+            )
+            Notification.objects.create(
+                user=user, type=NotificationType.INCOME_EXPECTED, title=INCOME_TITLE, body=body
+            )
+            notified += 1
+
+    logger.info("INCOME_REMINDERS | target=%s users=%s notified=%s", target, len(by_user), notified)
+    return notified
