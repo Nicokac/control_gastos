@@ -6,7 +6,7 @@ class ApiConstants {
 
   // Resumen de novedades de la versión actual (DT-068) — actualizar junto con el bump de pubspec.yaml.
   static const String latestReleaseSummary =
-      'Detectamos tus gastos fijos: si cargás el mismo gasto todos los meses (Netflix, el gimnasio) por montos parecidos, en Gastos te sugerimos convertirlo en gasto fijo. Los pagos que ya cargaste quedan vinculados.';
+      'Ahora podés editar tus categorías desde la app, y ponerle o cambiarle el límite mensual a tus subcategorías. Además, si cargás el mismo gasto todos los meses, en Gastos te sugerimos convertirlo en gasto fijo.';
   static const String websiteUrl = 'https://controldegastos.ar';
   static const String termsUrl =
       'https://controldegastos.ar/terms/';

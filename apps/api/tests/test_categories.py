@@ -305,3 +305,84 @@ class TestMonthlyAlertThresholdEndpoint:
         item = next(c for c in response.json()["results"] if c["id"] == expense_category.pk)
         assert item["is_over_alert_threshold"] is True
         assert Decimal(item["current_month_spent"]) == Decimal("1500.00")
+
+
+@pytest.mark.django_db
+class TestCategoryUpdateEndpoint:
+    """Edición desde la app mobile: manda el formulario completo por PATCH."""
+
+    def payload(self, category, **extra):
+        return {
+            "name": category.name,
+            "type": category.type,
+            "color": "#dc3545",
+            "icon": "bi-tag",
+            "parent": category.parent_id,
+            **extra,
+        }
+
+    def test_define_el_umbral_de_una_subcategoria_propia(self, client, user, expense_category):
+        response = client.patch(
+            f"/api/v1/categories/{expense_category.pk}/",
+            self.payload(expense_category, monthly_alert_threshold=20000.0),
+            content_type="application/json",
+            **auth_header(client, user),
+        )
+
+        assert response.status_code == 200
+        expense_category.refresh_from_db()
+        assert expense_category.monthly_alert_threshold == Decimal("20000")
+        assert expense_category.color == "#dc3545"
+
+    def test_umbral_null_lo_borra(self, client, user, expense_category):
+        expense_category.monthly_alert_threshold = Decimal("1000")
+        expense_category.save()
+
+        response = client.patch(
+            f"/api/v1/categories/{expense_category.pk}/",
+            self.payload(expense_category, monthly_alert_threshold=None),
+            content_type="application/json",
+            **auth_header(client, user),
+        )
+
+        assert response.status_code == 200
+        expense_category.refresh_from_db()
+        assert expense_category.monthly_alert_threshold is None
+
+    def test_conservar_el_mismo_nombre_no_es_duplicado(self, client, user, expense_category):
+        response = client.patch(
+            f"/api/v1/categories/{expense_category.pk}/",
+            self.payload(expense_category),
+            content_type="application/json",
+            **auth_header(client, user),
+        )
+
+        assert response.status_code == 200
+
+    def test_no_puede_editar_categoria_sistema(self, client, user, system_expense_group):
+        response = client.patch(
+            f"/api/v1/categories/{system_expense_group.pk}/",
+            {"name": "Otro", "type": CategoryType.EXPENSE},
+            content_type="application/json",
+            **auth_header(client, user),
+        )
+
+        assert response.status_code == 403
+        system_expense_group.refresh_from_db()
+        assert system_expense_group.name != "Otro"
+
+    def test_no_puede_editar_categoria_de_otro_usuario(
+        self, client, user, other_user, expense_category_factory
+    ):
+        ajena = expense_category_factory(user=other_user)
+
+        response = client.patch(
+            f"/api/v1/categories/{ajena.pk}/",
+            self.payload(ajena, monthly_alert_threshold=5000.0),
+            content_type="application/json",
+            **auth_header(client, user),
+        )
+
+        assert response.status_code in [403, 404]
+        ajena.refresh_from_db()
+        assert ajena.monthly_alert_threshold is None

@@ -5,6 +5,16 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [Mobile 1.33.0+44] — 2026-11-21
+
+Paridad con la web en la edición de categorías. Usa el endpoint de edición que la API ya tenía; sin cambios en el backend ni bump de la web.
+
+### Added
+
+- **Editar categorías en la app**: lápiz en los grupos y subcategorías propios que abre el mismo formulario de creación precargado (nombre, color, ícono y límite mensual) y guarda con `PATCH /api/v1/categories/{id}/`. En las subcategorías de gasto se puede definir, cambiar o borrar (dejando el campo vacío) el límite mensual, que antes solo se podía cargar al crearlas. Las categorías del sistema siguen sin poder editarse, como en la web: solo se ocultan.
+
+---
+
 ## [Mobile 1.32.0+43] — 2026-11-21
 
 Paridad con la web 1.37.0 en la detección de gastos fijos (DT-053). Necesita el backend de esta versión en producción: usa endpoints nuevos. Sin cambio de versión web.

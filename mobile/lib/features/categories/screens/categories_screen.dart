@@ -34,7 +34,7 @@ class CategoriesScreen extends ConsumerWidget {
           ),
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => _showCreateDialog(context, ref, null),
+            onPressed: () => _showCategorySheet(context, ref),
           ),
         ],
       ),
@@ -48,24 +48,32 @@ class CategoriesScreen extends ConsumerWidget {
       ),
     );
   }
+}
 
-  void _showCreateDialog(BuildContext context, WidgetRef ref, Map<String, dynamic>? parentGroup) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (ctx) => _CreateCategorySheet(
-        parentGroup: parentGroup,
-        onCreated: () {
-          ref.invalidate(allCategoriesProvider);
-          ref.invalidate(categoriesProvider);
-          ref.invalidate(incomeCategoriesProvider);
-        },
-      ),
-    );
-  }
+void _showCategorySheet(
+  BuildContext context,
+  WidgetRef ref, {
+  Map<String, dynamic>? parentGroup,
+  String? forceType,
+  Map<String, dynamic>? existing,
+}) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+    ),
+    builder: (ctx) => _CategoryFormSheet(
+      parentGroup: parentGroup,
+      forceType: forceType,
+      existing: existing,
+      onSaved: () {
+        ref.invalidate(allCategoriesProvider);
+        ref.invalidate(categoriesProvider);
+        ref.invalidate(incomeCategoriesProvider);
+      },
+    ),
+  );
 }
 
 class _CategoriesList extends StatelessWidget {
@@ -87,7 +95,7 @@ class _CategoriesList extends StatelessWidget {
         _SectionHeader(
           title: 'Gastos',
           color: context.semanticColors.expense,
-          onAdd: () => _showCreate(context, null, 'EXPENSE'),
+          onAdd: () => _showCategorySheet(context, ref, forceType: 'EXPENSE'),
         ),
         ...expenseGroups.map((group) => _GroupTile(
               group: group,
@@ -95,13 +103,14 @@ class _CategoriesList extends StatelessWidget {
                   .where((c) => c['parent'] == group['id'])
                   .toList(),
               ref: ref,
-              onAdd: () => _showCreate(context, group, 'EXPENSE'),
+              onAdd: () => _showCategorySheet(context, ref,
+                  parentGroup: group, forceType: 'EXPENSE'),
             )),
         const SizedBox(height: 16),
         _SectionHeader(
           title: 'Ingresos',
           color: context.semanticColors.income,
-          onAdd: () => _showCreate(context, null, 'INCOME'),
+          onAdd: () => _showCategorySheet(context, ref, forceType: 'INCOME'),
         ),
         ...incomeGroups.map((group) => _GroupTile(
               group: group,
@@ -109,28 +118,10 @@ class _CategoriesList extends StatelessWidget {
                   .where((c) => c['parent'] == group['id'])
                   .toList(),
               ref: ref,
-              onAdd: () => _showCreate(context, group, 'INCOME'),
+              onAdd: () => _showCategorySheet(context, ref,
+                  parentGroup: group, forceType: 'INCOME'),
             )),
       ],
-    );
-  }
-
-  void _showCreate(BuildContext context, Map<String, dynamic>? parent, String type) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (ctx) => _CreateCategorySheet(
-        parentGroup: parent,
-        forceType: type,
-        onCreated: () {
-          ref.invalidate(allCategoriesProvider);
-          ref.invalidate(categoriesProvider);
-          ref.invalidate(incomeCategoriesProvider);
-        },
-      ),
     );
   }
 }
@@ -282,6 +273,15 @@ class _GroupTile extends StatelessWidget {
                 onPressed: () => _toggleHidden(context, isHidden),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
+              )
+            else
+              IconButton(
+                icon: Icon(Icons.edit_outlined, size: 18, color: Colors.grey[600]),
+                tooltip: 'Editar grupo',
+                onPressed: () => _showCategorySheet(context, ref,
+                    forceType: group['type'] as String, existing: group),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
               ),
             IconButton(
               icon: const Icon(Icons.add, size: 18),
@@ -294,7 +294,7 @@ class _GroupTile extends StatelessWidget {
           ],
         ),
         children: [
-          ...subcats.map((sub) => _SubcatTile(subcat: sub, ref: ref)),
+          ...subcats.map((sub) => _SubcatTile(subcat: sub, group: group, ref: ref)),
           if (subcats.isEmpty)
             const Padding(
               padding: EdgeInsets.fromLTRB(16, 4, 16, 12),
@@ -309,9 +309,10 @@ class _GroupTile extends StatelessWidget {
 
 class _SubcatTile extends StatelessWidget {
   final Map<String, dynamic> subcat;
+  final Map<String, dynamic> group;
   final WidgetRef ref;
 
-  const _SubcatTile({required this.subcat, required this.ref});
+  const _SubcatTile({required this.subcat, required this.group, required this.ref});
 
   Color get _color {
     final hex = subcat['color'] as String? ?? '#6c757d';
@@ -425,34 +426,52 @@ class _SubcatTile extends StatelessWidget {
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
             )
-          : IconButton(
-              icon: Icon(Icons.delete_outline,
-                  size: 18, color: Colors.grey[400]),
-              onPressed: () => _delete(context),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.edit_outlined, size: 18, color: Colors.grey[600]),
+                  tooltip: 'Editar subcategoría',
+                  onPressed: () => _showCategorySheet(context, ref,
+                      parentGroup: group,
+                      forceType: subcat['type'] as String,
+                      existing: subcat),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+                const SizedBox(width: 12),
+                IconButton(
+                  icon: Icon(Icons.delete_outline,
+                      size: 18, color: Colors.grey[400]),
+                  tooltip: 'Eliminar',
+                  onPressed: () => _delete(context),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ],
             ),
     );
   }
 }
 
-class _CreateCategorySheet extends ConsumerStatefulWidget {
+class _CategoryFormSheet extends ConsumerStatefulWidget {
   final Map<String, dynamic>? parentGroup;
   final String? forceType;
-  final VoidCallback onCreated;
+  final Map<String, dynamic>? existing;
+  final VoidCallback onSaved;
 
-  const _CreateCategorySheet({
+  const _CategoryFormSheet({
     this.parentGroup,
     this.forceType,
-    required this.onCreated,
+    this.existing,
+    required this.onSaved,
   });
 
   @override
-  ConsumerState<_CreateCategorySheet> createState() =>
-      _CreateCategorySheetState();
+  ConsumerState<_CategoryFormSheet> createState() => _CategoryFormSheetState();
 }
 
-class _CreateCategorySheetState extends ConsumerState<_CreateCategorySheet> {
+class _CategoryFormSheetState extends ConsumerState<_CategoryFormSheet> {
   final _nameCtrl = TextEditingController();
   final _thresholdCtrl = TextEditingController();
   String _type = 'EXPENSE';
@@ -470,6 +489,14 @@ class _CreateCategorySheetState extends ConsumerState<_CreateCategorySheet> {
   void initState() {
     super.initState();
     if (widget.forceType != null) _type = widget.forceType!;
+    final existing = widget.existing;
+    if (existing != null) {
+      _nameCtrl.text = existing['name'] as String? ?? '';
+      _color = existing['color'] as String? ?? _color;
+      _icon = existing['icon'] as String? ?? _icon;
+      final threshold = existing['monthly_alert_threshold'] as String?;
+      if (threshold != null) _thresholdCtrl.text = apiAmountToInput(threshold);
+    }
   }
 
   @override
@@ -489,23 +516,31 @@ class _CreateCategorySheetState extends ConsumerState<_CreateCategorySheet> {
       _loading = true;
     });
 
+    final existing = widget.existing;
+    final hasThreshold = widget.parentGroup != null && _type == 'EXPENSE';
+    final thresholdText = _thresholdCtrl.text.trim();
+    // El serializer valida el umbral contra type y parent, así que se mandan
+    // también al editar. Al editar, el campo vacío borra el umbral.
     final data = {
       'name': _nameCtrl.text.trim(),
       'type': _type,
       'color': _color,
       'icon': _icon,
       if (widget.parentGroup != null) 'parent': widget.parentGroup!['id'],
-      if (widget.parentGroup != null &&
-          _type == 'EXPENSE' &&
-          _thresholdCtrl.text.trim().isNotEmpty)
-        'monthly_alert_threshold': parseArgentineAmount(_thresholdCtrl.text),
+      if (hasThreshold && (thresholdText.isNotEmpty || existing != null))
+        'monthly_alert_threshold':
+            thresholdText.isEmpty ? null : parseArgentineAmount(thresholdText),
     };
 
     try {
       final repo = ref.read(expenseRepositoryProvider);
-      await repo.createCategory(data);
+      if (existing != null) {
+        await repo.updateCategory(existing['id'] as int, data);
+      } else {
+        await repo.createCategory(data);
+      }
       if (mounted) Navigator.pop(context);
-      widget.onCreated();
+      widget.onSaved();
     } catch (e) {
       setState(() => _loading = false);
       if (mounted) {
@@ -519,9 +554,12 @@ class _CreateCategorySheetState extends ConsumerState<_CreateCategorySheet> {
   @override
   Widget build(BuildContext context) {
     final isSubcat = widget.parentGroup != null;
-    final title = isSubcat
-        ? 'Nueva subcategoría en "${widget.parentGroup!['name']}"'
-        : 'Nuevo grupo de categoría';
+    final isEdit = widget.existing != null;
+    final title = isEdit
+        ? (isSubcat ? 'Editar subcategoría' : 'Editar grupo')
+        : isSubcat
+            ? 'Nueva subcategoría en "${widget.parentGroup!['name']}"'
+            : 'Nuevo grupo de categoría';
 
     return Padding(
       padding: EdgeInsets.only(
@@ -538,7 +576,7 @@ class _CreateCategorySheetState extends ConsumerState<_CreateCategorySheet> {
           const SizedBox(height: 16),
           TextField(
             controller: _nameCtrl,
-            autofocus: true,
+            autofocus: !isEdit,
             decoration: InputDecoration(
               labelText: 'Nombre *',
               errorText: _nameError,
@@ -677,7 +715,7 @@ class _CreateCategorySheetState extends ConsumerState<_CreateCategorySheet> {
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Crear'),
+                  : Text(isEdit ? 'Guardar' : 'Crear'),
             ),
           ),
           const SizedBox(height: 16),

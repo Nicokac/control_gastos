@@ -88,6 +88,11 @@ class ExpenseRepository {
     return response.data as Map<String, dynamic>;
   }
 
+  Future<Map<String, dynamic>> updateCategory(int id, Map<String, dynamic> data) async {
+    final response = await ApiService.dio.patch('${ApiConstants.categories}$id/', data: data);
+    return response.data as Map<String, dynamic>;
+  }
+
   Future<void> deleteCategory(int id) async {
     await ApiService.dio.delete('${ApiConstants.categories}$id/');
   }
