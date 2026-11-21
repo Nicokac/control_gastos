@@ -2,15 +2,19 @@
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
+from django.views import View
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
 from apps.core.utils import get_month_name
 from apps.core.views import UserFormKwargsMixin
+from apps.expenses.models import Expense
 
+from .detection import find_suggestion
 from .forms import RecurringExpenseForm
-from .models import RecurringExpense
+from .models import DismissedRecurringSuggestion, RecurringExpense
 
 
 class RecurringExpenseListView(LoginRequiredMixin, ListView):
@@ -62,17 +66,46 @@ class RecurringExpenseCreateView(LoginRequiredMixin, UserFormKwargsMixin, Create
     template_name = "recurring/recurring_form.html"
     success_url = reverse_lazy("recurring:list")
 
+    def get_suggestion(self):
+        """Sugerencia de DT-053 desde la que se crea, recalculada: nunca se confía en ids del request."""
+        if not hasattr(self, "_suggestion"):
+            key = self.request.POST.get("suggestion") or self.request.GET.get("suggestion")
+            self._suggestion = find_suggestion(self.request.user, key) if key else None
+        return self._suggestion
+
+    def get_initial(self):
+        initial = super().get_initial()
+        suggestion = self.get_suggestion()
+        if suggestion:
+            initial.update(
+                name=suggestion.name,
+                category=suggestion.category,
+                due_day=suggestion.due_day,
+                estimated_amount=suggestion.amount,
+            )
+        return initial
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["is_edit"] = False
+        context["suggestion"] = self.get_suggestion()
         return context
 
     def form_valid(self, form):
         form.instance.user = self.request.user
         response = super().form_valid(form)
-        messages.success(
-            self.request, f"Gasto recurrente '{self.object.name}' creado correctamente."
-        )
+        suggestion = self.get_suggestion()
+        linked = 0
+        if suggestion:
+            # update() y no save(): vincular pagos viejos no debe disparar alertas de gastos.
+            linked = Expense.objects.filter(
+                pk__in=suggestion.expense_ids, user=self.request.user, recurring__isnull=True
+            ).update(recurring=self.object)
+        text = f"Gasto recurrente '{self.object.name}' creado correctamente."
+        if linked:
+            noun = "pago quedó vinculado" if linked == 1 else "pagos quedaron vinculados"
+            text += f" {linked} {noun}."
+        messages.success(self.request, text)
         return response
 
     def form_invalid(self, form):
@@ -123,3 +156,14 @@ class RecurringExpenseDeleteView(LoginRequiredMixin, DeleteView):
         response = super().form_valid(form)
         messages.success(self.request, f"Gasto recurrente '{name}' eliminado correctamente.")
         return response
+
+
+class RecurringSuggestionDismissView(LoginRequiredMixin, View):
+    """ "No, gracias" en la sugerencia de gasto fijo de la lista de gastos (DT-053)."""
+
+    def post(self, request):
+        key = request.POST.get("suggestion", "").strip()
+        if key:
+            DismissedRecurringSuggestion.objects.get_or_create(user=request.user, key=key[:255])
+            messages.success(request, "Listo, no te lo vamos a sugerir de nuevo.")
+        return redirect("expenses:list")

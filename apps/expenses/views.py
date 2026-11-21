@@ -33,6 +33,7 @@ from apps.core.views import (
     UserOwnedListView,
     UserOwnedUpdateView,
 )
+from apps.recurring.detection import find_recurring_suggestions
 
 from .forms import ExpenseFilterForm, ExpenseForm
 from .models import Expense
@@ -180,6 +181,8 @@ class ExpenseListView(UserOwnedListView):
             form_data = {"month": today.month, "year": today.year}
 
         context["filter_form"] = ExpenseFilterForm(form_data, user=self.request.user)
+        suggestions = find_recurring_suggestions(self.request.user)
+        context["recurring_suggestion"] = suggestions[0] if suggestions else None
         context["has_active_filters"] = any(
             self.request.GET.get(key)
             for key in [

@@ -5,6 +5,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.37.0] — 2026-11-21
+
+### Added
+
+- **Detección de gastos fijos encubiertos (DT-053)**: si un gasto con la misma descripción (normalizada como en las reglas) aparece una vez por mes durante 3 meses seguidos o más, con montos dentro de ±20% de la mediana y en la misma moneda, la lista de Gastos muestra un banner que sugiere convertirlo en gasto fijo. "Crear gasto fijo" abre el formulario precargado (nombre, categoría, día y monto del último pago) y al guardar vincula los pagos detectados, así el mes actual ya figura pagado y no llega el recordatorio de algo pago. "No, gracias" lo descarta para siempre (`DismissedRecurringSuggestion`). Quedan afuera los aportes a metas de ahorro, los gastos ya vinculados y las descripciones que coinciden con un gasto fijo existente.
+
+---
+
 ## [Mobile 1.31.0+42] — 2026-11-20
 
 Notificaciones push, Fase E4/E5 (D-019). Como en las fases anteriores, el backend no pasa a `main` hasta tener lista esta versión: la app vieja recibiría avisos que al tocarlos no abren nada. Sin bump de la web: lo único visible ahí es el interruptor del perfil, que pasa de "Resumen semanal" a "Resúmenes".

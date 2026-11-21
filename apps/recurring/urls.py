@@ -11,4 +11,9 @@ urlpatterns = [
     path("create/", views.RecurringExpenseCreateView.as_view(), name="create"),
     path("<int:pk>/edit/", views.RecurringExpenseUpdateView.as_view(), name="update"),
     path("<int:pk>/delete/", views.RecurringExpenseDeleteView.as_view(), name="delete"),
+    path(
+        "suggestions/dismiss/",
+        views.RecurringSuggestionDismissView.as_view(),
+        name="dismiss_suggestion",
+    ),
 ]

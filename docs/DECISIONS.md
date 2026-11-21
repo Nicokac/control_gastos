@@ -812,13 +812,24 @@ Al seleccionar USD en gastos o ingresos, la cotización oficial se completa auto
 
 ### DT-053 — Detección de suscripciones encubiertas
 
-**Estado:** ⏳ Pendiente
+**Estado:** 🟡 En progreso — ✅ web (v1.37.0) · ⏳ mobile
 
 Si un gasto con la misma descripción y monto similar aparece 2-3 meses consecutivos, la app no lo detecta ni sugiere convertirlo en gasto fijo.
 
 **Why:** muchos gastos recurrentes (Spotify, Netflix, membresías) se cargan manualmente mes a mes sin que el usuario los vincule. Ya existe toda la infraestructura de `recurring`; solo falta la detección.
 
 **Camino de resolución:** query mensual sobre `Expense` agrupada por descripción normalizada. Si aparece ≥3 meses seguidos con monto en rango ±20%, mostrar banner en la lista de gastos: "¿Convertir en gasto fijo?". Un click pre-completa el formulario de `RecurringExpense`.
+
+**Resolución web (v1.37.0):**
+- **Detección al vuelo, sin tabla de candidatos** (`apps/recurring/detection.py`): gastos de los últimos 6 meses sin gasto fijo ni meta de ahorro, agrupados en Python con `normalize_text` de las reglas (la normalización no existe en SQL y son pocos cientos de filas por usuario). Siempre 3 consultas, sin importar la cantidad de gastos.
+- **Criterio**: racha de meses seguidos con **exactamente un** gasto por mes, que termina en el mes actual o el anterior (si dejó de aparecer hace dos meses, ya no es un gasto activo), de al menos 3 meses, misma moneda y montos dentro de ±20% de la mediana. "Exactamente uno" deja afuera "super", "uber" y similares, que se repiten varias veces por mes; un mes con dos cargas corta la racha, a propósito.
+- **Exclusiones**: gastos ya vinculados a un gasto fijo; descripciones iguales al nombre de un gasto fijo existente (activo o no: el usuario ya lo conoce); aportes a metas de ahorro, que se repiten pero no son un gasto fijo; y las sugerencias descartadas.
+- **Vincular los pagos detectados al crear** (decisión del usuario): si no, el pago de este mes ya cargado deja el gasto fijo como pendiente y llega un recordatorio push de algo pago. Se vinculan solo los gastos de la racha, con `update()` para no disparar las alertas de gastos de `post_save`. La vista recalcula la sugerencia desde la clave normalizada en vez de recibir ids del request: no hay forma de vincular gastos ajenos.
+- **"No, gracias" persiste** en `DismissedRecurringSuggestion` (usuario, descripción normalizada): sin esto la sugerencia volvería en cada visita.
+- **Una sugerencia a la vez**, la de más meses (y después mayor monto), en un banner arriba de la lista de Gastos (decisión del usuario). Al resolverla aparece la siguiente.
+- 31 tests en `apps/recurring/tests/test_detection.py`. El test de consultas de la lista de gastos sube su tope de 11 a 14.
+
+**Pendiente — mobile:** endpoint en la API (sugerencias, descartar y crear vinculando) y banner en la lista de gastos de la app.
 
 ---
 

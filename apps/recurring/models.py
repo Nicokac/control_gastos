@@ -159,3 +159,25 @@ class RecurringExpense(TimestampMixin, models.Model):
         if year == today.year and month == today.month and today.day > self.due_day:
             return "overdue"
         return "pending"
+
+
+class DismissedRecurringSuggestion(TimestampMixin, models.Model):
+    """Gasto repetido que el usuario no quiere convertir en gasto fijo (DT-053), para no sugerirlo de nuevo."""
+
+    user = models.ForeignKey(
+        "users.User",
+        on_delete=models.CASCADE,
+        related_name="dismissed_recurring_suggestions",
+        verbose_name="Usuario",
+    )
+    key = models.CharField(max_length=255, verbose_name="Descripción normalizada")
+
+    class Meta:
+        verbose_name = "Sugerencia de gasto fijo descartada"
+        verbose_name_plural = "Sugerencias de gasto fijo descartadas"
+        constraints = [
+            models.UniqueConstraint(fields=["user", "key"], name="unique_dismissed_suggestion"),
+        ]
+
+    def __str__(self):
+        return f"{self.user} - {self.key}"

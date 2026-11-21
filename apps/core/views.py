@@ -162,9 +162,18 @@ def exchange_rate_today(request):
     return JsonResponse(quote)
 
 
-APP_VERSION = "1.36.0"
+APP_VERSION = "1.37.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.37.0",
+        "date": "Noviembre 2026",
+        "title": "Detectamos tus gastos fijos",
+        "items": [
+            "Nuevo: si cargás el mismo gasto todos los meses (Netflix, el gimnasio, una membresía) por montos parecidos, en Gastos te sugerimos convertirlo en gasto fijo",
+            'Con un clic se completa el gasto fijo y los pagos que ya cargaste quedan vinculados. Si no te interesa, tocá "No, gracias" y no te lo sugerimos más',
+        ],
+    },
     {
         "version": "1.36.0",
         "date": "Noviembre 2026",

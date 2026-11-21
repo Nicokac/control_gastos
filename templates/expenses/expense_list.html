@@ -28,6 +28,8 @@
 
 {% quick_expense_bar %}
 
+{% if recurring_suggestion %}{% include 'recurring/_suggestion_banner.html' %}{% endif %}
+
 <!-- Filtros -->
 <div class="card mb-4">
     <div class="card-body">

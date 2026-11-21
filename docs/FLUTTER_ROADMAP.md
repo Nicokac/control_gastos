@@ -11,7 +11,7 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 - ✅ API REST completa (DRF + JWT, todos los endpoints)
 - ✅ App Flutter publicada en Google Play — producción, Mobile 1.29.0+39 (resumen semanal y carga rápida), solo Argentina
 - 🟡 Mobile 1.30.0+41 (reglas de categorías; incluye el fix de login de la 1.29.1+40) en prueba interna
-- 🟡 Mobile 1.31.0+42 (avisos de ingreso fijo sin registrar y de sobrante al empezar el período) lista para subir
+- 🟡 Mobile 1.31.0+42 (avisos de ingreso fijo sin registrar y de sobrante al empezar el período) en prueba interna
 - ✅ Prueba cerrada con testers completada y acceso a producción aprobado (ver Fase 8)
 - ✅ Paridad con la web en reglas de categorías (Mobile 1.30.0+41)
 

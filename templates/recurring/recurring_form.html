@@ -12,10 +12,17 @@
             <h1 class="h4 mb-0">{% if is_edit %}Editar{% else %}Nuevo{% endif %} gasto fijo</h1>
         </div>
 
+        {% if suggestion %}
+        <div class="alert alert-info small">
+            <i class="bi bi-magic me-1"></i>Completamos los datos con tus gastos de <strong>{{ suggestion.name }}</strong>. Al guardar, {% if suggestion.expense_ids|length == 1 %}el pago detectado queda vinculado{% else %}los {{ suggestion.expense_ids|length }} pagos detectados quedan vinculados{% endif %} a este gasto fijo.
+        </div>
+        {% endif %}
+
         <div class="card">
             <div class="card-body p-4">
                 <form method="post" novalidate>
                     {% csrf_token %}
+                    {% if suggestion %}<input type="hidden" name="suggestion" value="{{ suggestion.key }}">{% endif %}
 
                     <div class="mb-3">
                         <label for="{{ form.name.id_for_label }}" class="form-label fw-semibold">Nombre</label>
