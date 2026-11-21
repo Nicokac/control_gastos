@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from apps.categories.models import Category
 from apps.core.constants import CategoryType
+from apps.recurring.detection import find_suggestion, link_suggestion_expenses
 from apps.recurring.models import RecurringExpense
 
 
@@ -15,6 +16,12 @@ class RecurringExpenseSerializer(serializers.ModelSerializer):
     display_amount = serializers.SerializerMethodField()
     is_estimated_amount = serializers.BooleanField(read_only=True)
     status = serializers.SerializerMethodField()
+    suggestion = serializers.CharField(
+        write_only=True,
+        required=False,
+        allow_blank=True,
+        help_text="Clave de la sugerencia de gasto fijo (DT-053): al crear, vincula sus pagos.",
+    )
 
     class Meta:
         model = RecurringExpense
@@ -40,6 +47,7 @@ class RecurringExpenseSerializer(serializers.ModelSerializer):
             "is_estimated_amount",
             "status",
             "created_at",
+            "suggestion",
         ]
         read_only_fields = [
             "id",
@@ -79,5 +87,30 @@ class RecurringExpenseSerializer(serializers.ModelSerializer):
         return category
 
     def create(self, validated_data):
-        validated_data["user"] = self.context["request"].user
-        return super().create(validated_data)
+        key = validated_data.pop("suggestion", "")
+        user = self.context["request"].user
+        suggestion = find_suggestion(user, key) if key else None
+        validated_data["user"] = user
+        recurring = super().create(validated_data)
+        if suggestion:
+            link_suggestion_expenses(suggestion, recurring)
+        return recurring
+
+    def update(self, instance, validated_data):
+        validated_data.pop("suggestion", None)
+        return super().update(instance, validated_data)
+
+
+class RecurringSuggestionSerializer(serializers.Serializer):
+    key = serializers.CharField()
+    name = serializers.CharField()
+    category = serializers.IntegerField(source="category.pk")
+    category_name = serializers.CharField(source="category.name")
+    group_name = serializers.CharField(source="category.parent.name", default=None)
+    due_day = serializers.IntegerField()
+    amount = serializers.DecimalField(max_digits=12, decimal_places=2)
+    months = serializers.IntegerField()
+    expense_count = serializers.SerializerMethodField()
+
+    def get_expense_count(self, obj) -> int:
+        return len(obj.expense_ids)

@@ -10,6 +10,17 @@ class RecurringRepository {
     return _extractList(response.data);
   }
 
+  /// Gastos que se repiten cada mes y todavía no son gastos fijos (DT-053).
+  Future<List<dynamic>> getSuggestions() async {
+    final response = await ApiService.dio.get(ApiConstants.recurringSuggestions);
+    return response.data as List<dynamic>;
+  }
+
+  Future<void> dismissSuggestion(String key) async {
+    await ApiService.dio
+        .post(ApiConstants.recurringDismissSuggestion, data: {'suggestion': key});
+  }
+
   Future<Map<String, dynamic>> createRecurring(Map<String, dynamic> data) async {
     final response = await ApiService.dio.post(ApiConstants.recurring, data: data);
     return response.data as Map<String, dynamic>;

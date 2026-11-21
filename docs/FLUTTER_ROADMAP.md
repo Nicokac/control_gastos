@@ -12,6 +12,7 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 - ✅ App Flutter publicada en Google Play — producción, Mobile 1.29.0+39 (resumen semanal y carga rápida), solo Argentina
 - 🟡 Mobile 1.30.0+41 (reglas de categorías; incluye el fix de login de la 1.29.1+40) en prueba interna
 - 🟡 Mobile 1.31.0+42 (avisos de ingreso fijo sin registrar y de sobrante al empezar el período) en prueba interna
+- 🟡 Mobile 1.32.0+43 (sugerencia de gasto fijo, paridad con la web 1.37.0) lista para subir
 - ✅ Prueba cerrada con testers completada y acceso a producción aprobado (ver Fase 8)
 - ✅ Paridad con la web en reglas de categorías (Mobile 1.30.0+41)
 
@@ -410,3 +411,4 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-11-17 | Fix | Login trabado tras reinstalar: el backup automático de Android restauraba los tokens cifrados sin la clave del Keystore. Se desactiva `allowBackup`. Mobile 1.29.1+40. |
 | 2026-11-19 | Fase 8 | Reglas de categorías (paridad con la web 1.33.0): pantalla "Reglas" desde la varita de Categorías para listar, crear, editar y borrar reglas, con el selector agrupado de la carga rápida (`pickExpenseCategory`). Backend: endpoint nuevo `/api/v1/category-rules/` con las validaciones de `CategoryRuleForm`. Bump a 1.30.0+41. |
 | 2026-11-20 | Fase 8 | Avisos E4/E5 (D-019): "¿Ya cobraste?" abre Ingresos e "inicio del período" abre el dashboard con `go`; íconos en el historial; interruptores y canales renombrados a "Gastos e ingresos fijos" y "Resúmenes". Bump a 1.31.0+42. |
+| 2026-11-21 | Fase 8 | Sugerencia de gasto fijo (DT-053, paridad con la web 1.37.0): banner en Gastos con "Crear gasto fijo" (formulario precargado; el backend vincula los pagos detectados) y "No, gracias". Endpoints `recurring/suggestions/` y `recurring/dismiss-suggestion/`. Bump a 1.32.0+43. |

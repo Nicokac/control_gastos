@@ -10,9 +10,8 @@ from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
 from apps.core.utils import get_month_name
 from apps.core.views import UserFormKwargsMixin
-from apps.expenses.models import Expense
 
-from .detection import find_suggestion
+from .detection import find_suggestion, link_suggestion_expenses
 from .forms import RecurringExpenseForm
 from .models import DismissedRecurringSuggestion, RecurringExpense
 
@@ -93,14 +92,9 @@ class RecurringExpenseCreateView(LoginRequiredMixin, UserFormKwargsMixin, Create
 
     def form_valid(self, form):
         form.instance.user = self.request.user
-        response = super().form_valid(form)
         suggestion = self.get_suggestion()
-        linked = 0
-        if suggestion:
-            # update() y no save(): vincular pagos viejos no debe disparar alertas de gastos.
-            linked = Expense.objects.filter(
-                pk__in=suggestion.expense_ids, user=self.request.user, recurring__isnull=True
-            ).update(recurring=self.object)
+        response = super().form_valid(form)
+        linked = link_suggestion_expenses(suggestion, self.object) if suggestion else 0
         text = f"Gasto recurrente '{self.object.name}' creado correctamente."
         if linked:
             noun = "pago quedó vinculado" if linked == 1 else "pagos quedaron vinculados"

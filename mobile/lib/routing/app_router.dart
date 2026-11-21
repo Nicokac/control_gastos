@@ -247,7 +247,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (c, s) => _buildPage(
           context: c,
           state: s,
-          child: const RecurringFormScreen(),
+          child: RecurringFormScreen(
+            suggestion: s.extra as Map<String, dynamic>?,
+          ),
         ),
       ),
       GoRoute(

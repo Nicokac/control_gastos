@@ -8,7 +8,10 @@ import '../../../core/utils/formatters.dart';
 class RecurringFormScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic>? existing;
 
-  const RecurringFormScreen({super.key, this.existing});
+  /// Sugerencia de DT-053: precarga el formulario y, al crear, el backend vincula sus pagos.
+  final Map<String, dynamic>? suggestion;
+
+  const RecurringFormScreen({super.key, this.existing, this.suggestion});
 
   @override
   ConsumerState<RecurringFormScreen> createState() =>
@@ -36,6 +39,16 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
   @override
   void initState() {
     super.initState();
+    final s = widget.suggestion;
+    if (s != null) {
+      _nameCtrl.text = s['name'] as String? ?? '';
+      _dueDay = s['due_day'] as int? ?? 1;
+      _categoryId = s['category'] as int?;
+      final amount = double.tryParse(s['amount']?.toString() ?? '');
+      if (amount != null) {
+        _estimatedAmountCtrl.text = amount.toStringAsFixed(2).replaceAll('.', ',');
+      }
+    }
     final e = widget.existing;
     if (e != null) {
       _nameCtrl.text = e['name'] as String? ?? '';
@@ -158,6 +171,7 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
       },
       if (_estimatedAmountCtrl.text.trim().isNotEmpty)
         'estimated_amount': parseArgentineAmount(_estimatedAmountCtrl.text),
+      if (widget.suggestion != null) 'suggestion': widget.suggestion!['key'],
     };
 
     final notifier = ref.read(recurringListProvider.notifier);
@@ -208,6 +222,24 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            if (widget.suggestion != null) ...[
+              Card(
+                color: Theme.of(context).colorScheme.secondaryContainer,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text(
+                    'Completamos los datos con tus gastos de '
+                    '${widget.suggestion!['name']}. Al guardar, '
+                    '${widget.suggestion!['expense_count'] == 1 ? 'el pago detectado queda vinculado' : 'los ${widget.suggestion!['expense_count']} pagos detectados quedan vinculados'} '
+                    'a este gasto fijo.',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSecondaryContainer,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
             // Nombre
             TextFormField(
               controller: _nameCtrl,

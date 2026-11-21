@@ -8,6 +8,11 @@ final recurringRepositoryProvider = Provider<RecurringRepository>((ref) {
   return RecurringRepository();
 });
 
+final recurringSuggestionsProvider =
+    FutureProvider.autoDispose<List<dynamic>>((ref) {
+  return ref.read(recurringRepositoryProvider).getSuggestions();
+});
+
 class RecurringListNotifier extends AsyncNotifier<List<dynamic>> {
   @override
   Future<List<dynamic>> build() => _fetch();

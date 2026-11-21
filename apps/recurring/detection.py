@@ -76,7 +76,7 @@ def find_recurring_suggestions(user, today: date | None = None) -> list[Recurrin
             user=user, date__gte=window_start, recurring__isnull=True, saving__isnull=True
         )
         .exclude(description="")
-        .select_related("category")
+        .select_related("category__parent")
         .order_by("date", "id")
     )
     for expense in expenses:
@@ -106,3 +106,14 @@ def find_recurring_suggestions(user, today: date | None = None) -> list[Recurrin
 
 def find_suggestion(user, key: str) -> RecurringSuggestion | None:
     return next((s for s in find_recurring_suggestions(user) if s.key == key), None)
+
+
+def link_suggestion_expenses(suggestion: RecurringSuggestion, recurring) -> int:
+    """Vincula los pagos de la sugerencia al gasto fijo creado desde ella.
+
+    La sugerencia se busca antes de crear el gasto fijo: después, su nombre ya la excluye.
+    """
+    # update() y no save(): vincular pagos viejos no debe disparar alertas de gastos.
+    return Expense.objects.filter(
+        pk__in=suggestion.expense_ids, user=recurring.user, recurring__isnull=True
+    ).update(recurring=recurring)

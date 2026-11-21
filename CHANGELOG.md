@@ -5,6 +5,21 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [Mobile 1.32.0+43] — 2026-11-21
+
+Paridad con la web 1.37.0 en la detección de gastos fijos (DT-053). Necesita el backend de esta versión en producción: usa endpoints nuevos. Sin cambio de versión web.
+
+### Added
+
+- **Sugerencia de gasto fijo en la app (DT-053)**: banner arriba de la lista de Gastos con "Crear gasto fijo", que abre el formulario de gasto fijo precargado, y "No, gracias", que la descarta para siempre. Si la consulta falla no muestra nada.
+- **API**: `GET /api/v1/recurring/suggestions/`, `POST /api/v1/recurring/dismiss-suggestion/` y el campo opcional `suggestion` al crear un gasto fijo, que vincula los pagos detectados igual que la web.
+
+### Fixed
+
+- **Vinculación al crear desde una sugerencia**: la sugerencia se busca antes de crear el gasto fijo; después, su nombre la excluye de la detección y no se vinculaba nada. En la web funcionaba solo porque la vista la cacheaba al armar el formulario.
+
+---
+
 ## [1.37.0] — 2026-11-21
 
 ### Added

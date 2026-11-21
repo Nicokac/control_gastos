@@ -6,7 +6,7 @@ class ApiConstants {
 
   // Resumen de novedades de la versión actual (DT-068) — actualizar junto con el bump de pubspec.yaml.
   static const String latestReleaseSummary =
-      'Avisos nuevos: si un ingreso fijo no aparece registrado, al día siguiente te preguntamos si ya cobraste. Y el día que empieza tu período, te avisamos si el anterior cerró con sobrante para que lo pases a un ahorro.';
+      'Detectamos tus gastos fijos: si cargás el mismo gasto todos los meses (Netflix, el gimnasio) por montos parecidos, en Gastos te sugerimos convertirlo en gasto fijo. Los pagos que ya cargaste quedan vinculados.';
   static const String websiteUrl = 'https://controldegastos.ar';
   static const String termsUrl =
       'https://controldegastos.ar/terms/';
@@ -32,6 +32,8 @@ class ApiConstants {
   static const String savings = '/savings/';
   static const String rolloverSuggestions = '/rollover-suggestions/';
   static const String recurring = '/recurring/';
+  static const String recurringSuggestions = '/recurring/suggestions/';
+  static const String recurringDismissSuggestion = '/recurring/dismiss-suggestion/';
   static const String recurringIncome = '/recurring-income/';
   static const String sharedExpenses = '/shared-expenses/';
   static const String householdMembers = '/household-members/';

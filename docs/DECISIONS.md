@@ -812,7 +812,7 @@ Al seleccionar USD en gastos o ingresos, la cotización oficial se completa auto
 
 ### DT-053 — Detección de suscripciones encubiertas
 
-**Estado:** 🟡 En progreso — ✅ web (v1.37.0) · ⏳ mobile
+**Estado:** ✅ Resuelto (v1.37.0 web · Mobile 1.32.0+43)
 
 Si un gasto con la misma descripción y monto similar aparece 2-3 meses consecutivos, la app no lo detecta ni sugiere convertirlo en gasto fijo.
 
@@ -829,7 +829,12 @@ Si un gasto con la misma descripción y monto similar aparece 2-3 meses consecut
 - **Una sugerencia a la vez**, la de más meses (y después mayor monto), en un banner arriba de la lista de Gastos (decisión del usuario). Al resolverla aparece la siguiente.
 - 31 tests en `apps/recurring/tests/test_detection.py`. El test de consultas de la lista de gastos sube su tope de 11 a 14.
 
-**Pendiente — mobile:** endpoint en la API (sugerencias, descartar y crear vinculando) y banner en la lista de gastos de la app.
+**Resolución mobile (Mobile 1.32.0+43):**
+- **API sin endpoint nuevo de creación**: `POST /recurring/` acepta `suggestion` (solo escritura, ignorado al editar) y vincula con el mismo `link_suggestion_expenses` que la web. `GET /recurring/suggestions/` y `POST /recurring/dismiss-suggestion/` como acciones del viewset existente.
+- **La sugerencia se busca antes de crear el gasto fijo**: después, su nombre coincide con un gasto fijo y la detección la excluye. Por eso `link_suggestion_expenses` recibe la sugerencia ya calculada en vez de la clave.
+- **Banner que falla en silencio**: si la consulta de sugerencias falla, no se muestra nada; no es información crítica y no debe tapar la lista de gastos con un error.
+- El formulario de gasto fijo de la app recibe la sugerencia por `extra` de go_router, la precarga y manda la clave al guardar. Al volver, el banner vuelve a consultar.
+- 13 tests de API (`apps/api/tests/test_recurring_suggestions.py`) y 7 de widgets (`test/widget/recurring_suggestion_test.dart`). Verificado en emulador contra el backend local: banner, formulario precargado, 3 pagos vinculados y mes pagado, y descarte persistido.
 
 ---
 

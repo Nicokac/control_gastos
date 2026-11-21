@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/expense_provider.dart';
 import '../widgets/expense_tile.dart';
 import '../widgets/quick_expense_sheet.dart';
+import '../../recurring/widgets/recurring_suggestion_banner.dart';
 import '../../../core/theme/app_semantic_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/empty_state.dart';
@@ -78,6 +79,7 @@ class _ExpenseListContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        const RecurringSuggestionBanner(),
         _MonthSelector(notifier: notifier, months: months),
         if (expenses.isNotEmpty)
           Container(

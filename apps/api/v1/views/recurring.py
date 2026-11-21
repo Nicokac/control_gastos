@@ -1,13 +1,18 @@
 from django.utils import timezone
 
-from rest_framework import status, viewsets
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.api.v1.pagination import ConfigurablePageNumberPagination
-from apps.api.v1.serializers.recurring import RecurringExpenseSerializer
-from apps.recurring.models import RecurringExpense
+from apps.api.v1.serializers.recurring import (
+    RecurringExpenseSerializer,
+    RecurringSuggestionSerializer,
+)
+from apps.recurring.detection import find_recurring_suggestions
+from apps.recurring.models import DismissedRecurringSuggestion, RecurringExpense
 
 
 class RecurringExpenseViewSet(viewsets.ModelViewSet):
@@ -100,3 +105,24 @@ class RecurringExpenseViewSet(viewsets.ModelViewSet):
         ]
         serializer = self.get_serializer(items, many=True)
         return Response(serializer.data)
+
+    @extend_schema(responses=RecurringSuggestionSerializer(many=True))
+    @action(detail=False, methods=["get"])
+    def suggestions(self, request):
+        """Gastos que se repiten cada mes y todavía no son gastos fijos (DT-053)."""
+        suggestions = find_recurring_suggestions(request.user)
+        return Response(RecurringSuggestionSerializer(suggestions, many=True).data)
+
+    @extend_schema(
+        request=inline_serializer("DismissSuggestion", {"suggestion": serializers.CharField()}),
+        responses={204: None},
+    )
+    @action(detail=False, methods=["post"], url_path="dismiss-suggestion")
+    def dismiss_suggestion(self, request):
+        key = str(request.data.get("suggestion", "")).strip()
+        if not key:
+            return Response(
+                {"suggestion": ["Falta la sugerencia."]}, status=status.HTTP_400_BAD_REQUEST
+            )
+        DismissedRecurringSuggestion.objects.get_or_create(user=request.user, key=key[:255])
+        return Response(status=status.HTTP_204_NO_CONTENT)
