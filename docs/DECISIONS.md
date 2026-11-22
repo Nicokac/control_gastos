@@ -880,13 +880,22 @@ La carga era 100% manual. No existía forma de importar movimientos desde el ban
 
 ### DT-056 — Insights automáticos mensuales
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto en la web (v1.38.0) · ⏳ App mobile pendiente (fase 2)
 
 La app muestra datos pero no genera observaciones sobre ellos.
 
 **Why:** "gastaste 23% más en Delivery que tu promedio de 6 meses" o "mejor mes de ahorro del año" son frases que generan engagement y valor percibido sin que el usuario tenga que interpretar los gráficos.
 
 **Camino de resolución:** conjunto de reglas sobre queries que ya existen (evolución mensual, distribución por categoría). Renderizar como tarjetas en el dashboard o en una sección "Resumen del mes". Sin ML, solo comparativas sobre datos históricos del usuario.
+
+**Resolución (web, v1.38.0):** tarjeta "Tu {mes} en resumen" en el inicio, calculada en `apps/reports/insights.py`. Decisiones:
+- **Resume el último período cerrado, no el mes en curso.** Un mes a medias contra un promedio de meses completos siempre parece bajo, y el ritmo del mes en curso ya lo cubren la proyección al cierre y el gráfico de ritmo (DT-111, DT-117). Al navegar a un mes pasado se resume ese mes. Con inicio de período distinto de 1, se retrocede hasta el último período cuyo fin ya pasó.
+- **Período financiero**, igual que el balance del inicio.
+- **Cuatro reglas**: subcategoría ±25% contra su promedio (solo si la diferencia pesa al menos el 5% del gasto del período, para no destacar montos chicos), total ±10%, y mejor mes de ahorro del año (ingresos menos gastos; los aportes a metas cuentan como ahorro). Las subcategorías se ordenan por impacto; el total va después, porque suele ser consecuencia de ellas, y el mejor mes va primero. Máximo 3.
+- **Promedio sobre los períodos con gastos** de los últimos 6, con un mínimo de 3: un mes sin gastos suele ser falta de carga, no un mes barato. Sin historial suficiente no se muestra la tarjeta.
+- **Las frases se arman en el backend** (`Insight.text` y `Insight.as_html`) para que la web, la app y un aviso futuro digan lo mismo. En HTML, los montos llevan `sensitive-amount` (botón del ojo, DT-065) y el nombre de la categoría se escapa.
+- **La tarjeta va fuera del estado vacío del inicio**: el día que empieza un período todavía no hay movimientos, y es justo cuando el resumen del anterior es más útil.
+- **2 consultas fijas**: sumas condicionales por período agrupadas por subcategoría, y lo mismo para ingresos; funcionan igual en SQLite y PostgreSQL.
 
 ---
 
@@ -2489,6 +2498,18 @@ Reportado por Geri Rampersad: en la pantalla de crear meta de ahorro, los color 
 
 ### Riesgo aceptado
 Los comentarios genéricos sin detalle accionable ("dashboard muy simple", "editar gastos podría ser más fácil", "metas de ahorro poco claras") no se registran como deuda: no hay forma de saber qué cambiar. Si se repiten con usuarios reales después del lanzamiento, se vuelven a evaluar con más contexto.
+
+---
+
+### DT-120 — Límite mensual en subcategorías del sistema
+
+**Estado:** ⏳ Pendiente
+
+El límite mensual (`monthly_alert_threshold`, DT-088) se guarda en `Category`, así que solo se puede definir en subcategorías propias: las del sistema (Transporte, Supermercado…) son compartidas por todos los usuarios y no se editan, ni en la web ni en la app.
+
+**Why:** reportado por el propio usuario al querer ponerle límite a Transporte desde la app (2026-11-21). Casi todos los usuarios cargan sus gastos en categorías del sistema, así que hoy el límite queda fuera del alcance de la mayoría.
+
+**Camino de resolución:** guardar el límite por usuario en `CategoryOverride` (donde ya vive el "oculta para mí") y resolverlo con una función que priorice el override sobre el valor de la categoría. Adaptar `is_over_alert_threshold`, `spending_alerts.py`, el listado web, el serializer y la app, con un formulario de límite propio para las categorías del sistema. Necesita versión web minor y build mobile.
 
 ---
 

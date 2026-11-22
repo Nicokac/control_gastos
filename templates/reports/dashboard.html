@@ -70,6 +70,9 @@
 </div>
 {% endif %}
 
+{# Fuera del estado vacío: al empezar un período todavía no hay movimientos y el resumen del anterior es lo más útil. #}
+{% if monthly_insights %}{% include "reports/_insights_card.html" %}{% endif %}
+
 {% if income_total == 0 and expense_total == 0 and savings_count == 0 %}
 <!-- Estado vacío para usuario nuevo -->
 <div class="row mb-4">

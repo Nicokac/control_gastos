@@ -5,6 +5,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.38.0] — 2026-11-22
+
+### Added
+
+- **Resumen del último período cerrado (DT-056)**: tarjeta "Tu {mes} en resumen" en el inicio con hasta 3 observaciones calculadas por reglas sobre el historial del usuario (`apps/reports/insights.py`). En el mes en curso resume el último período financiero cerrado; al navegar a un mes pasado, resume ese mes. Reglas: subcategoría al menos 25% por encima o por debajo de su promedio, si la diferencia pesa al menos el 5% del gasto del período; gasto total al menos 10% distinto del promedio; mejor mes de ahorro del año (ingresos menos gastos, con al menos 3 períodos ese año). El promedio usa los últimos 6 períodos con gastos y hacen falta al menos 3. Los montos se ocultan con el botón del ojo y los nombres de categoría se escapan. Suma 2 consultas fijas al inicio.
+
+### Docs
+
+- **DT-120**: registrado como pendiente el límite mensual en subcategorías del sistema.
+
+---
+
 ## [Mobile 1.33.0+44] — 2026-11-21
 
 Paridad con la web en la edición de categorías. Usa el endpoint de edición que la API ya tenía; sin cambios en el backend ni bump de la web.

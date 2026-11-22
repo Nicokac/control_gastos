@@ -162,9 +162,19 @@ def exchange_rate_today(request):
     return JsonResponse(quote)
 
 
-APP_VERSION = "1.37.0"
+APP_VERSION = "1.38.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.38.0",
+        "date": "Noviembre 2026",
+        "title": "Tu mes en resumen",
+        "items": [
+            "Nuevo: en el inicio te contamos en pocas frases cómo te fue el mes que cerró, comparado con tus meses anteriores",
+            "Por ejemplo, en qué gastaste bastante más o bastante menos que de costumbre, o si fue tu mejor mes de ahorro del año",
+            "Los montos se ocultan con el botón del ojo, como el resto del inicio",
+        ],
+    },
     {
         "version": "1.37.0",
         "date": "Noviembre 2026",

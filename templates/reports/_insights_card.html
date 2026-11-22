@@ -1,0 +1,24 @@
+<!-- Resumen del último período cerrado (DT-056) -->
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body" style="padding: 1rem 1.5rem;">
+                <h2 class="h6 fw-semibold mb-3">
+                    <i class="bi bi-lightbulb text-primary me-1"></i>Tu {{ monthly_insights.label|lower }} en resumen
+                </h2>
+                <ul class="list-unstyled mb-0 d-flex flex-column gap-2">
+                    {% for insight in monthly_insights.items %}
+                    <li class="d-flex align-items-start gap-2">
+                        {% if insight.tone == "warning" %}
+                        <i class="bi bi-arrow-up-circle text-danger mt-1"></i>
+                        {% else %}
+                        <i class="bi bi-check-circle text-success mt-1"></i>
+                        {% endif %}
+                        <span>{{ insight.as_html }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

@@ -26,6 +26,8 @@ from apps.income.models import Income
 from apps.savings.models import MovementType, Saving, SavingMovement, SavingStatus
 from apps.savings.services import get_or_create_rollover_suggestion
 
+from .insights import build_monthly_insights
+
 
 class DashboardView(LoginRequiredMixin, TemplateView):
     """Dashboard principal con resumen financiero."""
@@ -129,6 +131,9 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context.update(self._get_expense_distribution(user, selected_month, selected_year))
         context.update(self._get_monthly_evolution(user, selected_month, selected_year))
         context.update(get_expense_projection(user, selected_month, selected_year))
+        context["monthly_insights"] = build_monthly_insights(
+            user, selected_month, selected_year, today
+        )
 
         return context
 

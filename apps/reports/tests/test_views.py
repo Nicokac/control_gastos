@@ -627,7 +627,7 @@ class TestDashboardQueryPerformance:
         # Baseline: ~8 queries (session, user, balance, budgets, savings, etc.)
         # +5 por sugerencia de traslado de sobrante (DT-067): balance del período
         # anterior (3 queries) + check de sugerencia existente + check de descartada.
-        with django_assert_max_num_queries(27):
+        with django_assert_max_num_queries(29):  # +2 del resumen del período cerrado (DT-056)
             authenticated_client.get(url_helper("dashboard"))
 
     def test_dashboard_with_data_query_count(
@@ -675,7 +675,7 @@ class TestDashboardQueryPerformance:
 
         # Con datos, queries deberían mantenerse constantes (no N+1)
         # +5 por sugerencia de traslado de sobrante (DT-067, ver test_dashboard_empty_query_count)
-        with django_assert_max_num_queries(27):
+        with django_assert_max_num_queries(29):  # +2 del resumen del período cerrado (DT-056)
             response = authenticated_client.get(url_helper("dashboard"))
 
         assert response.status_code == 200
@@ -729,7 +729,7 @@ class TestDashboardQueryPerformance:
         # Aún con más datos, queries deben mantenerse ~igual
         # Si hay N+1, esto fallaría (sería 50+ queries)
         # +5 por sugerencia de traslado de sobrante (DT-067, ver test_dashboard_empty_query_count)
-        with django_assert_max_num_queries(27):
+        with django_assert_max_num_queries(29):  # +2 del resumen del período cerrado (DT-056)
             response = authenticated_client.get(url_helper("dashboard"))
 
         assert response.status_code == 200
