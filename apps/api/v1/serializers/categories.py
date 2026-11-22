@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.categories.models import Category, CategoryRule
+from apps.categories.models import Category, CategoryOverride, CategoryRule
 from apps.categories.rules import normalize_text
 from apps.core.constants import CategoryType
 
@@ -73,31 +73,59 @@ class CategorySerializer(serializers.ModelSerializer):
             "is_over_alert_threshold",
         ]
 
-    def get_is_hidden(self, obj) -> bool:
-        if not obj.is_system:
-            return False
-        request = self.context.get("request")
-        if not request or not request.user.is_authenticated:
-            return False
-        return obj.user_overrides.filter(user=request.user, is_hidden=True).exists()
-
     def _request_user(self):
         request = self.context.get("request")
         if request and request.user.is_authenticated:
             return request.user
         return None
 
+    def _override(self, obj):
+        # Una sola consulta por pedido, compartida por todas las categorías del listado.
+        if "_overrides" not in self.context:
+            user = self._request_user()
+            self.context["_overrides"] = (
+                {o.category_id: o for o in CategoryOverride.objects.filter(user=user)}
+                if user
+                else {}
+            )
+        return self.context["_overrides"].get(obj.pk)
+
+    def _threshold(self, obj):
+        if not obj.is_system:
+            return obj.monthly_alert_threshold
+        override = self._override(obj)
+        return override.monthly_alert_threshold if override else None
+
+    def to_representation(self, obj):
+        data = super().to_representation(obj)
+        if obj.is_system:
+            # En las del sistema el límite es el de cada usuario (DT-120).
+            threshold = self._threshold(obj)
+            data["monthly_alert_threshold"] = (
+                None
+                if threshold is None
+                else self.fields["monthly_alert_threshold"].to_representation(threshold)
+            )
+        return data
+
+    def get_is_hidden(self, obj) -> bool:
+        if not obj.is_system:
+            return False
+        override = self._override(obj)
+        return bool(override and override.is_hidden)
+
     def get_current_month_spent(self, obj) -> str | None:
         user = self._request_user()
-        if user is None or obj.monthly_alert_threshold is None:
+        if user is None or self._threshold(obj) is None:
             return None
         return str(obj.current_month_spent(user))
 
     def get_is_over_alert_threshold(self, obj) -> bool:
         user = self._request_user()
-        if user is None:
+        threshold = self._threshold(obj)
+        if user is None or threshold is None:
             return False
-        return obj.is_over_alert_threshold(user)
+        return obj.current_month_spent(user) >= threshold
 
     def validate(self, attrs):
         user = self.context["request"].user

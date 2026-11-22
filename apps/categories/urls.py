@@ -21,4 +21,5 @@ urlpatterns = [
     path("<int:pk>/delete/", views.CategoryDeleteView.as_view(), name="delete"),
     path("<int:pk>/hide/", views.CategoryHideView.as_view(), name="hide"),
     path("<int:pk>/unhide/", views.CategoryUnhideView.as_view(), name="unhide"),
+    path("<int:pk>/limit/", views.CategoryLimitView.as_view(), name="limit"),
 ]

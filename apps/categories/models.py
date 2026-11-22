@@ -3,6 +3,7 @@
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator
 from django.db import models
 
 from apps.core.constants import CategoryType
@@ -192,11 +193,22 @@ class Category(TimestampMixin, models.Model):
         )
         return result["total"] or Decimal("0")
 
+    def alert_threshold_for(self, user):
+        """Límite mensual que aplica a `user`: en las del sistema, el que cargó ese usuario (DT-120)."""
+        if not self.is_system:
+            return self.monthly_alert_threshold
+        return (
+            CategoryOverride.objects.filter(user=user, category=self)
+            .values_list("monthly_alert_threshold", flat=True)
+            .first()
+        )
+
     def is_over_alert_threshold(self, user):
         """Verdadero si el gasto del mes en curso ya superó el umbral configurado."""
-        if self.monthly_alert_threshold is None:
+        threshold = self.alert_threshold_for(user)
+        if threshold is None:
             return False
-        return self.current_month_spent(user) >= self.monthly_alert_threshold
+        return self.current_month_spent(user) >= threshold
 
     @classmethod
     def _exclude_hidden(cls, queryset, user):
@@ -295,6 +307,14 @@ class CategoryOverride(TimestampMixin, models.Model):
         verbose_name="Categoría",
     )
     is_hidden = models.BooleanField(default=False, verbose_name="Oculta")
+    monthly_alert_threshold = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(Decimal("0"))],
+        verbose_name="Umbral de alerta mensual",
+    )
 
     class Meta:
         verbose_name = "Preferencia de categoría"
@@ -317,6 +337,14 @@ class CategoryOverride(TimestampMixin, models.Model):
         if self.category_id and not self.category.is_system:
             raise ValidationError(
                 {"category": "Solo se puede personalizar una categoría del sistema."}
+            )
+        if self.monthly_alert_threshold is not None and (
+            self.category.type != CategoryType.EXPENSE or self.category.is_group
+        ):
+            raise ValidationError(
+                {
+                    "monthly_alert_threshold": "El límite mensual solo aplica a subcategorías de gasto."
+                }
             )
 
 

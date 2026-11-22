@@ -11,7 +11,7 @@ from apps.core.constants import (
     DEFAULT_CATEGORY_COLOR,
 )
 
-from .models import Category, CategoryRule
+from .models import Category, CategoryOverride, CategoryRule
 from .rules import normalize_text
 
 
@@ -179,3 +179,21 @@ class CategoryRuleForm(forms.ModelForm):
     def save(self, commit=True):
         self.instance.user = self.user
         return super().save(commit)
+
+
+class CategoryLimitForm(forms.ModelForm):
+    """Límite mensual propio en una subcategoría del sistema (DT-120)."""
+
+    class Meta:
+        model = CategoryOverride
+        fields = ["monthly_alert_threshold"]
+        widgets = {
+            "monthly_alert_threshold": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "min": 0,
+                    "step": "0.01",
+                    "placeholder": "Sin límite",
+                }
+            ),
+        }

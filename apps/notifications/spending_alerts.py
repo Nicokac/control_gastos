@@ -91,7 +91,7 @@ def _check_global(expense, today: date) -> bool:
 
 def _check_category(expense, today: date) -> bool:
     category = expense.category
-    if category is None or category.monthly_alert_threshold is None:
+    if category is None or category.alert_threshold_for(expense.user) is None:
         return False
     # Mes calendario, igual que la etiqueta de límite superado en Categorías.
     start, end = get_month_date_range_exclusive(today.month, today.year)

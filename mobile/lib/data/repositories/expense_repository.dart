@@ -93,6 +93,12 @@ class ExpenseRepository {
     return response.data as Map<String, dynamic>;
   }
 
+  /// Límite mensual propio en una subcategoría del sistema; null lo quita (DT-120).
+  Future<void> setCategoryLimit(int id, double? amount) async {
+    await ApiService.dio.post('${ApiConstants.categories}$id/limit/',
+        data: {'monthly_alert_threshold': amount});
+  }
+
   Future<void> deleteCategory(int id) async {
     await ApiService.dio.delete('${ApiConstants.categories}$id/');
   }

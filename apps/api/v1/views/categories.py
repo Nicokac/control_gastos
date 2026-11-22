@@ -6,6 +6,7 @@ from rest_framework.response import Response
 
 from apps.api.v1.pagination import ConfigurablePageNumberPagination
 from apps.api.v1.serializers.categories import CategoryRuleSerializer, CategorySerializer
+from apps.categories.forms import CategoryLimitForm
 from apps.categories.models import Category, CategoryOverride, CategoryRule
 from apps.core.constants import CategoryType
 
@@ -88,7 +89,25 @@ class CategoryViewSet(viewsets.ModelViewSet):
     def unhide(self, request, pk=None):
         """Revierte el ocultamiento de una categoría de sistema (DT-086)."""
         category = self.get_object()
-        CategoryOverride.objects.filter(
-            user=request.user, category=category, is_hidden=True
-        ).delete()
+        # Se actualiza en vez de borrar para no perder el límite mensual (DT-120).
+        CategoryOverride.objects.filter(user=request.user, category=category).update(
+            is_hidden=False
+        )
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=["post"], url_path="limit")
+    def limit(self, request, pk=None):
+        """Límite mensual propio en una subcategoría de gasto del sistema (DT-120)."""
+        category = self.get_object()
+        if not category.is_system:
+            raise PermissionDenied("Las categorías propias se editan directamente.")
+        override = CategoryOverride.objects.filter(user=request.user, category=category).first()
+        value = request.data.get("monthly_alert_threshold")
+        form = CategoryLimitForm(
+            {"monthly_alert_threshold": "" if value is None else value},
+            instance=override or CategoryOverride(user=request.user, category=category),
+        )
+        if not form.is_valid():
+            return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+        form.save()
+        return Response(self.get_serializer(category).data)

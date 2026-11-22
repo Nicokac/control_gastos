@@ -27,6 +27,16 @@ const _categories = [
     'monthly_alert_threshold': null,
   },
   {
+    'id': 3,
+    'name': 'Peajes',
+    'type': 'EXPENSE',
+    'parent': 1,
+    'is_system': true,
+    'color': '#0d6efd',
+    'icon': 'bi-sign-turn-right',
+    'monthly_alert_threshold': '8000.00',
+  },
+  {
     'id': 10,
     'name': 'Mascotas',
     'type': 'EXPENSE',
@@ -51,6 +61,12 @@ class _FakeExpenseRepository extends ExpenseRepository {
   int fetches = 0;
   final updated = <(int, Map<String, dynamic>)>[];
   final created = <Map<String, dynamic>>[];
+  final limits = <(int, double?)>[];
+
+  @override
+  Future<void> setCategoryLimit(int id, double? amount) async {
+    limits.add((id, amount));
+  }
 
   @override
   Future<List<dynamic>> getCategories() async {
@@ -149,7 +165,7 @@ void main() {
 
     expect(find.text('Combustible'), findsOneWidget);
     expect(find.byTooltip('Editar subcategoría'), findsNothing);
-    expect(find.byTooltip('Ocultar para mí'), findsNWidgets(2));
+    expect(find.byTooltip('Ocultar para mí'), findsNWidgets(3));
     expect(find.byTooltip('Editar grupo'), findsOneWidget);
   });
 
@@ -186,5 +202,56 @@ void main() {
     expect(repo.created.single['name'], 'Peluquería');
     expect(repo.created.single['parent'], 10);
     expect(repo.created.single.containsKey('monthly_alert_threshold'), isFalse);
+  });
+
+  testWidgets('las subcategorías de gasto del sistema tienen botón de límite', (tester) async {
+    await openScreen(tester);
+    await expand(tester, 'Transporte');
+
+    expect(find.byTooltip('Límite mensual'), findsNWidgets(2));
+  });
+
+  testWidgets('definir el límite de una subcategoría del sistema', (tester) async {
+    final repo = await openScreen(tester);
+    await expand(tester, 'Transporte');
+
+    await tester.tap(find.byTooltip('Límite mensual').first);
+    await tester.pumpAndSettle();
+    expect(find.text('Límite mensual de Combustible'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), '25.000');
+    await tester.tap(find.text('Guardar'));
+    await tester.pumpAndSettle();
+
+    expect(repo.limits, [(2, 25000.0)]);
+    expect(repo.fetches, 2);
+    expect(repo.updated, isEmpty);
+  });
+
+  testWidgets('el límite viene precargado y vaciarlo lo quita', (tester) async {
+    final repo = await openScreen(tester);
+    await expand(tester, 'Transporte');
+
+    await tester.tap(find.byTooltip('Límite mensual').last);
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(TextField, '8000'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), '');
+    await tester.tap(find.text('Guardar'));
+    await tester.pumpAndSettle();
+
+    expect(repo.limits, [(3, null)]);
+  });
+
+  testWidgets('cancelar no guarda nada', (tester) async {
+    final repo = await openScreen(tester);
+    await expand(tester, 'Transporte');
+
+    await tester.tap(find.byTooltip('Límite mensual').first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancelar'));
+    await tester.pumpAndSettle();
+
+    expect(repo.limits, isEmpty);
   });
 }

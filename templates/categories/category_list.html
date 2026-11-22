@@ -84,13 +84,15 @@
                                     {% if category.is_system %}<span class="badge bg-secondary" style="font-size:0.65rem">Sistema</span>{% endif %}
                                     {% if category.is_hidden %}<span class="badge bg-light text-muted border" style="font-size:0.65rem">Oculta para mí</span>{% endif %}
                                     {% if category.is_over_threshold %}
-                                    <span class="badge bg-danger-subtle text-danger-emphasis border border-danger-subtle" style="font-size:0.65rem" data-bs-toggle="tooltip" data-bs-title="Umbral: {{ category.monthly_alert_threshold|currency }}">
+                                    <span class="badge bg-danger-subtle text-danger-emphasis border border-danger-subtle" style="font-size:0.65rem" data-bs-toggle="tooltip" data-bs-title="Umbral: {{ category.alert_threshold|currency }}">
                                         <i class="bi bi-exclamation-triangle-fill"></i> {{ category.current_month_spent_value|currency }} este mes
                                     </span>
                                     {% endif %}
                                 </div>
                                 {% if category.is_system %}
                                 <div>
+                                    <a href="{% url 'categories:limit' category.pk %}" class="btn btn-sm {% if category.alert_threshold is not None %}btn-primary{% else %}btn-outline-primary{% endif %} py-0 px-1"
+                                       title="{% if category.alert_threshold is not None %}Límite mensual: {{ category.alert_threshold|currency }}{% else %}Límite mensual{% endif %}"><i class="bi bi-bell"></i></a>
                                     <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1 category-toggle-hidden"
                                             data-pk="{{ category.pk }}" data-hidden="{{ category.is_hidden|yesno:'true,false' }}"
                                             title="{% if category.is_hidden %}Mostrar{% else %}Ocultar para mí{% endif %}">

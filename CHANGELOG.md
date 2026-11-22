@@ -5,6 +5,19 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.39.0 / Mobile 1.35.0+46] — 2026-11-22
+
+### Added
+
+- **Límite mensual en subcategorías del sistema (DT-120)**: cada usuario puede ponerle su propio límite a una subcategoría de gasto del sistema (Transporte, Supermercado…) sin modificar la categoría compartida. Se guarda en `CategoryOverride.monthly_alert_threshold` y se resuelve con `Category.alert_threshold_for(user)`. Web: botón de campana en Categorías que abre una página con un solo campo. App: el mismo botón abre un diálogo. API: `POST /api/v1/categories/{id}/limit/` (`null` lo quita) y, en las categorías del sistema, `monthly_alert_threshold` devuelve el límite del usuario. Lo usan la etiqueta de límite superado, la alerta push de límite y la exportación a Excel.
+
+### Fixed
+
+- **Mostrar una categoría del sistema oculta** ya no borra la fila de preferencias: la actualiza, para no perder el límite propio.
+- **Listado de categorías en la API**: las preferencias del usuario se leen una sola vez por pedido en lugar de una consulta por categoría.
+
+---
+
 ## [Mobile 1.34.0+45] — 2026-11-22
 
 Paridad con la web 1.38.0 en el resumen del último período cerrado (DT-056). Necesita el backend de esta versión en producción: usa un campo nuevo del dashboard. Sin cambio de versión web.

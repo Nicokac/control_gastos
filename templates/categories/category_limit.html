@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Límite de {{ category.name }} - Control de Gastos{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="bi bi-bell"></i> Límite mensual de {{ category.name }}</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <p class="text-muted small">
+                        {{ category.parent.name }} › {{ category.name }} es una categoría del sistema: no se puede editar, pero podés ponerle tu propio límite. Solo lo ves vos.
+                    </p>
+                    <div class="mb-4">
+                        <label for="{{ form.monthly_alert_threshold.id_for_label }}" class="form-label fw-semibold">Límite mensual <span class="text-muted fw-normal">(opcional)</span></label>
+                        {{ form.monthly_alert_threshold }}
+                        <div class="form-text">Te avisamos cuando el gasto del mes en esta categoría supere este monto. Dejalo vacío para quitar el límite.</div>
+                        {% if form.monthly_alert_threshold.errors %}
+                        <div class="text-danger small mt-1">{{ form.monthly_alert_threshold.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Guardar</button>
+                        <a href="{% url 'categories:list' %}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -187,6 +187,19 @@ class TestDataExportView:
             "Otros Gastos Test": ("Sistema", "Sí"),
         }
 
+    def test_categorias_de_sistema_con_limite_propio(
+        self, authenticated_client, user, expense_category_factory, system_expense_category
+    ):
+        expense_category_factory(user=None, name="Sistema sin limite", is_system=True)
+        CategoryOverride.objects.create(
+            user=user, category=system_expense_category, monthly_alert_threshold=Decimal("5000")
+        )
+
+        wb = _download(authenticated_client)
+        categorias = {row[2]: (row[3], row[4], row[5]) for row in _rows(wb, "Categorías")}
+
+        assert categorias == {"Otros Gastos Test": ("Sistema", "No", 5000)}
+
     def test_las_consultas_no_crecen_con_la_cantidad_de_registros(
         self,
         authenticated_client,

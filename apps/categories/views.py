@@ -9,6 +9,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
 from django.db.models.deletion import ProtectedError
 from django.http import HttpResponseRedirect, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views import View
@@ -17,7 +18,7 @@ from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 from apps.core.constants import CATEGORY_COLOR_CHOICES, CategoryType
 from apps.core.views import UserFormKwargsMixin
 
-from .forms import CategoryForm, CategoryRuleForm
+from .forms import CategoryForm, CategoryLimitForm, CategoryRuleForm
 from .models import Category, CategoryOverride, CategoryRule
 
 
@@ -41,24 +42,24 @@ class CategoryListView(LoginRequiredMixin, ListView):
         from apps.core.constants import CategoryType
         from apps.expenses.models import Expense
 
-        hidden_ids = set(
-            CategoryOverride.objects.filter(user=user, is_hidden=True).values_list(
-                "category_id", flat=True
-            )
-        )
+        overrides = {o.category_id: o for o in CategoryOverride.objects.filter(user=user)}
+        hidden_ids = {pk for pk, o in overrides.items() if o.is_hidden}
+        thresholds = {pk: o.monthly_alert_threshold for pk, o in overrides.items()}
         today = timezone.localdate()
         spent_by_category = {
             row["category__id"]: row["total"]
             for row in Expense.get_by_category(user, today.month, today.year)
         }
         context["expense_tree"] = self._build_full_tree(
-            user, CategoryType.EXPENSE, hidden_ids, spent_by_category
+            user, CategoryType.EXPENSE, hidden_ids, spent_by_category, thresholds
         )
-        context["income_tree"] = self._build_full_tree(user, CategoryType.INCOME, hidden_ids, {})
+        context["income_tree"] = self._build_full_tree(
+            user, CategoryType.INCOME, hidden_ids, {}, thresholds
+        )
         return context
 
     @staticmethod
-    def _build_full_tree(user, category_type, hidden_ids, spent_by_category):
+    def _build_full_tree(user, category_type, hidden_ids, spent_by_category, thresholds):
         """
         Retorna lista de {group, subcategories} incluyendo grupos sin subcategorías.
         A diferencia de get_categories_by_group/get_groups (usados por los selectores
@@ -87,9 +88,12 @@ class CategoryListView(LoginRequiredMixin, ListView):
         for subcat in subcats:
             spent = spent_by_category.get(subcat.pk, 0)
             subcat.current_month_spent_value = spent
+            # En las del sistema el límite es el de cada usuario (DT-120).
+            subcat.alert_threshold = (
+                thresholds.get(subcat.pk) if subcat.is_system else subcat.monthly_alert_threshold
+            )
             subcat.is_over_threshold = (
-                subcat.monthly_alert_threshold is not None
-                and spent >= subcat.monthly_alert_threshold
+                subcat.alert_threshold is not None and spent >= subcat.alert_threshold
             )
 
         tree = []
@@ -336,8 +340,36 @@ class CategoryUnhideView(LoginRequiredMixin, View):
     """Revierte el ocultamiento de una categoría de sistema (DT-086)."""
 
     def post(self, request, pk, *args, **kwargs):
-        CategoryOverride.objects.filter(user=request.user, category_id=pk, is_hidden=True).delete()
+        # Se actualiza en vez de borrar para no perder el límite mensual (DT-120).
+        CategoryOverride.objects.filter(user=request.user, category_id=pk).update(is_hidden=False)
         return JsonResponse({"ok": True})
+
+
+class CategoryLimitView(LoginRequiredMixin, View):
+    """Límite mensual propio en una subcategoría de gasto del sistema (DT-120)."""
+
+    template_name = "categories/category_limit.html"
+
+    def _get(self, request, pk):
+        category = get_object_or_404(
+            Category, pk=pk, is_system=True, type=CategoryType.EXPENSE, parent__isnull=False
+        )
+        override = CategoryOverride.objects.filter(user=request.user, category=category).first()
+        return category, override or CategoryOverride(user=request.user, category=category)
+
+    def get(self, request, pk):
+        category, override = self._get(request, pk)
+        form = CategoryLimitForm(instance=override)
+        return render(request, self.template_name, {"form": form, "category": category})
+
+    def post(self, request, pk):
+        category, override = self._get(request, pk)
+        form = CategoryLimitForm(request.POST, instance=override)
+        if not form.is_valid():
+            return render(request, self.template_name, {"form": form, "category": category})
+        form.save()
+        messages.success(request, f"Límite de {category.name} actualizado.")
+        return redirect("categories:list")
 
 
 class CategoryReorderView(LoginRequiredMixin, View):

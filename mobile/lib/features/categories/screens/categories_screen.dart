@@ -380,10 +380,37 @@ class _SubcatTile extends StatelessWidget {
     }
   }
 
+  Future<void> _editLimit(BuildContext context) async {
+    final threshold = subcat['monthly_alert_threshold'] as String?;
+    final result = await showDialog<({double? amount})>(
+      context: context,
+      builder: (_) => _LimitDialog(
+        name: subcat['name'] as String,
+        initial: threshold == null ? '' : apiAmountToInput(threshold),
+      ),
+    );
+    if (result == null) return;
+    try {
+      await ref.read(expenseRepositoryProvider).setCategoryLimit(subcat['id'] as int, result.amount);
+      ref.invalidate(allCategoriesProvider);
+      ref.invalidate(categoriesProvider);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('No se pudo guardar el límite'),
+            backgroundColor: context.semanticColors.danger,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isSystem = subcat['is_system'] as bool? ?? false;
     final isHidden = subcat['is_hidden'] as bool? ?? false;
+    final hasLimit = subcat['monthly_alert_threshold'] != null;
     final isOverThreshold = subcat['is_over_alert_threshold'] as bool? ?? false;
 
     return ListTile(
@@ -417,14 +444,34 @@ class _SubcatTile extends StatelessWidget {
                 )
               : null,
       trailing: isSystem
-          ? IconButton(
-              icon: Icon(
-                  isHidden ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                  size: 18, color: Colors.grey[400]),
-              tooltip: isHidden ? 'Mostrar' : 'Ocultar para mí',
-              onPressed: () => _toggleHidden(context, isHidden),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (subcat['type'] == 'EXPENSE') ...[
+                  IconButton(
+                    icon: Icon(
+                        hasLimit ? Icons.notifications_active : Icons.notifications_none,
+                        size: 18,
+                        color: hasLimit
+                            ? Theme.of(context).colorScheme.primary
+                            : Colors.grey[600]),
+                    tooltip: 'Límite mensual',
+                    onPressed: () => _editLimit(context),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                IconButton(
+                  icon: Icon(
+                      isHidden ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                      size: 18, color: Colors.grey[400]),
+                  tooltip: isHidden ? 'Mostrar' : 'Ocultar para mí',
+                  onPressed: () => _toggleHidden(context, isHidden),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ],
             )
           : Row(
               mainAxisSize: MainAxisSize.min,
@@ -450,6 +497,55 @@ class _SubcatTile extends StatelessWidget {
                 ),
               ],
             ),
+    );
+  }
+}
+
+/// Límite mensual de una subcategoría del sistema; devuelve `amount: null` si se vacía (DT-120).
+class _LimitDialog extends StatefulWidget {
+  final String name;
+  final String initial;
+
+  const _LimitDialog({required this.name, required this.initial});
+
+  @override
+  State<_LimitDialog> createState() => _LimitDialogState();
+}
+
+class _LimitDialogState extends State<_LimitDialog> {
+  late final _ctrl = TextEditingController(text: widget.initial);
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Límite mensual de ${widget.name}'),
+      content: TextField(
+        controller: _ctrl,
+        autofocus: true,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        decoration: const InputDecoration(
+          prefixText: '\$ ',
+          hintText: 'Sin límite',
+          helperText: 'Te avisamos cuando el gasto del mes lo supere. Dejalo vacío para quitarlo.',
+          helperMaxLines: 3,
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+        FilledButton(
+          onPressed: () {
+            final text = _ctrl.text.trim();
+            Navigator.pop(context, (amount: text.isEmpty ? null : parseArgentineAmount(text)));
+          },
+          child: const Text('Guardar'),
+        ),
+      ],
     );
   }
 }

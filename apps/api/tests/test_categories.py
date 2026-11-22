@@ -2,6 +2,8 @@
 
 from decimal import Decimal
 
+from django.utils import timezone
+
 import pytest
 
 from apps.categories.models import Category, CategoryOverride
@@ -386,3 +388,117 @@ class TestCategoryUpdateEndpoint:
         assert response.status_code in [403, 404]
         ajena.refresh_from_db()
         assert ajena.monthly_alert_threshold is None
+
+
+@pytest.mark.django_db
+class TestSystemCategoryLimitEndpoint:
+    """DT-120: límite mensual propio en subcategorías del sistema."""
+
+    @pytest.fixture
+    def transporte(self, expense_category_factory):
+        return expense_category_factory(user=None, name="Transporte", is_system=True)
+
+    def _post(self, client, headers, category, value):
+        return client.post(
+            f"/api/v1/categories/{category.pk}/limit/",
+            {"monthly_alert_threshold": value},
+            content_type="application/json",
+            **headers,
+        )
+
+    def test_requiere_autenticacion(self, client, transporte):
+        assert client.post(f"/api/v1/categories/{transporte.pk}/limit/").status_code == 401
+
+    def test_define_el_limite_y_lo_devuelve(self, client, user, transporte):
+        response = self._post(client, auth_header(client, user), transporte, "5000")
+
+        assert response.status_code == 200
+        assert Decimal(response.json()["monthly_alert_threshold"]) == Decimal("5000")
+        assert transporte.alert_threshold_for(user) == Decimal("5000")
+        transporte.refresh_from_db()
+        assert transporte.monthly_alert_threshold is None
+
+    def test_null_quita_el_limite(self, client, user, transporte):
+        CategoryOverride.objects.create(
+            user=user, category=transporte, monthly_alert_threshold=Decimal("5000")
+        )
+
+        response = self._post(client, auth_header(client, user), transporte, None)
+
+        assert response.status_code == 200
+        assert response.json()["monthly_alert_threshold"] is None
+        assert transporte.alert_threshold_for(user) is None
+
+    def test_cero_es_un_limite_valido(self, client, user, transporte):
+        self._post(client, auth_header(client, user), transporte, 0)
+
+        assert transporte.alert_threshold_for(user) == Decimal("0")
+
+    def test_negativo_es_invalido(self, client, user, transporte):
+        response = self._post(client, auth_header(client, user), transporte, "-1")
+
+        assert response.status_code == 400
+        assert "monthly_alert_threshold" in response.json()
+
+    def test_rechaza_grupos_e_ingresos(
+        self, client, user, system_expense_group, system_income_category
+    ):
+        headers = auth_header(client, user)
+
+        for category in (system_expense_group, system_income_category):
+            assert self._post(client, headers, category, "100").status_code == 400
+        assert not CategoryOverride.objects.exists()
+
+    def test_rechaza_categorias_propias(self, client, user, expense_category_factory):
+        own = expense_category_factory(user=user)
+
+        response = self._post(client, auth_header(client, user), own, "100")
+
+        assert response.status_code == 403
+
+    def test_el_listado_muestra_el_limite_de_cada_usuario(
+        self, client, user, other_user, transporte, expense_factory
+    ):
+        CategoryOverride.objects.create(
+            user=user, category=transporte, monthly_alert_threshold=Decimal("1000")
+        )
+        expense_factory(user, transporte, amount=Decimal("1500"), date=timezone.localdate())
+        headers = auth_header(client, user)
+
+        data = {c["id"]: c for c in client.get("/api/v1/categories/", **headers).json()["results"]}
+
+        assert Decimal(data[transporte.pk]["monthly_alert_threshold"]) == Decimal("1000")
+        assert Decimal(data[transporte.pk]["current_month_spent"]) == Decimal("1500")
+        assert data[transporte.pk]["is_over_alert_threshold"] is True
+
+        other_user.set_password("testpass123")  # pragma: allowlist secret
+        other_user.save()
+        other = auth_header(client, other_user)
+        data = {c["id"]: c for c in client.get("/api/v1/categories/", **other).json()["results"]}
+        assert data[transporte.pk]["monthly_alert_threshold"] is None
+        assert data[transporte.pk]["is_over_alert_threshold"] is False
+
+    def test_unhide_conserva_el_limite(self, client, user, transporte):
+        CategoryOverride.objects.create(
+            user=user, category=transporte, is_hidden=True, monthly_alert_threshold=Decimal("100")
+        )
+        headers = auth_header(client, user)
+
+        client.post(f"/api/v1/categories/{transporte.pk}/unhide/", **headers)
+
+        override = CategoryOverride.objects.get(user=user, category=transporte)
+        assert not override.is_hidden
+        assert override.monthly_alert_threshold == Decimal("100")
+
+    def test_las_preferencias_se_leen_una_vez(
+        self, client, user, expense_category_factory, django_assert_max_num_queries
+    ):
+        for i in range(10):
+            category = expense_category_factory(user=None, name=f"Sistema {i}", is_system=True)
+            CategoryOverride.objects.create(user=user, category=category, is_hidden=True)
+        headers = auth_header(client, user)
+
+        with django_assert_max_num_queries(6):
+            response = client.get("/api/v1/categories/", **headers)
+
+        assert sum(c["is_hidden"] for c in response.json()["results"]) == 10

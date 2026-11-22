@@ -12,7 +12,7 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 - ✅ App Flutter publicada en Google Play — producción, Mobile 1.29.0+39 (resumen semanal y carga rápida), solo Argentina
 - 🟡 Mobile 1.30.0+41 (reglas de categorías; incluye el fix de login de la 1.29.1+40) en prueba interna
 - 🟡 Mobile 1.31.0+42 (avisos de ingreso fijo sin registrar y de sobrante al empezar el período) en prueba interna
-- 🟡 Mobile 1.34.0+45 (resumen del último mes cerrado; incluye la edición de categorías de la 1.33.0+44 y la sugerencia de gasto fijo de la 1.32.0+43) lista para prueba interna; requiere el backend con el campo `insights` en producción
+- 🟡 Mobile 1.35.0+46 (límite mensual en subcategorías del sistema; incluye el resumen del mes de la 1.34.0+45, la edición de categorías de la 1.33.0+44 y la sugerencia de gasto fijo de la 1.32.0+43) lista para prueba interna; requiere el backend 1.39.0 en producción
 - ✅ Prueba cerrada con testers completada y acceso a producción aprobado (ver Fase 8)
 - ✅ Paridad con la web en reglas de categorías (Mobile 1.30.0+41)
 
@@ -414,3 +414,4 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-11-21 | Fase 8 | Sugerencia de gasto fijo (DT-053, paridad con la web 1.37.0): banner en Gastos con "Crear gasto fijo" (formulario precargado; el backend vincula los pagos detectados) y "No, gracias". Endpoints `recurring/suggestions/` y `recurring/dismiss-suggestion/`. Bump a 1.32.0+43. |
 | 2026-11-21 | Fix | Edición de categorías en la app (paridad con la web): lápiz en grupos y subcategorías propios, formulario de creación reutilizado y precargado, límite mensual editable y borrable. Las del sistema siguen solo con ocultar. Bump a 1.33.0+44. |
 | 2026-11-22 | Fase 8 | Resumen del último período cerrado (DT-056, paridad con la web 1.38.0): tarjeta "Tu {mes} en resumen" en el inicio con las frases que arma el backend; campo `insights` en `/api/v1/dashboard/` con `text` y `masked_text` para el botón del ojo. Bump a 1.34.0+45. |
+| 2026-11-22 | Fase 8 | Límite mensual en subcategorías del sistema (DT-120, paridad con la web 1.39.0): campanita junto al ojo que abre un diálogo con el monto precargado; vaciarlo lo quita. Endpoint `categories/{id}/limit/`. Bump a 1.35.0+46. |

@@ -162,9 +162,19 @@ def exchange_rate_today(request):
     return JsonResponse(quote)
 
 
-APP_VERSION = "1.38.0"
+APP_VERSION = "1.39.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.39.0",
+        "date": "Noviembre 2026",
+        "title": "Límite mensual en todas tus categorías",
+        "items": [
+            "Ahora podés ponerle un límite mensual también a las categorías que vienen con la app, como Transporte o Supermercado",
+            "En Categorías, tocá la campanita de la subcategoría y escribí el monto. Solo lo ves vos",
+            "Te avisamos cuando el gasto del mes lo supere, igual que en tus categorías propias",
+        ],
+    },
     {
         "version": "1.38.0",
         "date": "Noviembre 2026",

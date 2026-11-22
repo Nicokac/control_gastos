@@ -5,6 +5,7 @@ from django.utils import timezone
 
 import pytest
 
+from apps.categories.models import CategoryOverride
 from apps.notifications import spending_alerts
 from apps.notifications.models import DeviceToken, Notification, SpendingAlertLog
 from apps.notifications.spending_alerts import check_spending_alerts, current_financial_period
@@ -154,6 +155,26 @@ class TestCategorySpendingAlert:
         assert call["body"] == "Superaste el límite mensual de Delivery."
         assert call["data"] == {"type": "category_threshold"}
         assert call["channel_id"] == "spending_alerts"
+
+    def test_avisa_con_el_limite_propio_en_una_del_sistema(
+        self, user, device, expense_category_factory, spend, sent_pushes
+    ):
+        transporte = expense_category_factory(user=None, name="Transporte", is_system=True)
+        CategoryOverride.objects.create(
+            user=user, category=transporte, monthly_alert_threshold=Decimal("500")
+        )
+        expense = spend("500", category=transporte)
+
+        assert check_spending_alerts(expense) == 1
+        assert sent_pushes["calls"][0]["body"] == "Superaste el límite mensual de Transporte."
+
+    def test_sin_limite_propio_no_avisa_en_una_del_sistema(
+        self, device, expense_category_factory, spend, sent_pushes
+    ):
+        transporte = expense_category_factory(user=None, name="Transporte", is_system=True)
+        expense = spend("50000", category=transporte)
+
+        assert check_spending_alerts(expense) == 0
 
     def test_no_avisa_por_debajo_del_limite(self, device, limited, spend, sent_pushes):
         expense = spend("499", category=limited)

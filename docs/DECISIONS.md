@@ -2505,13 +2505,20 @@ Los comentarios genéricos sin detalle accionable ("dashboard muy simple", "edit
 
 ### DT-120 — Límite mensual en subcategorías del sistema
 
-**Estado:** ⏳ Pendiente
+**Estado:** ✅ Resuelto (v1.39.0 web · Mobile 1.35.0+46)
 
 El límite mensual (`monthly_alert_threshold`, DT-088) se guarda en `Category`, así que solo se puede definir en subcategorías propias: las del sistema (Transporte, Supermercado…) son compartidas por todos los usuarios y no se editan, ni en la web ni en la app.
 
 **Why:** reportado por el propio usuario al querer ponerle límite a Transporte desde la app (2026-11-21). Casi todos los usuarios cargan sus gastos en categorías del sistema, así que hoy el límite queda fuera del alcance de la mayoría.
 
 **Camino de resolución:** guardar el límite por usuario en `CategoryOverride` (donde ya vive el "oculta para mí") y resolverlo con una función que priorice el override sobre el valor de la categoría. Adaptar `is_over_alert_threshold`, `spending_alerts.py`, el listado web, el serializer y la app, con un formulario de límite propio para las categorías del sistema. Necesita versión web minor y build mobile.
+
+**Resolución:** `CategoryOverride.monthly_alert_threshold` + `Category.alert_threshold_for(user)`: en las propias devuelve el campo de la categoría y en las del sistema el del override del usuario. Decisiones:
+- **Solo el límite, no el resto de la categoría.** Nombre, color e ícono siguen siendo compartidos; el formulario del sistema tiene un único campo (web: `categories:limit`; API: acción `limit`; app: diálogo) en vez de reutilizar el de edición.
+- **"Mostrar" ya no borra el override**, lo actualiza (`is_hidden=False`): la fila ahora puede guardar el límite. Puede quedar una fila sin nada personalizado; no molesta y evita lógica de limpieza.
+- **El listado web y el serializer leen los overrides una vez por pedido** (mapa por `category_id`); el serializer los cachea en su `context`, compartido por todo el listado. De paso se eliminó la consulta por categoría que hacía `is_hidden`.
+- **La exportación** incluye las categorías del sistema ocultas o con límite propio.
+- La validación (solo subcategorías de gasto del sistema, monto ≥ 0) vive en `CategoryOverride.clean` y `CategoryLimitForm`, que la API reutiliza.
 
 ---
 

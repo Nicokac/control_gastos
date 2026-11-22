@@ -6,7 +6,7 @@ class ApiConstants {
 
   // Resumen de novedades de la versión actual (DT-068) — actualizar junto con el bump de pubspec.yaml.
   static const String latestReleaseSummary =
-      'Nuevo en el inicio: un resumen de tu último mes cerrado, con lo que más cambió contra tus meses anteriores. También podés editar tus categorías desde la app, y ponerle o cambiarle el límite mensual a tus subcategorías. Además, si cargás el mismo gasto todos los meses, en Gastos te sugerimos convertirlo en gasto fijo.';
+      'Ahora podés ponerle límite mensual también a las categorías que vienen con la app, como Transporte: tocá la campanita en Categorías. Y en el inicio, un resumen de tu último mes cerrado, con lo que más cambió contra tus meses anteriores. También podés editar tus categorías desde la app, y ponerle o cambiarle el límite mensual a tus subcategorías. Además, si cargás el mismo gasto todos los meses, en Gastos te sugerimos convertirlo en gasto fijo.';
   static const String websiteUrl = 'https://controldegastos.ar';
   static const String termsUrl =
       'https://controldegastos.ar/terms/';

@@ -68,13 +68,14 @@ def build_user_workbook(user):
     ]
     _add_sheet(wb, "Perfil", ["Dato", "Valor"], profile)
 
-    hidden_ids = set(
-        CategoryOverride.objects.filter(user=user, is_hidden=True).values_list(
-            "category_id", flat=True
-        )
-    )
+    overrides = {o.category_id: o for o in CategoryOverride.objects.filter(user=user)}
+    hidden_ids = {pk for pk, o in overrides.items() if o.is_hidden}
+    # Del sistema solo van las que el usuario personalizó: ocultas o con límite propio (DT-120).
+    customized_ids = {
+        pk for pk, o in overrides.items() if o.is_hidden or o.monthly_alert_threshold is not None
+    }
     categories = Category.objects.filter(user=user) | Category.objects.filter(
-        is_system=True, pk__in=hidden_ids
+        is_system=True, pk__in=customized_ids
     )
     _add_sheet(
         wb,
@@ -86,7 +87,9 @@ def build_user_workbook(user):
                 *_group_and_name(c),
                 "Sistema" if c.is_system else "Propia",
                 _yes_no(c.pk in hidden_ids),
-                c.monthly_alert_threshold,
+                overrides[c.pk].monthly_alert_threshold
+                if c.is_system
+                else c.monthly_alert_threshold,
             )
             for c in categories.select_related("parent").order_by("type", "parent__name", "name")
         ],
