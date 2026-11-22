@@ -7,6 +7,7 @@ from django.utils import timezone
 
 import pytest
 
+from apps.recurring.tests.test_detection import months_back
 from apps.savings.models import RolloverSuggestion
 from apps.savings.services import get_previous_period
 
@@ -217,3 +218,70 @@ class TestDashboardRolloverSuggestionEndpoint:
         data = response.json()
         assert data["next_month_commitment_available"] is False
         assert data["next_month_committed_total"] is None
+
+
+@pytest.mark.django_db
+class TestDashboardInsightsEndpoint:
+    url = "/api/v1/dashboard/"
+
+    @pytest.fixture
+    def with_history(self, user, expense_factory):
+        def _create(delivery, super_):
+            today = timezone.localdate()
+            for n in range(2, 8):
+                day = months_back(today, n)
+                expense_factory(
+                    user, delivery, date=date(day.year, day.month, 15), amount=Decimal("10000")
+                )
+                expense_factory(
+                    user, super_, date=date(day.year, day.month, 15), amount=Decimal("20000")
+                )
+            last = months_back(today, 1)
+            expense_factory(
+                user, delivery, date=date(last.year, last.month, 15), amount=Decimal("15000")
+            )
+            expense_factory(
+                user, super_, date=date(last.year, last.month, 15), amount=Decimal("20000")
+            )
+            return last
+
+        return _create
+
+    def test_incluye_el_resumen_del_periodo_cerrado(
+        self, client, user, expense_category_factory, with_history
+    ):
+        delivery = expense_category_factory(user=user, name="Delivery")
+        super_ = expense_category_factory(user=user, name="Supermercado")
+        last = with_history(delivery, super_)
+        headers = auth_header(client, user)
+
+        data = client.get(self.url, **headers).json()["insights"]
+
+        assert data["month"] == last.month
+        assert data["year"] == last.year
+        assert data["label"]
+        first = data["items"][0]
+        assert first["kind"] == "category_up"
+        assert first["tone"] == "warning"
+        assert first["text"].startswith("Gastaste 50% más en Delivery")
+        assert "$ 15.000" in first["text"]
+        assert "$ 15.000" not in first["masked_text"]
+        assert "••••••" in first["masked_text"]
+        assert "Delivery" in first["masked_text"]
+
+    def test_sin_historial_es_null(self, client, user):
+        headers = auth_header(client, user)
+
+        assert client.get(self.url, **headers).json()["insights"] is None
+
+    def test_no_incluye_datos_de_otro_usuario(
+        self, client, user, other_user, expense_category_factory, with_history
+    ):
+        delivery = expense_category_factory(user=user, name="Delivery")
+        super_ = expense_category_factory(user=user, name="Supermercado")
+        with_history(delivery, super_)
+        other_user.set_password("testpass123")  # pragma: allowlist secret
+        other_user.save()
+        headers = auth_header(client, other_user)
+
+        assert client.get(self.url, **headers).json()["insights"] is None

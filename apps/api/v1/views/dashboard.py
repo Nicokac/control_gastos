@@ -13,6 +13,7 @@ from apps.core.utils import get_expense_projection, get_next_month_commitment
 from apps.expenses.models import Expense
 from apps.income.models import Income
 from apps.recurring.models import RecurringExpense
+from apps.reports.insights import build_monthly_insights
 from apps.savings.models import Saving, SavingStatus
 from apps.savings.services import get_or_create_rollover_suggestion
 
@@ -174,6 +175,24 @@ class DashboardView(APIView):
                     "period_end": suggestion.period_end.isoformat(),
                 }
 
+        monthly_insights = build_monthly_insights(user, month, year, today)
+        insights = None
+        if monthly_insights is not None:
+            insights = {
+                "month": monthly_insights.month,
+                "year": monthly_insights.year,
+                "label": monthly_insights.label,
+                "items": [
+                    {
+                        "kind": item.kind,
+                        "tone": item.tone,
+                        "text": item.text,
+                        "masked_text": item.masked_text,
+                    }
+                    for item in monthly_insights.items
+                ],
+            }
+
         return Response(
             {
                 "month": month,
@@ -228,5 +247,6 @@ class DashboardView(APIView):
                 "next_month_committed_items": next_month_committed_items,
                 "next_month_committed_unestimated": next_month_committed_unestimated,
                 "rollover_suggestion": rollover_suggestion,
+                "insights": insights,
             }
         )

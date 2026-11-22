@@ -17,6 +17,8 @@ CATEGORY_CHANGE = Decimal("0.25")
 CATEGORY_MIN_SHARE = Decimal("0.05")
 TOTAL_CHANGE = Decimal("0.10")
 MAX_INSIGHTS = 3
+# Mismo marcador que usa la app cuando se ocultan los montos (SensitiveText).
+HIDDEN_AMOUNT = "••••••"
 
 
 @dataclass(frozen=True)
@@ -27,9 +29,16 @@ class Insight:
     args: tuple
     score: Decimal = Decimal("0")
 
+    def _render(self, money) -> str:
+        return self.message.format(*(money(a) if isinstance(a, Decimal) else a for a in self.args))
+
     @property
     def text(self) -> str:
-        return self.message.format(*(_money(a) if isinstance(a, Decimal) else a for a in self.args))
+        return self._render(_money)
+
+    @property
+    def masked_text(self) -> str:
+        return self._render(lambda _: HIDDEN_AMOUNT)
 
     def as_html(self):
         return format_html(

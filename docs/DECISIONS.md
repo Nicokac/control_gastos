@@ -880,7 +880,7 @@ La carga era 100% manual. No existía forma de importar movimientos desde el ban
 
 ### DT-056 — Insights automáticos mensuales
 
-**Estado:** ✅ Resuelto en la web (v1.38.0) · ⏳ App mobile pendiente (fase 2)
+**Estado:** ✅ Resuelto (v1.38.0 web · Mobile 1.34.0+45)
 
 La app muestra datos pero no genera observaciones sobre ellos.
 
@@ -896,6 +896,8 @@ La app muestra datos pero no genera observaciones sobre ellos.
 - **Las frases se arman en el backend** (`Insight.text` y `Insight.as_html`) para que la web, la app y un aviso futuro digan lo mismo. En HTML, los montos llevan `sensitive-amount` (botón del ojo, DT-065) y el nombre de la categoría se escapa.
 - **La tarjeta va fuera del estado vacío del inicio**: el día que empieza un período todavía no hay movimientos, y es justo cuando el resumen del anterior es más útil.
 - **2 consultas fijas**: sumas condicionales por período agrupadas por subcategoría, y lo mismo para ingresos; funcionan igual en SQLite y PostgreSQL.
+
+**Resolución (app, Mobile 1.34.0+45):** `/api/v1/dashboard/` suma el campo `insights` (`month`, `year`, `label` e `items` con `kind`, `tone`, `text` y `masked_text`), o `null` si no hay resumen. La app muestra la misma tarjeta en el inicio. El backend manda el texto ya enmascarado (`Insight.masked_text`, montos como `••••••`) para que la app no tenga que reconstruir las frases ni formatear montos: con el ojo cerrado solo elige el otro texto.
 
 ---
 

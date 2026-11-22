@@ -5,6 +5,17 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [Mobile 1.34.0+45] — 2026-11-22
+
+Paridad con la web 1.38.0 en el resumen del último período cerrado (DT-056). Necesita el backend de esta versión en producción: usa un campo nuevo del dashboard. Sin cambio de versión web.
+
+### Added
+
+- **Resumen del mes en la app (DT-056)**: tarjeta "Tu {mes} en resumen" en el inicio, debajo de la proyección, con las mismas observaciones que la web. Con los montos ocultos (botón del ojo) muestra `••••••` en lugar de cada monto.
+- **API**: campo `insights` en `GET /api/v1/dashboard/` con el mes resumido y cada observación (`kind`, `tone`, `text`, `masked_text`), o `null` si no hay historial suficiente. Las frases se arman en el backend (`apps/reports/insights.py`).
+
+---
+
 ## [1.38.0] — 2026-11-22
 
 ### Added

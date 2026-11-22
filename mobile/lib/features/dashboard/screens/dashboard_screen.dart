@@ -10,6 +10,7 @@ import '../widgets/expense_chart.dart';
 import '../widgets/recent_transactions_list.dart';
 import '../widgets/pending_recurring_card.dart';
 import '../widgets/rollover_suggestion_banner.dart';
+import '../widgets/monthly_insights_card.dart';
 import '../widgets/dashboard_skeleton.dart';
 import '../widgets/dashboard_shortcut_button.dart';
 import '../widgets/projection_banner.dart';
@@ -186,6 +187,10 @@ class _DashboardContent extends StatelessWidget {
             projectedExpense: data['projected_expense'] as String,
             projectedBalance: data['projected_balance'] as String,
           ),
+        ],
+        if (data['insights'] != null) ...[
+          const SizedBox(height: 12),
+          MonthlyInsightsCard(insights: data['insights'] as Map<String, dynamic>),
         ],
         const SizedBox(height: 12),
         // Misma altura para los tres aunque alguno achique su texto (DT-103).
