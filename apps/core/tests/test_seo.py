@@ -7,6 +7,10 @@ class TestSeoUsaElDominioPropio:
         response = client.get("/robots.txt")
         assert "Sitemap: https://controldegastos.ar/sitemap.xml" in response.content.decode()
 
+    def test_robots_permite_leer_el_sitemap(self, client):
+        lines = client.get("/robots.txt").content.decode().splitlines()
+        assert lines.index("Allow: /sitemap.xml") < lines.index("Disallow: /")
+
     def test_sitemap_lista_urls_del_dominio_propio(self, client):
         content = client.get("/sitemap.xml").content.decode()
         assert "<loc>https://controldegastos.ar/</loc>" in content

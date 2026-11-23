@@ -33,6 +33,7 @@ def robots_txt(request):
         "Allow: /$",
         "Allow: /terms/",
         "Allow: /privacy/",
+        "Allow: /sitemap.xml",
         "Disallow: /",
         f"Sitemap: {SITE_URL}/sitemap.xml",
     ]
