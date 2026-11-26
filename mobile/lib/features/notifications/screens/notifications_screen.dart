@@ -53,6 +53,12 @@ class NotificationsScreen extends ConsumerWidget {
             subtitle:
                 'Los lunes, cómo te fue la semana anterior; y al empezar el período, si te quedó sobrante',
           ),
+          const _PreferenceToggle(
+            field: 'daily_reminder_enabled',
+            title: 'Recordatorio diario',
+            subtitle: 'A las 22, si ese día no cargaste ningún gasto',
+            defaultValue: false,
+          ),
           const Divider(height: 1),
           Expanded(
             child: notificationsAsync.when(
@@ -97,6 +103,7 @@ IconData iconForNotificationType(String? type) {
     'weekly_summary' => Icons.insights,
     'income_expected' => Icons.payments_outlined,
     'period_start' => Icons.savings_outlined,
+    'daily_reminder' => Icons.edit_note,
     _ => Icons.event_repeat,
   };
 }
@@ -107,11 +114,13 @@ class _PreferenceToggle extends ConsumerStatefulWidget {
     required this.field,
     required this.title,
     required this.subtitle,
+    this.defaultValue = true,
   });
 
   final String field;
   final String title;
   final String subtitle;
+  final bool defaultValue;
 
   @override
   ConsumerState<_PreferenceToggle> createState() => _PreferenceToggleState();
@@ -140,7 +149,7 @@ class _PreferenceToggleState extends ConsumerState<_PreferenceToggle> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(authProvider).valueOrNull;
-    final enabled = user?[widget.field] as bool? ?? true;
+    final enabled = user?[widget.field] as bool? ?? widget.defaultValue;
 
     return SwitchListTile(
       title: Text(widget.title),

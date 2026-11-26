@@ -162,9 +162,19 @@ def exchange_rate_today(request):
     return JsonResponse(quote)
 
 
-APP_VERSION = "1.39.0"
+APP_VERSION = "1.40.0"
 
 WHATS_NEW = [
+    {
+        "version": "1.40.0",
+        "date": "Noviembre 2026",
+        "title": "Recordatorio para cargar tus gastos",
+        "items": [
+            "Si querés, la app te avisa a las 22 cuando ese día no cargaste ningún gasto",
+            'Viene apagado: lo activás en la app, en Notificaciones, con el interruptor "Recordatorio diario"',
+            "Al tocar el aviso se abre Gastos para que cargues en un momento",
+        ],
+    },
     {
         "version": "1.39.0",
         "date": "Noviembre 2026",

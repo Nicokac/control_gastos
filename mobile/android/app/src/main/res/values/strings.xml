@@ -13,4 +13,8 @@
     <string name="weekly_summary_channel_id" translatable="false">weekly_summary</string>
     <string name="weekly_summary_channel_name">Resúmenes</string>
     <string name="weekly_summary_channel_description">Los lunes, cuánto gastaste la semana anterior. Al empezar el período, si te quedó sobrante.</string>
+    <!-- Recordatorio diario de carga (D-019 E3): opcional, el backend lo envía por este canal. -->
+    <string name="daily_reminder_channel_id" translatable="false">daily_reminder</string>
+    <string name="daily_reminder_channel_name">Recordatorio diario</string>
+    <string name="daily_reminder_channel_description">A las 22, si ese día no cargaste ningún gasto.</string>
 </resources>

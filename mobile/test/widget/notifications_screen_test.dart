@@ -29,6 +29,7 @@ class _FakeAuth extends AuthNotifier {
 final _reminders = find.widgetWithText(SwitchListTile, 'Gastos e ingresos fijos');
 final _spending = find.widgetWithText(SwitchListTile, 'Alertas de gastos');
 final _summaries = find.widgetWithText(SwitchListTile, 'Resúmenes');
+final _daily = find.widgetWithText(SwitchListTile, 'Recordatorio diario');
 
 void main() {
   late MockNotificationRepository repo;
@@ -38,6 +39,7 @@ void main() {
     bool enabled = true,
     bool spendingEnabled = true,
     bool summariesEnabled = true,
+    bool? dailyEnabled,
     bool saveOk = true,
   }) async {
     final auth = _FakeAuth({
@@ -45,6 +47,7 @@ void main() {
       'recurring_reminders_enabled': enabled,
       'spending_alerts_enabled': spendingEnabled,
       'summaries_enabled': summariesEnabled,
+      'daily_reminder_enabled': ?dailyEnabled,
     }, saveOk: saveOk);
     await tester.pumpWidget(
       ProviderScope(
@@ -176,5 +179,25 @@ void main() {
 
     expect(find.text('Tu semana'), findsOneWidget);
     expect(find.byIcon(Icons.insights), findsOneWidget);
+  });
+
+  testWidgets('el recordatorio diario viene apagado si el perfil no lo trae', (tester) async {
+    await pumpScreen(tester);
+
+    expect(tester.widget<SwitchListTile>(_daily).value, isFalse);
+  });
+
+  testWidgets('activar el recordatorio diario guarda solo esa preferencia', (tester) async {
+    final auth = await pumpScreen(tester, dailyEnabled: false);
+
+    await tester.ensureVisible(_daily);
+    await tester.tap(_daily);
+    await tester.pumpAndSettle();
+
+    expect(auth.saved, [
+      {'daily_reminder_enabled': true},
+    ]);
+    expect(tester.widget<SwitchListTile>(_daily).value, isTrue);
+    expect(tester.widget<SwitchListTile>(_summaries).value, isTrue);
   });
 }

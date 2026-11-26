@@ -131,6 +131,7 @@ class NotificationType(models.TextChoices):
     WEEKLY_SUMMARY = "weekly_summary", "Resumen semanal"
     INCOME_EXPECTED = "income_expected", "Ingreso fijo sin registrar"
     PERIOD_START = "period_start", "Inicio del período financiero"
+    DAILY_REMINDER = "daily_reminder", "Recordatorio diario de carga"
 
 
 class Notification(TimestampMixin, models.Model):
@@ -213,6 +214,7 @@ class SpendingAlertLog(TimestampMixin, models.Model):
 class SummaryKind(models.TextChoices):
     WEEKLY = "weekly", "Semanal"
     PERIOD_START = "period_start", "Inicio del período financiero"
+    DAILY_REMINDER = "daily_reminder", "Recordatorio diario de carga"
 
 
 class SummaryLog(TimestampMixin, models.Model):

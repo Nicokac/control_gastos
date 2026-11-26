@@ -19,6 +19,7 @@ from apps.api.v1.views.expenses import ExpenseViewSet
 from apps.api.v1.views.feedback import FeedbackView
 from apps.api.v1.views.income import IncomeViewSet
 from apps.api.v1.views.notifications import (
+    DailyReminderCronView,
     DeviceTokenView,
     NotificationListView,
     NotificationMarkReadView,
@@ -85,6 +86,11 @@ urlpatterns = [
         "notifications/cron/summaries/",
         SummariesCronView.as_view(),
         name="cron-summaries",
+    ),
+    path(
+        "notifications/cron/daily-reminder/",
+        DailyReminderCronView.as_view(),
+        name="cron-daily-reminder",
     ),
     # Docs — solo staff (sesión del admin); antes quedaban públicos y exponían
     # toda la superficie de la API a cualquiera.

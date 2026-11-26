@@ -12,7 +12,7 @@ const _kRegisteredFidKey = 'push_registered_fid';
 String? routeForPushData(Map<String, dynamic> data) {
   return switch (data['type']) {
     'recurring_reminder' || 'recurring_overdue' => '/recurring',
-    'spending_threshold' || 'weekly_summary' => '/expenses',
+    'spending_threshold' || 'weekly_summary' || 'daily_reminder' => '/expenses',
     'category_threshold' => '/categories',
     'income_expected' => '/income',
     // El banner del sobrante está en el dashboard, que es la raíz: se abre con go, no push.

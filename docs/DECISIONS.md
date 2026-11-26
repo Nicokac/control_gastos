@@ -413,7 +413,7 @@ Sin dominio verificado en Resend, el `from` queda como `onboarding@resend.dev` y
 
 ### DT-001 — Resend sin dominio verificado
 
-**Estado:** ⏳ Pendiente (configuración externa)
+**Estado:** 🚫 Descartado (ver DTD-005)
 
 Sin dominio propio verificado en Resend, el remitente queda fijado en `onboarding@resend.dev` y el destinatario debe coincidir con el email de la cuenta Resend. Para desbloquear envío a cualquier destinatario con remitente propio, verificar un dominio en resend.com/domains y actualizar `DEFAULT_FROM_EMAIL`. No requiere cambios en código.
 
@@ -1633,6 +1633,14 @@ Tercer y último punto de la auditoría de seguridad de 20 puntos: ni `RegisterF
 
 ---
 
+### DTD-005 — Resend sin dominio verificado (DT-001)
+
+**Estado:** 🚫 Descartado
+
+**Motivo:** el proyecto dejó de usar Resend. Todos los emails salen por la API de Brevo con el dominio `controldegastos.ar` autenticado (DKIM y DMARC, D-020), así que ya no hay remitente ni destinatarios restringidos que desbloquear.
+
+---
+
 ## D-017 — Arquitectura de infraestructura en producción
 
 **Fecha:** 2026-05-13
@@ -1958,14 +1966,14 @@ El proyecto no tenía ningún sistema de notificaciones (push, email proactivo, 
 2. Disparar a mano el workflow "Recordatorios push" desde Actions y comprobar que responde `{"sent": N}`.
 3. Recién después, compilar el AAB 1.26.0+34 y subirlo a Play Console. Si se publica antes del deploy, la app pide endpoints que todavía no existen en producción.
 
-### Fase E — Próximas notificaciones (E1, E2, E4 y E5 completas; E3 pendiente)
+### Fase E — Próximas notificaciones (E1 a E5 completas)
 Relevadas al cerrar la Mobile 1.26.0, ordenadas por valor y costo. Cada tipo nuevo necesita su propio interruptor en la pantalla Notificaciones (un `BooleanField` por tipo en `User`, como `recurring_reminders_enabled`), su propio `NotificationType`, su ruta en `routeForPushData` y, si conviene silenciarlo por separado, su canal de Android. Por eso se agrupan en un mismo build mobile.
 
 | Id | Aviso | Disparador | Por defecto | Estado |
 |---|---|---|---|---|
 | E1 | **Gasto fijo vencido sin pagar**: al día siguiente del vencimiento, si no se registró el pago | Cron diario existente (`reminders.py`, mismo log por vencimiento con otro tipo) | Activado (mismo interruptor que los recordatorios) | ✅ Mobile 1.27.0+35 |
 | E2 | **Umbral de gastos superado**, dos variantes (decisión del usuario: ambas): gastos del período que cruzan `alert_threshold` (80% por defecto) de los ingresos, y una subcategoría que supera su `monthly_alert_threshold` en pesos. Cada aviso una sola vez por período | Al crear o editar un gasto (evento, no cron) | Activado (interruptor propio "Alertas de gastos") | ✅ Mobile 1.27.0+35 |
-| E3 | **Recordatorio de carga** a las 22:00, solo si no se cargó ningún gasto ese día (o en 2 días) | Cron diario nuevo (01:00 UTC) | **Desactivado** (opt-in): es el que más rápido cansa | ⏳ Después de evaluar el uso de E1/E2 |
+| E3 | **Recordatorio de carga** a las 22:00, solo si no se cargó ningún gasto ese día | Cron diario nuevo (01:00 UTC) | **Desactivado** (opt-in): es el que más rápido cansa | ✅ Web 1.40.0 / Mobile 1.36.0+47 |
 | E4 | **Inicio del mes financiero**: el día `financial_month_start_day`, con el sobrante del mes anterior y la sugerencia de usarlo | Cron diario existente | Activado (interruptor del resumen semanal, ahora "Resúmenes") | ✅ Mobile 1.31.0+42 |
 | E5 | **Ingreso recurrente esperado**: "¿ya cobraste? registralo" | Cron diario existente | Activado (interruptor de recordatorios, ahora "Gastos e ingresos fijos") | ✅ Mobile 1.31.0+42 |
 
@@ -2007,6 +2015,16 @@ Descartado: avisos de gastos compartidos. Los miembros del hogar no tienen cuent
 - **Mismo endpoint de cron**: `cron/recurring-reminders/` corre los tres envíos y devuelve `income_sent` y `period_start_sent` junto a `sent`. Sin cambios en `reminders.yml`.
 - **Mobile**: `period_start` abre `/dashboard` con `go` en vez de `push`, porque el dashboard es la raíz y `push` apilaba uno sobre otro (al tocar el push, el "Ver" del aviso en primer plano y el historial).
 - 26 tests nuevos: `test_income_reminders.py` (15: selección, cobro en el mes y en otro mes, día 31, inactivo, creado después, zona horaria, preferencia, sin dispositivo, agrupado, aislamiento, doble ejecución, reintento, mes siguiente) y `test_period_start.py` (11: día de inicio 1 y 10, otro día, sin sobrante, sugerencia decidida, preferencia, sin dispositivo, aislamiento, doble ejecución, reintento, cambio de año). En mobile, rutas e íconos de los dos tipos.
+
+### Fase E3 — Resolución técnica (recordatorio diario de carga)
+- **Solo el día actual** (decisión del usuario): se descartó esperar 2 días sin carga. Al ser opcional, quien lo activa lo quiere diario y el comportamiento es predecible.
+- **"Cargó" se mide por `created_at`** en hora local (`created_at__date`, que Django convierte a `TIME_ZONE` en SQLite y PostgreSQL), no por la fecha del gasto: cargar hoy un gasto de la semana pasada cuenta como haber cargado; un gasto con fecha de hoy cargado ayer no.
+- **Preferencia propia** `User.daily_reminder_enabled`, desactivada por defecto. Es el único aviso opt-in, por eso no se agrupó con otro interruptor como E1 y E5. El `_PreferenceToggle` de mobile gana `defaultValue` porque asumía `true` si el perfil no traía el campo. No se agregó al perfil web: como las otras preferencias que son solo push, se maneja desde la app.
+- **Workflow propio** `daily-reminder.yml` a las 01:00 UTC (22:00 AR) contra `cron/daily-reminder/`, con el mismo esquema de `X-Cron-Secret` y reintentos. Separado de `reminders.yml` porque corre a otra hora.
+- **Cron demorado**: GitHub puede demorar las ejecuciones programadas. `send_daily_reminders` solo envía si en Argentina son las 20:00 o más; pasada la medianoche no manda un "no cargaste nada hoy" referido al día equivocado.
+- **Sin tabla nueva**: reutiliza `SummaryLog` con `SummaryKind.DAILY_REMINDER` y `period_start` = el día, cuya unicidad (usuario, tipo, fecha) evita duplicados. Se registra solo si el push se entregó.
+- **Mobile**: canal "Recordatorio diario" (`daily_reminder`), ruta a `/expenses` e ícono `edit_note` en el historial.
+- 22 tests backend (16 en `test_daily_reminder.py`: selección, fecha de carga contra fecha del gasto, zona horaria, preferencia, dispositivo, aislamiento, doble ejecución, reintento, ventana horaria; 5 del endpoint; 1 de la preferencia por `/auth/me/`) y 3 en mobile (ruta, interruptor apagado por defecto y guardado), más el ícono en el test existente de íconos.
 
 ---
 

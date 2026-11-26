@@ -3,18 +3,24 @@ import logging
 from collections import defaultdict
 from datetime import date, timedelta
 
+from django.db.models import Exists, OuterRef
 from django.utils import timezone
 
+from apps.expenses.models import Expense
 from apps.notifications.models import (
+    DeviceToken,
     IncomeReminderLog,
     Notification,
     NotificationType,
     RecurringReminderLog,
     ReminderKind,
+    SummaryKind,
+    SummaryLog,
 )
 from apps.notifications.services import send_push_to_user
 from apps.recurring.models import RecurringExpense
 from apps.recurring_income.models import RecurringIncome
+from apps.users.models import User
 
 logger = logging.getLogger("apps.notifications")
 
@@ -22,6 +28,12 @@ REMINDER_DAYS_BEFORE = 3
 REMINDER_TITLE = "Gastos fijos por vencer"
 OVERDUE_TITLE = "Gastos fijos vencidos"
 INCOME_TITLE = "¿Ya cobraste?"
+DAILY_TITLE = "¿Cargaste tus gastos de hoy?"
+DAILY_BODY = (
+    "Todavía no registraste ningún gasto hoy. Cargalo en un toque antes de que se te olvide."
+)
+DAILY_CHANNEL = "daily_reminder"
+DAILY_FIRST_HOUR = 20
 
 
 def _effective_due_date(due_day: int, year: int, month: int) -> date:
@@ -202,3 +214,58 @@ def send_income_reminders(today: date | None = None) -> int:
 
     logger.info("INCOME_REMINDERS | target=%s users=%s notified=%s", target, len(by_user), notified)
     return notified
+
+
+def daily_reminder_candidates(day: date):
+    return (
+        User.objects.filter(is_active=True, daily_reminder_enabled=True)
+        .filter(Exists(DeviceToken.objects.filter(user=OuterRef("pk"), is_active=True)))
+        .exclude(
+            Exists(
+                Expense.objects.filter(
+                    user=OuterRef("pk"),
+                    created_at__date=day,
+                )
+            )
+        )
+        .exclude(
+            Exists(
+                SummaryLog.objects.filter(
+                    user=OuterRef("pk"), kind=SummaryKind.DAILY_REMINDER, period_start=day
+                )
+            )
+        )
+        .order_by("pk")
+    )
+
+
+def send_daily_reminders(now=None) -> int:
+    """A la noche, avisa a quien lo activó y no cargó ningún gasto en el día."""
+    now = timezone.localtime(now)
+    # GitHub can delay scheduled runs; past midnight "today" would be the wrong day.
+    if now.hour < DAILY_FIRST_HOUR:
+        logger.info("DAILY_REMINDER | skipped hour=%s", now.hour)
+        return 0
+
+    day = now.date()
+    sent = 0
+    for user in daily_reminder_candidates(day):
+        pushed = send_push_to_user(
+            user,
+            title=DAILY_TITLE,
+            body=DAILY_BODY,
+            data={"type": NotificationType.DAILY_REMINDER},
+            channel_id=DAILY_CHANNEL,
+        )
+        if not pushed:
+            continue
+        SummaryLog.objects.create(
+            user=user, kind=SummaryKind.DAILY_REMINDER, period_start=day, pushed=True
+        )
+        Notification.objects.create(
+            user=user, type=NotificationType.DAILY_REMINDER, title=DAILY_TITLE, body=DAILY_BODY
+        )
+        sent += 1
+
+    logger.info("DAILY_REMINDER | date=%s sent=%s", day, sent)
+    return sent

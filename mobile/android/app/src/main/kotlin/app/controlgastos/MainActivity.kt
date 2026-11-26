@@ -24,10 +24,15 @@ class MainActivity : FlutterActivity() {
             R.string.weekly_summary_channel_name,
             R.string.weekly_summary_channel_description,
         )
+        createChannel(
+            R.string.daily_reminder_channel_id,
+            R.string.daily_reminder_channel_name,
+            R.string.daily_reminder_channel_description,
+        )
     }
 
     // Recordatorios es el canal por defecto de FCM (ver AndroidManifest); las alertas de
-    // gastos y el resumen semanal llegan con su canal desde el backend. Crearlos es idempotente: si ya existen,
+    // gastos, el resumen semanal y el recordatorio diario llegan con su canal desde el backend. Crearlos es idempotente: si ya existen,
     // Android conserva lo que el usuario haya configurado y solo actualiza nombre y descripción.
     private fun createChannel(idRes: Int, nameRes: Int, descriptionRes: Int) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return

@@ -99,8 +99,8 @@ Se cargan en Render → servicio → **Environment**. Ejemplos y defaults en [`.
 | Secret | Lo usa |
 |---|---|
 | `RENDER_DEPLOY_HOOK` | Deploy |
-| `PRODUCTION_URL` | Smoke Tests y Recordatorios push |
-| `CRON_SECRET` | Recordatorios push |
+| `PRODUCTION_URL` | Smoke Tests, Recordatorios push y Recordatorio diario |
+| `CRON_SECRET` | Recordatorios push y Recordatorio diario |
 | `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | Backup DB (host externo de la base) |
 | `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `CF_ACCOUNT_ID` | Backup DB |
 
@@ -112,9 +112,10 @@ Se cargan en Render → servicio → **Environment**. Ejemplos y defaults en [`.
 |---|---|---|---|
 | Recordatorios push (`reminders.yml`) | 12:00 UTC (09:00 AR) | Avisos de gastos fijos que vencen en 3 días o vencieron ayer, y chequeo de la key de Brevo | El log del job muestra `{"sent": N, "brevo_ok": true}` |
 | Resumen semanal (mismo workflow, paso 2) | Lunes a miércoles, después de los recordatorios | Resumen de la semana anterior por push y email, en tandas de 25 usuarios, con un tope de 200 emails por día (D-023) | Una línea `{"sent": N, "remaining": M}` por tanda; termina con `remaining: 0` o con una tanda en `sent: 0` |
+| Recordatorio diario (`daily-reminder.yml`) | 01:00 UTC (22:00 AR) | Push a quien lo activó y no cargó ningún gasto en el día. No envía si corre pasada la medianoche de Argentina | El log del job muestra `{"sent": N}` |
 | Backup DB (`backup.yml`) | 03:00 UTC (00:00 AR) | `pg_dump` de producción a Cloudflare R2 | Job en verde y archivo nuevo en el bucket |
 
-Los dos se pueden correr a mano: Actions → workflow → *Run workflow*.
+Todos se pueden correr a mano: Actions → workflow → *Run workflow*.
 
 ---
 

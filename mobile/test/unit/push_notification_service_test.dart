@@ -107,6 +107,10 @@ void main() {
       expect(routeForPushData({'type': 'weekly_summary'}), '/expenses');
     });
 
+    test('el recordatorio diario abre Gastos', () {
+      expect(routeForPushData({'type': 'daily_reminder'}), '/expenses');
+    });
+
     test('la alerta de límite de subcategoría abre Categorías', () {
       expect(routeForPushData({'type': 'category_threshold'}), '/categories');
     });

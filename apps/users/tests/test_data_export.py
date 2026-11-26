@@ -116,6 +116,7 @@ class TestDataExportView:
         assert perfil["Usuario"] == user.username
         assert perfil["Email"] == user.email
         assert "Contraseña" not in perfil
+        assert perfil["Recordatorio diario"] == "No"
         assert user.password not in str(_rows(wb, "Perfil"))
 
     def test_exporta_cada_entidad_con_nombres_legibles(

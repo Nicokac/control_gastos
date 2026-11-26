@@ -5,6 +5,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [1.40.0 / Mobile 1.36.0+47] — 2026-11-26
+
+### Added
+
+- **Recordatorio diario de carga (D-019 E3)**: push a las 22:00 de Argentina para quien lo activa y no cargó ningún gasto en el día. Cuenta la fecha en que se cargó el gasto (`created_at` en hora local), no la fecha del gasto. Viene desactivado (`User.daily_reminder_enabled`), se activa desde la app en Notificaciones y se edita por `PUT /api/v1/auth/me/`. Sale por el canal de Android propio "Recordatorio diario", abre Gastos al tocarlo y queda en el historial. Lo dispara el workflow nuevo `daily-reminder.yml` (01:00 UTC) contra `POST /api/v1/notifications/cron/daily-reminder/`; un aviso por día como máximo (`SummaryLog`) y nada si GitHub demora la ejecución pasada la medianoche.
+
+### Fixed
+
+- **robots.txt bloqueaba el sitemap**: `Disallow: /` dejaba afuera a `/sitemap.xml` y Google Search Console no podía leerlo. Se agregó `Allow: /sitemap.xml` (desplegado sin cambio de versión antes de esta entrada).
+
+---
+
 ## [1.39.0 / Mobile 1.35.0+46] — 2026-11-22
 
 ### Added

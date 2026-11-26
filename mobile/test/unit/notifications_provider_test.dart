@@ -142,6 +142,7 @@ void main() {
       expect(iconForNotificationType('category_threshold'), Icons.trending_up);
       expect(iconForNotificationType('income_expected'), Icons.payments_outlined);
       expect(iconForNotificationType('period_start'), Icons.savings_outlined);
+      expect(iconForNotificationType('daily_reminder'), Icons.edit_note);
     });
 
     test('un tipo desconocido usa el ícono de recordatorio', () {

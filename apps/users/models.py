@@ -44,6 +44,11 @@ class User(AbstractUser):
         verbose_name="Resúmenes",
         help_text="Los lunes, un resumen de la semana anterior por push y por email (si está verificado); al empezar el período financiero, un push si quedó sobrante.",
     )
+    daily_reminder_enabled = models.BooleanField(
+        default=False,
+        verbose_name="Recordatorio diario",
+        help_text="Aviso push en mobile a las 22, si ese día no cargaste ningún gasto.",
+    )
 
     class Meta:
         verbose_name = "Usuario"

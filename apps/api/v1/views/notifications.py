@@ -12,7 +12,11 @@ from rest_framework.views import APIView
 from apps.api.v1.serializers.notifications import DeviceTokenSerializer, NotificationSerializer
 from apps.core.utils import check_brevo_account
 from apps.notifications.models import DeviceToken, Notification
-from apps.notifications.reminders import send_income_reminders, send_recurring_reminders
+from apps.notifications.reminders import (
+    send_daily_reminders,
+    send_income_reminders,
+    send_recurring_reminders,
+)
 from apps.notifications.summaries import send_period_start_notices, send_weekly_summaries
 
 
@@ -140,3 +144,17 @@ class SummariesCronView(APIView):
         if not settings.CRON_SECRET or not hmac.compare_digest(secret, settings.CRON_SECRET):
             return Response(status=status.HTTP_403_FORBIDDEN)
         return Response(send_weekly_summaries())
+
+
+@extend_schema(exclude=True)
+class DailyReminderCronView(APIView):
+    """Disparado a la noche por GitHub Actions (D-019 E3)."""
+
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        secret = request.headers.get("X-Cron-Secret", "")
+        if not settings.CRON_SECRET or not hmac.compare_digest(secret, settings.CRON_SECRET):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        return Response({"sent": send_daily_reminders()})

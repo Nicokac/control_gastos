@@ -1,0 +1,37 @@
+# =============================================================================
+# Recordatorio diario de carga (D-019 E3)
+# Corre todos los días a las 01:00 UTC (22:00 AR). Solo avisa a quien lo activó
+# en la app y no cargó ningún gasto en el día. Si GitHub demora la ejecución
+# pasada la medianoche de Argentina, el endpoint no envía nada.
+# El envío es idempotente (SummaryLog): reintentar no duplica pushes.
+# Requiere los secrets PRODUCTION_URL y CRON_SECRET.
+# =============================================================================
+
+name: Recordatorio diario
+
+on:
+  schedule:
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+
+jobs:
+  daily-reminder:
+    name: Enviar recordatorio diario de carga
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Disparar envío en producción
+        env:
+          BASE_URL: ${{ secrets.PRODUCTION_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$BASE_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "Faltan los secrets PRODUCTION_URL o CRON_SECRET"
+            exit 1
+          fi
+          # Render free duerme el servicio: el primer request puede tardar ~1 min en despertarlo.
+          curl --fail --show-error --silent \
+            --max-time 120 --retry 3 --retry-delay 30 --retry-all-errors \
+            --request POST \
+            --header "X-Cron-Secret: $CRON_SECRET" \
+            "${BASE_URL%/}/api/v1/notifications/cron/daily-reminder/"

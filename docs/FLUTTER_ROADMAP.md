@@ -7,12 +7,10 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 
 ## Estado Actual
 
-- ✅ Backend Django completo (web app funcional en producción — v1.36.0, en https://controldegastos.ar)
+- ✅ Backend Django completo (web app funcional en producción — v1.39.0, en https://controldegastos.ar)
 - ✅ API REST completa (DRF + JWT, todos los endpoints)
-- ✅ App Flutter publicada en Google Play — producción, Mobile 1.29.0+39 (resumen semanal y carga rápida), solo Argentina
-- 🟡 Mobile 1.30.0+41 (reglas de categorías; incluye el fix de login de la 1.29.1+40) en prueba interna
-- 🟡 Mobile 1.31.0+42 (avisos de ingreso fijo sin registrar y de sobrante al empezar el período) en prueba interna
-- 🟡 Mobile 1.35.0+46 (límite mensual en subcategorías del sistema; incluye el resumen del mes de la 1.34.0+45, la edición de categorías de la 1.33.0+44 y la sugerencia de gasto fijo de la 1.32.0+43) lista para prueba interna; requiere el backend 1.39.0 en producción
+- ✅ App Flutter publicada en Google Play — producción, Mobile 1.35.0+46 (límite mensual en subcategorías del sistema; incluye las 1.30 a 1.34), solo Argentina
+- 🟡 Mobile 1.36.0+47 (recordatorio diario de carga, D-019 E3) lista para prueba interna; requiere el backend 1.40.0 en producción
 - ✅ Prueba cerrada con testers completada y acceso a producción aprobado (ver Fase 8)
 - ✅ Paridad con la web en reglas de categorías (Mobile 1.30.0+41)
 
@@ -268,7 +266,7 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 - [x] Fase E1 (gasto fijo vencido sin pagar) y E2 (alertas de gastos) — Mobile 1.27.0+35
 - [x] Merge a `main` del backend de E1/E2 y AAB 1.27.0+35 subido a Play Console (en ese orden)
 - [x] Mobile 1.27.1+36 con los arreglos del feedback de testers (DT-103, DT-104, DT-107), antes de publicar en producción
-- [ ] Fase E3-E5: recordatorio de carga, inicio del mes financiero, ingreso recurrente esperado (detalle en D-019)
+- [x] Fase E3-E5: recordatorio de carga, inicio del mes financiero, ingreso recurrente esperado (detalle en D-019)
 
 ### 8.2 Publicación oficial en Google Play
 - [x] Prueba cerrada con testers por el período que exige Google Play
@@ -415,3 +413,5 @@ Cada fase se tilda al completarse. Las subtareas se marcan con ✅ al cerrar.
 | 2026-11-21 | Fix | Edición de categorías en la app (paridad con la web): lápiz en grupos y subcategorías propios, formulario de creación reutilizado y precargado, límite mensual editable y borrable. Las del sistema siguen solo con ocultar. Bump a 1.33.0+44. |
 | 2026-11-22 | Fase 8 | Resumen del último período cerrado (DT-056, paridad con la web 1.38.0): tarjeta "Tu {mes} en resumen" en el inicio con las frases que arma el backend; campo `insights` en `/api/v1/dashboard/` con `text` y `masked_text` para el botón del ojo. Bump a 1.34.0+45. |
 | 2026-11-22 | Fase 8 | Límite mensual en subcategorías del sistema (DT-120, paridad con la web 1.39.0): campanita junto al ojo que abre un diálogo con el monto precargado; vaciarlo lo quita. Endpoint `categories/{id}/limit/`. Bump a 1.35.0+46. |
+| 2026-11-26 | Fase 5 | 1.35.0+46 promovida a producción en Google Play. Reemplaza a la 1.29.0+39 e incluye las versiones 1.30.0 a 1.34.0 que estaban en prueba interna. |
+| 2026-11-26 | Fase 8 | Recordatorio diario de carga (D-019 E3): interruptor opcional "Recordatorio diario" en Notificaciones (apagado por defecto), canal de Android propio, el aviso abre Gastos e ícono en el historial. Bump a 1.36.0+47. |

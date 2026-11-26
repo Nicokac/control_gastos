@@ -64,6 +64,7 @@ def build_user_workbook(user):
         ("Recordatorios de gastos e ingresos fijos", _yes_no(user.recurring_reminders_enabled)),
         ("Alertas de gasto", _yes_no(user.spending_alerts_enabled)),
         ("Resúmenes", _yes_no(user.summaries_enabled)),
+        ("Recordatorio diario", _yes_no(user.daily_reminder_enabled)),
         ("Exportado el", timezone.localdate()),
     ]
     _add_sheet(wb, "Perfil", ["Dato", "Valor"], profile)
